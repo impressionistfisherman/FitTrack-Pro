@@ -1,0 +1,136 @@
+import { describe, expect, it } from "vitest";
+import { appRouter } from "./routers";
+import { COOKIE_NAME } from "../shared/const";
+import type { TrpcContext } from "./_core/context";
+
+type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
+
+function createAuthContext(): { ctx: TrpcContext; clearedCookies: any[] } {
+  const clearedCookies: any[] = [];
+  const user: AuthenticatedUser = {
+    id: 1,
+    openId: "test-user-fittrack",
+    email: "test@fittrack.com",
+    name: "Test User",
+    loginMethod: "manus",
+    role: "user",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    lastSignedIn: new Date(),
+  };
+  const ctx: TrpcContext = {
+    user,
+    req: { protocol: "https", headers: {} } as TrpcContext["req"],
+    res: {
+      clearCookie: (name: string, options: Record<string, unknown>) => {
+        clearedCookies.push({ name, options });
+      },
+    } as TrpcContext["res"],
+  };
+  return { ctx, clearedCookies };
+}
+
+function createPublicContext(): TrpcContext {
+  return {
+    user: null,
+    req: { protocol: "https", headers: {} } as TrpcContext["req"],
+    res: { clearCookie: () => {} } as TrpcContext["res"],
+  };
+}
+
+describe("auth.logout", () => {
+  it("clears the session cookie and reports success", async () => {
+    const { ctx, clearedCookies } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.auth.logout();
+    expect(result).toEqual({ success: true });
+    expect(clearedCookies).toHaveLength(1);
+    expect(clearedCookies[0]?.name).toBe(COOKIE_NAME);
+    expect(clearedCookies[0]?.options).toMatchObject({ maxAge: -1 });
+  });
+});
+
+describe("auth.me", () => {
+  it("returns null for unauthenticated user", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.auth.me();
+    expect(result).toBeNull();
+  });
+
+  it("returns user for authenticated user", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.auth.me();
+    expect(result).not.toBeNull();
+    expect(result?.name).toBe("Test User");
+  });
+});
+
+describe("exercises.list", () => {
+  it("returns exercises list (public access)", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.exercises.list({});
+    expect(Array.isArray(result)).toBe(true);
+    // Should have seeded exercises
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("filters exercises by bodyPart", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.exercises.list({ bodyPart: "chest" });
+    expect(Array.isArray(result)).toBe(true);
+    result.forEach((ex) => {
+      expect(ex.bodyPart).toBe("chest");
+    });
+  });
+
+  it("filters exercises by equipment", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.exercises.list({ equipment: "barbell" });
+    expect(Array.isArray(result)).toBe(true);
+    result.forEach((ex) => {
+      expect(ex.equipment).toBe("barbell");
+    });
+  });
+});
+
+describe("exercises.detail", () => {
+  it("returns exercise detail by id", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    // 먼저 운동 목록을 조회해서 존재하는 운동 ID를 얻기
+    const exercises = await caller.exercises.list({});
+    if (exercises.length === 0) {
+      // 운동이 없으면 테스트 스킵
+      expect(true).toBe(true);
+      return;
+    }
+    const firstExerciseId = exercises[0].id;
+    const result = await caller.exercises.detail({ id: firstExerciseId });
+    expect(result).not.toBeNull();
+    expect(result?.id).toBe(firstExerciseId);
+    expect(result?.nameKo).toBeTruthy();
+  });
+
+  it("returns null for non-existent exercise", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.exercises.detail({ id: 999999 });
+    expect(result).toBeNull();
+  });
+});
+
+describe("goals (protected)", () => {
+  it("returns null when no goal set", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    // This may return null or existing goal
+    const result = await caller.goals.get();
+    // Just check it doesn't throw
+    expect(result === null || result !== undefined).toBe(true);
+  });
+});

@@ -1,0 +1,14 @@
+{
+  "query": "\nSELECT COUNT(*) as total_routines FROM routines;\nSELECT COUNT(*) as test_routines FROM routines WHERE name = '테스트 루틴';\nSELECT COUNT(*) as total_exercises FROM exercises;\nSELECT COUNT(*) as exercises_with_gif FROM exercises WHERE gif_url IS NOT NULL AND gif_url != '';\nSELECT COUNT(*) as exercises_without_gif FROM exercises WHERE gif_url IS NULL OR gif_url = '';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Czmw4XD6vWaByaZ.root --database HfVccHhCtMME6GEsJxyASd --execute \nSELECT COUNT(*) as total_routines FROM routines;\nSELECT COUNT(*) as test_routines FROM routines WHERE name = '테스트 루틴';\nSELECT COUNT(*) as total_exercises FROM exercises;\nSELECT COUNT(*) as exercises_with_gif FROM exercises WHERE gif_url IS NOT NULL AND gif_url != '';\nSELECT COUNT(*) as exercises_without_gif FROM exercises WHERE gif_url IS NULL OR gif_url = '';\n",
+  "returncode": 1,
+  "logs": [
+    "total_routines",
+    "30",
+    "test_routines",
+    "30",
+    "total_exercises",
+    "51",
+    "ERROR 1054 (42S22) at line 5: Unknown column 'gif_url' in 'where clause'"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "query": "INSERT INTO exercises (name, category, description) VALUES\n('벤치프레스', 'C', 'Barbell Bench Press'),\n('스쿼트', 'L', 'Barbell Back Squat'),\n('데드리프트', 'B', 'Conventional Deadlift'),\n('풀업', 'B', 'Pull-ups'),\n('숄더프레스', 'S', 'Overhead Press'),\n('바벨로우', 'B', 'Barbell Row'),\n('덤벨벤치프레스', 'C', 'Dumbbell Bench Press'),\n('레그프레스', 'L', 'Leg Press'),\n('레그컬', 'L', 'Leg Curl'),\n('레그익스텐션', 'L', 'Leg Extension'),\n('바이셉스컬', 'A', 'Barbell Curl'),\n('트라이셉스딥', 'A', 'Triceps Dips'),\n('래터럴레이즈', 'S', 'Lateral Raise'),\n('페이스풀', 'S', 'Face Pulls'),\n('플랭크', 'O', 'Plank'),\n('크런치', 'O', 'Crunches'),\n('런닝', 'C', 'Running'),\n('자전거', 'C', 'Cycling');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Czmw4XD6vWaByaZ.root --database HfVccHhCtMME6GEsJxyASd --execute INSERT INTO exercises (name, category, description) VALUES\n('벤치프레스', 'C', 'Barbell Bench Press'),\n('스쿼트', 'L', 'Barbell Back Squat'),\n('데드리프트', 'B', 'Conventional Deadlift'),\n('풀업', 'B', 'Pull-ups'),\n('숄더프레스', 'S', 'Overhead Press'),\n('바벨로우', 'B', 'Barbell Row'),\n('덤벨벤치프레스', 'C', 'Dumbbell Bench Press'),\n('레그프레스', 'L', 'Leg Press'),\n('레그컬', 'L', 'Leg Curl'),\n('레그익스텐션', 'L', 'Leg Extension'),\n('바이셉스컬', 'A', 'Barbell Curl'),\n('트라이셉스딥', 'A', 'Triceps Dips'),\n('래터럴레이즈', 'S', 'Lateral Raise'),\n('페이스풀', 'S', 'Face Pulls'),\n('플랭크', 'O', 'Plank'),\n('크런치', 'O', 'Crunches'),\n('런닝', 'C', 'Running'),\n('자전거', 'C', 'Cycling');",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1265 (01000) at line 1: Data truncated for column 'category' at row 1"
+  ]
+}

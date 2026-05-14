@@ -1,0 +1,13 @@
+{
+  "query": "\nDELETE FROM routine_exercises WHERE routineId IN (SELECT id FROM routines WHERE name = '테스트 루틴');\nDELETE FROM routines WHERE name = '테스트 루틴';\nSELECT COUNT(*) as remaining_routines FROM routines;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Czmw4XD6vWaByaZ.root --database HfVccHhCtMME6GEsJxyASd --execute \nDELETE FROM routine_exercises WHERE routineId IN (SELECT id FROM routines WHERE name = '테스트 루틴');\nDELETE FROM routines WHERE name = '테스트 루틴';\nSELECT COUNT(*) as remaining_routines FROM routines;\n",
+  "rows": [
+    {
+      "remaining_routines": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "remaining_routines\n0\n",
+  "stderr": "",
+  "execution_time_ms": 2340
+}

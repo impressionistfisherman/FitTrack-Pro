@@ -1,0 +1,50 @@
+{
+  "sourceDatabase": "HfVccHhCtMME6GEsJxyASd",
+  "createdAt": "2026-05-14T04:37:34.914Z",
+  "tables": [
+    {
+      "table": "__drizzle_migrations",
+      "rows": 1
+    },
+    {
+      "table": "body_weights",
+      "rows": 0
+    },
+    {
+      "table": "exercise_favorites",
+      "rows": 0
+    },
+    {
+      "table": "exercise_goals",
+      "rows": 0
+    },
+    {
+      "table": "exercises",
+      "rows": 103
+    },
+    {
+      "table": "routine_exercises",
+      "rows": 0
+    },
+    {
+      "table": "routines",
+      "rows": 1
+    },
+    {
+      "table": "user_goals",
+      "rows": 2
+    },
+    {
+      "table": "users",
+      "rows": 1
+    },
+    {
+      "table": "workout_logs",
+      "rows": 0
+    },
+    {
+      "table": "workout_sessions",
+      "rows": 8
+    }
+  ]
+}

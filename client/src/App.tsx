@@ -1,0 +1,60 @@
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import NotFound from "@/pages/NotFound";
+import { Route, Switch } from "wouter";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
+import AppLayout from "./components/AppLayout";
+import Home from "./pages/Home";
+import Exercises from "./pages/Exercises";
+import ExerciseDetail from "./pages/ExerciseDetail";
+import Routines from "./pages/Routines";
+import RoutineDetail from "./pages/RoutineDetail";
+import WorkoutSession from "./pages/WorkoutSession";
+import History from "./pages/History";
+import AICoach from "./pages/AICoach";
+import Profile from "@/pages/Profile";
+import BodyWeight from "@/pages/BodyWeight";
+
+function Router() {
+  return (
+    <Switch>
+      <Route path="/" component={Home} />
+      <Route path="/exercises" component={Exercises} />
+      <Route path="/exercises/:id" component={ExerciseDetail} />
+      <Route path="/routines" component={Routines} />
+      <Route path="/routines/:id" component={RoutineDetail} />
+      <Route path="/workout/:sessionId" component={WorkoutSession} />
+      <Route path="/history" component={History} />
+      <Route path="/ai-coach" component={AICoach} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/body-weight" component={BodyWeight} />
+      <Route path="/404" component={NotFound} />
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+function AppInner() {
+  const { themeConfig } = useTheme();
+  return (
+    <TooltipProvider>
+      <Toaster theme={themeConfig.isDark ? "dark" : "light"} />
+      <AppLayout>
+        <Router />
+      </AppLayout>
+    </TooltipProvider>
+  );
+}
+
+function App() {
+  return (
+    <ErrorBoundary>
+      <ThemeProvider defaultTheme="dark" switchable>
+        <AppInner />
+      </ThemeProvider>
+    </ErrorBoundary>
+  );
+}
+
+export default App;

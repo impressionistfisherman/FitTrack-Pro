@@ -1,0 +1,14 @@
+{
+  "query": "SELECT nameKo, instructionsKo FROM exercises WHERE nameKo = '바벨 벤치프레스' LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Czmw4XD6vWaByaZ.root --database HfVccHhCtMME6GEsJxyASd --execute SELECT nameKo, instructionsKo FROM exercises WHERE nameKo = '바벨 벤치프레스' LIMIT 1;",
+  "rows": [
+    {
+      "nameKo": "바벨 벤치프레스",
+      "instructionsKo": "[\"플랫 벤치에 등을 대고 눕습니다.\", \"바를 어깨너비보다 약간 넓게 잡습니다.\", \"바를 가슴 중앙까지 천천히 내립니다.\", \"가슴 근육을 수축하며 바를 힘차게 밀어 올립니다.\", \"팔꿈치를 완전히 펴지 않도록 주의하며 반복합니다.\"]"
+    }
+  ],
+  "messages": [],
+  "stdout": "nameKo\tinstructionsKo\n바벨 벤치프레스\t[\"플랫 벤치에 등을 대고 눕습니다.\", \"바를 어깨너비보다 약간 넓게 잡습니다.\", \"바를 가슴 중앙까지 천천히 내립니다.\", \"가슴 근육을 수축하며 바를 힘차게 밀어 올립니다.\", \"팔꿈치를 완전히 펴지 않도록 주의하며 반복합니다.\"]\n",
+  "stderr": "",
+  "execution_time_ms": 1874
+}

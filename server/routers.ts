@@ -1,0 +1,801 @@
+import { COOKIE_NAME } from "@shared/const";
+import { z } from "zod";
+import { getSessionCookieOptions } from "./_core/cookies";
+import { invokeLLM } from "./_core/llm";
+import { systemRouter } from "./_core/systemRouter";
+import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import {
+  addBodyWeight,
+  addExerciseToRoutine,
+  addWorkoutLog,
+  checkPRs,
+  completeWorkoutSession,
+  createRoutine,
+  createWorkoutSession,
+  deleteBodyWeight,
+  deleteRoutine,
+  deleteWorkoutLog,
+  getBodyWeights,
+  getExerciseById,
+  getExerciseHistory,
+  getExercises,
+  getFavorites,
+  getMonthlyStats,
+  getRoutineById,
+  getRoutineExercises,
+  getRoutinesByUser,
+  getSessionsInDateRange,
+  getUserGoal,
+  getUserStats,
+  getWeeklyStats,
+  getWorkoutLogsBySession,
+  getWorkoutSessionById,
+  getWorkoutSessionsByUser,
+  getWorkoutStreak,
+  isFavorite,
+  removeExerciseFromRoutine,
+  toggleFavorite,
+  updateRoutine,
+  upsertUserGoal,
+} from "./db";
+
+export const appRouter = router({
+  system: systemRouter,
+  auth: router({
+    me: publicProcedure.query((opts) => opts.ctx.user),
+    logout: publicProcedure.mutation(({ ctx }) => {
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      return { success: true } as const;
+    }),
+  }),
+
+  // ============ EXERCISES ============
+  exercises: router({
+    list: publicProcedure
+      .input(
+        z.object({
+          bodyPart: z.string().optional(),
+          equipment: z.string().optional(),
+          category: z.string().optional(),
+          search: z.string().optional(),
+        }).optional()
+      )
+      .query(async ({ input }) => {
+        return await getExercises(input);
+      }),
+
+    detail: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const exercise = await getExerciseById(input.id);
+        if (!exercise) return null;
+        const rawKo = (exercise as any).instructionsKo;
+        const instructionsKo: string[] | null = Array.isArray(rawKo) && rawKo.length > 0
+          ? rawKo
+          : typeof rawKo === 'string'
+            ? (() => { try { const p = JSON.parse(rawKo); return Array.isArray(p) && p.length > 0 ? p : null; } catch { return null; } })()
+            : null;
+        return {
+          ...exercise,
+          // instructionsKo가 있으면 instructions를 한국어로 교체
+          instructions: instructionsKo ?? exercise.instructions,
+          instructionsKo: instructionsKo,
+        } as any;
+      }),
+  }),
+
+  // ============ USER GOALS ============
+  goals: router({
+    get: protectedProcedure.query(async ({ ctx }) => {
+      return await getUserGoal(ctx.user.id);
+    }),
+
+    set: protectedProcedure
+      .input(
+        z.object({
+          goal: z.enum(["hypertrophy", "fat_loss", "strength", "endurance", "flexibility", "general"]),
+          weeklyWorkouts: z.number().min(1).max(7),
+          targetWeight: z.number().optional(),
+          heightCm: z.number().min(100).max(250).optional(),
+          gender: z.enum(["male", "female"]).optional(),
+          birthYear: z.number().min(1920).max(2010).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        await upsertUserGoal(
+          ctx.user.id,
+          input.goal,
+          input.weeklyWorkouts,
+          input.targetWeight,
+          input.heightCm,
+          input.gender,
+          input.birthYear,
+        );
+        return { success: true };
+      }),
+  }),
+
+  // ============ ROUTINES ============
+  routines: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return await getRoutinesByUser(ctx.user.id);
+    }),
+
+    detail: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const routine = await getRoutineById(input.id);
+        if (!routine || routine.userId !== ctx.user.id) return null;
+        const exercises = await getRoutineExercises(input.id);
+        return { ...routine, exercises } as any;
+      }),
+
+    create: protectedProcedure
+      .input(
+        z.object({
+          name: z.string().min(1).max(200),
+          description: z.string().optional(),
+          goal: z.enum(["hypertrophy", "fat_loss", "strength", "endurance", "flexibility", "general"]),
+          daysPerWeek: z.number().min(1).max(7),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        await createRoutine(ctx.user.id, input);
+        return { success: true };
+      }),
+
+    update: protectedProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          name: z.string().min(1).max(200).optional(),
+          description: z.string().optional(),
+          goal: z.enum(["hypertrophy", "fat_loss", "strength", "endurance", "flexibility", "general"]).optional(),
+          daysPerWeek: z.number().min(1).max(7).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const routine = await getRoutineById(input.id);
+        if (!routine || routine.userId !== ctx.user.id) throw new Error("Not found");
+        await updateRoutine(input.id, input);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const routine = await getRoutineById(input.id);
+        if (!routine || routine.userId !== ctx.user.id) throw new Error("Not found");
+        await deleteRoutine(input.id);
+        return { success: true };
+      }),
+
+    addExercise: protectedProcedure
+      .input(
+        z.object({
+          routineId: z.number(),
+          exerciseId: z.number(),
+          order: z.number(),
+          sets: z.number().default(3),
+          reps: z.number().default(10),
+          restSeconds: z.number().default(90),
+          setDetails: z.array(z.object({
+            setNumber: z.number(),
+            weightKg: z.number().optional(),
+            reps: z.number().optional(),
+          })).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const routine = await getRoutineById(input.routineId);
+        if (!routine || routine.userId !== ctx.user.id) throw new Error("Not found");
+        await addExerciseToRoutine(input.routineId, input.exerciseId, input.order, input.sets, input.reps, input.restSeconds, input.setDetails);
+        return { success: true };
+      }),
+
+    removeExercise: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await removeExerciseFromRoutine(input.id);
+        return { success: true };
+      }),
+  }),
+
+  // ============ WORKOUT ============
+  workout: router({
+    startSession: protectedProcedure
+      .input(
+        z.object({
+          routineId: z.number().optional(),
+          name: z.string().optional(),
+          workoutDate: z.date().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const sessionId = await createWorkoutSession(ctx.user.id, input);
+        return { sessionId };
+      }),
+
+    completeSession: protectedProcedure
+      .input(
+        z.object({
+          sessionId: z.number(),
+          durationMinutes: z.number(),
+          notes: z.string().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const session = await getWorkoutSessionById(input.sessionId);
+        if (!session || session.userId !== ctx.user.id) throw new Error("Not found");
+        await completeWorkoutSession(input.sessionId, input.durationMinutes, input.notes);
+        return { success: true };
+      }),
+
+    addLog: protectedProcedure
+      .input(
+        z.object({
+          sessionId: z.number(),
+          exerciseId: z.number(),
+          setNumber: z.number(),
+          reps: z.number().optional(),
+          weightKg: z.number().optional(),
+          durationSeconds: z.number().optional(),
+          isWarmup: z.boolean().optional(),
+          rpe: z.number().min(1).max(10).optional(),
+          memo: z.string().max(200).optional(),
+          notes: z.string().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const session = await getWorkoutSessionById(input.sessionId);
+        if (!session || session.userId !== ctx.user.id) throw new Error("Not found");
+        const logId = await addWorkoutLog(input);
+        return { logId };
+      }),
+
+    deleteLog: protectedProcedure
+      .input(z.object({ logId: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteWorkoutLog(input.logId);
+        return { success: true };
+      }),
+
+    getSession: protectedProcedure
+      .input(z.object({ sessionId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const session = await getWorkoutSessionById(input.sessionId);
+        if (!session || session.userId !== ctx.user.id) return null;
+        const logs = await getWorkoutLogsBySession(input.sessionId);
+        return { ...session, logs } as any;
+      }),
+
+    recentSessions: protectedProcedure
+      .input(z.object({ limit: z.number().default(20) }))
+      .query(async ({ ctx, input }) => {
+        return await getWorkoutSessionsByUser(ctx.user.id, input.limit);
+      }),
+  }),
+
+  // ============ HISTORY ============
+  history: router({
+    stats: protectedProcedure.query(async ({ ctx }) => {
+      return await getUserStats(ctx.user.id);
+    }),
+
+    calendar: protectedProcedure
+      .input(
+        z.object({
+          year: z.number(),
+          month: z.number(),
+        })
+      )
+      .query(async ({ ctx, input }) => {
+        const from = new Date(input.year, input.month - 1, 1);
+        const to = new Date(input.year, input.month, 0, 23, 59, 59);
+        return await getSessionsInDateRange(ctx.user.id, from, to);
+      }),
+
+    exerciseProgress: protectedProcedure
+      .input(z.object({ exerciseId: z.number(), limit: z.number().default(10) }))
+      .query(async ({ ctx, input }) => {
+        return await getExerciseHistory(ctx.user.id, input.exerciseId, input.limit);
+      }),
+
+    recentWorkouts: protectedProcedure
+      .input(z.object({ limit: z.number().default(10) }))
+      .query(async ({ ctx, input }) => {
+        const sessions = await getWorkoutSessionsByUser(ctx.user.id, input.limit);
+        const result: any[] = [];
+        for (const session of sessions) {
+          const logs = await getWorkoutLogsBySession(session.id);
+          result.push({ ...session, logs });
+        }
+        return result;
+      }),
+  }),
+
+  // ============ STREAK & MONTHLY STATS & PR ============
+  streak: router({
+    get: protectedProcedure.query(async ({ ctx }) => {
+      return await getWorkoutStreak(ctx.user.id);
+    }),
+  }),
+
+  monthlyStats: router({
+    get: protectedProcedure
+      .input(z.object({ months: z.number().default(6) }))
+      .query(async ({ ctx, input }) => {
+        return await getMonthlyStats(ctx.user.id, input.months);
+      }),
+  }),
+
+  pr: router({
+    check: protectedProcedure
+      .input(z.object({ sessionId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return await checkPRs(ctx.user.id, input.sessionId);
+      }),
+  }),
+
+  weeklyGoals: router({
+    get: protectedProcedure.query(async ({ ctx }) => {
+      return await getWeeklyStats(ctx.user.id);
+    }),
+  }),
+
+  // ============ WEEKLY GOALS ============
+
+  // ============ EXERCISE GOALS ============
+  exerciseGoals: router({
+    set: protectedProcedure
+      .input(z.object({
+        exerciseId: z.number(),
+        targetWeightKg: z.number().optional(),
+        targetReps: z.number().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { upsertExerciseGoal } = await import("./db");
+        await upsertExerciseGoal(ctx.user.id, input.exerciseId, {
+          targetWeightKg: input.targetWeightKg,
+          targetReps: input.targetReps,
+          notes: input.notes,
+        });
+        return { success: true };
+      }),
+
+    get: protectedProcedure
+      .input(z.object({ exerciseId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const { getExerciseProgress } = await import("./db");
+        return await getExerciseProgress(ctx.user.id, input.exerciseId);
+      }),
+  }),
+
+  // ============ FAVORITES ============
+  favorites: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return await getFavorites(ctx.user.id);
+    }),
+
+    toggle: protectedProcedure
+      .input(z.object({ exerciseId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const added = await toggleFavorite(ctx.user.id, input.exerciseId);
+        return { added };
+      }),
+
+    check: protectedProcedure
+      .input(z.object({ exerciseId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return await isFavorite(ctx.user.id, input.exerciseId);
+      }),
+  }),
+
+  // ============ BODY WEIGHT ============
+  bodyWeight: router({
+    list: protectedProcedure
+      .input(z.object({ limit: z.number().default(30) }))
+      .query(async ({ ctx, input }) => {
+        return await getBodyWeights(ctx.user.id, input.limit);
+      }),
+
+    add: protectedProcedure
+      .input(z.object({
+        weightKg: z.number().min(20).max(300),
+        bodyFatPct: z.number().min(0).max(100).optional(),
+        muscleMassPct: z.number().min(0).max(100).optional(),
+        notes: z.string().max(200).optional(),
+        recordedAt: z.date().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const id = await addBodyWeight(ctx.user.id, input);
+        return { id };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await deleteBodyWeight(input.id, ctx.user.id);
+        return { success: true };
+      }),
+  }),
+
+  // ============ AI RECOMMENDATIONS ============
+  ai: router({
+    weightRecommendation: protectedProcedure
+      .input(z.object({ exerciseId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const exercise = await getExerciseById(input.exerciseId);
+        if (!exercise) return null;
+
+        const history = await getExerciseHistory(ctx.user.id, input.exerciseId, 5);
+        const goal = await getUserGoal(ctx.user.id);
+
+        if (history.length === 0) {
+          return {
+            recommendation: null,
+            message: "아직 기록이 없습니다. 첫 번째 운동을 기록해보세요!",
+            history: [],
+          };
+        }
+
+        const historyText = history
+          .map((h) => {
+            const sets = h.logs.map((l: any) => `${l.reps}회 × ${l.weightKg}kg`).join(", ");
+            return `${h.date ? new Date(h.date).toLocaleDateString("ko-KR") : "날짜 미상"}: ${sets}`;
+          })
+          .join("\n");
+
+        const goalText = goal ? `사용자 목표: ${goal.goal}` : "목표 미설정";
+
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: `당신은 전문 퍼스널 트레이너입니다. 사용자의 운동 기록을 분석하여 다음 운동에서의 무게와 세트 수를 추천해주세요. 
+              응답은 반드시 JSON 형식으로 해주세요.`,
+            },
+            {
+              role: "user",
+              content: `운동: ${exercise.nameKo} (${exercise.name})
+${goalText}
+
+최근 운동 기록:
+${historyText}
+
+위 기록을 분석하여 다음 운동에서의 추천 무게, 세트 수, 반복 횟수를 알려주세요.
+또한 진행 상황에 대한 간단한 피드백도 제공해주세요.`,
+            },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "weight_recommendation",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  recommendedWeight: { type: "number", description: "추천 무게 (kg)" },
+                  recommendedSets: { type: "number", description: "추천 세트 수" },
+                  recommendedReps: { type: "number", description: "추천 반복 횟수" },
+                  progressFeedback: { type: "string", description: "진행 상황 피드백" },
+                  tip: { type: "string", description: "운동 팁" },
+                },
+                required: ["recommendedWeight", "recommendedSets", "recommendedReps", "progressFeedback", "tip"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        const rawContent = response.choices[0]?.message?.content;
+        const content = typeof rawContent === 'string' ? rawContent : null;
+        let parsed = null;
+        try { parsed = content ? JSON.parse(content) : null; } catch { parsed = null; }
+
+        return {
+          recommendation: parsed,
+          history,
+          exercise,
+        };
+      }),
+
+    programRecommendation: protectedProcedure
+      .input(z.object({
+        location: z.enum(["gym", "home", "outdoor"]).default("gym"),
+        equipment: z.array(z.string()).default([]),
+        sessionDuration: z.number().int().min(20).max(180).default(60),
+      }).optional())
+      .mutation(async ({ ctx, input }) => {
+      const goal = await getUserGoal(ctx.user.id);
+      const stats = await getUserStats(ctx.user.id);
+      const recentSessions = await getWorkoutSessionsByUser(ctx.user.id, 5);
+
+      const locationLabels: Record<string, string> = {
+        gym: "헬스장 (모든 기구 사용 가능)",
+        home: "홈트레이닝",
+        outdoor: "야외 운동",
+      };
+
+      const locationText = input?.location
+        ? `운동 장소: ${locationLabels[input.location] || input.location}`
+        : "운동 장소: 헬스장";
+
+      const equipmentText = input?.equipment && input.equipment.length > 0
+        ? `사용 가능한 기구: ${input.equipment.join(", ")}`
+        : input?.location === "home"
+          ? "사용 가능한 기구: 맨몸 운동만 가능 (기구 없음)"
+          : "사용 가능한 기구: 헬스장 전체 기구 (바벨, 덤벨, 머신, 케이블 등)";
+
+      const durationText = input?.sessionDuration
+        ? `1회 운동 가능 시간: ${input.sessionDuration}분`
+        : "1회 운동 가능 시간: 60분";
+
+      const goalText = goal
+        ? `목표: ${goal.goal}, 주 ${goal.weeklyWorkouts}회 운동`
+        : "목표 미설정 (일반 건강 관리)";
+
+      const statsText = stats
+        ? `총 ${stats.totalSessions}회 운동, 최근 7일 ${stats.recentSessionCount}회, 총 볼륨 ${stats.totalVolume}kg`
+        : "운동 기록 없음";
+
+      const response = await invokeLLM({
+        messages: [
+          {
+            role: "system",
+            content: `당신은 전문 퍼스널 트레이너입니다. 사용자의 목표, 운동 환경, 가용 기구, 운동 시간을 반드시 고려하여 맞춤 운동 프로그램을 추천해주세요.
+            - 지정된 기구만 사용하는 운동으로 구성하세요.
+            - 각 운동일의 총 시간이 지정된 운동 가능 시간을 초과하지 않도록 하세요.
+            - 홈트레이닝이면 맨몸 운동 위주로, 헬스장이면 기구 운동을 포함하세요.
+            응답은 반드시 JSON 형식으로 해주세요.`,
+          },
+          {
+            role: "user",
+            content: `사용자 정보:
+${goalText}
+${statsText}
+최근 운동 세션 수: ${recentSessions.length}회
+
+운동 환경 조건:
+${locationText}
+${equipmentText}
+${durationText}
+
+위 정보를 바탕으로 이번 주 운동 프로그램을 추천해주세요.
+반드시 지정된 기구와 운동 시간 조건에 맞는 운동만 포함하고, 각 운동일에 대한 구체적인 운동 목록과 조언을 포함해주세요.`,
+          },
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "program_recommendation",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                weeklyPlan: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      day: { type: "string", description: "요일 (예: 월요일)" },
+                      focus: { type: "string", description: "운동 포커스 (예: 가슴/삼두)" },
+                      exercises: {
+                        type: "array",
+                        items: { type: "string" },
+                        description: "운동 목록",
+                      },
+                      duration: { type: "string", description: "예상 운동 시간" },
+                    },
+                    required: ["day", "focus", "exercises", "duration"],
+                    additionalProperties: false,
+                  },
+                },
+                generalAdvice: { type: "string", description: "전반적인 조언" },
+                nutritionTip: { type: "string", description: "영양 팁" },
+                recoveryTip: { type: "string", description: "회복 팁" },
+              },
+              required: ["weeklyPlan", "generalAdvice", "nutritionTip", "recoveryTip"],
+              additionalProperties: false,
+            },
+          },
+        },
+      });
+
+      const rawContent2 = response.choices[0]?.message?.content;
+      const content2 = typeof rawContent2 === 'string' ? rawContent2 : null;
+      let parsed = null;
+      try { parsed = content2 ? JSON.parse(content2) : null; } catch { parsed = null; }
+
+      return {
+        program: parsed,
+        goal,
+        stats,
+      };
+    }),
+
+    dietRecommendation: protectedProcedure.query(async ({ ctx }) => {
+      const goal = await getUserGoal(ctx.user.id);
+      const stats = await getUserStats(ctx.user.id);
+      const recentSessions = await getWorkoutSessionsByUser(ctx.user.id, 7);
+
+      // 체중 데이터 가져오기
+      const { getBodyWeights } = await import("./db");
+      const weights = await getBodyWeights(ctx.user.id, 5);
+      const latestWeight = weights[0]?.weightKg;
+      const latestBodyFat = weights[0]?.bodyFatPct;
+
+      // 신장/성별/나이 데이터 (goal에 저장된 실제 값 사용, 없으면 평균값)
+      const heightCm = goal?.heightCm ?? 170;
+      const gender = goal?.gender ?? "male";
+      const age = goal?.birthYear ? new Date().getFullYear() - goal.birthYear : 30;
+
+      // BMR/TDEE 계산 (미플린-세인트지어 공식 - 해리스-베네딕트보다 정확도 높음)
+      // 남성: BMR = 10 * 체중(kg) + 6.25 * 신장(cm) - 5 * 나이 + 5
+      // 여성: BMR = 10 * 체중(kg) + 6.25 * 신장(cm) - 5 * 나이 - 161
+      let bmr = 0;
+      let tdee = 0;
+      let recommendedCalories = 0;
+      if (latestWeight) {
+        const genderOffset = gender === "female" ? -161 : 5;
+        bmr = Math.round(10 * latestWeight + 6.25 * heightCm - 5 * age + genderOffset);
+        const activityMultiplier = goal?.weeklyWorkouts
+          ? goal.weeklyWorkouts >= 5 ? 1.725 : goal.weeklyWorkouts >= 3 ? 1.55 : 1.375
+          : 1.375;
+        tdee = Math.round(bmr * activityMultiplier);
+        // 목표별 칼로리 조정
+        if (goal?.goal === "fat_loss") recommendedCalories = Math.round(tdee * 0.8);
+        else if (goal?.goal === "hypertrophy") recommendedCalories = Math.round(tdee * 1.1);
+        else if (goal?.goal === "strength") recommendedCalories = Math.round(tdee * 1.05);
+        else recommendedCalories = tdee;
+      }
+
+      const goalText = goal
+        ? `운동 목표: ${goal.goal}, 주 ${goal.weeklyWorkouts}회${goal.targetWeight ? `, 목표 체중: ${goal.targetWeight}kg` : ""}`
+        : "목표 미설정";
+      const bodyInfoText = `신장: ${heightCm}cm, 성별: ${gender === "female" ? "여성" : "남성"}, 나이: ${age}세${latestBodyFat ? `, 체지방률: ${latestBodyFat}%` : ""}`;
+      const weightText = latestWeight
+        ? `현재 체중: ${latestWeight}kg, BMR: ${bmr}kcal, TDEE: ${tdee}kcal, 권장 섬취 칼로리: ${recommendedCalories}kcal`
+        : "체중 기록 없음";
+      const statsText = stats
+        ? `최근 7일 ${stats.recentSessionCount}회 운동, 주간 볼륨 ${Math.round(stats.totalVolume / Math.max(stats.totalSessions, 1))}kg`
+        : "운동 기록 없음";
+
+      const response = await invokeLLM({
+        messages: [
+          {
+            role: "system",
+            content: `당신은 전문 스포츠 영양사입니다. 사용자의 운동 목표와 체중 데이터를 바탕으로 맞춤 하루 식단을 추천해주세요.
+다음 사항을 반드시 포함하세요:
+- 하루 권장 칼로리 및 단백질/탄수화물/지방 비율
+- 아침/점심/저녀/간식 식단 (한국식 식품 위주로)
+- 각 식사별 칼로리와 단백질 함량
+- 운동 전/후 식사 타이밍 조언
+응답은 반드시 JSON 형식으로 해주세요.`,
+          },
+          {
+            role: "user",
+            content: `사용자 정보:
+${goalText}
+${bodyInfoText}
+${weightText}
+${statsText}
+운동 횟수: 총 ${stats?.totalSessions || 0}회
+
+위 정보를 바탕으로 오늘 하루 맞춤 식단을 추천해주세요. 특히 해리스-베네딕트 공식으로 계산된 권장 칼로리(${recommendedCalories}kcal)를 기준으로 식단을 설계해주세요.`,
+          },
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "diet_recommendation",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                dailyCalories: { type: "number", description: "하루 권장 칼로리 (kcal)" },
+                macros: {
+                  type: "object",
+                  properties: {
+                    protein: { type: "number", description: "단백질 (g)" },
+                    carbs: { type: "number", description: "탄수화물 (g)" },
+                    fat: { type: "number", description: "지방 (g)" },
+                  },
+                  required: ["protein", "carbs", "fat"],
+                  additionalProperties: false,
+                },
+                meals: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      time: { type: "string", description: "식사 시간 (아침/점심/저녀/간식)" },
+                      menu: { type: "array", items: { type: "string" }, description: "메뉴 목록" },
+                      calories: { type: "number", description: "식사 칼로리" },
+                      protein: { type: "number", description: "단백질 (g)" },
+                      tip: { type: "string", description: "식사 팁" },
+                    },
+                    required: ["time", "menu", "calories", "protein", "tip"],
+                    additionalProperties: false,
+                  },
+                },
+                hydration: { type: "string", description: "수분 섬취 권장" },
+                supplements: { type: "string", description: "보충제 추천" },
+                preworkoutMeal: { type: "string", description: "운동 전 식사 추천" },
+                postworkoutMeal: { type: "string", description: "운동 후 식사 추천" },
+                generalAdvice: { type: "string", description: "전반적인 식단 조언" },
+              },
+              required: ["dailyCalories", "macros", "meals", "hydration", "supplements", "preworkoutMeal", "postworkoutMeal", "generalAdvice"],
+              additionalProperties: false,
+            },
+          },
+        },
+      });
+
+      const rawContent = response.choices[0]?.message?.content;
+      const content = typeof rawContent === "string" ? rawContent : null;
+      let parsed = null;
+      try { parsed = content ? JSON.parse(content) : null; } catch { parsed = null; }
+
+      return {
+        diet: parsed,
+        goal,
+        latestWeight,
+        latestBodyFat,
+        bmr,
+        tdee,
+        recommendedCalories,
+        stats,
+      };
+    }),
+
+    quickTip: protectedProcedure
+      .input(z.object({ exerciseId: z.number() }))
+      .query(async ({ input }) => {
+        const exercise = await getExerciseById(input.exerciseId);
+        if (!exercise) return null;
+
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: "당신은 전문 퍼스널 트레이너입니다. 운동에 대한 핵심 팁을 간결하게 제공해주세요.",
+            },
+            {
+              role: "user",
+              content: `${exercise.nameKo} 운동의 올바른 자세와 주의사항, 효과를 극대화하는 팁 3가지를 알려주세요.`,
+            },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "exercise_tips",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  tips: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "운동 팁 목록 (3개)",
+                  },
+                  commonMistakes: { type: "string", description: "흔한 실수" },
+                  breathingTip: { type: "string", description: "호흡 팁" },
+                },
+                required: ["tips", "commonMistakes", "breathingTip"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        const rawContent3 = response.choices[0]?.message?.content;
+        const content3 = typeof rawContent3 === 'string' ? rawContent3 : null;
+        try { return content3 ? JSON.parse(content3) : null; } catch { return null; }
+      }),
+  }),
+});
+
+export type AppRouter = typeof appRouter;

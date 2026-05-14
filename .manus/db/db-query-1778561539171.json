@@ -1,0 +1,37 @@
+{
+  "query": "\nSELECT COUNT(*) as with_gif FROM exercises WHERE gifUrl IS NOT NULL AND gifUrl != '';\nSELECT COUNT(*) as with_ko_instructions FROM exercises WHERE instructionsKo IS NOT NULL;\nSELECT nameKo, LEFT(gifUrl, 60) as gifUrl_preview FROM exercises WHERE gifUrl IS NOT NULL LIMIT 5;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Czmw4XD6vWaByaZ.root --database HfVccHhCtMME6GEsJxyASd --execute \nSELECT COUNT(*) as with_gif FROM exercises WHERE gifUrl IS NOT NULL AND gifUrl != '';\nSELECT COUNT(*) as with_ko_instructions FROM exercises WHERE instructionsKo IS NOT NULL;\nSELECT nameKo, LEFT(gifUrl, 60) as gifUrl_preview FROM exercises WHERE gifUrl IS NOT NULL LIMIT 5;\n",
+  "rows": [
+    {
+      "with_gif": "50"
+    },
+    {
+      "with_gif": "with_ko_instructions"
+    },
+    {
+      "with_gif": "103"
+    },
+    {
+      "with_gif": "nameKo\tgifUrl_preview"
+    },
+    {
+      "with_gif": "바벨 벤치프레스\thttps://raw.githubusercontent.com/yuhonas/free-exercise-db/m"
+    },
+    {
+      "with_gif": "인클라인 바벨 벤치프레스\thttps://raw.githubusercontent.com/yuhonas/free-exercise-db/m"
+    },
+    {
+      "with_gif": "덤벨 벤치프레스\thttps://raw.githubusercontent.com/yuhonas/free-exercise-db/m"
+    },
+    {
+      "with_gif": "덤벨 플라이\thttps://raw.githubusercontent.com/yuhonas/free-exercise-db/m"
+    },
+    {
+      "with_gif": "케이블 크로스오버\thttps://raw.githubusercontent.com/yuhonas/free-exercise-db/m"
+    }
+  ],
+  "messages": [],
+  "stdout": "with_gif\n50\nwith_ko_instructions\n103\nnameKo\tgifUrl_preview\n바벨 벤치프레스\thttps://raw.githubusercontent.com/yuhonas/free-exercise-db/m\n인클라인 바벨 벤치프레스\thttps://raw.githubusercontent.com/yuhonas/free-exercise-db/m\n덤벨 벤치프레스\thttps://raw.githubusercontent.com/yuhonas/free-exercise-db/m\n덤벨 플라이\thttps://raw.githubusercontent.com/yuhonas/free-exercise-db/m\n케이블 크로스오버\thttps://raw.githubusercontent.com/yuhonas/free-exercise-db/m\n",
+  "stderr": "",
+  "execution_time_ms": 2341
+}

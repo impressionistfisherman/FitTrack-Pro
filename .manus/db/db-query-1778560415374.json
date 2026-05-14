@@ -1,0 +1,55 @@
+{
+  "query": "\nSELECT COUNT(*) as workout_logs FROM workout_logs;\nSELECT COUNT(*) as routine_exercises FROM routine_exercises;\nSHOW TABLES;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Czmw4XD6vWaByaZ.root --database HfVccHhCtMME6GEsJxyASd --execute \nSELECT COUNT(*) as workout_logs FROM workout_logs;\nSELECT COUNT(*) as routine_exercises FROM routine_exercises;\nSHOW TABLES;\n",
+  "rows": [
+    {
+      "workout_logs": "0"
+    },
+    {
+      "workout_logs": "routine_exercises"
+    },
+    {
+      "workout_logs": "0"
+    },
+    {
+      "workout_logs": "Tables_in_HfVccHhCtMME6GEsJxyASd"
+    },
+    {
+      "workout_logs": "__drizzle_migrations"
+    },
+    {
+      "workout_logs": "body_weights"
+    },
+    {
+      "workout_logs": "exercise_favorites"
+    },
+    {
+      "workout_logs": "exercise_goals"
+    },
+    {
+      "workout_logs": "exercises"
+    },
+    {
+      "workout_logs": "routine_exercises"
+    },
+    {
+      "workout_logs": "routines"
+    },
+    {
+      "workout_logs": "user_goals"
+    },
+    {
+      "workout_logs": "users"
+    },
+    {
+      "workout_logs": "workout_logs"
+    },
+    {
+      "workout_logs": "workout_sessions"
+    }
+  ],
+  "messages": [],
+  "stdout": "workout_logs\n0\nroutine_exercises\n0\nTables_in_HfVccHhCtMME6GEsJxyASd\n__drizzle_migrations\nbody_weights\nexercise_favorites\nexercise_goals\nexercises\nroutine_exercises\nroutines\nuser_goals\nusers\nworkout_logs\nworkout_sessions\n",
+  "stderr": "",
+  "execution_time_ms": 2234
+}

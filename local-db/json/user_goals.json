@@ -1,0 +1,28 @@
+[
+  {
+    "id": 150001,
+    "userId": 1,
+    "goal": "hypertrophy",
+    "targetWeight": null,
+    "weeklyWorkouts": 4,
+    "isActive": 0,
+    "createdAt": "2026-05-11T20:55:28.000Z",
+    "updatedAt": "2026-05-11T21:51:27.000Z",
+    "heightCm": null,
+    "gender": null,
+    "birthYear": null
+  },
+  {
+    "id": 180001,
+    "userId": 1,
+    "goal": "hypertrophy",
+    "targetWeight": null,
+    "weeklyWorkouts": 4,
+    "isActive": 1,
+    "createdAt": "2026-05-11T21:51:27.000Z",
+    "updatedAt": "2026-05-11T21:51:27.000Z",
+    "heightCm": null,
+    "gender": null,
+    "birthYear": null
+  }
+]

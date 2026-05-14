@@ -1,0 +1,37 @@
+{
+  "query": "\nSELECT COUNT(*) as total_exercises FROM exercises;\nSELECT COUNT(*) as with_gif FROM exercises WHERE gifUrl IS NOT NULL AND gifUrl != '';\nSELECT id, name, nameKo, gifUrl FROM exercises LIMIT 5;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Czmw4XD6vWaByaZ.root --database HfVccHhCtMME6GEsJxyASd --execute \nSELECT COUNT(*) as total_exercises FROM exercises;\nSELECT COUNT(*) as with_gif FROM exercises WHERE gifUrl IS NOT NULL AND gifUrl != '';\nSELECT id, name, nameKo, gifUrl FROM exercises LIMIT 5;\n",
+  "rows": [
+    {
+      "total_exercises": "103"
+    },
+    {
+      "total_exercises": "with_gif"
+    },
+    {
+      "total_exercises": "103"
+    },
+    {
+      "total_exercises": "id\tname\tnameKo\tgifUrl"
+    },
+    {
+      "total_exercises": "240001\tBarbell Bench Press\t바벨 벤치프레스\thttps://storage.googleapis.com/fittrack-gifs/bench-press.gif"
+    },
+    {
+      "total_exercises": "240002\tIncline Barbell Bench Press\t인클라인 바벨 벤치프레스\thttps://storage.googleapis.com/fittrack-gifs/incline-bench.gif"
+    },
+    {
+      "total_exercises": "240003\tDumbbell Bench Press\t덤벨 벤치프레스\thttps://storage.googleapis.com/fittrack-gifs/db-bench.gif"
+    },
+    {
+      "total_exercises": "240004\tDumbbell Flyes\t덤벨 플라이\thttps://storage.googleapis.com/fittrack-gifs/db-flyes.gif"
+    },
+    {
+      "total_exercises": "240005\tCable Crossover\t케이블 크로스오버\thttps://storage.googleapis.com/fittrack-gifs/cable-crossover.gif"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_exercises\n103\nwith_gif\n103\nid\tname\tnameKo\tgifUrl\n240001\tBarbell Bench Press\t바벨 벤치프레스\thttps://storage.googleapis.com/fittrack-gifs/bench-press.gif\n240002\tIncline Barbell Bench Press\t인클라인 바벨 벤치프레스\thttps://storage.googleapis.com/fittrack-gifs/incline-bench.gif\n240003\tDumbbell Bench Press\t덤벨 벤치프레스\thttps://storage.googleapis.com/fittrack-gifs/db-bench.gif\n240004\tDumbbell Flyes\t덤벨 플라이\thttps://storage.googleapis.com/fittrack-gifs/db-flyes.gif\n240005\tCable Crossover\t케이블 크로스오버\thttps://storage.googleapis.com/fittrack-gifs/cable-crossover.gif\n",
+  "stderr": "",
+  "execution_time_ms": 2349
+}

@@ -1,0 +1,130 @@
+{
+  "query": "SELECT id, name, nameKo, gifUrl FROM exercises ORDER BY id LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Czmw4XD6vWaByaZ.root --database HfVccHhCtMME6GEsJxyASd --execute SELECT id, name, nameKo, gifUrl FROM exercises ORDER BY id LIMIT 20;",
+  "rows": [
+    {
+      "id": "180001",
+      "name": "Bench Press",
+      "nameKo": "벤치프레스",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180002",
+      "name": "Squat",
+      "nameKo": "스쿼트",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180003",
+      "name": "Deadlift",
+      "nameKo": "데드리프트",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180004",
+      "name": "Pull-up",
+      "nameKo": "풀업",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180005",
+      "name": "Overhead Press",
+      "nameKo": "숄더프레스",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180006",
+      "name": "Barbell Row",
+      "nameKo": "바벨로우",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180007",
+      "name": "Dumbbell Bench Press",
+      "nameKo": "덤벨벤치프레스",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180008",
+      "name": "Leg Press",
+      "nameKo": "레그프레스",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180009",
+      "name": "Leg Curl",
+      "nameKo": "레그컬",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180010",
+      "name": "Leg Extension",
+      "nameKo": "레그익스텐션",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180011",
+      "name": "Barbell Curl",
+      "nameKo": "바이셉스컬",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180012",
+      "name": "Triceps Dips",
+      "nameKo": "트라이셉스딥",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180013",
+      "name": "Lateral Raise",
+      "nameKo": "래터럴레이즈",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180014",
+      "name": "Face Pulls",
+      "nameKo": "페이스풀",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180015",
+      "name": "Plank",
+      "nameKo": "플랭크",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180016",
+      "name": "Crunches",
+      "nameKo": "크런치",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180017",
+      "name": "Running",
+      "nameKo": "런닝",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "180018",
+      "name": "Cycling",
+      "nameKo": "자전거",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "210001",
+      "name": "Test Bench Press",
+      "nameKo": "테스트 벤치프레스",
+      "gifUrl": "NULL"
+    },
+    {
+      "id": "210002",
+      "name": "Barbell Bench Press",
+      "nameKo": "바벨 벤치 프레스",
+      "gifUrl": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tnameKo\tgifUrl\n180001\tBench Press\t벤치프레스\tNULL\n180002\tSquat\t스쿼트\tNULL\n180003\tDeadlift\t데드리프트\tNULL\n180004\tPull-up\t풀업\tNULL\n180005\tOverhead Press\t숄더프레스\tNULL\n180006\tBarbell Row\t바벨로우\tNULL\n180007\tDumbbell Bench Press\t덤벨벤치프레스\tNULL\n180008\tLeg Press\t레그프레스\tNULL\n180009\tLeg Curl\t레그컬\tNULL\n180010\tLeg Extension\t레그익스텐션\tNULL\n180011\tBarbell Curl\t바이셉스컬\tNULL\n180012\tTriceps Dips\t트라이셉스딥\tNULL\n180013\tLateral Raise\t래터럴레이즈\tNULL\n180014\tFace Pulls\t페이스풀\tNULL\n180015\tPlank\t플랭크\tNULL\n180016\tCrunches\t크런치\tNULL\n180017\tRunning\t런닝\tNULL\n180018\tCycling\t자전거\tNULL\n210001\tTest Bench Press\t테스트 벤치프레스\tNULL\n210002\tBarbell Bench Press\t바벨 벤치 프레스\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1809
+}

@@ -1,0 +1,124 @@
+{
+  "query": "SELECT id, name, userId, createdAt FROM workout_sessions WHERE name LIKE '%자유%' ORDER BY createdAt DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Czmw4XD6vWaByaZ.root --database HfVccHhCtMME6GEsJxyASd --execute SELECT id, name, userId, createdAt FROM workout_sessions WHERE name LIKE '%자유%' ORDER BY createdAt DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "180027",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:47:00"
+    },
+    {
+      "id": "180026",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:59"
+    },
+    {
+      "id": "180025",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:58"
+    },
+    {
+      "id": "180022",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:56"
+    },
+    {
+      "id": "180021",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:54"
+    },
+    {
+      "id": "180020",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:53"
+    },
+    {
+      "id": "180019",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:52"
+    },
+    {
+      "id": "180018",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:50"
+    },
+    {
+      "id": "180015",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:49"
+    },
+    {
+      "id": "180014",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:29"
+    },
+    {
+      "id": "180013",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:28"
+    },
+    {
+      "id": "180012",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:27"
+    },
+    {
+      "id": "180009",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:25"
+    },
+    {
+      "id": "180008",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:23"
+    },
+    {
+      "id": "180007",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:21"
+    },
+    {
+      "id": "180006",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:20"
+    },
+    {
+      "id": "180005",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:19"
+    },
+    {
+      "id": "180002",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:46:18"
+    },
+    {
+      "id": "180001",
+      "name": "자유 운동 세션",
+      "userId": "1",
+      "createdAt": "2026-05-13 01:44:10"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tuserId\tcreatedAt\n180027\t자유 운동 세션\t1\t2026-05-13 01:47:00\n180026\t자유 운동 세션\t1\t2026-05-13 01:46:59\n180025\t자유 운동 세션\t1\t2026-05-13 01:46:58\n180022\t자유 운동 세션\t1\t2026-05-13 01:46:56\n180021\t자유 운동 세션\t1\t2026-05-13 01:46:54\n180020\t자유 운동 세션\t1\t2026-05-13 01:46:53\n180019\t자유 운동 세션\t1\t2026-05-13 01:46:52\n180018\t자유 운동 세션\t1\t2026-05-13 01:46:50\n180015\t자유 운동 세션\t1\t2026-05-13 01:46:49\n180014\t자유 운동 세션\t1\t2026-05-13 01:46:29\n180013\t자유 운동 세션\t1\t2026-05-13 01:46:28\n180012\t자유 운동 세션\t1\t2026-05-13 01:46:27\n180009\t자유 운동 세션\t1\t2026-05-13 01:46:25\n180008\t자유 운동 세션\t1\t2026-05-13 01:46:23\n180007\t자유 운동 세션\t1\t2026-05-13 01:46:21\n180006\t자유 운동 세션\t1\t2026-05-13 01:46:20\n180005\t자유 운동 세션\t1\t2026-05-13 01:46:19\n180002\t자유 운동 세션\t1\t2026-05-13 01:46:18\n180001\t자유 운동 세션\t1\t2026-05-13 01:44:10\n",
+  "stderr": "",
+  "execution_time_ms": 1903
+}

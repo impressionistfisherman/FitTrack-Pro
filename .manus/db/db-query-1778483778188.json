@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `user_goals`\n  ADD COLUMN `heightCm` float NULL,\n  ADD COLUMN `gender` enum('male','female') NULL,\n  ADD COLUMN `birthYear` int NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Czmw4XD6vWaByaZ.root --database HfVccHhCtMME6GEsJxyASd --execute ALTER TABLE `user_goals`\n  ADD COLUMN `heightCm` float NULL,\n  ADD COLUMN `gender` enum('male','female') NULL,\n  ADD COLUMN `birthYear` int NULL;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2319
+}

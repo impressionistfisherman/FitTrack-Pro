@@ -1,0 +1,13 @@
+{
+  "query": "\nDELETE FROM exercise_favorites;\nDELETE FROM exercise_goals;\nDELETE FROM routine_exercises;\nDELETE FROM exercises;\nSELECT COUNT(*) as exercises_after_delete FROM exercises;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Czmw4XD6vWaByaZ.root --database HfVccHhCtMME6GEsJxyASd --execute \nDELETE FROM exercise_favorites;\nDELETE FROM exercise_goals;\nDELETE FROM routine_exercises;\nDELETE FROM exercises;\nSELECT COUNT(*) as exercises_after_delete FROM exercises;\n",
+  "rows": [
+    {
+      "exercises_after_delete": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "exercises_after_delete\n0\n",
+  "stderr": "",
+  "execution_time_ms": 2819
+}

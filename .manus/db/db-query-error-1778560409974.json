@@ -1,0 +1,12 @@
+{
+  "query": "\nSELECT COUNT(*) as workout_logs FROM workout_logs;\nSELECT COUNT(*) as routine_exercises FROM routine_exercises;\nSELECT COUNT(*) as favorites FROM favorites;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Czmw4XD6vWaByaZ.root --database HfVccHhCtMME6GEsJxyASd --execute \nSELECT COUNT(*) as workout_logs FROM workout_logs;\nSELECT COUNT(*) as routine_exercises FROM routine_exercises;\nSELECT COUNT(*) as favorites FROM favorites;\n",
+  "returncode": 1,
+  "logs": [
+    "workout_logs",
+    "0",
+    "routine_exercises",
+    "0",
+    "ERROR 1146 (42S02) at line 4: Table 'hfvcchhctmme6gesjxyasd.favorites' doesn't exist"
+  ]
+}

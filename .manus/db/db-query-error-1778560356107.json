@@ -1,0 +1,8 @@
+{
+  "query": "\nDELETE FROM routine_exercises WHERE routine_id IN (SELECT id FROM routines WHERE name = '테스트 루틴');\nDELETE FROM routines WHERE name = '테스트 루틴';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Czmw4XD6vWaByaZ.root --database HfVccHhCtMME6GEsJxyASd --execute \nDELETE FROM routine_exercises WHERE routine_id IN (SELECT id FROM routines WHERE name = '테스트 루틴');\nDELETE FROM routines WHERE name = '테스트 루틴';\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'routine_id' in 'where clause'"
+  ]
+}

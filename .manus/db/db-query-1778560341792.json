@@ -1,0 +1,37 @@
+{
+  "query": "\nSELECT COUNT(*) as exercises_with_gif FROM exercises WHERE gifUrl IS NOT NULL AND gifUrl != '';\nSELECT COUNT(*) as exercises_without_gif FROM exercises WHERE gifUrl IS NULL OR gifUrl = '';\nSELECT id, name FROM exercises WHERE gifUrl IS NULL OR gifUrl = '' LIMIT 5;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user Czmw4XD6vWaByaZ.root --database HfVccHhCtMME6GEsJxyASd --execute \nSELECT COUNT(*) as exercises_with_gif FROM exercises WHERE gifUrl IS NOT NULL AND gifUrl != '';\nSELECT COUNT(*) as exercises_without_gif FROM exercises WHERE gifUrl IS NULL OR gifUrl = '';\nSELECT id, name FROM exercises WHERE gifUrl IS NULL OR gifUrl = '' LIMIT 5;\n",
+  "rows": [
+    {
+      "exercises_with_gif": "0"
+    },
+    {
+      "exercises_with_gif": "exercises_without_gif"
+    },
+    {
+      "exercises_with_gif": "51"
+    },
+    {
+      "exercises_with_gif": "id\tname"
+    },
+    {
+      "exercises_with_gif": "180001\tBench Press"
+    },
+    {
+      "exercises_with_gif": "180002\tSquat"
+    },
+    {
+      "exercises_with_gif": "180003\tDeadlift"
+    },
+    {
+      "exercises_with_gif": "180004\tPull-up"
+    },
+    {
+      "exercises_with_gif": "180005\tOverhead Press"
+    }
+  ],
+  "messages": [],
+  "stdout": "exercises_with_gif\n0\nexercises_without_gif\n51\nid\tname\n180001\tBench Press\n180002\tSquat\n180003\tDeadlift\n180004\tPull-up\n180005\tOverhead Press\n",
+  "stderr": "",
+  "execution_time_ms": 2240
+}
