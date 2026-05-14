@@ -7,6 +7,7 @@ import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 export default defineConfig({
   plugins: [react(), tailwindcss(), vitePluginManusRuntime()],
   root: path.resolve(import.meta.dirname, "client"),
+  base: process.env.VITE_BASE_PATH ?? "/",
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
