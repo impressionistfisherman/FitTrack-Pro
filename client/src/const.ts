@@ -1,8 +1,28 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
+export const getAppPath = (path: string) => {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const base = import.meta.env.BASE_URL;
+
+  if (!base || base === "/") return normalizedPath;
+
+  return `${base.replace(/\/$/, "")}${normalizedPath}`;
+};
+
+export const getApiBaseUrl = () => {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+  return apiBaseUrl ? apiBaseUrl.replace(/\/$/, "") : "";
+};
+
+const isGitHubPages = () =>
+  typeof window !== "undefined" && window.location.hostname.endsWith("github.io");
+
 // Generate login URL at runtime so redirect URI reflects the current origin.
 export const getLoginUrl = (provider: "google" | "github" = "google") => {
   if (provider === "google" || provider === "github") {
+    const apiBaseUrl = getApiBaseUrl();
+    if (apiBaseUrl) return `${apiBaseUrl}/api/auth/${provider}`;
+    if (isGitHubPages()) return "";
     return `/api/auth/${provider}`;
   }
 
@@ -22,4 +42,17 @@ export const getLoginUrl = (provider: "google" | "github" = "google") => {
   url.searchParams.set("type", "signIn");
 
   return url.toString();
+};
+
+export const startLogin = (provider: "google" | "github" = "google") => {
+  const loginUrl = getLoginUrl(provider);
+
+  if (!loginUrl) {
+    window.alert(
+      "GitHub Pages는 정적 호스팅이라 로그인과 DB API를 직접 실행할 수 없습니다. 로컬 서버 또는 별도 Node 서버 배포 URL에서 로그인하세요."
+    );
+    return;
+  }
+
+  window.location.href = loginUrl;
 };

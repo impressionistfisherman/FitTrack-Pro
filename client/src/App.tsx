@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Router as WouterRouter, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import AppLayout from "./components/AppLayout";
@@ -16,7 +16,12 @@ import AICoach from "./pages/AICoach";
 import Profile from "@/pages/Profile";
 import BodyWeight from "@/pages/BodyWeight";
 
-function Router() {
+const routerBase =
+  import.meta.env.BASE_URL && import.meta.env.BASE_URL !== "/"
+    ? import.meta.env.BASE_URL.replace(/\/$/, "")
+    : "";
+
+function Routes() {
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -40,9 +45,11 @@ function AppInner() {
   return (
     <TooltipProvider>
       <Toaster theme={themeConfig.isDark ? "dark" : "light"} />
-      <AppLayout>
-        <Router />
-      </AppLayout>
+      <WouterRouter base={routerBase}>
+        <AppLayout>
+          <Routes />
+        </AppLayout>
+      </WouterRouter>
     </TooltipProvider>
   );
 }

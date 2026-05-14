@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
+import { getAppPath, startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { Activity, ChevronRight, Dumbbell, LogIn, Plus, Target, Trash2 } from "lucide-react";
@@ -127,7 +127,7 @@ function RoutineCard({ routine, onDelete }: { routine: any; onDelete: () => void
 
   const handleStart = async () => {
     const result = await startSession.mutateAsync({ routineId: routine.id, name: routine.name });
-    window.location.href = `/workout/${result.sessionId}`;
+    window.location.href = getAppPath(`/workout/${result.sessionId}`);
   };
 
   return (
@@ -190,7 +190,7 @@ export default function Routines() {
         <Dumbbell size={40} className="text-muted-foreground opacity-30 mb-4" />
         <h2 className="text-lg font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
         <p className="text-sm text-muted-foreground mb-4">루틴을 관리하려면 로그인하세요.</p>
-        <Button className="gap-2 bg-primary text-primary-foreground" onClick={() => window.location.href = getLoginUrl()}>
+        <Button className="gap-2 bg-primary text-primary-foreground" onClick={() => startLogin()}>
           <LogIn size={16} />로그인
         </Button>
       </div>

@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
+import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
@@ -70,7 +70,7 @@ export default function Profile() {
       <div className="p-4 lg:p-8 flex flex-col items-center justify-center min-h-[60vh]">
         <User size={40} className="text-muted-foreground opacity-30 mb-4" />
         <h2 className="text-lg font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
-        <Button className="gap-2 bg-primary text-primary-foreground" onClick={() => window.location.href = getLoginUrl()}>
+        <Button className="gap-2 bg-primary text-primary-foreground" onClick={() => startLogin()}>
           <LogIn size={16} />로그인
         </Button>
       </div>

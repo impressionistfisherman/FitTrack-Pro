@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
+import { startLogin } from "@/const";
 import { cn } from "@/lib/utils";
 import {
   Activity, Bot, Calendar, Dumbbell, Home,
@@ -109,7 +109,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           ) : (
             <Button className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={() => window.location.href = getLoginUrl()}>
+              onClick={() => startLogin()}>
               <LogIn size={16} />로그인
             </Button>
           )}
@@ -137,7 +137,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </Link>
             ) : (
               <Button size="sm" className="gap-1.5 bg-primary text-primary-foreground text-xs"
-                onClick={() => window.location.href = getLoginUrl()}>
+                onClick={() => startLogin()}>
                 <LogIn size={12} />로그인
               </Button>
             )}

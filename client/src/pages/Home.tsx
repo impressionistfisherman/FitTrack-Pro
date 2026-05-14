@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
+import { getAppPath, startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { WeeklyGoalDashboard } from "@/components/WeeklyGoalDashboard";
@@ -71,7 +71,7 @@ function QuickStartCard() {
       routineId,
       name: routineId ? undefined : "자유 운동",
     });
-    window.location.href = `/workout/${result.sessionId}`;
+    window.location.href = getAppPath(`/workout/${result.sessionId}`);
   };
 
   return (
@@ -360,7 +360,7 @@ export default function Home() {
             <Button
               size="lg"
               className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-base font-semibold"
-              onClick={() => window.location.href = getLoginUrl("google")}
+              onClick={() => startLogin("google")}
             >
               <LogIn size={18} />
               Google
@@ -369,7 +369,7 @@ export default function Home() {
               size="lg"
               variant="outline"
               className="gap-2 border-border bg-card text-foreground hover:bg-accent h-12 text-base font-semibold"
-              onClick={() => window.location.href = getLoginUrl("github")}
+              onClick={() => startLogin("github")}
             >
               <Github size={18} />
               GitHub
