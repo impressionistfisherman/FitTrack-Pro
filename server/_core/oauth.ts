@@ -16,6 +16,14 @@ function getCookie(req: Request, key: string): string | undefined {
   return cookies[key];
 }
 
+function getBackendOrigin(req: Request) {
+  return `${req.protocol}://${req.get("host")}`;
+}
+
+function getAppRedirectUrl(req: Request) {
+  return ENV.appRedirectUrl || ENV.appOrigin || getBackendOrigin(req);
+}
+
 export function registerOAuthRoutes(app: Express) {
   app.get("/api/auth/google", (req: Request, res: Response) => {
     if (!ENV.googleClientId || !ENV.googleClientSecret) {
@@ -23,7 +31,7 @@ export function registerOAuthRoutes(app: Express) {
       return;
     }
 
-    const redirectUri = `${req.protocol}://${req.get("host")}/api/auth/google/callback`;
+    const redirectUri = `${getBackendOrigin(req)}/api/auth/google/callback`;
     const state = crypto.randomUUID();
     res.cookie("oauth_state", state, { ...getSessionCookieOptions(req), maxAge: 10 * 60 * 1000 });
 
@@ -46,7 +54,7 @@ export function registerOAuthRoutes(app: Express) {
     }
 
     try {
-      const redirectUri = `${req.protocol}://${req.get("host")}/api/auth/google/callback`;
+      const redirectUri = `${getBackendOrigin(req)}/api/auth/google/callback`;
       const tokenResp = await fetch("https://oauth2.googleapis.com/token", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -85,7 +93,7 @@ export function registerOAuthRoutes(app: Express) {
       return;
     }
 
-    const redirectUri = `${req.protocol}://${req.get("host")}/api/auth/github/callback`;
+    const redirectUri = `${getBackendOrigin(req)}/api/auth/github/callback`;
     const state = crypto.randomUUID();
     res.cookie("oauth_state", state, { ...getSessionCookieOptions(req), maxAge: 10 * 60 * 1000 });
 
@@ -106,7 +114,7 @@ export function registerOAuthRoutes(app: Express) {
     }
 
     try {
-      const redirectUri = `${req.protocol}://${req.get("host")}/api/auth/github/callback`;
+      const redirectUri = `${getBackendOrigin(req)}/api/auth/github/callback`;
       const tokenResp = await fetch("https://github.com/login/oauth/access_token", {
         method: "POST",
         headers: { Accept: "application/json", "Content-Type": "application/json" },
@@ -185,7 +193,7 @@ export function registerOAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      res.redirect(302, "/");
+      res.redirect(302, getAppRedirectUrl(req));
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
       res.status(500).json({ error: "OAuth callback failed" });
@@ -214,5 +222,5 @@ async function signInProviderUser(
   const cookieOptions = getSessionCookieOptions(req);
   res.clearCookie("oauth_state", cookieOptions);
   res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-  res.redirect(302, "/");
+  res.redirect(302, getAppRedirectUrl(req));
 }

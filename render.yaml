@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: fittrack-pro-api
+    runtime: docker
+    plan: starter
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SQLITE_DB_PATH
+        value: /var/data/fittrack_local.sqlite
+      - key: APP_ORIGIN
+        value: https://impressionistfisherman.github.io
+      - key: APP_REDIRECT_URL
+        value: https://impressionistfisherman.github.io/FitTrack-Pro/
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+    disk:
+      name: fittrack-pro-sqlite
+      mountPath: /var/data
+      sizeGB: 1
