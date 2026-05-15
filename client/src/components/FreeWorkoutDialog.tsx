@@ -271,12 +271,12 @@ export default function FreeWorkoutDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-1rem)] max-w-4xl flex-col overflow-y-auto border-border bg-card p-4 text-foreground sm:p-6">
+      <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-y-auto border-border bg-card p-4 text-foreground sm:max-w-[min(100vw-2rem,64rem)] sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-foreground">자유 운동 기록</DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(280px,1fr)]">
+        <div className="grid gap-4 lg:grid-cols-[minmax(240px,320px)_minmax(0,1fr)]">
           <div className="min-w-0 space-y-3">
             <div className="space-y-1.5">
               <Label className="text-sm text-muted-foreground">운동 날짜</Label>
@@ -322,7 +322,7 @@ export default function FreeWorkoutDialog({
               </div>
             </div>
 
-            <ScrollArea className="h-56 rounded-lg border border-border md:max-h-[46dvh]">
+            <ScrollArea className="h-56 rounded-lg border border-border lg:max-h-[56dvh]">
               <div className="p-2 space-y-1">
                 {filteredExercises.map((exercise) => (
                   <button
@@ -351,12 +351,12 @@ export default function FreeWorkoutDialog({
               ) : (
                 selected.map((item) => (
                   <div key={item.exercise.id} className="min-w-0 rounded-lg border border-border bg-accent/30 p-3">
-                    <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="mb-3 flex flex-wrap items-start gap-2">
                       <div className="min-w-0">
                         <div className="font-semibold text-sm truncate">{item.exercise.nameKo}</div>
                         <div className="text-xs text-muted-foreground truncate">{item.exercise.name}</div>
                       </div>
-                      <div className="rounded-full border border-primary/20 bg-primary/10 px-2 py-1 text-[10px] text-primary">
+                      <div className="ml-auto rounded-full border border-primary/20 bg-primary/10 px-2 py-1 text-[10px] text-primary">
                         {getExerciseInputMode(item.exercise) === "strength" ? "세트 기록" : getExerciseInputMode(item.exercise) === "cardio" ? "시간/거리" : "시간 기록"}
                       </div>
                       <Button
@@ -371,7 +371,7 @@ export default function FreeWorkoutDialog({
 
                     {getExerciseInputMode(item.exercise) === "strength" ? (
                       <>
-                        <div className="flex items-center gap-2 mb-3">
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
                           <Label className="w-12 shrink-0 text-xs text-muted-foreground">세트 수</Label>
                           <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-1">
                             <Button
@@ -415,7 +415,7 @@ export default function FreeWorkoutDialog({
 
                         <div className="space-y-2">
                           {item.sets.map((set) => (
-                            <div key={set.setNumber} className="grid min-w-0 grid-cols-[40px_minmax(48px,1fr)_minmax(48px,1fr)] items-center gap-2 sm:grid-cols-[48px_minmax(72px,1fr)_minmax(72px,1fr)]">
+                            <div key={set.setNumber} className="grid min-w-0 grid-cols-[42px_minmax(72px,1fr)_minmax(72px,1fr)] items-center gap-2 sm:grid-cols-[52px_minmax(100px,1fr)_minmax(100px,1fr)]">
                               <div className="text-xs text-muted-foreground sm:whitespace-nowrap">{set.setNumber}세트</div>
                               <Input
                                 inputMode="decimal"
