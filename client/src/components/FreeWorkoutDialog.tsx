@@ -1,11 +1,13 @@
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dumbbell, Plus, Search, Trash2 } from "lucide-react";
+import { CalendarDays, ChevronDown, Dumbbell, Plus, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -82,8 +84,25 @@ function estimateExerciseDuration(item: SelectedExercise) {
 
 function todayInputValue() {
   const date = new Date();
+  return toDateInputValue(date);
+}
+
+function toDateInputValue(date: Date) {
   const offset = date.getTimezoneOffset() * 60000;
   return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+}
+
+function parseDateInputValue(value: string) {
+  return new Date(`${value}T12:00:00`);
+}
+
+function formatDateLabel(value: string) {
+  return parseDateInputValue(value).toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+  });
 }
 
 function makeSets(count: number, existing: SetEntry[] = []) {
@@ -230,6 +249,7 @@ export default function FreeWorkoutDialog({
   const bodyWeightKg = weights?.[0]?.weightKg ?? 70;
   const totalCalories = selected.reduce((sum, item) => sum + estimateExerciseCalories(item, bodyWeightKg), 0);
   const totalDuration = selected.reduce((sum, item) => sum + estimateExerciseDuration(item), 0);
+  const selectedWorkoutDate = parseDateInputValue(workoutDate);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -242,12 +262,33 @@ export default function FreeWorkoutDialog({
           <div className="min-w-0 space-y-3">
             <div className="space-y-1.5">
               <Label className="text-sm text-muted-foreground">운동 날짜</Label>
-              <Input
-                type="date"
-                value={workoutDate}
-                onChange={(event) => setWorkoutDate(event.target.value)}
-                className="bg-accent border-border text-foreground"
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full justify-between border-border bg-accent px-3 font-normal text-foreground hover:bg-accent/80 hover:text-foreground"
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <CalendarDays size={15} className="shrink-0 text-muted-foreground" />
+                      <span className="truncate">{formatDateLabel(workoutDate)}</span>
+                    </span>
+                    <ChevronDown size={15} className="shrink-0 text-muted-foreground" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-auto border-border bg-popover p-0 text-popover-foreground">
+                  <Calendar
+                    mode="single"
+                    selected={selectedWorkoutDate}
+                    onSelect={(date) => {
+                      if (date) setWorkoutDate(toDateInputValue(date));
+                    }}
+                    disabled={(date) => date > new Date()}
+                    buttonVariant="ghost"
+                    className="rounded-md"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-1.5">
