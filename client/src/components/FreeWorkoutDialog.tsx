@@ -256,12 +256,12 @@ export default function FreeWorkoutDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[92vh] w-[calc(100vw-1rem)] max-w-4xl flex-col overflow-hidden border-border bg-card p-4 text-foreground sm:p-6">
+      <DialogContent className="flex h-[min(92vh,760px)] w-[calc(100vw-1rem)] max-w-4xl flex-col overflow-hidden border-border bg-card p-4 text-foreground sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-foreground">자유 운동 기록</DialogTitle>
         </DialogHeader>
 
-        <div className="grid min-h-0 flex-1 gap-4 overflow-hidden">
+        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-4 overflow-hidden md:grid-cols-[minmax(0,1fr)_minmax(280px,1fr)] md:grid-rows-1">
           <div className="min-w-0 space-y-3">
             <div className="space-y-1.5">
               <Label className="text-sm text-muted-foreground">운동 날짜</Label>
@@ -328,8 +328,8 @@ export default function FreeWorkoutDialog({
             </ScrollArea>
           </div>
 
-          <ScrollArea className="min-w-0 h-[42vh] pr-2 sm:h-[44vh]">
-            <div className="min-w-0 space-y-3">
+          <ScrollArea className="min-h-0 min-w-0 pr-2">
+            <div className="min-w-0 space-y-3 pb-6">
               {selected.length === 0 ? (
                 <div className="h-36 rounded-lg border border-dashed border-border flex items-center justify-center px-4 text-center text-sm text-muted-foreground sm:h-48">
                   위 검색에서 운동을 추가하세요
