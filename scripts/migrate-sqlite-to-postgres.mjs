@@ -118,7 +118,11 @@ async function insertRows(pool, sqlite, table) {
 }
 
 const sqlite = new DatabaseSync(sqlitePath);
-const pool = new Pool({ connectionString: databaseUrl, max: 1 });
+const pool = new Pool({
+  connectionString: databaseUrl,
+  max: 1,
+  ssl: { rejectUnauthorized: false },
+});
 
 try {
   console.log(`Using SQLite DB: ${sqlitePath}`);

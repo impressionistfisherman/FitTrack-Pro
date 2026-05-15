@@ -20,7 +20,11 @@ if (databaseUrl) {
 
   if (protocol === "postgres" || protocol === "postgresql") {
     databaseType = "postgres";
-    pgPool = new PgPool({ connectionString: databaseUrl, max: 10 });
+    pgPool = new PgPool({
+      connectionString: databaseUrl,
+      max: 10,
+      ssl: { rejectUnauthorized: false },
+    });
   } else if (protocol === "mysql" || protocol === "mysql2") {
     databaseType = "mysql";
     mysqlPool = mysql.createPool({
@@ -82,6 +86,8 @@ const pgQuotedIdentifiers = [
   "muscleMassPct",
   "targetWeightKg",
   "targetReps",
+  "userId",
+  "gifUrl",
 ] as const;
 
 function quotePostgresIdentifiers(sql: string) {
