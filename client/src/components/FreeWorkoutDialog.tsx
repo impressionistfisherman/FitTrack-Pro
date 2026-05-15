@@ -271,7 +271,7 @@ export default function FreeWorkoutDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[min(92vh,760px)] w-[calc(100vw-1rem)] max-w-4xl flex-col overflow-hidden border-border bg-card p-4 text-foreground sm:p-6">
+      <DialogContent className="flex h-[min(92dvh,760px)] w-[calc(100vw-1rem)] max-w-4xl flex-col overflow-hidden border-border bg-card p-4 text-foreground sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-foreground">자유 운동 기록</DialogTitle>
         </DialogHeader>
@@ -343,8 +343,8 @@ export default function FreeWorkoutDialog({
             </ScrollArea>
           </div>
 
-          <ScrollArea className="min-h-0 min-w-0 pr-2">
-            <div className="min-w-0 space-y-3 pb-6">
+          <ScrollArea className="h-full min-h-0 min-w-0 pr-2">
+            <div className="min-w-0 space-y-3 pb-28 md:pb-8">
               {selected.length === 0 ? (
                 <div className="h-36 rounded-lg border border-dashed border-border flex items-center justify-center px-4 text-center text-sm text-muted-foreground sm:h-48">
                   위 검색에서 운동을 추가하세요
