@@ -118,7 +118,10 @@ function AddWeightDialog({ onAdded }: { onAdded: () => void }) {
 
 export default function BodyWeightTracker() {
   const utils = trpc.useUtils();
-  const { data: weights, isLoading } = trpc.bodyWeight.list.useQuery({ limit: 30 });
+  const { data: weights, isLoading, isFetching } = trpc.bodyWeight.list.useQuery(
+    { limit: 30 },
+    { staleTime: 1000 * 60 * 5 }
+  );
   const invalidateWeightData = () => {
     utils.bodyWeight.list.invalidate();
     utils.ai.dietRecommendation.invalidate();
@@ -127,8 +130,16 @@ export default function BodyWeightTracker() {
     onSuccess: () => { toast.success("삭제되었습니다."); invalidateWeightData(); },
   });
 
-  if (isLoading) {
-    return <div className="h-40 skeleton rounded-xl" />;
+  if (isLoading && !weights) {
+    return (
+      <Card className="bg-card border-border">
+        <CardContent className="space-y-4 p-4">
+          <div className="h-9 skeleton rounded-lg" />
+          <div className="h-20 skeleton rounded-xl" />
+          <div className="h-32 skeleton rounded-xl" />
+        </CardContent>
+      </Card>
+    );
   }
 
   // 차트 데이터 (오래된 순)
@@ -149,10 +160,15 @@ export default function BodyWeightTracker() {
     <Card className="bg-card border-border">
       <CardContent className="p-5">
         {/* 헤더 */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Scale size={16} className="text-primary" />
             <span className="font-semibold text-foreground text-sm">체중 트래킹</span>
+            {isFetching && (
+              <span className="rounded-full border border-border bg-accent px-2 py-0.5 text-[10px] text-muted-foreground">
+                업데이트 중
+              </span>
+            )}
           </div>
           <AddWeightDialog onAdded={invalidateWeightData} />
         </div>
@@ -160,7 +176,7 @@ export default function BodyWeightTracker() {
         {weights && weights.length > 0 ? (
           <>
             {/* 현재 체중 */}
-            <div className="flex items-center gap-4 mb-4 p-3 bg-accent/40 rounded-xl">
+            <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl bg-accent/40 p-3">
               <div>
                 <div className="text-2xl font-bold text-foreground">{latest?.weightKg}kg</div>
                 <div className="text-xs text-muted-foreground">
@@ -173,7 +189,7 @@ export default function BodyWeightTracker() {
                   {diff > 0 ? "+" : ""}{diff}kg
                 </div>
               )}
-              <div className="ml-auto text-right">
+              <div className="ml-auto min-w-[6rem] text-right">
                 <div className="text-xs text-muted-foreground">최저 / 최고</div>
                 <div className="text-xs font-semibold text-foreground">{minWeight} / {maxWeight}kg</div>
               </div>
@@ -214,7 +230,7 @@ export default function BodyWeightTracker() {
                     </span>
                     <button
                       onClick={() => deleteWeight.mutate({ id: w.id })}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded text-muted-foreground hover:text-destructive transition-all"
+                      className="p-1 rounded text-muted-foreground transition-all hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100"
                     >
                       <Trash2 size={12} />
                     </button>

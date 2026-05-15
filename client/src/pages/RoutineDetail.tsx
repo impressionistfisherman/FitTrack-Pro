@@ -256,7 +256,7 @@ export default function RoutineDetail() {
 
   if (isLoading) {
     return (
-      <div className="p-4 lg:p-8 max-w-3xl mx-auto">
+      <div className="page-shell page-shell-narrow">
         <div className="h-8 w-32 skeleton rounded mb-6" />
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-20 skeleton rounded-xl" />)}
@@ -267,7 +267,7 @@ export default function RoutineDetail() {
 
   if (!routine) {
     return (
-      <div className="p-4 lg:p-8 text-center">
+      <div className="page-shell page-shell-narrow empty-state-panel">
         <p className="text-muted-foreground">루틴을 찾을 수 없습니다.</p>
         <Link href="/routines"><Button variant="ghost" className="mt-2">돌아가기</Button></Link>
       </div>
@@ -280,14 +280,14 @@ export default function RoutineDetail() {
   };
 
   return (
-    <div className="p-4 lg:p-8 max-w-3xl mx-auto animate-fade-in">
+    <div className="page-shell page-shell-narrow animate-fade-in">
       <Link href="/routines">
         <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground mb-4 -ml-2">
           <ArrowLeft size={16} />루틴 목록
         </Button>
       </Link>
 
-      <div className="flex items-start justify-between mb-6">
+      <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{routine.name}</h1>
           {routine.description && <p className="text-sm text-muted-foreground mt-1">{routine.description}</p>}
@@ -296,7 +296,7 @@ export default function RoutineDetail() {
             <Badge variant="outline" className="text-xs border-border text-muted-foreground">{routine.exercises?.length || 0}개 운동</Badge>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="grid w-full grid-cols-2 gap-2 sm:w-auto">
           <AddExerciseDialog
             routineId={routineId}
             currentCount={routine.exercises?.length || 0}

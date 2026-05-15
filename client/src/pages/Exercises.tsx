@@ -228,10 +228,13 @@ export default function Exercises() {
   const [showFavOnly, setShowFavOnly] = useState(false);
 
   const utils = trpc.useUtils();
-  const { data: exercises, isLoading } = trpc.exercises.list.useQuery({
-    bodyPart: bodyPart !== "all" ? bodyPart : undefined,
-    equipment: equipment !== "all" ? equipment : undefined,
-  });
+  const { data: exercises, isLoading, isFetching } = trpc.exercises.list.useQuery(
+    {
+      bodyPart: bodyPart !== "all" ? bodyPart : undefined,
+      equipment: equipment !== "all" ? equipment : undefined,
+    },
+    { staleTime: 1000 * 60 * 5 }
+  );
 
   const { data: favorites } = trpc.favorites.list.useQuery(undefined, { enabled: isAuthenticated });
   const favIds = new Set(favorites?.map((f: any) => f.ex.id) || []);
@@ -253,10 +256,10 @@ export default function Exercises() {
   const activeFilterCount = [bodyPart !== "all", equipment !== "all", difficulty !== "all"].filter(Boolean).length;
 
   return (
-    <div style={{ width: '100%', boxSizing: 'border-box', padding: '16px', overflowX: 'hidden' }}>
+    <div className="page-shell page-shell-wide animate-fade-in" style={{ overflowX: 'hidden' }}>
 
       {/* 헤더 */}
-      <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+      <div style={{ marginBottom: '14px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
         <div>
           <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--foreground)', margin: 0 }}>운동 탐색</h1>
           <p style={{ fontSize: '13px', color: 'var(--muted-foreground)', marginTop: '4px' }}>
@@ -386,12 +389,13 @@ export default function Exercises() {
       )}
 
       {/* 결과 수 */}
-      <div style={{ fontSize: '12px', color: 'var(--muted-foreground)', marginBottom: '10px' }}>
-        {isLoading ? "로딩 중..." : `${filtered?.length || 0}개 운동`}
+      <div style={{ fontSize: '12px', color: 'var(--muted-foreground)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span>{isLoading && !exercises ? "로딩 중..." : `${filtered?.length || 0}개 운동`}</span>
+        {isFetching && exercises && <span style={{ color: 'var(--primary)' }}>업데이트 중</span>}
       </div>
 
       {/* ── 세로 리스트 ── */}
-      {isLoading ? (
+      {isLoading && !exercises ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} style={{

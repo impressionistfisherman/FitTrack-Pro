@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import DietRecommendation from "@/components/DietRecommendation";
 import { trpc } from "@/lib/trpc";
-import { Bot, Dumbbell, RefreshCw, Save, Sparkles, Utensils } from "lucide-react";
+import { Dumbbell, RefreshCw, Save, Sparkles, Utensils } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -329,22 +329,11 @@ function ProgramRecommendation() {
 
 export default function AICoach() {
   return (
-    <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-4 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">AI 코치</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">운동 기록과 목표를 바탕으로 추천을 확인하세요</p>
+    <div className="page-shell space-y-4 animate-fade-in">
+      <div className="page-header">
+        <h1 className="page-title">AI 코치</h1>
+        <p className="page-description">운동 기록과 목표를 바탕으로 추천을 확인하세요</p>
       </div>
-      <Card className="bg-card border-border">
-        <CardContent className="p-5 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Bot size={20} className="text-primary" />
-          </div>
-          <div>
-            <div className="font-semibold text-foreground">맞춤 추천</div>
-            <div className="text-xs text-muted-foreground">운동 상세 페이지에서 운동별 무게 추천도 볼 수 있습니다.</div>
-          </div>
-        </CardContent>
-      </Card>
       <Tabs defaultValue="program" className="space-y-4">
         <TabsList className="grid h-11 w-full grid-cols-2 gap-1 rounded-xl border border-border bg-accent/30 p-1">
           <TabsTrigger

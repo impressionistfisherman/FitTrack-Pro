@@ -415,11 +415,14 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-4 animate-fade-in">
-        <div className="h-16 skeleton rounded-xl" />
-        <div className="h-56 skeleton rounded-2xl" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => <div key={index} className="h-28 skeleton rounded-xl" />)}
+      <div className="page-shell page-shell-wide space-y-4 animate-fade-in">
+        <div className="h-12 skeleton rounded-xl" />
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+          <div className="h-48 skeleton rounded-2xl" />
+          <div className="h-48 skeleton rounded-2xl" />
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => <div key={index} className="h-20 skeleton rounded-xl" />)}
         </div>
       </div>
     );
@@ -427,7 +430,7 @@ export default function Home() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden">
+      <div className="flex min-h-[calc(100dvh-8.5rem)] flex-col items-center justify-center px-4 relative overflow-hidden">
         {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
@@ -497,7 +500,7 @@ export default function Home() {
       : "헬린이";
 
   return (
-    <div className="p-4 lg:p-6 max-w-6xl mx-auto space-y-4 animate-fade-in">
+    <div className="page-shell page-shell-wide space-y-4 animate-fade-in">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div>

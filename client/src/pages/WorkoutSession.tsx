@@ -624,9 +624,9 @@ export default function WorkoutSession() {
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-2xl mx-auto animate-fade-in">
+    <div className="page-shell page-shell-narrow animate-fade-in">
       {/* 헤더 */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-bold text-foreground">{session?.name || "운동 세션"}</h1>
           <div className="flex items-center gap-2 mt-1">
@@ -634,7 +634,7 @@ export default function WorkoutSession() {
             <TimerDisplay startTime={startTime.current} />
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center">
           {wakeLockSupported && (
             <button onClick={toggleWakeLock}
               title={wakeLockActive ? "화면 꺼짐 방지 해제" : "화면 꺼짐 방지 켜기"}

@@ -91,9 +91,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
         <div className="p-4 border-t border-sidebar-border">
           {loading ? (
-            <div className="space-y-3">
-              <div className="h-14 skeleton rounded-xl" />
-              <div className="h-9 skeleton rounded-lg" />
+            <div className="flex items-center gap-3 rounded-xl border border-sidebar-border bg-sidebar-accent/40 p-3">
+              <div className="h-8 w-8 skeleton rounded-full" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <div className="h-3 w-24 skeleton rounded" />
+                <div className="h-2.5 w-16 skeleton rounded" />
+              </div>
             </div>
           ) : isAuthenticated && user ? (
             <div className="space-y-3">
@@ -173,7 +176,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── 메인 콘텐츠 ── */}
       <main className="app-main">
-        <div className="app-main-inner">
+        <div className={cn("app-main-inner", loading && "pointer-events-none")}>
           {children}
         </div>
       </main>

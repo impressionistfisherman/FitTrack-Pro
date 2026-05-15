@@ -42,14 +42,16 @@ export function useAuth(options?: UseAuthOptions) {
     }
   }, [logoutMutation, utils]);
 
+  useEffect(() => {
+    if (!meQuery.data) return;
+    localStorage.setItem("manus-runtime-user-info", JSON.stringify(meQuery.data));
+  }, [meQuery.data]);
+
   const state = useMemo(() => {
-    localStorage.setItem(
-      "manus-runtime-user-info",
-      JSON.stringify(meQuery.data)
-    );
+    const isInitialAuthCheck = meQuery.isPending && !meQuery.data;
     return {
       user: meQuery.data ?? null,
-      loading: meQuery.isPending || logoutMutation.isPending,
+      loading: isInitialAuthCheck || logoutMutation.isPending,
       error: meQuery.error ?? logoutMutation.error ?? null,
       isAuthenticated: Boolean(meQuery.data),
     };

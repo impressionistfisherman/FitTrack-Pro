@@ -298,11 +298,11 @@ export default function History() {
 
   if (loading) {
     return (
-      <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-4">
-        <div className="h-14 skeleton rounded-xl" />
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="h-80 skeleton rounded-xl" />
-          <div className="h-80 skeleton rounded-xl" />
+      <div className="page-shell space-y-4">
+        <div className="h-12 skeleton rounded-xl" />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="h-72 skeleton rounded-xl" />
+          <div className="h-72 skeleton rounded-xl" />
         </div>
       </div>
     );
@@ -310,7 +310,7 @@ export default function History() {
 
   if (!isAuthenticated) {
     return (
-      <div className="p-4 lg:p-8 flex flex-col items-center justify-center min-h-[60vh]">
+      <div className="page-shell flex min-h-[calc(100dvh-9rem)] flex-col items-center justify-center">
         <Calendar size={40} className="text-muted-foreground opacity-30 mb-4" />
         <h2 className="text-lg font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
         <Button className="gap-2 bg-primary text-primary-foreground" onClick={() => startLogin()}>
@@ -340,18 +340,18 @@ export default function History() {
     }));
 
   return (
-    <div className="p-4 lg:p-8 max-w-5xl mx-auto animate-fade-in">
+    <div className="page-shell animate-fade-in">
       <FreeWorkoutDialog
         open={freeWorkoutOpen}
         onOpenChange={setFreeWorkoutOpen}
         onComplete={handleFreeWorkoutComplete}
       />
 
-      <div className="mb-6">
+      <div className="page-header">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">운동 기록</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">달력과 차트로 운동 진행 상황을 확인하세요</p>
+            <h1 className="page-title">운동 기록</h1>
+            <p className="page-description">달력과 차트로 운동 진행 상황을 확인하세요</p>
           </div>
           <Button
             onClick={() => setFreeWorkoutOpen(true)}
@@ -363,7 +363,7 @@ export default function History() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid gap-4 lg:grid-cols-2">
         {/* Calendar */}
         <div className="space-y-4">
           <Card className="bg-card border-border">

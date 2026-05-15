@@ -85,16 +85,16 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-4">
-        <div className="h-24 skeleton rounded-xl" />
-        <div className="h-80 skeleton rounded-xl" />
+      <div className="page-shell page-shell-narrow space-y-4">
+        <div className="h-20 skeleton rounded-xl" />
+        <div className="h-72 skeleton rounded-xl" />
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="p-4 lg:p-8 flex flex-col items-center justify-center min-h-[60vh]">
+      <div className="page-shell flex min-h-[calc(100dvh-9rem)] flex-col items-center justify-center">
         <User size={40} className="text-muted-foreground opacity-30 mb-4" />
         <h2 className="text-lg font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
         <Button className="gap-2 bg-primary text-primary-foreground" onClick={() => startLogin()}>
@@ -115,8 +115,11 @@ export default function Profile() {
   };
 
   return (
-    <div className="p-4 lg:p-8 max-w-3xl mx-auto animate-fade-in">
-      <h1 className="text-2xl font-bold text-foreground mb-6">프로필</h1>
+    <div className="page-shell page-shell-narrow animate-fade-in">
+      <div className="page-header">
+        <h1 className="page-title">프로필</h1>
+        <p className="page-description">목표, 숙련도, 신체 정보를 관리하세요</p>
+      </div>
 
       {/* User Card */}
       <Card className="bg-gradient-to-br from-primary/10 to-card border-primary/20 mb-6">

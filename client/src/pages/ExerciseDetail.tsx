@@ -285,17 +285,19 @@ export default function ExerciseDetail() {
 
   if (isLoading) {
     return (
-      <div className="p-4 lg:p-8 max-w-4xl mx-auto space-y-4">
+      <div className="page-shell space-y-4">
         <div className="h-8 w-32 skeleton rounded" />
-        <div className="h-72 skeleton rounded-xl" />
-        <div className="h-48 skeleton rounded-xl" />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="h-64 skeleton rounded-xl" />
+          <div className="h-64 skeleton rounded-xl" />
+        </div>
       </div>
     );
   }
 
   if (!exercise) {
     return (
-      <div className="p-4 lg:p-8 text-center">
+      <div className="page-shell empty-state-panel">
         <p className="text-muted-foreground">운동을 찾을 수 없습니다.</p>
         <Link href="/exercises"><Button variant="ghost" className="mt-2">돌아가기</Button></Link>
       </div>
@@ -315,7 +317,7 @@ export default function ExerciseDetail() {
   };
 
   return (
-    <div className="p-4 lg:p-8 max-w-4xl mx-auto animate-fade-in">
+    <div className="page-shell animate-fade-in">
       {/* 뒤로가기 */}
       <Link href="/exercises">
         <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground mb-4 -ml-2">

@@ -186,10 +186,10 @@ export default function Routines() {
 
   if (loading) {
     return (
-      <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-4">
-        <div className="h-14 skeleton rounded-xl" />
+      <div className="page-shell space-y-4">
+        <div className="h-12 skeleton rounded-xl" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-40 skeleton rounded-xl" />)}
+          {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-36 skeleton rounded-xl" />)}
         </div>
       </div>
     );
@@ -197,7 +197,7 @@ export default function Routines() {
 
   if (!isAuthenticated) {
     return (
-      <div className="p-4 lg:p-8 flex flex-col items-center justify-center min-h-[60vh]">
+      <div className="page-shell flex min-h-[calc(100dvh-9rem)] flex-col items-center justify-center">
         <Dumbbell size={40} className="text-muted-foreground opacity-30 mb-4" />
         <h2 className="text-lg font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
         <p className="text-sm text-muted-foreground mb-4">루틴을 관리하려면 로그인하세요.</p>
@@ -209,11 +209,11 @@ export default function Routines() {
   }
 
   return (
-    <div className="p-4 lg:p-8 max-w-5xl mx-auto animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
+    <div className="page-shell animate-fade-in">
+      <div className="page-header flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">내 루틴</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">목표별 맞춤 운동 루틴을 관리하세요</p>
+          <h1 className="page-title">내 루틴</h1>
+          <p className="page-description">목표별 맞춤 운동 루틴을 관리하세요</p>
         </div>
         <CreateRoutineDialog onCreated={() => utils.routines.list.invalidate()} />
       </div>
