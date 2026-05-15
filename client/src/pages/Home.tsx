@@ -152,23 +152,20 @@ function StreakCard() {
 
   return (
     <Card className="bg-card border-border">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm text-muted-foreground mb-1">현재 스트릭</div>
-            <div className="flex items-baseline gap-2">
-              <div className="text-2xl font-bold text-orange-400">{streak.current}</div>
-              <div className="text-sm text-muted-foreground">일</div>
+      <CardContent className="p-3">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-orange-400/10 text-orange-400 flex items-center justify-center flex-shrink-0">
+            <Flame size={18} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-xs text-muted-foreground">현재 스트릭</div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg font-bold text-orange-400">{streak.current}</span>
+              <span className="text-xs text-muted-foreground">일</span>
+              <span className="text-[11px] text-muted-foreground">최장 {streak.longest}일</span>
             </div>
-            <div className="text-xs text-muted-foreground mt-2">최장: {streak.longest}일</div>
           </div>
-          <Flame size={34} className="text-orange-400" />
         </div>
-        {streak.lastWorkoutDate && (
-          <div className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border">
-            마지막 운동: {new Date(streak.lastWorkoutDate).toLocaleDateString("ko-KR")}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
@@ -201,20 +198,20 @@ function BodyWeightSummaryCard() {
   return (
     <Link href="/body-weight">
       <Card className="bg-card border-border hover:border-primary/30 transition-all duration-200 cursor-pointer">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
+        <CardContent className="p-3">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Scale size={16} className="text-primary" />
-              <h3 className="font-semibold text-foreground">체중 추적</h3>
+              <h3 className="font-semibold text-foreground text-sm">체중 추적</h3>
             </div>
             <ChevronRight size={14} className="text-muted-foreground" />
           </div>
 
           {latest ? (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="flex items-end justify-between gap-3">
                 <div>
-                  <div className="text-2xl font-bold text-foreground">
+                  <div className="text-xl font-bold text-foreground">
                     {latest.weightKg}
                     <span className="ml-1 text-sm font-medium text-muted-foreground">kg</span>
                   </div>
@@ -236,7 +233,7 @@ function BodyWeightSummaryCard() {
               </div>
 
               {targetWeight ? (
-                <div className="rounded-xl bg-accent/35 p-2.5">
+                <div className="rounded-xl bg-accent/35 p-2">
                   <div className="mb-1 flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">목표 체중</span>
                     <span className="font-semibold text-foreground">{targetWeight}kg</span>
@@ -246,13 +243,13 @@ function BodyWeightSummaryCard() {
                   </div>
                 </div>
               ) : (
-                <div className="rounded-xl bg-accent/35 p-2.5 text-xs text-muted-foreground">
+                <div className="rounded-xl bg-accent/35 p-2 text-xs text-muted-foreground">
                   프로필에서 목표 체중을 설정하면 진행 상황이 함께 표시됩니다.
                 </div>
               )}
             </div>
           ) : (
-            <div className="py-4 text-center">
+            <div className="py-2 text-center">
               <Scale size={28} className="mx-auto mb-2 text-muted-foreground opacity-40" />
               <p className="text-sm text-muted-foreground">체중 기록이 없습니다</p>
               <p className="text-xs text-muted-foreground mt-1">오늘 체중을 기록해보세요.</p>
@@ -388,11 +385,10 @@ function FeatureCards() {
     { href: "/exercises", icon: Dumbbell, label: "운동 탐색", desc: "구기종목 포함 운동 DB", color: "text-primary bg-primary/10" },
     { href: "/routines", icon: Activity, label: "루틴 관리", desc: "맞춤 루틴 생성", color: "text-blue-400 bg-blue-400/10" },
     { href: "/history", icon: Calendar, label: "운동 기록", desc: "달력 & 차트 분석", color: "text-orange-400 bg-orange-400/10" },
-    { href: "/ai-coach", icon: Bot, label: "AI 코치", desc: "맞춤 추천 & 분석", color: "text-purple-400 bg-purple-400/10" },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid sm:grid-cols-3 gap-3">
       {features.map((f) => (
         <Link key={f.href} href={f.href} className="block">
           <Card className="bg-card border-border hover:border-primary/30 transition-all duration-200 cursor-pointer group">
@@ -520,7 +516,7 @@ export default function Home() {
         <QuickStartCard />
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         {stats && (
           <div className="grid grid-cols-2 gap-3">
             <StatCard icon={Trophy} label="총 운동" value={`${stats.totalSessions}회`} color="bg-primary/10 text-primary" />
@@ -529,9 +525,12 @@ export default function Home() {
             <StatCard icon={Calendar} label="운동 시간" value={`${Math.round(stats.totalDurationMinutes / 60)}h`} color="bg-purple-400/10 text-purple-400" />
           </div>
         )}
-        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2">
-          <StreakCard />
-          <BodyWeightSummaryCard />
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+            <StreakCard />
+            <BodyWeightSummaryCard />
+          </div>
+          <MonthlyStatsCard />
         </div>
       </div>
 
@@ -558,7 +557,6 @@ export default function Home() {
         </div>
         <div className="space-y-4">
           <FeatureCards />
-          <MonthlyStatsCard />
         </div>
       </div>
     </div>
