@@ -42,6 +42,7 @@ export default function Profile() {
   const { data: goals } = trpc.goals.list.useQuery(undefined, { enabled: isAuthenticated });
   const { data: preferences } = trpc.preferences.get.useQuery(undefined, { enabled: isAuthenticated });
   const { data: weights } = trpc.bodyWeight.list.useQuery({ limit: 30 }, { enabled: isAuthenticated });
+  const goalInfo = goal as any | null | undefined;
   const [selectedGoal, setSelectedGoal] = useState<string>("");
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [experienceLevel, setExperienceLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
@@ -64,12 +65,12 @@ export default function Profile() {
       }
       if (goal?.weeklyWorkouts) setWeeklyWorkouts(String(goal.weeklyWorkouts));
       if (goal?.targetWeight) setTargetWeight(String(goal.targetWeight));
-      if ((goal as any).heightCm) setHeightCm(String((goal as any).heightCm));
-      if ((goal as any).gender) setGender((goal as any).gender);
-      if ((goal as any).birthYear) setBirthYear(String((goal as any).birthYear));
+      if (goalInfo?.heightCm) setHeightCm(String(goalInfo.heightCm));
+      if (goalInfo?.gender) setGender(goalInfo.gender);
+      if (goalInfo?.birthYear) setBirthYear(String(goalInfo.birthYear));
       if ((preferences as any)?.experienceLevel) setExperienceLevel((preferences as any).experienceLevel);
     }
-  }, [goal, goals, preferences, initialized]);
+  }, [goal, goalInfo, goals, preferences, initialized]);
 
   const setGoalMutation = trpc.goals.set.useMutation({
     onSuccess: () => {
@@ -156,9 +157,9 @@ export default function Profile() {
 
       {/* ── 신체 정보 대시보드 ── */}
       {(() => {
-        const h = (goal as any)?.heightCm;
-        const g = (goal as any)?.gender;
-        const by = (goal as any)?.birthYear;
+        const h = goalInfo?.heightCm;
+        const g = goalInfo?.gender;
+        const by = goalInfo?.birthYear;
         const age = by ? new Date().getFullYear() - by : null;
         const latestW = weights?.[0]?.weightKg;
         const bmi = h && latestW ? Math.round((latestW / ((h / 100) ** 2)) * 10) / 10 : null;
@@ -168,7 +169,7 @@ export default function Profile() {
           : bmi < 25 ? { label: "과체중", color: "text-yellow-400" }
           : { label: "비만", color: "text-red-400" }
           : null;
-        const targetW = (goal as any)?.targetWeight;
+        const targetW = goalInfo?.targetWeight;
         const weightDiff = latestW && targetW ? Math.round((latestW - targetW) * 10) / 10 : null;
 
         // 체중 차트 데이터 (오래된 순)
@@ -501,7 +502,7 @@ export default function Profile() {
           <div className="border-t border-border pt-4 mb-4">
             <div className="flex items-center gap-2 mb-3">
               <Ruler size={14} className="text-primary" />
-              <span className="text-sm font-semibold text-foreground">신체 정보 <span className="text-xs text-muted-foreground font-normal">(AI 식단 추천 정확도 향상)</span></span>
+              <span className="text-sm font-semibold text-foreground">신체 정보 <span className="text-xs text-muted-foreground font-normal">(AI 운동/식단 추천 정확도 향상)</span></span>
             </div>
             <div className="grid grid-cols-2 gap-3">
               {/* 신장 */}
