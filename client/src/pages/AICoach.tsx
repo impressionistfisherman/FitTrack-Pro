@@ -1,10 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import DietRecommendation from "@/components/DietRecommendation";
 import { trpc } from "@/lib/trpc";
-import { Bot, Dumbbell, RefreshCw } from "lucide-react";
+import { Bot, Dumbbell, RefreshCw, Save, Utensils } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 
 const equipmentOptions = [
   { value: "bodyweight", label: "맨몸" },
@@ -18,8 +20,20 @@ const equipmentOptions = [
 function ProgramRecommendation() {
   const [location, setLocation] = useState<"gym" | "home" | "outdoor">("gym");
   const [sessionDuration, setSessionDuration] = useState("60");
+  const [daysPerWeek, setDaysPerWeek] = useState("3");
   const [equipment, setEquipment] = useState<string[]>(["dumbbell", "barbell", "machine", "cable"]);
+  const utils = trpc.useUtils();
   const programMutation = trpc.ai.programRecommendation.useMutation();
+  const saveProgram = trpc.ai.saveProgramAsRoutines.useMutation({
+    onSuccess: (result) => {
+      const totalExercises = result.created.reduce((sum: number, item: any) => sum + item.addedCount, 0);
+      toast.success(`${result.created.length}개 루틴을 저장했습니다.`, {
+        description: totalExercises > 0 ? `${totalExercises}개 운동이 루틴에 연결되었습니다.` : "운동명 매칭이 안 된 항목은 비워둔 루틴으로 저장되었습니다.",
+      });
+      utils.routines.list.invalidate();
+    },
+    onError: () => toast.error("루틴 저장에 실패했습니다."),
+  });
   const program = programMutation.data?.program;
 
   const toggleEquipment = (value: string) => {
@@ -27,11 +41,21 @@ function ProgramRecommendation() {
   };
 
   const requestProgram = () => {
+    if (location !== "outdoor" && equipment.length === 0) {
+      toast.error("사용 가능한 기구를 하나 이상 선택하세요.");
+      return;
+    }
     programMutation.mutate({
       location,
       equipment: location === "gym" ? equipment : location === "home" ? equipment : ["bodyweight"],
       sessionDuration: Number(sessionDuration),
+      daysPerWeek: Number(daysPerWeek),
     });
+  };
+
+  const saveAsRoutines = () => {
+    if (!program) return;
+    saveProgram.mutate({ program, daysPerWeek: Number(daysPerWeek) });
   };
 
   return (
@@ -49,7 +73,7 @@ function ProgramRecommendation() {
 
       <Card className="bg-card border-border">
         <CardContent className="p-4 space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">운동 장소</div>
               <Select value={location} onValueChange={(value) => setLocation(value as any)}>
@@ -72,6 +96,19 @@ function ProgramRecommendation() {
                 <SelectContent className="bg-card border-border">
                   {[30, 45, 60, 75, 90, 120].map((minutes) => (
                     <SelectItem key={minutes} value={String(minutes)}>{minutes}분</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <div className="mb-1.5 text-xs text-muted-foreground">주 운동일 수</div>
+              <Select value={daysPerWeek} onValueChange={setDaysPerWeek}>
+                <SelectTrigger className="bg-accent border-border text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  {[1, 2, 3, 4, 5, 6, 7].map((days) => (
+                    <SelectItem key={days} value={String(days)}>{days}일</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -106,6 +143,23 @@ function ProgramRecommendation() {
 
       {program && (
         <div className="space-y-3">
+          <Card className="bg-card border-border">
+            <CardContent className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="font-semibold text-foreground">추천 루틴 저장</div>
+                <div className="text-xs text-muted-foreground">요일별 추천 운동을 루틴 목록에 저장합니다.</div>
+              </div>
+              <Button
+                size="sm"
+                className="gap-2 bg-primary text-primary-foreground"
+                onClick={saveAsRoutines}
+                disabled={saveProgram.isPending}
+              >
+                <Save size={13} />
+                {saveProgram.isPending ? "저장 중" : "루틴으로 저장"}
+              </Button>
+            </CardContent>
+          </Card>
           {program.weeklyPlan?.map((day: any, index: number) => (
             <Card key={`${day.day}-${index}`} className="bg-card border-border">
               <CardContent className="p-4">
@@ -154,8 +208,24 @@ export default function AICoach() {
           </div>
         </CardContent>
       </Card>
-      <ProgramRecommendation />
-      <DietRecommendation />
+      <Tabs defaultValue="program" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2 bg-card border border-border">
+          <TabsTrigger value="program" className="gap-2 text-xs sm:text-sm">
+            <Dumbbell size={14} />
+            맞춤 운동 추천
+          </TabsTrigger>
+          <TabsTrigger value="diet" className="gap-2 text-xs sm:text-sm">
+            <Utensils size={14} />
+            맞춤 식단 추천
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="program" className="space-y-4">
+          <ProgramRecommendation />
+        </TabsContent>
+        <TabsContent value="diet" className="space-y-4">
+          <DietRecommendation />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

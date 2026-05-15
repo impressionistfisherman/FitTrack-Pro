@@ -43,6 +43,62 @@ import {
   upsertUserGoal,
 } from "./db";
 
+const equipmentLabels: Record<string, string> = {
+  bodyweight: "맨몸",
+  dumbbell: "덤벨",
+  barbell: "바벨",
+  machine: "머신",
+  cable: "케이블",
+  resistance_band: "밴드",
+  kettlebell: "케틀벨",
+  none: "기구 없음",
+};
+
+const weekdayOrder: Record<string, number> = {
+  월요일: 1,
+  화요일: 2,
+  수요일: 3,
+  목요일: 4,
+  금요일: 5,
+  토요일: 6,
+  일요일: 7,
+};
+
+function normalizeExerciseName(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\b\d+\s*(세트|set|sets|회|rep|reps|분|min|minutes|kg)\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function scoreExerciseMatch(query: string, exercise: any) {
+  const target = normalizeExerciseName(query);
+  const names = [exercise.nameKo, exercise.name].filter(Boolean).map((item) => normalizeExerciseName(String(item)));
+  let best = 0;
+  for (const name of names) {
+    if (!name) continue;
+    if (target === name) best = Math.max(best, 100);
+    if (target.includes(name) || name.includes(target)) best = Math.max(best, 80);
+    const targetWords = new Set(target.split(" ").filter((word) => word.length > 1));
+    const nameWords = name.split(" ").filter((word) => word.length > 1);
+    const overlap = nameWords.filter((word) => targetWords.has(word)).length;
+    if (overlap > 0) best = Math.max(best, 30 + overlap * 12);
+  }
+  return best;
+}
+
+async function findExerciseForRoutine(exerciseText: string) {
+  const exercises = await getExercises({ search: exerciseText });
+  const allCandidates = exercises.length ? exercises : await getExercises();
+  const best = allCandidates
+    .map((exercise: any) => ({ exercise, score: scoreExerciseMatch(exerciseText, exercise) }))
+    .sort((a, b) => b.score - a.score)[0];
+  return best && best.score >= 35 ? best.exercise : null;
+}
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -533,6 +589,7 @@ ${historyText}
         location: z.enum(["gym", "home", "outdoor"]).default("gym"),
         equipment: z.array(z.string()).default([]),
         sessionDuration: z.number().int().min(20).max(180).default(60),
+        daysPerWeek: z.number().int().min(1).max(7).default(3),
       }).optional())
       .mutation(async ({ ctx, input }) => {
       const goal = await getUserGoal(ctx.user.id);
@@ -552,7 +609,7 @@ ${historyText}
         : "운동 장소: 헬스장";
 
       const equipmentText = input?.equipment && input.equipment.length > 0
-        ? `사용 가능한 기구: ${input.equipment.join(", ")}`
+        ? `사용 가능한 기구: ${input.equipment.map((item) => equipmentLabels[item] || item).join(", ")}`
         : input?.location === "home"
           ? "사용 가능한 기구: 맨몸 운동만 가능 (기구 없음)"
           : "사용 가능한 기구: 헬스장 전체 기구 (바벨, 덤벨, 머신, 케이블 등)";
@@ -561,10 +618,13 @@ ${historyText}
         ? `1회 운동 가능 시간: ${input.sessionDuration}분`
         : "1회 운동 가능 시간: 60분";
 
+      const daysPerWeek = input?.daysPerWeek ?? goal?.weeklyWorkouts ?? goals[0]?.weeklyWorkouts ?? 3;
+      const weeklyFrequencyText = `주 운동일 수: ${daysPerWeek}일`;
+
       const goalText = goals.length
-        ? `목표: ${goals.map((item: any) => item.goal).join(", ")}, 주 ${goal?.weeklyWorkouts ?? goals[0]?.weeklyWorkouts ?? 3}회 운동`
+        ? `목표: ${goals.map((item: any) => item.goal).join(", ")}, 주 ${daysPerWeek}회 운동`
         : goal
-          ? `목표: ${goal.goal}, 주 ${goal.weeklyWorkouts}회 운동`
+          ? `목표: ${goal.goal}, 주 ${daysPerWeek}회 운동`
         : "목표 미설정 (일반 건강 관리)";
 
       const statsText = stats
@@ -577,8 +637,11 @@ ${historyText}
             role: "system",
             content: `당신은 전문 퍼스널 트레이너입니다. 사용자의 목표, 운동 환경, 가용 기구, 운동 시간을 반드시 고려하여 맞춤 운동 프로그램을 추천해주세요.
             - 지정된 기구만 사용하는 운동으로 구성하세요.
+            - weeklyPlan은 반드시 사용자가 선택한 주 운동일 수와 같은 개수로 구성하세요.
             - 각 운동일의 총 시간이 지정된 운동 가능 시간을 초과하지 않도록 하세요.
             - 홈트레이닝이면 맨몸 운동 위주로, 헬스장이면 기구 운동을 포함하세요.
+            - 머신과 케이블은 서로 다른 기구입니다. 케이블이 선택되지 않았으면 케이블 운동을 넣지 말고, 머신이 선택되지 않았으면 머신 운동을 넣지 마세요.
+            - 운동명은 한국어 운동명을 우선 사용하고, 필요하면 괄호 안에 영어명을 보조로 적으세요.
             응답은 반드시 JSON 형식으로 해주세요.`,
           },
           {
@@ -593,6 +656,7 @@ ${statsText}
 ${locationText}
 ${equipmentText}
 ${durationText}
+${weeklyFrequencyText}
 
 위 정보를 바탕으로 이번 주 운동 프로그램을 추천해주세요.
 반드시 지정된 기구와 운동 시간 조건에 맞는 운동만 포함하고, 각 운동일에 대한 구체적인 운동 목록과 조언을 포함해주세요.`,
@@ -646,6 +710,53 @@ ${durationText}
         stats,
       };
     }),
+
+    saveProgramAsRoutines: protectedProcedure
+      .input(z.object({
+        daysPerWeek: z.number().int().min(1).max(7).default(3),
+        program: z.object({
+          weeklyPlan: z.array(z.object({
+            day: z.string(),
+            focus: z.string(),
+            duration: z.string().optional(),
+            exercises: z.array(z.string()),
+          })).min(1).max(7),
+          generalAdvice: z.string().optional(),
+        }),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const goal = await getUserGoal(ctx.user.id);
+        const created: any[] = [];
+
+        const sortedDays = [...input.program.weeklyPlan].sort((a, b) => {
+          return (weekdayOrder[a.day] ?? 99) - (weekdayOrder[b.day] ?? 99);
+        });
+
+        for (const day of sortedDays) {
+          const routineId = await createRoutine(ctx.user.id, {
+            name: `AI ${day.day} ${day.focus}`.trim(),
+            description: [
+              `${input.daysPerWeek}일 루틴 중 ${day.day} 운동`,
+              day.duration ? `예상 시간: ${day.duration}` : null,
+              input.program.generalAdvice ? `AI 조언: ${input.program.generalAdvice}` : null,
+            ].filter(Boolean).join("\n"),
+            goal: goal?.goal ?? "general",
+            daysPerWeek: 1,
+          });
+
+          let addedCount = 0;
+          for (const [index, exerciseText] of day.exercises.entries()) {
+            const exercise = await findExerciseForRoutine(exerciseText);
+            if (!exercise?.id) continue;
+            await addExerciseToRoutine(routineId, exercise.id, index + 1, 3, 10, 90);
+            addedCount += 1;
+          }
+
+          created.push({ routineId, name: `AI ${day.day} ${day.focus}`.trim(), addedCount });
+        }
+
+        return { success: true, created };
+      }),
 
     dietRecommendation: protectedProcedure.query(async ({ ctx }) => {
       const goal = await getUserGoal(ctx.user.id);
