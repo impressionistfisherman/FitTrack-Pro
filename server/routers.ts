@@ -14,6 +14,7 @@ import {
   createWorkoutSession,
   deleteBodyWeight,
   deleteRoutine,
+  deleteWorkoutSession,
   deleteWorkoutLog,
   getBodyWeights,
   getExerciseById,
@@ -524,6 +525,15 @@ export const appRouter = router({
         const session = await getWorkoutSessionById(input.sessionId);
         if (!session || session.userId !== ctx.user.id) throw new Error("Not found");
         await completeWorkoutSession(input.sessionId, input.durationMinutes, input.notes);
+        return { success: true };
+      }),
+
+    deleteSession: protectedProcedure
+      .input(z.object({ sessionId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const session = await getWorkoutSessionById(input.sessionId);
+        if (!session || session.userId !== ctx.user.id) throw new Error("Not found");
+        await deleteWorkoutSession(input.sessionId);
         return { success: true };
       }),
 

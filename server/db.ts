@@ -879,6 +879,11 @@ export async function completeWorkoutSession(sessionId: number, durationMinutes:
   );
 }
 
+export async function deleteWorkoutSession(sessionId: number): Promise<void> {
+  await run("DELETE FROM workout_logs WHERE sessionId = ?", sessionId);
+  await run("DELETE FROM workout_sessions WHERE id = ?", sessionId);
+}
+
 export async function addWorkoutLog(input: Row): Promise<any> {
   const result = await run(
     `INSERT INTO workout_logs

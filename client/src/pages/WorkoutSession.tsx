@@ -483,6 +483,13 @@ export default function WorkoutSession() {
     },
     onError: () => toast.error("완료 처리에 실패했습니다."),
   });
+  const deleteSession = trpc.workout.deleteSession.useMutation({
+    onSuccess: () => {
+      toast.info("완료한 세트가 없어 운동 기록을 저장하지 않았습니다.");
+      window.location.href = "/history";
+    },
+    onError: () => toast.error("세션 종료에 실패했습니다."),
+  });
 
   // PR 데이터 도착 시 다이얼로그 열기
   useEffect(() => {
@@ -598,6 +605,10 @@ export default function WorkoutSession() {
   const handleFinish = async () => {
     const durationMinutes = Math.max(1, Math.floor((Date.now() - startTime.current.getTime()) / 60000));
     setFinishedDuration(durationMinutes);
+    if (completedSets === 0) {
+      deleteSession.mutate({ sessionId: sid });
+      return;
+    }
     if (saveAsRoutine) {
       await saveSessionAsRoutine.mutateAsync({
         sessionId: sid,
@@ -651,8 +662,8 @@ export default function WorkoutSession() {
             <span className="hidden sm:inline">1RM</span>
           </Button>
           <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-            onClick={() => setShowFinish(true)} disabled={completedSets === 0}>
-            <Save size={16} />완료
+            onClick={() => setShowFinish(true)}>
+            <Save size={16} />종료
           </Button>
         </div>
       </div>
@@ -748,7 +759,7 @@ export default function WorkoutSession() {
       {/* 완료 다이얼로그 */}
       <Dialog open={showFinish} onOpenChange={setShowFinish}>
         <DialogContent className="bg-card border-border text-foreground max-w-sm">
-          <DialogHeader><DialogTitle>{sessionCompleted ? "운동 결과" : "운동 완료"}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{sessionCompleted ? "운동 결과" : completedSets === 0 ? "운동 종료" : "운동 완료"}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="text-center p-3 bg-primary/10 rounded-xl">
@@ -774,6 +785,11 @@ export default function WorkoutSession() {
 
             {!sessionCompleted ? (
               <div className="space-y-3">
+                {completedSets === 0 && (
+                  <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
+                    완료한 세트가 없습니다. 종료하면 이 세션은 기록에 저장되지 않습니다.
+                  </div>
+                )}
                 <div>
                   <label className="text-xs text-muted-foreground mb-1.5 block">메모 (선택)</label>
                   <Input placeholder="오늘 운동 메모..." value={notes} onChange={e => setNotes(e.target.value)}
@@ -784,6 +800,7 @@ export default function WorkoutSession() {
                     type="checkbox"
                     checked={saveAsRoutine}
                     onChange={(e) => setSaveAsRoutine(e.target.checked)}
+                    disabled={completedSets === 0}
                     className="mt-1"
                   />
                   <div className="flex-1">
@@ -807,9 +824,13 @@ export default function WorkoutSession() {
                   <Button
                     className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={handleFinish}
-                    disabled={completeSession.isPending || saveSessionAsRoutine.isPending}
+                    disabled={completeSession.isPending || saveSessionAsRoutine.isPending || deleteSession.isPending}
                   >
-                    {completeSession.isPending || saveSessionAsRoutine.isPending ? "저장 중..." : "운동 종료"}
+                    {completeSession.isPending || saveSessionAsRoutine.isPending || deleteSession.isPending
+                      ? "처리 중..."
+                      : completedSets === 0
+                        ? "저장 없이 종료"
+                        : "운동 종료"}
                   </Button>
                 </div>
                 <Button

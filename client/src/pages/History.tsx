@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import BodyWeightTracker from "@/components/BodyWeightTracker";
 import FreeWorkoutDialog from "@/components/FreeWorkoutDialog";
 import { cn } from "@/lib/utils";
-import { Activity, Calendar, ChevronLeft, ChevronRight, Clock, Dumbbell, LogIn, TrendingUp, Plus } from "lucide-react";
+import { Activity, Calendar, ChevronLeft, ChevronRight, Clock, Dumbbell, LogIn, TrendingUp, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar
 } from "recharts";
+import { toast } from "sonner";
 
 const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const MONTHS = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
@@ -165,7 +166,7 @@ function ExerciseProgressItem({ exercise, maxWeight, maxReps, goalData }: any) {
   );
 }
 
-function SessionCard({ session }: { session: any }) {
+function SessionCard({ session, onDelete }: { session: any; onDelete: (sessionId: number) => void }) {
   const exerciseCount = new Set(session.logs.map((l: any) => l.log.exerciseId)).size;
   const strengthLogs = session.logs.filter((l: any) => l.log.reps || l.log.weightKg);
   const timedLogs = session.logs.filter((l: any) => l.log.durationSeconds);
@@ -183,17 +184,28 @@ function SessionCard({ session }: { session: any }) {
   return (
     <Card className="bg-card border-border hover:border-primary/20 transition-colors">
       <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start justify-between gap-3 mb-3">
           <div>
             <div className="font-semibold text-foreground text-sm">{session.name || "운동 세션"}</div>
             <div className="text-xs text-muted-foreground mt-0.5">
               {new Date(session.startedAt).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric", weekday: "short" })}
             </div>
           </div>
-          <Badge variant="outline" className="text-xs border-border text-muted-foreground">
-            <Clock size={9} className="mr-1" />
-            {session.durationMinutes}분
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs border-border text-muted-foreground">
+              <Clock size={9} className="mr-1" />
+              {session.durationMinutes}분
+            </Badge>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => onDelete(session.id)}
+              title="운동 기록 삭제"
+            >
+              <Trash2 size={14} />
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-2 text-center">
@@ -254,6 +266,20 @@ export default function History() {
     { enabled: isAuthenticated && !!chartExerciseId }
   );
   const utils = trpc.useUtils();
+  const deleteSession = trpc.workout.deleteSession.useMutation({
+    onSuccess: () => {
+      toast.success("운동 기록을 삭제했습니다.");
+      utils.history.recentWorkouts.invalidate();
+      utils.history.calendar.invalidate();
+      utils.weeklyGoals.get.invalidate();
+    },
+    onError: () => toast.error("운동 기록 삭제에 실패했습니다."),
+  });
+
+  const handleDeleteSession = (sessionId: number) => {
+    if (!window.confirm("이 운동 기록을 삭제할까요? 삭제하면 세트 기록과 주간 목표 반영도 함께 사라집니다.")) return;
+    deleteSession.mutate({ sessionId });
+  };
 
   const handleFreeWorkoutComplete = () => {
     utils.history.recentWorkouts.invalidate();
@@ -432,7 +458,7 @@ export default function History() {
             <div className="space-y-3">
               {recentWorkouts && recentWorkouts.length > 0 ? (
                 recentWorkouts.slice(0, 5).map((session: any) => (
-                  <SessionCard key={session.id} session={session} />
+                  <SessionCard key={session.id} session={session} onDelete={handleDeleteSession} />
                 ))
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
