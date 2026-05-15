@@ -436,14 +436,25 @@ type SeedExercise = {
 
 let supplementalExercisesReady = false;
 
+function normalizeExerciseSeedKey(value: unknown): string {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/\(multiple response\)|\(single response\)|- medium grip/g, "")
+    .replace(/rope jumping/g, "jump rope")
+    .replace(/triceps/g, "tricep")
+    .replace(/[^a-z0-9가-힣]+/g, "");
+}
+
 async function ensureSupplementalExercises() {
   if (supplementalExercisesReady) return;
 
   const existingRows = await all("SELECT name, nameKo FROM exercises");
   const existingKeys = new Set<string>();
   for (const row of existingRows) {
-    if (typeof row.name === "string") existingKeys.add(row.name.trim().toLowerCase());
-    if (typeof row.nameKo === "string") existingKeys.add(row.nameKo.trim().toLowerCase());
+    const nameKey = normalizeExerciseSeedKey(row.name);
+    const nameKoKey = normalizeExerciseSeedKey(row.nameKo);
+    if (nameKey) existingKeys.add(nameKey);
+    if (nameKoKey) existingKeys.add(nameKoKey);
   }
 
   const seedExercises: SeedExercise[] = [
@@ -452,8 +463,8 @@ async function ensureSupplementalExercises() {
   ];
 
   for (const exercise of seedExercises) {
-    const nameKey = typeof exercise.name === "string" ? exercise.name.trim().toLowerCase() : "";
-    const nameKoKey = typeof exercise.nameKo === "string" ? exercise.nameKo.trim().toLowerCase() : "";
+    const nameKey = normalizeExerciseSeedKey(exercise.name);
+    const nameKoKey = normalizeExerciseSeedKey(exercise.nameKo);
     if ((nameKey && existingKeys.has(nameKey)) || (nameKoKey && existingKeys.has(nameKoKey))) continue;
 
     await run(

@@ -2216,7 +2216,7 @@
   {
     "id": 240124,
     "name": "Advanced Kettlebell Windmill",
-    "nameKo": "고급 케틀벨 윈드밀",
+    "nameKo": "어드밴스드 케틀벨 윈드밀",
     "bodyPart": "abs",
     "equipment": "kettlebell",
     "category": "hypertrophy",
@@ -2252,7 +2252,7 @@
   {
     "id": 240126,
     "name": "All Fours Quad Stretch",
-    "nameKo": "올 포 쿼드 스트레치",
+    "nameKo": "올포 쿼드 스트레치",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -2270,7 +2270,7 @@
   {
     "id": 240127,
     "name": "Alternate Hammer Curl",
-    "nameKo": "대체 해머 컬",
+    "nameKo": "얼터네이트 해머 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -2288,7 +2288,7 @@
   {
     "id": 240128,
     "name": "Alternate Heel Touchers",
-    "nameKo": "대체 힐 터치처",
+    "nameKo": "얼터네이트 힐 터치",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "hypertrophy",
@@ -2306,7 +2306,7 @@
   {
     "id": 240129,
     "name": "Alternate Incline Dumbbell Curl",
-    "nameKo": "대체 인클라인 덤벨 컬",
+    "nameKo": "얼터네이트 인클라인 덤벨 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -2324,7 +2324,7 @@
   {
     "id": 240130,
     "name": "Alternate Leg Diagonal Bound",
-    "nameKo": "대체 다리 대각선 경계",
+    "nameKo": "얼터네이트 레그 다이아고널 바운드",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -2342,7 +2342,7 @@
   {
     "id": 240131,
     "name": "Alternating Cable Shoulder Press",
-    "nameKo": "교대 케이블 숄더 프레스",
+    "nameKo": "얼터네이팅 케이블 숄더 프레스",
     "bodyPart": "shoulders",
     "equipment": "cable",
     "category": "strength",
@@ -2360,7 +2360,7 @@
   {
     "id": 240132,
     "name": "Alternating Deltoid Raise",
-    "nameKo": "삼각근 교대로 올리기",
+    "nameKo": "얼터네이팅 델토이드 레이즈",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -2378,7 +2378,7 @@
   {
     "id": 240133,
     "name": "Alternating Floor Press",
-    "nameKo": "교대 플로어 프레스",
+    "nameKo": "얼터네이팅 플로어 프레스",
     "bodyPart": "chest",
     "equipment": "kettlebell",
     "category": "strength",
@@ -2396,7 +2396,7 @@
   {
     "id": 240134,
     "name": "Alternating Hang Clean",
-    "nameKo": "번갈아 걸림 청소",
+    "nameKo": "얼터네이팅 행 클린",
     "bodyPart": "legs",
     "equipment": "kettlebell",
     "category": "strength",
@@ -2414,7 +2414,7 @@
   {
     "id": 240135,
     "name": "Alternating Kettlebell Press",
-    "nameKo": "케틀벨 프레스 교대",
+    "nameKo": "얼터네이팅 케틀벨 프레스",
     "bodyPart": "shoulders",
     "equipment": "kettlebell",
     "category": "strength",
@@ -2432,7 +2432,7 @@
   {
     "id": 240136,
     "name": "Alternating Kettlebell Row",
-    "nameKo": "케틀벨 로우 교대",
+    "nameKo": "얼터네이팅 케틀벨 로우",
     "bodyPart": "back",
     "equipment": "kettlebell",
     "category": "hypertrophy",
@@ -2450,7 +2450,7 @@
   {
     "id": 240137,
     "name": "Alternating Renegade Row",
-    "nameKo": "대체 레니게이드 행",
+    "nameKo": "얼터네이팅 레니게이드 로우",
     "bodyPart": "back",
     "equipment": "kettlebell",
     "category": "strength",
@@ -2468,7 +2468,7 @@
   {
     "id": 240138,
     "name": "Ankle Circles",
-    "nameKo": "발목 서클",
+    "nameKo": "앵클 서클",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -2486,7 +2486,7 @@
   {
     "id": 240139,
     "name": "Ankle On The Knee",
-    "nameKo": "무릎에 발목",
+    "nameKo": "앵클 온 더 니",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -2504,7 +2504,7 @@
   {
     "id": 240140,
     "name": "Anterior Tibialis-SMR",
-    "nameKo": "전경골근 폼롤링",
+    "nameKo": "앤티리어 티비알리스 폼롤링",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -2522,7 +2522,7 @@
   {
     "id": 240141,
     "name": "Anti-Gravity Press",
-    "nameKo": "반중력 프레스",
+    "nameKo": "안티 그래비티 프레스",
     "bodyPart": "shoulders",
     "equipment": "barbell",
     "category": "strength",
@@ -2540,7 +2540,7 @@
   {
     "id": 240142,
     "name": "Arm Circles",
-    "nameKo": "팔 서클",
+    "nameKo": "암 서클",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -2666,7 +2666,7 @@
   {
     "id": 240149,
     "name": "Backward Drag",
-    "nameKo": "뒤로 끌기",
+    "nameKo": "백워드 드래그",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",
@@ -2684,7 +2684,7 @@
   {
     "id": 240150,
     "name": "Backward Medicine Ball Throw",
-    "nameKo": "뒤로 메디신볼 던지기",
+    "nameKo": "백워드 메디신 볼 스로우",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -2756,7 +2756,7 @@
   {
     "id": 240154,
     "name": "Band Good Morning",
-    "nameKo": "밴드 굿모닝",
+    "nameKo": "밴드 굿 모닝",
     "bodyPart": "full_body",
     "equipment": "resistance_band",
     "category": "strength",
@@ -2774,7 +2774,7 @@
   {
     "id": 240155,
     "name": "Band Good Morning (Pull Through)",
-    "nameKo": "밴드 굿모닝 (풀스루)",
+    "nameKo": "밴드 굿 모닝 풀 스루",
     "bodyPart": "full_body",
     "equipment": "resistance_band",
     "category": "strength",
@@ -2792,7 +2792,7 @@
   {
     "id": 240156,
     "name": "Band Hip Adductions",
-    "nameKo": "밴드 엉덩이 내전",
+    "nameKo": "밴드 힙 어덕션",
     "bodyPart": "legs",
     "equipment": "resistance_band",
     "category": "hypertrophy",
@@ -2846,7 +2846,7 @@
   {
     "id": 240159,
     "name": "Barbell Ab Rollout",
-    "nameKo": "바벨 복근 롤아웃",
+    "nameKo": "바벨 AB 롤아웃",
     "bodyPart": "abs",
     "equipment": "barbell",
     "category": "strength",
@@ -2864,7 +2864,7 @@
   {
     "id": 240160,
     "name": "Barbell Ab Rollout - On Knees",
-    "nameKo": "바벨 복근 롤아웃 - 무릎 위",
+    "nameKo": "바벨 AB 롤아웃 온 니",
     "bodyPart": "abs",
     "equipment": "barbell",
     "category": "strength",
@@ -2882,7 +2882,7 @@
   {
     "id": 240161,
     "name": "Barbell Curls Lying Against An Incline",
-    "nameKo": "경사면에 누워 있는 바벨 컬",
+    "nameKo": "바벨 컬 라잉 어게인스트 언 인클라인",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "hypertrophy",
@@ -3134,7 +3134,7 @@
   {
     "id": 240175,
     "name": "Barbell Shrug Behind The Back",
-    "nameKo": "바벨은 등 뒤에서 어깨를 으쓱함",
+    "nameKo": "바벨 슈러그 비하인드 더 백",
     "bodyPart": "back",
     "equipment": "barbell",
     "category": "hypertrophy",
@@ -3188,7 +3188,7 @@
   {
     "id": 240178,
     "name": "Barbell Squat To A Bench",
-    "nameKo": "벤치에 바벨 스쿼트",
+    "nameKo": "바벨 스쿼트 투 어 벤치",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -3242,7 +3242,7 @@
   {
     "id": 240181,
     "name": "Bear Crawl Sled Drags",
-    "nameKo": "베어 크롤링 썰매 끌기",
+    "nameKo": "베어 크롤 슬레드 드래그",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",
@@ -3260,7 +3260,7 @@
   {
     "id": 240182,
     "name": "Behind Head Chest Stretch",
-    "nameKo": "머리 뒤 가슴 스트레칭",
+    "nameKo": "비하인드 헤드 체스트 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -3314,7 +3314,7 @@
   {
     "id": 240185,
     "name": "Bench Press - Powerlifting",
-    "nameKo": "벤치프레스 - 파워리프팅",
+    "nameKo": "벤치프레스 파워리프팅",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -3332,7 +3332,7 @@
   {
     "id": 240186,
     "name": "Bench Press - With Bands",
-    "nameKo": "벤치프레스 - 밴드 포함",
+    "nameKo": "밴드 벤치프레스",
     "bodyPart": "chest",
     "equipment": "resistance_band",
     "category": "strength",
@@ -3350,7 +3350,7 @@
   {
     "id": 240187,
     "name": "Bench Press with Chains",
-    "nameKo": "체인이 포함된 벤치프레스",
+    "nameKo": "체인 벤치프레스",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -3386,7 +3386,7 @@
   {
     "id": 240189,
     "name": "Bent-Arm Barbell Pullover",
-    "nameKo": "벤트암 바벨 풀오버",
+    "nameKo": "벤트 암 바벨 풀오버",
     "bodyPart": "back",
     "equipment": "barbell",
     "category": "strength",
@@ -3404,7 +3404,7 @@
   {
     "id": 240190,
     "name": "Bent-Arm Dumbbell Pullover",
-    "nameKo": "벤트암 덤벨 풀오버",
+    "nameKo": "벤트 암 덤벨 풀오버",
     "bodyPart": "chest",
     "equipment": "dumbbell",
     "category": "strength",
@@ -3422,7 +3422,7 @@
   {
     "id": 240191,
     "name": "Bent-Knee Hip Raise",
-    "nameKo": "구부러진 무릎 올리기",
+    "nameKo": "벤트 니 힙 레이즈",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -3458,7 +3458,7 @@
   {
     "id": 240193,
     "name": "Bent Over Dumbbell Rear Delt Raise With Head On Bench",
-    "nameKo": "벤치에 머리를 대고 벤트 오버 덤벨 리어 델트 레이즈",
+    "nameKo": "벤트 오버 덤벨 리어 델트 레이즈 헤드 온 벤치",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -3476,7 +3476,7 @@
   {
     "id": 240194,
     "name": "Bent Over Low-Pulley Side Lateral",
-    "nameKo": "벤트 오버 로우 풀리 측면 측면",
+    "nameKo": "벤트 오버 로우 풀리 사이드 레터럴",
     "bodyPart": "shoulders",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -3512,7 +3512,7 @@
   {
     "id": 240196,
     "name": "Bent Over Two-Arm Long Bar Row",
-    "nameKo": "투암 롱 바 로우 벤트 오버",
+    "nameKo": "벤트 오버 투암 롱 바 로우",
     "bodyPart": "back",
     "equipment": "barbell",
     "category": "strength",
@@ -3548,7 +3548,7 @@
   {
     "id": 240198,
     "name": "Bent Over Two-Dumbbell Row With Palms In",
-    "nameKo": "손바닥을 안쪽으로 한 채 2개의 덤벨 로우로 구부리기",
+    "nameKo": "벤트 오버 투 덤벨 로우 팜 인",
     "bodyPart": "back",
     "equipment": "dumbbell",
     "category": "strength",
@@ -3584,7 +3584,7 @@
   {
     "id": 240200,
     "name": "Bicycling",
-    "nameKo": "자전거 타기",
+    "nameKo": "바이시클링",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -3602,7 +3602,7 @@
   {
     "id": 240201,
     "name": "Bicycling, Stationary",
-    "nameKo": "자전거, 고정식",
+    "nameKo": "바이시클링 , 스테이셔너리",
     "bodyPart": "cardio",
     "equipment": "machine",
     "category": "cardio",
@@ -3620,7 +3620,7 @@
   {
     "id": 240202,
     "name": "Board Press",
-    "nameKo": "보드프레스",
+    "nameKo": "보드 프레스",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -3638,7 +3638,7 @@
   {
     "id": 240203,
     "name": "Body-Up",
-    "nameKo": "바디업",
+    "nameKo": "바디 업",
     "bodyPart": "arms",
     "equipment": "bodyweight",
     "category": "hypertrophy",
@@ -3692,7 +3692,7 @@
   {
     "id": 240206,
     "name": "Bodyweight Mid Row",
-    "nameKo": "체중 중간 행",
+    "nameKo": "맨몸 미드 로우",
     "bodyPart": "back",
     "equipment": "none",
     "category": "strength",
@@ -3710,7 +3710,7 @@
   {
     "id": 240207,
     "name": "Bodyweight Squat",
-    "nameKo": "바디웨이트 스쿼트",
+    "nameKo": "맨몸 스쿼트",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -3746,7 +3746,7 @@
   {
     "id": 240209,
     "name": "Bosu Ball Cable Crunch With Side Bends",
-    "nameKo": "측면 굴곡이 있는 보수 볼 케이블 크런치",
+    "nameKo": "보수 볼 케이블 크런치 사이드 벤드",
     "bodyPart": "abs",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -3764,7 +3764,7 @@
   {
     "id": 240210,
     "name": "Bottoms-Up Clean From The Hang Position",
-    "nameKo": "매달린 위치에서 상향식 청소",
+    "nameKo": "바텀 업 클린 프롬 더 행 포지션",
     "bodyPart": "arms",
     "equipment": "kettlebell",
     "category": "strength",
@@ -3782,7 +3782,7 @@
   {
     "id": 240211,
     "name": "Bottoms Up",
-    "nameKo": "상향식",
+    "nameKo": "바텀 업",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -3836,7 +3836,7 @@
   {
     "id": 240214,
     "name": "Box Squat with Bands",
-    "nameKo": "밴드를 이용한 박스 스쿼트",
+    "nameKo": "박스 스쿼트 밴드",
     "bodyPart": "full_body",
     "equipment": "resistance_band",
     "category": "strength",
@@ -3854,7 +3854,7 @@
   {
     "id": 240215,
     "name": "Box Squat with Chains",
-    "nameKo": "체인을 이용한 박스 스쿼트",
+    "nameKo": "박스 스쿼트 체인",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -3872,7 +3872,7 @@
   {
     "id": 240216,
     "name": "Brachialis-SMR",
-    "nameKo": "상완근 폼롤링",
+    "nameKo": "브라키알리스 폼롤링",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -3890,7 +3890,7 @@
   {
     "id": 240217,
     "name": "Bradford/Rocky Presses",
-    "nameKo": "브래드포드/록키 프레스",
+    "nameKo": "브래드포드 / 라키 프레스",
     "bodyPart": "shoulders",
     "equipment": "barbell",
     "category": "strength",
@@ -3908,7 +3908,7 @@
   {
     "id": 240218,
     "name": "Butt-Ups",
-    "nameKo": "엉덩이 업",
+    "nameKo": "버트 업",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -3926,7 +3926,7 @@
   {
     "id": 240219,
     "name": "Butt Lift (Bridge)",
-    "nameKo": "엉덩이 리프트(브리지)",
+    "nameKo": "버트 리프트 브리지",
     "bodyPart": "glutes",
     "equipment": "bodyweight",
     "category": "hypertrophy",
@@ -4034,7 +4034,7 @@
   {
     "id": 240225,
     "name": "Cable Incline Pushdown",
-    "nameKo": "케이블 경사 푸시다운",
+    "nameKo": "케이블 인클라인 푸시다운",
     "bodyPart": "back",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -4070,7 +4070,7 @@
   {
     "id": 240227,
     "name": "Cable Internal Rotation",
-    "nameKo": "케이블 내회전",
+    "nameKo": "케이블 인터널 로테이션",
     "bodyPart": "shoulders",
     "equipment": "cable",
     "category": "strength",
@@ -4232,7 +4232,7 @@
   {
     "id": 240236,
     "name": "Cable Rope Rear-Delt Rows",
-    "nameKo": "케이블 로프 리어-델트 로우",
+    "nameKo": "케이블 로프 리어 델트 로우",
     "bodyPart": "shoulders",
     "equipment": "cable",
     "category": "strength",
@@ -4286,7 +4286,7 @@
   {
     "id": 240239,
     "name": "Cable Seated Lateral Raise",
-    "nameKo": "케이블 시트 레터럴 레이즈",
+    "nameKo": "케이블 시티드 레터럴 레이즈",
     "bodyPart": "shoulders",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -4358,7 +4358,7 @@
   {
     "id": 240243,
     "name": "Calf-Machine Shoulder Shrug",
-    "nameKo": "종아리 기계 어깨 으쓱",
+    "nameKo": "카프 머신 숄더 슈러그",
     "bodyPart": "back",
     "equipment": "machine",
     "category": "hypertrophy",
@@ -4394,7 +4394,7 @@
   {
     "id": 240245,
     "name": "Calf Press On The Leg Press Machine",
-    "nameKo": "레그 프레스 머신의 종아리 프레스",
+    "nameKo": "카프 프레스 온 더 레그 프레스 머신",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "hypertrophy",
@@ -4430,7 +4430,7 @@
   {
     "id": 240247,
     "name": "Calf Raises - With Bands",
-    "nameKo": "종아리 레이즈 - 밴드 사용",
+    "nameKo": "카프 레이즈 밴드",
     "bodyPart": "legs",
     "equipment": "resistance_band",
     "category": "hypertrophy",
@@ -4448,7 +4448,7 @@
   {
     "id": 240248,
     "name": "Calf Stretch Elbows Against Wall",
-    "nameKo": "벽에 대항하는 종아리 스트레치 팔꿈치",
+    "nameKo": "카프 스트레치 엘보 어게인스트 월",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -4466,7 +4466,7 @@
   {
     "id": 240249,
     "name": "Calf Stretch Hands Against Wall",
-    "nameKo": "벽에 손을 대고 종아리 스트레칭",
+    "nameKo": "카프 스트레치 핸드 어게인스트 월",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -4484,7 +4484,7 @@
   {
     "id": 240250,
     "name": "Calves-SMR",
-    "nameKo": "종아리 폼롤링",
+    "nameKo": "카프 폼롤링",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -4502,7 +4502,7 @@
   {
     "id": 240251,
     "name": "Car Deadlift",
-    "nameKo": "자동차 데드리프트",
+    "nameKo": "카 데드리프트",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",
@@ -4520,7 +4520,7 @@
   {
     "id": 240252,
     "name": "Car Drivers",
-    "nameKo": "자동차 운전자",
+    "nameKo": "카 드라이버",
     "bodyPart": "shoulders",
     "equipment": "barbell",
     "category": "hypertrophy",
@@ -4574,7 +4574,7 @@
   {
     "id": 240255,
     "name": "Catch and Overhead Throw",
-    "nameKo": "캐치 앤 오버헤드 던지기",
+    "nameKo": "캐치 & 오버헤드 스로우",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -4592,7 +4592,7 @@
   {
     "id": 240256,
     "name": "Chain Handle Extension",
-    "nameKo": "체인 핸들 연장",
+    "nameKo": "체인 핸들 익스텐션",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",
@@ -4610,7 +4610,7 @@
   {
     "id": 240257,
     "name": "Chain Press",
-    "nameKo": "체인프레스",
+    "nameKo": "체인 프레스",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",
@@ -4628,7 +4628,7 @@
   {
     "id": 240258,
     "name": "Chair Leg Extended Stretch",
-    "nameKo": "의자 다리 확장 스트레치",
+    "nameKo": "체어 레그 익스텐디드 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -4646,7 +4646,7 @@
   {
     "id": 240259,
     "name": "Chair Lower Back Stretch",
-    "nameKo": "의자 허리 스트레칭",
+    "nameKo": "체어 로워 백 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -4664,7 +4664,7 @@
   {
     "id": 240260,
     "name": "Chair Squat",
-    "nameKo": "의자 스쿼트",
+    "nameKo": "체어 스쿼트",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "strength",
@@ -4682,7 +4682,7 @@
   {
     "id": 240261,
     "name": "Chair Upper Body Stretch",
-    "nameKo": "의자 상체 스트레치",
+    "nameKo": "체어 어퍼 바디 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -4700,7 +4700,7 @@
   {
     "id": 240262,
     "name": "Chest And Front Of Shoulder Stretch",
-    "nameKo": "가슴과 어깨 앞쪽 스트레칭",
+    "nameKo": "체스트 & 프론트 오브 숄더 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -4718,7 +4718,7 @@
   {
     "id": 240263,
     "name": "Chest Push from 3 point stance",
-    "nameKo": "3점 자세에서 가슴 밀어내기",
+    "nameKo": "체스트 푸시 프롬 3 포인트 스탠스",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -4736,7 +4736,7 @@
   {
     "id": 240264,
     "name": "Chest Push (multiple response)",
-    "nameKo": "가슴 밀기(다중 응답)",
+    "nameKo": "체스트 푸시 멀티플 리스폰스",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -4752,27 +4752,9 @@
     "createdAt": "2026-05-15T06:49:59.837Z"
   },
   {
-    "id": 240265,
-    "name": "Chest Push (single response)",
-    "nameKo": "가슴 밀기(단일 반응)",
-    "bodyPart": "cardio",
-    "equipment": "none",
-    "category": "cardio",
-    "difficulty": "beginner",
-    "description": "Chest Push (single response)",
-    "descriptionKo": null,
-    "primaryMuscles": "[\"chest\"]",
-    "secondaryMuscles": "[\"abdominals\",\"shoulders\",\"triceps\"]",
-    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Chest_Push_single_response%2F0.jpg",
-    "secondaryImages": "[\"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Chest_Push_single_response%2F1.jpg\"]",
-    "instructions": "[\"Begin in a kneeling position holding the medicine ball with both hands tightly into the chest.\",\"Execute the pass by exploding forward and outward with the hips while pushing the ball as far as possible.\",\"Follow through by falling forward, catching yourself with your hands.\"]",
-    "instructionsKo": "[\"Begin in a kneeling position holding the medicine ball with both hands tightly into the chest.\",\"Execute the pass by exploding forward and outward with the hips while pushing the ball as far as possible.\",\"Follow through by falling forward, catching yourself with your hands.\"]",
-    "createdAt": "2026-05-15T06:49:59.838Z"
-  },
-  {
     "id": 240266,
     "name": "Chest Push with Run Release",
-    "nameKo": "달리기 릴리스와 함께 가슴 밀기",
+    "nameKo": "체스트 푸시 런 릴리즈",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -4790,7 +4772,7 @@
   {
     "id": 240267,
     "name": "Chest Stretch on Stability Ball",
-    "nameKo": "안정 공을 이용한 가슴 스트레칭",
+    "nameKo": "체스트 스트레치 온 스태빌리티 볼",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -4808,7 +4790,7 @@
   {
     "id": 240268,
     "name": "Chin To Chest Stretch",
-    "nameKo": "턱에서 가슴까지 스트레칭",
+    "nameKo": "친 투 체스트 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -4844,7 +4826,7 @@
   {
     "id": 240270,
     "name": "Clean",
-    "nameKo": "깨끗하다",
+    "nameKo": "클린",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -4898,7 +4880,7 @@
   {
     "id": 240273,
     "name": "Clean Shrug",
-    "nameKo": "깨끗한 어깨를 으쓱하다",
+    "nameKo": "클린 슈러그",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -4934,7 +4916,7 @@
   {
     "id": 240275,
     "name": "Clean from Blocks",
-    "nameKo": "블록에서 청소",
+    "nameKo": "클린 프롬 블록",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -4952,7 +4934,7 @@
   {
     "id": 240276,
     "name": "Clock Push-Up",
-    "nameKo": "시계 푸쉬업",
+    "nameKo": "클락 푸시업",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -4988,7 +4970,7 @@
   {
     "id": 240278,
     "name": "Close-Grip EZ-Bar Curl with Band",
-    "nameKo": "클로즈 그립 EZ바 컬 밴드 포함",
+    "nameKo": "클로즈 그립 EZ바 컬 밴드",
     "bodyPart": "arms",
     "equipment": "resistance_band",
     "category": "hypertrophy",
@@ -5060,7 +5042,7 @@
   {
     "id": 240282,
     "name": "Close-Grip Push-Up off of a Dumbbell",
-    "nameKo": "덤벨을 이용한 클로즈 그립 푸쉬업",
+    "nameKo": "클로즈 그립 푸시업 오프 오브 어 덤벨",
     "bodyPart": "arms",
     "equipment": "bodyweight",
     "category": "strength",
@@ -5096,7 +5078,7 @@
   {
     "id": 240284,
     "name": "Cocoons",
-    "nameKo": "고치",
+    "nameKo": "코쿤",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -5114,7 +5096,7 @@
   {
     "id": 240285,
     "name": "Conan's Wheel",
-    "nameKo": "코난의 바퀴",
+    "nameKo": "코난스 휠",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",
@@ -5132,7 +5114,7 @@
   {
     "id": 240286,
     "name": "Cross-Body Crunch",
-    "nameKo": "크로스바디 크런치",
+    "nameKo": "크로스 바디 크런치",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -5168,7 +5150,7 @@
   {
     "id": 240288,
     "name": "Cross Over - With Bands",
-    "nameKo": "크로스오버 - 밴드 포함",
+    "nameKo": "밴드 크로스오버",
     "bodyPart": "chest",
     "equipment": "resistance_band",
     "category": "strength",
@@ -5204,7 +5186,7 @@
   {
     "id": 240290,
     "name": "Crucifix",
-    "nameKo": "십자가",
+    "nameKo": "크루시픽스",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",
@@ -5222,7 +5204,7 @@
   {
     "id": 240291,
     "name": "Crunch - Hands Overhead",
-    "nameKo": "크런치 - 손을 머리 위로",
+    "nameKo": "크런치 핸드 오버헤드",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "hypertrophy",
@@ -5240,7 +5222,7 @@
   {
     "id": 240292,
     "name": "Crunch - Legs On Exercise Ball",
-    "nameKo": "크런치 - 운동 공에 다리",
+    "nameKo": "크런치 레그 온 짐볼",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "hypertrophy",
@@ -5258,7 +5240,7 @@
   {
     "id": 240293,
     "name": "Cuban Press",
-    "nameKo": "쿠바 언론",
+    "nameKo": "큐반 프레스",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "strength",
@@ -5276,7 +5258,7 @@
   {
     "id": 240294,
     "name": "Dancer's Stretch",
-    "nameKo": "댄서의 스트레칭",
+    "nameKo": "댄서스 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -5294,7 +5276,7 @@
   {
     "id": 240295,
     "name": "Dead Bug",
-    "nameKo": "데드버그",
+    "nameKo": "데드 버그",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -5330,7 +5312,7 @@
   {
     "id": 240297,
     "name": "Deadlift with Chains",
-    "nameKo": "체인을 이용한 데드리프트",
+    "nameKo": "데드리프트 체인",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -5348,7 +5330,7 @@
   {
     "id": 240298,
     "name": "Decline Close-Grip Bench To Skull Crusher",
-    "nameKo": "클로즈 그립 벤치를 스컬 크러셔로 거부",
+    "nameKo": "디클라인 클로즈 그립 벤치 투 스컬 크러셔",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "strength",
@@ -5384,7 +5366,7 @@
   {
     "id": 240300,
     "name": "Decline Dumbbell Bench Press",
-    "nameKo": "덤벨 벤치프레스 거부",
+    "nameKo": "디클라인 덤벨 벤치프레스",
     "bodyPart": "chest",
     "equipment": "dumbbell",
     "category": "strength",
@@ -5402,7 +5384,7 @@
   {
     "id": 240301,
     "name": "Decline Dumbbell Flyes",
-    "nameKo": "덤벨플라이 디클라인",
+    "nameKo": "디클라인 덤벨 플라이",
     "bodyPart": "chest",
     "equipment": "dumbbell",
     "category": "strength",
@@ -5420,7 +5402,7 @@
   {
     "id": 240302,
     "name": "Decline Dumbbell Triceps Extension",
-    "nameKo": "덤벨 삼두근 확장 거부",
+    "nameKo": "디클라인 덤벨 트라이셉스 익스텐션",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -5474,7 +5456,7 @@
   {
     "id": 240305,
     "name": "Decline Push-Up",
-    "nameKo": "푸시업 거부",
+    "nameKo": "디클라인 푸시업",
     "bodyPart": "chest",
     "equipment": "none",
     "category": "strength",
@@ -5492,7 +5474,7 @@
   {
     "id": 240306,
     "name": "Decline Reverse Crunch",
-    "nameKo": "리버스 크런치 거부",
+    "nameKo": "디클라인 리버스 크런치",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -5510,7 +5492,7 @@
   {
     "id": 240307,
     "name": "Decline Smith Press",
-    "nameKo": "스미스 프레스를 거절하다",
+    "nameKo": "디클라인 스미스 프레스",
     "bodyPart": "chest",
     "equipment": "machine",
     "category": "strength",
@@ -5528,7 +5510,7 @@
   {
     "id": 240308,
     "name": "Deficit Deadlift",
-    "nameKo": "적자 데드리프트",
+    "nameKo": "데피싯 데드리프트",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -5546,7 +5528,7 @@
   {
     "id": 240309,
     "name": "Depth Jump Leap",
-    "nameKo": "깊이 점프 도약",
+    "nameKo": "뎁스 점프 리프",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -5582,7 +5564,7 @@
   {
     "id": 240311,
     "name": "Donkey Calf Raises",
-    "nameKo": "당나귀 송아지 사육",
+    "nameKo": "동키 카프 레이즈",
     "bodyPart": "legs",
     "equipment": "none",
     "category": "hypertrophy",
@@ -5600,7 +5582,7 @@
   {
     "id": 240312,
     "name": "Double Kettlebell Alternating Hang Clean",
-    "nameKo": "더블 케틀벨 교대 행 클린",
+    "nameKo": "더블 케틀벨 얼터네이팅 행 클린",
     "bodyPart": "legs",
     "equipment": "kettlebell",
     "category": "strength",
@@ -5708,7 +5690,7 @@
   {
     "id": 240318,
     "name": "Downward Facing Balance",
-    "nameKo": "하향 균형",
+    "nameKo": "다운워드 페이싱 밸런스",
     "bodyPart": "glutes",
     "equipment": "none",
     "category": "hypertrophy",
@@ -5762,7 +5744,7 @@
   {
     "id": 240321,
     "name": "Dumbbell Bench Press with Neutral Grip",
-    "nameKo": "중립 그립이 있는 덤벨 벤치프레스",
+    "nameKo": "덤벨 벤치프레스 뉴트럴 그립",
     "bodyPart": "chest",
     "equipment": "dumbbell",
     "category": "strength",
@@ -5906,7 +5888,7 @@
   {
     "id": 240329,
     "name": "Dumbbell Lying Pronation",
-    "nameKo": "덤벨 누워서 내전",
+    "nameKo": "덤벨 라잉 프로네이션",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -5942,7 +5924,7 @@
   {
     "id": 240331,
     "name": "Dumbbell Lying Supination",
-    "nameKo": "덤벨 라잉 서피네이션",
+    "nameKo": "덤벨 라잉 수피네이션",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -6122,7 +6104,7 @@
   {
     "id": 240341,
     "name": "Dumbbell Shrug",
-    "nameKo": "덤벨 어깨를 으쓱하다",
+    "nameKo": "덤벨 슈러그",
     "bodyPart": "back",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -6176,7 +6158,7 @@
   {
     "id": 240344,
     "name": "Dumbbell Squat To A Bench",
-    "nameKo": "벤치에 덤벨 스쿼트",
+    "nameKo": "덤벨 스쿼트 투 어 벤치",
     "bodyPart": "legs",
     "equipment": "dumbbell",
     "category": "strength",
@@ -6212,7 +6194,7 @@
   {
     "id": 240346,
     "name": "Dumbbell Tricep Extension -Pronated Grip",
-    "nameKo": "덤벨 트라이셉 익스텐션 - 회내 그립",
+    "nameKo": "덤벨 트라이셉 익스텐션 프로네이티드 그립",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -6230,7 +6212,7 @@
   {
     "id": 240347,
     "name": "Dynamic Back Stretch",
-    "nameKo": "동적 등 스트레칭",
+    "nameKo": "다이내믹 백 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -6248,7 +6230,7 @@
   {
     "id": 240348,
     "name": "Dynamic Chest Stretch",
-    "nameKo": "동적 가슴 스트레칭",
+    "nameKo": "다이내믹 체스트 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -6302,7 +6284,7 @@
   {
     "id": 240351,
     "name": "Elbow Circles",
-    "nameKo": "팔꿈치 서클",
+    "nameKo": "엘보 서클",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -6320,7 +6302,7 @@
   {
     "id": 240352,
     "name": "Elbow to Knee",
-    "nameKo": "팔꿈치부터 무릎까지",
+    "nameKo": "엘보 투 니",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -6338,7 +6320,7 @@
   {
     "id": 240353,
     "name": "Elbows Back",
-    "nameKo": "팔꿈치 뒤로",
+    "nameKo": "엘보 백",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -6356,7 +6338,7 @@
   {
     "id": 240354,
     "name": "Elevated Back Lunge",
-    "nameKo": "높은 백 런지",
+    "nameKo": "엘리베이티드 백 런지",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -6374,7 +6356,7 @@
   {
     "id": 240355,
     "name": "Elevated Cable Rows",
-    "nameKo": "높은 케이블 행",
+    "nameKo": "엘리베이티드 케이블 로우",
     "bodyPart": "back",
     "equipment": "cable",
     "category": "strength",
@@ -6392,7 +6374,7 @@
   {
     "id": 240356,
     "name": "Elliptical Trainer",
-    "nameKo": "일립티컬 트레이너",
+    "nameKo": "엘립티컬 트레이너",
     "bodyPart": "cardio",
     "equipment": "machine",
     "category": "cardio",
@@ -6410,7 +6392,7 @@
   {
     "id": 240357,
     "name": "Exercise Ball Crunch",
-    "nameKo": "운동 볼 크런치",
+    "nameKo": "짐볼 크런치",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "hypertrophy",
@@ -6428,7 +6410,7 @@
   {
     "id": 240358,
     "name": "Exercise Ball Pull-In",
-    "nameKo": "운동 공 풀인",
+    "nameKo": "짐볼 풀 인",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "strength",
@@ -6446,7 +6428,7 @@
   {
     "id": 240359,
     "name": "Extended Range One-Arm Kettlebell Floor Press",
-    "nameKo": "확장된 범위의 원암 케틀벨 플로어 프레스",
+    "nameKo": "익스텐디드 레인지 원암 케틀벨 플로어 프레스",
     "bodyPart": "chest",
     "equipment": "kettlebell",
     "category": "strength",
@@ -6464,7 +6446,7 @@
   {
     "id": 240360,
     "name": "External Rotation",
-    "nameKo": "외부 회전",
+    "nameKo": "익스터널 로테이션",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -6482,7 +6464,7 @@
   {
     "id": 240361,
     "name": "External Rotation with Band",
-    "nameKo": "밴드를 이용한 외부 회전",
+    "nameKo": "밴드 익스터널 로테이션",
     "bodyPart": "shoulders",
     "equipment": "resistance_band",
     "category": "strength",
@@ -6500,7 +6482,7 @@
   {
     "id": 240362,
     "name": "External Rotation with Cable",
-    "nameKo": "케이블을 이용한 외부 회전",
+    "nameKo": "케이블 익스터널 로테이션",
     "bodyPart": "shoulders",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -6518,7 +6500,7 @@
   {
     "id": 240363,
     "name": "Fast Skipping",
-    "nameKo": "빠른 건너뛰기",
+    "nameKo": "패스트 스키핑",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -6608,7 +6590,7 @@
   {
     "id": 240368,
     "name": "Flexor Incline Dumbbell Curls",
-    "nameKo": "굴근 인클라인 덤벨 컬",
+    "nameKo": "플렉서 인클라인 덤벨 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -6662,7 +6644,7 @@
   {
     "id": 240371,
     "name": "Floor Press with Chains",
-    "nameKo": "체인이 있는 바닥 프레스",
+    "nameKo": "플로어 프레스 체인",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -6698,7 +6680,7 @@
   {
     "id": 240373,
     "name": "Foot-SMR",
-    "nameKo": "발바닥 폼롤링",
+    "nameKo": "풋 폼롤링",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -6716,7 +6698,7 @@
   {
     "id": 240374,
     "name": "Forward Drag with Press",
-    "nameKo": "누름으로 앞으로 끌기",
+    "nameKo": "포워드 드래그 프레스",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",
@@ -6770,7 +6752,7 @@
   {
     "id": 240377,
     "name": "Frog Hops",
-    "nameKo": "개구리 홉",
+    "nameKo": "프로그 홉",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -6788,7 +6770,7 @@
   {
     "id": 240378,
     "name": "Frog Sit-Ups",
-    "nameKo": "개구리 윗몸 일으키기",
+    "nameKo": "프로그 싯업",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "hypertrophy",
@@ -6824,7 +6806,7 @@
   {
     "id": 240380,
     "name": "Front Barbell Squat To A Bench",
-    "nameKo": "벤치에 프론트 바벨 스쿼트",
+    "nameKo": "프론트 바벨 스쿼트 투 어 벤치",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -6878,7 +6860,7 @@
   {
     "id": 240383,
     "name": "Front Cone Hops (or hurdle hops)",
-    "nameKo": "프론트 콘 홉(또는 허들 홉)",
+    "nameKo": "프론트 콘 홉 오어 허들 홉",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -6932,7 +6914,7 @@
   {
     "id": 240386,
     "name": "Front Leg Raises",
-    "nameKo": "앞다리 올리기",
+    "nameKo": "프론트 레그 레이즈",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -6968,7 +6950,7 @@
   {
     "id": 240388,
     "name": "Front Raise And Pullover",
-    "nameKo": "프론트 레이즈 및 풀오버",
+    "nameKo": "프론트 레이즈 & 풀오버",
     "bodyPart": "chest",
     "equipment": "barbell",
     "category": "strength",
@@ -6986,7 +6968,7 @@
   {
     "id": 240389,
     "name": "Front Squat (Clean Grip)",
-    "nameKo": "프론트 스쿼트(클린 그립)",
+    "nameKo": "프론트 스쿼트 클린 그립",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -7004,7 +6986,7 @@
   {
     "id": 240390,
     "name": "Front Squats With Two Kettlebells",
-    "nameKo": "두 개의 케틀벨을 이용한 프론트 스쿼트",
+    "nameKo": "프론트 스쿼트 투 케틀벨",
     "bodyPart": "legs",
     "equipment": "kettlebell",
     "category": "strength",
@@ -7040,7 +7022,7 @@
   {
     "id": 240392,
     "name": "Full Range-Of-Motion Lat Pulldown",
-    "nameKo": "전체 동작 범위 위도 풀다운",
+    "nameKo": "풀 레인지 오브 모션 랫 풀다운",
     "bodyPart": "back",
     "equipment": "cable",
     "category": "strength",
@@ -7058,7 +7040,7 @@
   {
     "id": 240393,
     "name": "Gironda Sternum Chins",
-    "nameKo": "지론다 스터넘 친스",
+    "nameKo": "지론다 스테넘 친",
     "bodyPart": "back",
     "equipment": "none",
     "category": "strength",
@@ -7094,7 +7076,7 @@
   {
     "id": 240395,
     "name": "Glute Kickback",
-    "nameKo": "둔근 반동",
+    "nameKo": "글루트 킥백",
     "bodyPart": "glutes",
     "equipment": "bodyweight",
     "category": "strength",
@@ -7112,7 +7094,7 @@
   {
     "id": 240396,
     "name": "Goblet Squat",
-    "nameKo": "고블렛 스쿼트",
+    "nameKo": "고블릿 스쿼트",
     "bodyPart": "legs",
     "equipment": "kettlebell",
     "category": "strength",
@@ -7130,7 +7112,7 @@
   {
     "id": 240397,
     "name": "Good Morning off Pins",
-    "nameKo": "좋은 아침 오프 핀",
+    "nameKo": "굿 모닝 오프 핀",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -7148,7 +7130,7 @@
   {
     "id": 240398,
     "name": "Gorilla Chin/Crunch",
-    "nameKo": "고릴라 친/크런치",
+    "nameKo": "고릴라 친 / 크런치",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -7166,7 +7148,7 @@
   {
     "id": 240399,
     "name": "Groin and Back Stretch",
-    "nameKo": "사타구니 및 등 스트레칭",
+    "nameKo": "그로인 & 백 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -7184,7 +7166,7 @@
   {
     "id": 240400,
     "name": "Groiners",
-    "nameKo": "그로이너스",
+    "nameKo": "그로이너",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -7238,7 +7220,7 @@
   {
     "id": 240403,
     "name": "Handstand Push-Ups",
-    "nameKo": "물구나무서기 푸시업",
+    "nameKo": "핸드스탠드 푸시업",
     "bodyPart": "shoulders",
     "equipment": "bodyweight",
     "category": "strength",
@@ -7256,7 +7238,7 @@
   {
     "id": 240404,
     "name": "Hang Clean",
-    "nameKo": "깨끗한 행잉",
+    "nameKo": "행 클린",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -7274,7 +7256,7 @@
   {
     "id": 240405,
     "name": "Hang Clean - Below the Knees",
-    "nameKo": "행 클린 - 무릎 아래",
+    "nameKo": "행 클린 빌로우 더 니",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -7292,7 +7274,7 @@
   {
     "id": 240406,
     "name": "Hang Snatch",
-    "nameKo": "잡아채기",
+    "nameKo": "행 스내치",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -7310,7 +7292,7 @@
   {
     "id": 240407,
     "name": "Hang Snatch - Below Knees",
-    "nameKo": "행 스내치 - 무릎 아래",
+    "nameKo": "행 스내치 빌로우 니",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -7328,7 +7310,7 @@
   {
     "id": 240408,
     "name": "Hanging Bar Good Morning",
-    "nameKo": "행잉바 굿모닝",
+    "nameKo": "행잉 바 굿 모닝",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -7346,7 +7328,7 @@
   {
     "id": 240409,
     "name": "Hanging Pike",
-    "nameKo": "매달린 파이크",
+    "nameKo": "행잉 파이크",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -7382,7 +7364,7 @@
   {
     "id": 240411,
     "name": "Heavy Bag Thrust",
-    "nameKo": "헤비백 추력",
+    "nameKo": "헤비 백 스러스트",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -7418,7 +7400,7 @@
   {
     "id": 240413,
     "name": "Hip Circles (prone)",
-    "nameKo": "엉덩이 서클(엎드린 자세)",
+    "nameKo": "힙 서클 프론",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -7436,7 +7418,7 @@
   {
     "id": 240414,
     "name": "Hip Extension with Bands",
-    "nameKo": "밴드를 이용한 엉덩이 확장",
+    "nameKo": "힙 익스텐션 밴드",
     "bodyPart": "glutes",
     "equipment": "resistance_band",
     "category": "strength",
@@ -7454,7 +7436,7 @@
   {
     "id": 240415,
     "name": "Hip Flexion with Band",
-    "nameKo": "밴드를 이용한 고관절 굴곡",
+    "nameKo": "힙 플렉션 밴드",
     "bodyPart": "legs",
     "equipment": "resistance_band",
     "category": "strength",
@@ -7472,7 +7454,7 @@
   {
     "id": 240416,
     "name": "Hip Lift with Band",
-    "nameKo": "밴드를 이용한 엉덩이 리프트",
+    "nameKo": "힙 리프트 밴드",
     "bodyPart": "full_body",
     "equipment": "resistance_band",
     "category": "strength",
@@ -7490,7 +7472,7 @@
   {
     "id": 240417,
     "name": "Hug A Ball",
-    "nameKo": "공을 안아줘",
+    "nameKo": "허그 어 볼",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -7508,7 +7490,7 @@
   {
     "id": 240418,
     "name": "Hug Knees To Chest",
-    "nameKo": "무릎을 가슴에 대고 포옹",
+    "nameKo": "허그 니 투 체스트",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -7526,7 +7508,7 @@
   {
     "id": 240419,
     "name": "Hurdle Hops",
-    "nameKo": "장애물 홉",
+    "nameKo": "허들 홉",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -7544,7 +7526,7 @@
   {
     "id": 240420,
     "name": "Hyperextensions (Back Extensions)",
-    "nameKo": "하이퍼익스텐션(백 익스텐션)",
+    "nameKo": "하이퍼익스텐션 백 익스텐션",
     "bodyPart": "back",
     "equipment": "none",
     "category": "hypertrophy",
@@ -7562,7 +7544,7 @@
   {
     "id": 240421,
     "name": "Hyperextensions With No Hyperextension Bench",
-    "nameKo": "무장비 하이퍼익스텐션",
+    "nameKo": "노 벤치 하이퍼익스텐션",
     "bodyPart": "back",
     "equipment": "bodyweight",
     "category": "strength",
@@ -7616,7 +7598,7 @@
   {
     "id": 240424,
     "name": "Inchworm",
-    "nameKo": "자벌레",
+    "nameKo": "인치웜",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -7706,7 +7688,7 @@
   {
     "id": 240429,
     "name": "Incline Dumbbell Bench With Palms Facing In",
-    "nameKo": "손바닥이 안쪽을 향한 인클라인 덤벨 벤치",
+    "nameKo": "인클라인 덤벨 벤치 팜 페이싱 인",
     "bodyPart": "chest",
     "equipment": "dumbbell",
     "category": "strength",
@@ -7760,7 +7742,7 @@
   {
     "id": 240432,
     "name": "Incline Dumbbell Flyes - With A Twist",
-    "nameKo": "인클라인 덤벨 플라이 - 트위스트 포함",
+    "nameKo": "인클라인 덤벨 플라이 트위스트",
     "bodyPart": "chest",
     "equipment": "dumbbell",
     "category": "strength",
@@ -7832,7 +7814,7 @@
   {
     "id": 240436,
     "name": "Incline Push-Up",
-    "nameKo": "인클라인 푸쉬업",
+    "nameKo": "인클라인 푸시업",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -7868,7 +7850,7 @@
   {
     "id": 240438,
     "name": "Incline Push-Up Depth Jump",
-    "nameKo": "인클라인 푸쉬업 뎁스 점프",
+    "nameKo": "인클라인 푸시업 뎁스 점프",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -7886,7 +7868,7 @@
   {
     "id": 240439,
     "name": "Incline Push-Up Medium",
-    "nameKo": "인클라인 푸쉬업 미디엄",
+    "nameKo": "인클라인 푸시업 미디엄",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -7922,7 +7904,7 @@
   {
     "id": 240441,
     "name": "Incline Push-Up Wide",
-    "nameKo": "인클라인 푸쉬업 와이드",
+    "nameKo": "인클라인 푸시업 와이드",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -7940,7 +7922,7 @@
   {
     "id": 240442,
     "name": "Intermediate Groin Stretch",
-    "nameKo": "중간 사타구니 스트레칭",
+    "nameKo": "인터미디엇 그로인 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -7958,7 +7940,7 @@
   {
     "id": 240443,
     "name": "Intermediate Hip Flexor and Quad Stretch",
-    "nameKo": "중급 고관절 굴곡근 및 대퇴사두근 스트레칭",
+    "nameKo": "인터미디엇 힙 플렉서 & 쿼드 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -7976,7 +7958,7 @@
   {
     "id": 240444,
     "name": "Internal Rotation with Band",
-    "nameKo": "밴드를 이용한 내부 회전",
+    "nameKo": "밴드 인터널 로테이션",
     "bodyPart": "shoulders",
     "equipment": "resistance_band",
     "category": "hypertrophy",
@@ -7994,7 +7976,7 @@
   {
     "id": 240445,
     "name": "Inverted Row",
-    "nameKo": "역행",
+    "nameKo": "인버티드 로우",
     "bodyPart": "back",
     "equipment": "none",
     "category": "strength",
@@ -8012,7 +7994,7 @@
   {
     "id": 240446,
     "name": "Inverted Row with Straps",
-    "nameKo": "스트랩이 있는 역행",
+    "nameKo": "인버티드 로우 스트랩",
     "bodyPart": "back",
     "equipment": "none",
     "category": "strength",
@@ -8030,7 +8012,7 @@
   {
     "id": 240447,
     "name": "Iron Cross",
-    "nameKo": "철십자",
+    "nameKo": "아이언 크로스",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "strength",
@@ -8048,7 +8030,7 @@
   {
     "id": 240448,
     "name": "Iron Crosses (stretch)",
-    "nameKo": "철십자(스트레칭)",
+    "nameKo": "아이언 크로스 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -8066,7 +8048,7 @@
   {
     "id": 240449,
     "name": "Isometric Chest Squeezes",
-    "nameKo": "아이소메트릭 가슴 압박",
+    "nameKo": "아이소메트릭 체스트 스퀴즈",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -8084,7 +8066,7 @@
   {
     "id": 240450,
     "name": "Isometric Neck Exercise - Front And Back",
-    "nameKo": "아이소메트릭 목 운동 - 앞면과 뒷면",
+    "nameKo": "아이소메트릭 넥 엑서사이즈 프론트 & 백",
     "bodyPart": "full_body",
     "equipment": "bodyweight",
     "category": "hypertrophy",
@@ -8102,7 +8084,7 @@
   {
     "id": 240451,
     "name": "Isometric Neck Exercise - Sides",
-    "nameKo": "아이소메트릭 목 운동 - 측면",
+    "nameKo": "아이소메트릭 넥 엑서사이즈 사이드",
     "bodyPart": "full_body",
     "equipment": "bodyweight",
     "category": "hypertrophy",
@@ -8138,7 +8120,7 @@
   {
     "id": 240453,
     "name": "JM Press",
-    "nameKo": "Jm 프레스",
+    "nameKo": "JM 프레스",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "strength",
@@ -8156,7 +8138,7 @@
   {
     "id": 240454,
     "name": "Jackknife Sit-Up",
-    "nameKo": "잭나이프 윗몸일으키기",
+    "nameKo": "잭나이프 싯업",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -8174,7 +8156,7 @@
   {
     "id": 240455,
     "name": "Janda Sit-Up",
-    "nameKo": "잔다 윗몸일으키기",
+    "nameKo": "잔다 싯업",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "hypertrophy",
@@ -8246,7 +8228,7 @@
   {
     "id": 240459,
     "name": "Jogging, Treadmill",
-    "nameKo": "조깅, 런닝머신",
+    "nameKo": "조깅 , 트레드밀",
     "bodyPart": "cardio",
     "equipment": "machine",
     "category": "cardio",
@@ -8264,7 +8246,7 @@
   {
     "id": 240460,
     "name": "Keg Load",
-    "nameKo": "통 부하",
+    "nameKo": "케그 로드",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",
@@ -8318,7 +8300,7 @@
   {
     "id": 240463,
     "name": "Kettlebell Figure 8",
-    "nameKo": "케틀벨 그림 8",
+    "nameKo": "케틀벨 피겨 8",
     "bodyPart": "abs",
     "equipment": "kettlebell",
     "category": "strength",
@@ -8336,7 +8318,7 @@
   {
     "id": 240464,
     "name": "Kettlebell Hang Clean",
-    "nameKo": "케틀벨 행클린",
+    "nameKo": "케틀벨 행 클린",
     "bodyPart": "legs",
     "equipment": "kettlebell",
     "category": "strength",
@@ -8354,7 +8336,7 @@
   {
     "id": 240465,
     "name": "Kettlebell One-Legged Deadlift",
-    "nameKo": "케틀벨 원 레그 데드리프트",
+    "nameKo": "케틀벨 원 레그드 데드리프트",
     "bodyPart": "legs",
     "equipment": "kettlebell",
     "category": "strength",
@@ -8372,7 +8354,7 @@
   {
     "id": 240466,
     "name": "Kettlebell Pass Between The Legs",
-    "nameKo": "케틀벨 다리 사이 패스",
+    "nameKo": "케틀벨 패스 비트윈 더 레그",
     "bodyPart": "abs",
     "equipment": "kettlebell",
     "category": "strength",
@@ -8390,7 +8372,7 @@
   {
     "id": 240467,
     "name": "Kettlebell Pirate Ships",
-    "nameKo": "케틀벨 해적선",
+    "nameKo": "케틀벨 파이럿 십",
     "bodyPart": "shoulders",
     "equipment": "kettlebell",
     "category": "strength",
@@ -8408,7 +8390,7 @@
   {
     "id": 240468,
     "name": "Kettlebell Pistol Squat",
-    "nameKo": "케틀벨 권총 스쿼트",
+    "nameKo": "케틀벨 피스톨 스쿼트",
     "bodyPart": "legs",
     "equipment": "kettlebell",
     "category": "strength",
@@ -8480,7 +8462,7 @@
   {
     "id": 240472,
     "name": "Kettlebell Thruster",
-    "nameKo": "케틀벨 추진기",
+    "nameKo": "케틀벨 스러스터",
     "bodyPart": "shoulders",
     "equipment": "kettlebell",
     "category": "strength",
@@ -8498,7 +8480,7 @@
   {
     "id": 240473,
     "name": "Kettlebell Turkish Get-Up (Lunge style)",
-    "nameKo": "케틀벨 터키쉬 겟업(런지 스타일)",
+    "nameKo": "케틀벨 터키시 겟 업 런지 스타일",
     "bodyPart": "shoulders",
     "equipment": "kettlebell",
     "category": "strength",
@@ -8516,7 +8498,7 @@
   {
     "id": 240474,
     "name": "Kettlebell Turkish Get-Up (Squat style)",
-    "nameKo": "케틀벨 터키쉬 겟업(스쿼트 스타일)",
+    "nameKo": "케틀벨 터키시 겟 업 스쿼트 스타일",
     "bodyPart": "shoulders",
     "equipment": "kettlebell",
     "category": "strength",
@@ -8534,7 +8516,7 @@
   {
     "id": 240475,
     "name": "Kettlebell Windmill",
-    "nameKo": "케틀벨 풍차",
+    "nameKo": "케틀벨 윈드밀",
     "bodyPart": "abs",
     "equipment": "kettlebell",
     "category": "strength",
@@ -8552,7 +8534,7 @@
   {
     "id": 240476,
     "name": "Kipping Muscle Up",
-    "nameKo": "키핑 머슬업",
+    "nameKo": "키핑 머슬 업",
     "bodyPart": "back",
     "equipment": "none",
     "category": "strength",
@@ -8570,7 +8552,7 @@
   {
     "id": 240477,
     "name": "Knee Across The Body",
-    "nameKo": "무릎으로 몸을 가로질러",
+    "nameKo": "니 어크로스 더 바디",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -8588,7 +8570,7 @@
   {
     "id": 240478,
     "name": "Knee Circles",
-    "nameKo": "무릎 서클",
+    "nameKo": "니 서클",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -8606,7 +8588,7 @@
   {
     "id": 240479,
     "name": "Knee/Hip Raise On Parallel Bars",
-    "nameKo": "평행봉에서 무릎/엉덩이 들어올리기",
+    "nameKo": "니 / 힙 레이즈 온 패러럴 바",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "hypertrophy",
@@ -8624,7 +8606,7 @@
   {
     "id": 240480,
     "name": "Knee Tuck Jump",
-    "nameKo": "무릎턱 점프",
+    "nameKo": "니 턱 점프",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -8642,7 +8624,7 @@
   {
     "id": 240481,
     "name": "Kneeling Arm Drill",
-    "nameKo": "무릎을 꿇은 팔 드릴",
+    "nameKo": "닐링 암 드릴",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -8660,7 +8642,7 @@
   {
     "id": 240482,
     "name": "Kneeling Cable Crunch With Alternating Oblique Twists",
-    "nameKo": "교대로 비스듬하게 꼬인 무릎을 꿇는 케이블 크런치",
+    "nameKo": "닐링 케이블 크런치 얼터네이팅 오블리크 트위스트",
     "bodyPart": "abs",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -8696,7 +8678,7 @@
   {
     "id": 240484,
     "name": "Kneeling Forearm Stretch",
-    "nameKo": "무릎 꿇고 팔뚝 스트레칭",
+    "nameKo": "닐링 포어암 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -8714,7 +8696,7 @@
   {
     "id": 240485,
     "name": "Kneeling High Pulley Row",
-    "nameKo": "무릎을 꿇은 하이 풀리 로우",
+    "nameKo": "닐링 하이 풀리 로우",
     "bodyPart": "back",
     "equipment": "cable",
     "category": "strength",
@@ -8732,7 +8714,7 @@
   {
     "id": 240486,
     "name": "Kneeling Hip Flexor",
-    "nameKo": "무릎을 꿇은 고관절 굴근",
+    "nameKo": "닐링 힙 플렉서",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -8750,7 +8732,7 @@
   {
     "id": 240487,
     "name": "Kneeling Jump Squat",
-    "nameKo": "무릎을 꿇고 점프 스쿼트",
+    "nameKo": "닐링 점프 스쿼트",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -8768,7 +8750,7 @@
   {
     "id": 240488,
     "name": "Kneeling Single-Arm High Pulley Row",
-    "nameKo": "무릎을 꿇은 싱글 암 하이 풀리 로우",
+    "nameKo": "닐링 싱글 암 하이 풀리 로우",
     "bodyPart": "back",
     "equipment": "cable",
     "category": "strength",
@@ -8786,7 +8768,7 @@
   {
     "id": 240489,
     "name": "Kneeling Squat",
-    "nameKo": "무릎을 꿇고 스쿼트",
+    "nameKo": "닐링 스쿼트",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -8804,7 +8786,7 @@
   {
     "id": 240490,
     "name": "Landmine 180's",
-    "nameKo": "지뢰 180년대",
+    "nameKo": "랜드마인 180's",
     "bodyPart": "abs",
     "equipment": "barbell",
     "category": "strength",
@@ -8822,7 +8804,7 @@
   {
     "id": 240491,
     "name": "Landmine Linear Jammer",
-    "nameKo": "지뢰 선형 방해기",
+    "nameKo": "랜드마인 리니어 재머",
     "bodyPart": "shoulders",
     "equipment": "barbell",
     "category": "strength",
@@ -8840,7 +8822,7 @@
   {
     "id": 240492,
     "name": "Lateral Bound",
-    "nameKo": "측면 경계",
+    "nameKo": "레터럴 바운드",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -8858,7 +8840,7 @@
   {
     "id": 240493,
     "name": "Lateral Box Jump",
-    "nameKo": "측면 박스 점프",
+    "nameKo": "레터럴 박스 점프",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -8876,7 +8858,7 @@
   {
     "id": 240494,
     "name": "Lateral Cone Hops",
-    "nameKo": "측면 콘 홉",
+    "nameKo": "레터럴 콘 홉",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -8894,7 +8876,7 @@
   {
     "id": 240495,
     "name": "Lateral Raise - With Bands",
-    "nameKo": "측면 레이즈 - 밴드 포함",
+    "nameKo": "레터럴 레이즈 밴드",
     "bodyPart": "shoulders",
     "equipment": "resistance_band",
     "category": "hypertrophy",
@@ -8912,7 +8894,7 @@
   {
     "id": 240496,
     "name": "Latissimus Dorsi-SMR",
-    "nameKo": "광배근 폼롤링",
+    "nameKo": "랫 폼롤링",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -8930,7 +8912,7 @@
   {
     "id": 240497,
     "name": "Leg-Over Floor Press",
-    "nameKo": "레그오버 플로어 프레스",
+    "nameKo": "레그 오버 플로어 프레스",
     "bodyPart": "chest",
     "equipment": "kettlebell",
     "category": "strength",
@@ -8948,7 +8930,7 @@
   {
     "id": 240498,
     "name": "Leg-Up Hamstring Stretch",
-    "nameKo": "다리 업 햄스트링 스트레칭",
+    "nameKo": "레그 업 햄스트링 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -8966,7 +8948,7 @@
   {
     "id": 240499,
     "name": "Leg Lift",
-    "nameKo": "다리 리프트",
+    "nameKo": "레그 리프트",
     "bodyPart": "glutes",
     "equipment": "bodyweight",
     "category": "hypertrophy",
@@ -8984,7 +8966,7 @@
   {
     "id": 240500,
     "name": "Leverage Chest Press",
-    "nameKo": "체스트 프레스 활용",
+    "nameKo": "레버리지 체스트 프레스",
     "bodyPart": "chest",
     "equipment": "machine",
     "category": "strength",
@@ -9002,7 +8984,7 @@
   {
     "id": 240501,
     "name": "Leverage Deadlift",
-    "nameKo": "데드리프트 활용",
+    "nameKo": "레버리지 데드리프트",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "strength",
@@ -9020,7 +9002,7 @@
   {
     "id": 240502,
     "name": "Leverage Decline Chest Press",
-    "nameKo": "디클라인 체스트 프레스 활용",
+    "nameKo": "레버리지 디클라인 체스트 프레스",
     "bodyPart": "chest",
     "equipment": "machine",
     "category": "strength",
@@ -9038,7 +9020,7 @@
   {
     "id": 240503,
     "name": "Leverage High Row",
-    "nameKo": "하이 로우 활용",
+    "nameKo": "레버리지 하이 로우",
     "bodyPart": "back",
     "equipment": "machine",
     "category": "strength",
@@ -9056,7 +9038,7 @@
   {
     "id": 240504,
     "name": "Leverage Incline Chest Press",
-    "nameKo": "인클라인 체스트 프레스 활용",
+    "nameKo": "레버리지 인클라인 체스트 프레스",
     "bodyPart": "chest",
     "equipment": "machine",
     "category": "strength",
@@ -9092,7 +9074,7 @@
   {
     "id": 240506,
     "name": "Leverage Shoulder Press",
-    "nameKo": "숄더 프레스 활용",
+    "nameKo": "레버리지 숄더 프레스",
     "bodyPart": "shoulders",
     "equipment": "machine",
     "category": "strength",
@@ -9110,7 +9092,7 @@
   {
     "id": 240507,
     "name": "Leverage Shrug",
-    "nameKo": "어깨를 으쓱하는 활용",
+    "nameKo": "레버리지 슈러그",
     "bodyPart": "back",
     "equipment": "machine",
     "category": "hypertrophy",
@@ -9128,7 +9110,7 @@
   {
     "id": 240508,
     "name": "Linear 3-Part Start Technique",
-    "nameKo": "선형 3부분 시작 기술",
+    "nameKo": "리니어 3 파트 스타트 테크닉",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -9146,7 +9128,7 @@
   {
     "id": 240509,
     "name": "Linear Acceleration Wall Drill",
-    "nameKo": "선형 가속 벽 드릴",
+    "nameKo": "리니어 액셀러레이션 월 드릴",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -9164,7 +9146,7 @@
   {
     "id": 240510,
     "name": "Linear Depth Jump",
-    "nameKo": "선형 깊이 점프",
+    "nameKo": "리니어 뎁스 점프",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -9182,7 +9164,7 @@
   {
     "id": 240511,
     "name": "Log Lift",
-    "nameKo": "통나무 리프트",
+    "nameKo": "로그 리프트",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",
@@ -9200,7 +9182,7 @@
   {
     "id": 240512,
     "name": "London Bridges",
-    "nameKo": "런던 교량",
+    "nameKo": "런던 브리지",
     "bodyPart": "back",
     "equipment": "none",
     "category": "strength",
@@ -9218,7 +9200,7 @@
   {
     "id": 240513,
     "name": "Looking At Ceiling",
-    "nameKo": "천장을 바라보며",
+    "nameKo": "루킹 앳 실링",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -9236,7 +9218,7 @@
   {
     "id": 240514,
     "name": "Low Cable Crossover",
-    "nameKo": "낮은 케이블 크로스오버",
+    "nameKo": "로우 케이블 크로스오버",
     "bodyPart": "chest",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -9290,7 +9272,7 @@
   {
     "id": 240517,
     "name": "Lower Back-SMR",
-    "nameKo": "허리 폼롤링",
+    "nameKo": "로워 백 폼롤링",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -9308,7 +9290,7 @@
   {
     "id": 240518,
     "name": "Lower Back Curl",
-    "nameKo": "허리 컬",
+    "nameKo": "로워 백 컬",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -9362,7 +9344,7 @@
   {
     "id": 240521,
     "name": "Lying Bent Leg Groin",
-    "nameKo": "누워서 구부러진 다리 사타구니",
+    "nameKo": "라잉 벤트 레그 그로인",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -9416,7 +9398,7 @@
   {
     "id": 240524,
     "name": "Lying Close-Grip Bar Curl On High Pulley",
-    "nameKo": "하이 풀리에 클로즈 그립 바 컬을 얹은 상태",
+    "nameKo": "라잉 클로즈 그립 바 컬 온 하이 풀리",
     "bodyPart": "arms",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -9434,7 +9416,7 @@
   {
     "id": 240525,
     "name": "Lying Close-Grip Barbell Triceps Extension Behind The Head",
-    "nameKo": "머리 뒤에 클로즈 그립 바벨 트라이셉스 익스텐션 누우기",
+    "nameKo": "라잉 클로즈 그립 바벨 트라이셉스 익스텐션 비하인드 더 헤드",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "hypertrophy",
@@ -9452,7 +9434,7 @@
   {
     "id": 240526,
     "name": "Lying Close-Grip Barbell Triceps Press To Chin",
-    "nameKo": "라잉 클로즈 그립 바벨 트라이셉스 프레스 투 턱",
+    "nameKo": "라잉 클로즈 그립 바벨 트라이셉스 프레스 투 친",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "hypertrophy",
@@ -9488,7 +9470,7 @@
   {
     "id": 240528,
     "name": "Lying Dumbbell Tricep Extension",
-    "nameKo": "라잉 덤벨 트라이셉스 익스텐션",
+    "nameKo": "라잉 덤벨 트라이셉 익스텐션",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -9506,7 +9488,7 @@
   {
     "id": 240529,
     "name": "Lying Face Down Plate Neck Resistance",
-    "nameKo": "엎드려 누워서 플레이트 넥 저항",
+    "nameKo": "라잉 페이스 다운 플레이트 넥 레지스턴스",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "hypertrophy",
@@ -9524,7 +9506,7 @@
   {
     "id": 240530,
     "name": "Lying Face Up Plate Neck Resistance",
-    "nameKo": "누워있는 얼굴 위로 플레이트 목 저항",
+    "nameKo": "라잉 페이스 업 플레이트 넥 레지스턴스",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "hypertrophy",
@@ -9542,7 +9524,7 @@
   {
     "id": 240531,
     "name": "Lying Glute",
-    "nameKo": "누워있는 둔근",
+    "nameKo": "라잉 글루트",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -9560,7 +9542,7 @@
   {
     "id": 240532,
     "name": "Lying Hamstring",
-    "nameKo": "누워있는 햄스트링",
+    "nameKo": "라잉 햄스트링",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -9632,7 +9614,7 @@
   {
     "id": 240536,
     "name": "Lying One-Arm Lateral Raise",
-    "nameKo": "누워서 한쪽 팔 옆으로 올리기",
+    "nameKo": "라잉 원암 레터럴 레이즈",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -9650,7 +9632,7 @@
   {
     "id": 240537,
     "name": "Lying Prone Quadriceps",
-    "nameKo": "누워있는 엎드린 대퇴사두근",
+    "nameKo": "라잉 프론 쿼드리셉스",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -9686,7 +9668,7 @@
   {
     "id": 240539,
     "name": "Lying Supine Dumbbell Curl",
-    "nameKo": "누워서 덤벨 컬",
+    "nameKo": "라잉 수파인 덤벨 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -9704,7 +9686,7 @@
   {
     "id": 240540,
     "name": "Lying T-Bar Row",
-    "nameKo": "누워있는 T-바 로우",
+    "nameKo": "라잉 T 바 로우",
     "bodyPart": "back",
     "equipment": "machine",
     "category": "strength",
@@ -9794,7 +9776,7 @@
   {
     "id": 240545,
     "name": "Machine Shoulder (Military) Press",
-    "nameKo": "머신 숄더(군용) 프레스",
+    "nameKo": "머신 숄더 밀리터리 프레스",
     "bodyPart": "shoulders",
     "equipment": "machine",
     "category": "strength",
@@ -9830,7 +9812,7 @@
   {
     "id": 240547,
     "name": "Medicine Ball Chest Pass",
-    "nameKo": "메디신볼 체스트 패스",
+    "nameKo": "메디신 볼 체스트 패스",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -9848,7 +9830,7 @@
   {
     "id": 240548,
     "name": "Medicine Ball Full Twist",
-    "nameKo": "메디신볼 풀 트위스트",
+    "nameKo": "메디신 볼 풀 트위스트",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -9866,7 +9848,7 @@
   {
     "id": 240549,
     "name": "Medicine Ball Scoop Throw",
-    "nameKo": "메디슨 볼 스쿠프 던지기",
+    "nameKo": "메디신 볼 스쿱 스로우",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -9884,7 +9866,7 @@
   {
     "id": 240550,
     "name": "Middle Back Shrug",
-    "nameKo": "등 가운데 어깨를 으쓱함",
+    "nameKo": "미들 백 슈러그",
     "bodyPart": "back",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -9902,7 +9884,7 @@
   {
     "id": 240551,
     "name": "Middle Back Stretch",
-    "nameKo": "중간 등 스트레칭",
+    "nameKo": "미들 백 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -9920,7 +9902,7 @@
   {
     "id": 240552,
     "name": "Mixed Grip Chin",
-    "nameKo": "믹스그립 친",
+    "nameKo": "믹스드 그립 친",
     "bodyPart": "back",
     "equipment": "none",
     "category": "strength",
@@ -9956,7 +9938,7 @@
   {
     "id": 240554,
     "name": "Moving Claw Series",
-    "nameKo": "움직이는 클로 시리즈",
+    "nameKo": "무빙 클로 시리즈",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -9974,7 +9956,7 @@
   {
     "id": 240555,
     "name": "Muscle Snatch",
-    "nameKo": "근육 날치기",
+    "nameKo": "머슬 스내치",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -9992,7 +9974,7 @@
   {
     "id": 240556,
     "name": "Muscle Up",
-    "nameKo": "머슬업",
+    "nameKo": "머슬 업",
     "bodyPart": "back",
     "equipment": "none",
     "category": "strength",
@@ -10010,7 +9992,7 @@
   {
     "id": 240557,
     "name": "Narrow Stance Hack Squats",
-    "nameKo": "좁은 자세 해킹 스쿼트",
+    "nameKo": "내로우 스탠스 핵 스쿼트",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "strength",
@@ -10028,7 +10010,7 @@
   {
     "id": 240558,
     "name": "Narrow Stance Leg Press",
-    "nameKo": "좁은 자세 레그 프레스",
+    "nameKo": "내로우 스탠스 레그 프레스",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "strength",
@@ -10046,7 +10028,7 @@
   {
     "id": 240559,
     "name": "Narrow Stance Squats",
-    "nameKo": "좁은 자세 스쿼트",
+    "nameKo": "내로우 스탠스 스쿼트",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -10064,7 +10046,7 @@
   {
     "id": 240560,
     "name": "Natural Glute Ham Raise",
-    "nameKo": "천연 글루트 햄 레이즈",
+    "nameKo": "내추럴 글루트 햄 레이즈",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -10082,7 +10064,7 @@
   {
     "id": 240561,
     "name": "Neck-SMR",
-    "nameKo": "목 폼롤링",
+    "nameKo": "넥 폼롤링",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -10100,7 +10082,7 @@
   {
     "id": 240562,
     "name": "Neck Press",
-    "nameKo": "넥프레스",
+    "nameKo": "넥 프레스",
     "bodyPart": "chest",
     "equipment": "barbell",
     "category": "strength",
@@ -10136,7 +10118,7 @@
   {
     "id": 240564,
     "name": "Oblique Crunches - On The Floor",
-    "nameKo": "오블리크 크런치 - 바닥에",
+    "nameKo": "오블리크 크런치 온 더 플로어",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "hypertrophy",
@@ -10172,7 +10154,7 @@
   {
     "id": 240566,
     "name": "On-Your-Back Quad Stretch",
-    "nameKo": "온유어백 쿼드 스트레치",
+    "nameKo": "온 유어 백 쿼드 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -10190,7 +10172,7 @@
   {
     "id": 240567,
     "name": "On Your Side Quad Stretch",
-    "nameKo": "당신의 측면 쿼드 스트레치",
+    "nameKo": "온 유어 사이드 쿼드 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -10244,7 +10226,7 @@
   {
     "id": 240570,
     "name": "One-Arm High-Pulley Cable Side Bends",
-    "nameKo": "원암 하이 풀리 케이블 측면 벤드",
+    "nameKo": "원암 하이 풀리 케이블 사이드 벤드",
     "bodyPart": "abs",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -10262,7 +10244,7 @@
   {
     "id": 240571,
     "name": "One-Arm Incline Lateral Raise",
-    "nameKo": "한 팔 인클라인 레터럴 레이즈",
+    "nameKo": "원암 인클라인 레터럴 레이즈",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -10298,7 +10280,7 @@
   {
     "id": 240573,
     "name": "One-Arm Kettlebell Clean and Jerk",
-    "nameKo": "원암 케틀벨 클린 앤 저크",
+    "nameKo": "원암 케틀벨 클린 & 저크",
     "bodyPart": "shoulders",
     "equipment": "kettlebell",
     "category": "strength",
@@ -10334,7 +10316,7 @@
   {
     "id": 240575,
     "name": "One-Arm Kettlebell Jerk",
-    "nameKo": "한 팔 케틀벨 저크",
+    "nameKo": "원암 케틀벨 저크",
     "bodyPart": "shoulders",
     "equipment": "kettlebell",
     "category": "strength",
@@ -10352,7 +10334,7 @@
   {
     "id": 240576,
     "name": "One-Arm Kettlebell Military Press To The Side",
-    "nameKo": "한쪽 팔 케틀벨 밀리터리 프레스(측면)",
+    "nameKo": "원암 케틀벨 밀리터리 프레스 투 더 사이드",
     "bodyPart": "shoulders",
     "equipment": "kettlebell",
     "category": "strength",
@@ -10478,7 +10460,7 @@
   {
     "id": 240583,
     "name": "One-Arm Kettlebell Swings",
-    "nameKo": "한 팔 케틀벨 스윙",
+    "nameKo": "원암 케틀벨 스윙",
     "bodyPart": "legs",
     "equipment": "kettlebell",
     "category": "strength",
@@ -10514,7 +10496,7 @@
   {
     "id": 240585,
     "name": "One-Arm Medicine Ball Slam",
-    "nameKo": "외팔 메디신볼 슬램",
+    "nameKo": "원암 메디신 볼 슬램",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "strength",
@@ -10586,7 +10568,7 @@
   {
     "id": 240589,
     "name": "One-Arm Side Laterals",
-    "nameKo": "한쪽 팔 측면 측면",
+    "nameKo": "원암 사이드 레터럴",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -10604,7 +10586,7 @@
   {
     "id": 240590,
     "name": "One-Legged Cable Kickback",
-    "nameKo": "한쪽 다리 케이블 킥백",
+    "nameKo": "원 레그드 케이블 킥백",
     "bodyPart": "glutes",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -10622,7 +10604,7 @@
   {
     "id": 240591,
     "name": "One Arm Against Wall",
-    "nameKo": "벽에 한쪽 팔",
+    "nameKo": "원암 어게인스트 월",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -10640,7 +10622,7 @@
   {
     "id": 240592,
     "name": "One Arm Chin-Up",
-    "nameKo": "한 팔 친업",
+    "nameKo": "원암 친업",
     "bodyPart": "back",
     "equipment": "none",
     "category": "strength",
@@ -10676,7 +10658,7 @@
   {
     "id": 240594,
     "name": "One Arm Dumbbell Preacher Curl",
-    "nameKo": "원 암 덤벨 프리처 컬",
+    "nameKo": "원암 덤벨 프리처 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -10694,7 +10676,7 @@
   {
     "id": 240595,
     "name": "One Arm Floor Press",
-    "nameKo": "원 암 플로어 프레스",
+    "nameKo": "원암 플로어 프레스",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "strength",
@@ -10730,7 +10712,7 @@
   {
     "id": 240597,
     "name": "One Arm Pronated Dumbbell Triceps Extension",
-    "nameKo": "한 팔 회내 덤벨 삼두근 확장",
+    "nameKo": "원암 프로네이티드 덤벨 트라이셉스 익스텐션",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -10766,7 +10748,7 @@
   {
     "id": 240599,
     "name": "One Half Locust",
-    "nameKo": "메뚜기 반쪽",
+    "nameKo": "원 하프 로커스트",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -10784,7 +10766,7 @@
   {
     "id": 240600,
     "name": "One Handed Hang",
-    "nameKo": "한 손으로 걸기",
+    "nameKo": "원 핸디드 행",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -10802,7 +10784,7 @@
   {
     "id": 240601,
     "name": "One Knee To Chest",
-    "nameKo": "한쪽 무릎부터 가슴까지",
+    "nameKo": "원 니 투 체스트",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -10820,7 +10802,7 @@
   {
     "id": 240602,
     "name": "One Leg Barbell Squat",
-    "nameKo": "한쪽 다리 바벨 스쿼트",
+    "nameKo": "원 레그 바벨 스쿼트",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -10838,7 +10820,7 @@
   {
     "id": 240603,
     "name": "Open Palm Kettlebell Clean",
-    "nameKo": "오픈팜 케틀벨 클린",
+    "nameKo": "오픈 팜 케틀벨 클린",
     "bodyPart": "legs",
     "equipment": "kettlebell",
     "category": "strength",
@@ -10856,7 +10838,7 @@
   {
     "id": 240604,
     "name": "Otis-Up",
-    "nameKo": "오티스업",
+    "nameKo": "오티스 업",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "strength",
@@ -10892,7 +10874,7 @@
   {
     "id": 240606,
     "name": "Overhead Lat",
-    "nameKo": "오버헤드 위도",
+    "nameKo": "오버헤드 랫",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -10964,7 +10946,7 @@
   {
     "id": 240610,
     "name": "Overhead Triceps",
-    "nameKo": "오버헤드 삼두근",
+    "nameKo": "오버헤드 트라이셉스",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -11018,7 +11000,7 @@
   {
     "id": 240613,
     "name": "Palms-Down Dumbbell Wrist Curl Over A Bench",
-    "nameKo": "벤치 위의 팜스다운 덤벨 손목 컬",
+    "nameKo": "팜 다운 덤벨 리스트 컬 오버 어 벤치",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -11036,7 +11018,7 @@
   {
     "id": 240614,
     "name": "Palms-Down Wrist Curl Over A Bench",
-    "nameKo": "벤치 위에 손바닥을 아래로 한 손목 컬",
+    "nameKo": "팜 다운 리스트 컬 오버 어 벤치",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "hypertrophy",
@@ -11054,7 +11036,7 @@
   {
     "id": 240615,
     "name": "Palms-Up Barbell Wrist Curl Over A Bench",
-    "nameKo": "벤치 위의 팜스 업 바벨 손목 컬",
+    "nameKo": "팜 업 바벨 리스트 컬 오버 어 벤치",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "hypertrophy",
@@ -11072,7 +11054,7 @@
   {
     "id": 240616,
     "name": "Palms-Up Dumbbell Wrist Curl Over A Bench",
-    "nameKo": "벤치 위의 팜스 업 덤벨 손목 컬",
+    "nameKo": "팜 업 덤벨 리스트 컬 오버 어 벤치",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -11090,7 +11072,7 @@
   {
     "id": 240617,
     "name": "Parallel Bar Dip",
-    "nameKo": "평행봉 딥",
+    "nameKo": "패러럴 바 딥",
     "bodyPart": "arms",
     "equipment": "none",
     "category": "strength",
@@ -11108,7 +11090,7 @@
   {
     "id": 240618,
     "name": "Pelvic Tilt Into Bridge",
-    "nameKo": "골반 기울기를 브리지로",
+    "nameKo": "펠빅 틸트 인투 브리지",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -11126,7 +11108,7 @@
   {
     "id": 240619,
     "name": "Peroneals-SMR",
-    "nameKo": "비골근 폼롤링",
+    "nameKo": "페로니얼 폼롤링",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -11144,7 +11126,7 @@
   {
     "id": 240620,
     "name": "Peroneals Stretch",
-    "nameKo": "비골 스트레칭",
+    "nameKo": "페로니얼 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -11180,7 +11162,7 @@
   {
     "id": 240622,
     "name": "Pin Presses",
-    "nameKo": "핀프레스",
+    "nameKo": "핀 프레스",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -11198,7 +11180,7 @@
   {
     "id": 240623,
     "name": "Piriformis-SMR",
-    "nameKo": "이상근 폼롤링",
+    "nameKo": "피리포미스 폼롤링",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -11288,7 +11270,7 @@
   {
     "id": 240628,
     "name": "Plyo Kettlebell Pushups",
-    "nameKo": "플라이오 케틀벨 푸쉬업",
+    "nameKo": "플라이오 케틀벨 푸시업",
     "bodyPart": "chest",
     "equipment": "kettlebell",
     "category": "strength",
@@ -11306,7 +11288,7 @@
   {
     "id": 240629,
     "name": "Plyo Push-up",
-    "nameKo": "플라이오 푸쉬업",
+    "nameKo": "플라이오 푸시업",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -11324,7 +11306,7 @@
   {
     "id": 240630,
     "name": "Posterior Tibialis Stretch",
-    "nameKo": "후방 경골근 스트레칭",
+    "nameKo": "포스테리어 티비알리스 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -11342,7 +11324,7 @@
   {
     "id": 240631,
     "name": "Power Clean",
-    "nameKo": "파워클린",
+    "nameKo": "파워 클린",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -11360,7 +11342,7 @@
   {
     "id": 240632,
     "name": "Power Clean from Blocks",
-    "nameKo": "블록에서 파워 클린",
+    "nameKo": "파워 클린 프롬 블록",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -11396,7 +11378,7 @@
   {
     "id": 240634,
     "name": "Power Partials",
-    "nameKo": "전력 부분",
+    "nameKo": "파워 파셜",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -11432,7 +11414,7 @@
   {
     "id": 240636,
     "name": "Power Snatch from Blocks",
-    "nameKo": "블록에서 전력 빼앗기",
+    "nameKo": "파워 스내치 프롬 블록",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -11450,7 +11432,7 @@
   {
     "id": 240637,
     "name": "Power Stairs",
-    "nameKo": "파워 계단",
+    "nameKo": "파워 스테어",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",
@@ -11486,7 +11468,7 @@
   {
     "id": 240639,
     "name": "Press Sit-Up",
-    "nameKo": "프레스 윗몸일으키기",
+    "nameKo": "프레스 싯업",
     "bodyPart": "abs",
     "equipment": "barbell",
     "category": "strength",
@@ -11504,7 +11486,7 @@
   {
     "id": 240640,
     "name": "Prone Manual Hamstring",
-    "nameKo": "엎드린 수동 햄스트링",
+    "nameKo": "프론 매뉴얼 햄스트링",
     "bodyPart": "legs",
     "equipment": "none",
     "category": "hypertrophy",
@@ -11522,7 +11504,7 @@
   {
     "id": 240641,
     "name": "Prowler Sprint",
-    "nameKo": "프라울러 스프린트",
+    "nameKo": "프로울러 스프린트",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -11540,7 +11522,7 @@
   {
     "id": 240642,
     "name": "Pull Through",
-    "nameKo": "풀스루",
+    "nameKo": "풀 스루",
     "bodyPart": "glutes",
     "equipment": "cable",
     "category": "strength",
@@ -11558,7 +11540,7 @@
   {
     "id": 240643,
     "name": "Push-Up Wide",
-    "nameKo": "푸쉬업 와이드",
+    "nameKo": "푸시업 와이드",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -11576,7 +11558,7 @@
   {
     "id": 240644,
     "name": "Push-Ups - Close Triceps Position",
-    "nameKo": "푸시업 - 삼두근 위치 닫기",
+    "nameKo": "푸시업 클로즈 트라이셉스 포지션",
     "bodyPart": "arms",
     "equipment": "bodyweight",
     "category": "strength",
@@ -11594,7 +11576,7 @@
   {
     "id": 240645,
     "name": "Push-Ups With Feet Elevated",
-    "nameKo": "발을 올린 팔굽혀펴기",
+    "nameKo": "푸시업 피트 엘리베이티드",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -11612,7 +11594,7 @@
   {
     "id": 240646,
     "name": "Push-Ups With Feet On An Exercise Ball",
-    "nameKo": "운동 공에 발을 얹은 팔 굽혀 펴기",
+    "nameKo": "푸시업 피트 온 언 짐볼",
     "bodyPart": "chest",
     "equipment": "none",
     "category": "strength",
@@ -11648,7 +11630,7 @@
   {
     "id": 240648,
     "name": "Push Press - Behind the Neck",
-    "nameKo": "푸시 프레스 - 비하인드 넥",
+    "nameKo": "푸시 프레스 비하인드 넥",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -11666,7 +11648,7 @@
   {
     "id": 240649,
     "name": "Push Up to Side Plank",
-    "nameKo": "사이드 플랭크까지 밀어 올리기",
+    "nameKo": "푸시 업 투 사이드 플랭크",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -11702,7 +11684,7 @@
   {
     "id": 240651,
     "name": "Pushups (Close and Wide Hand Positions)",
-    "nameKo": "팔굽혀펴기(손을 닫고 넓게 벌린 자세)",
+    "nameKo": "푸시업 클로즈 & 와이드 핸드 포지션",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -11738,7 +11720,7 @@
   {
     "id": 240653,
     "name": "Quadriceps-SMR",
-    "nameKo": "대퇴사두근 폼롤링",
+    "nameKo": "쿼드리셉스 폼롤링",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -11756,7 +11738,7 @@
   {
     "id": 240654,
     "name": "Quick Leap",
-    "nameKo": "빠른 도약",
+    "nameKo": "퀵 리프",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -11774,7 +11756,7 @@
   {
     "id": 240655,
     "name": "Rack Delivery",
-    "nameKo": "랙 납품",
+    "nameKo": "랙 딜리버리",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -11792,7 +11774,7 @@
   {
     "id": 240656,
     "name": "Rack Pull with Bands",
-    "nameKo": "밴드를 이용한 랙 풀",
+    "nameKo": "랙 풀 밴드",
     "bodyPart": "full_body",
     "equipment": "resistance_band",
     "category": "strength",
@@ -11810,7 +11792,7 @@
   {
     "id": 240657,
     "name": "Rear Leg Raises",
-    "nameKo": "뒤쪽 다리 올리기",
+    "nameKo": "리어 레그 레이즈",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -11828,7 +11810,7 @@
   {
     "id": 240658,
     "name": "Recumbent Bike",
-    "nameKo": "기댄 자전거",
+    "nameKo": "리컴번트 바이크",
     "bodyPart": "cardio",
     "equipment": "machine",
     "category": "cardio",
@@ -11846,7 +11828,7 @@
   {
     "id": 240659,
     "name": "Return Push from Stance",
-    "nameKo": "스탠스에서 리턴 푸시",
+    "nameKo": "리턴 푸시 프롬 스탠스",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -12026,7 +12008,7 @@
   {
     "id": 240669,
     "name": "Reverse Flyes",
-    "nameKo": "리버스 플라이즈",
+    "nameKo": "리버스 플라이",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -12044,7 +12026,7 @@
   {
     "id": 240670,
     "name": "Reverse Flyes With External Rotation",
-    "nameKo": "외부 회전을 이용한 역방향 플라이",
+    "nameKo": "리버스 플라이 익스터널 로테이션",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -12062,7 +12044,7 @@
   {
     "id": 240671,
     "name": "Reverse Grip Bent-Over Rows",
-    "nameKo": "리버스 그립 벤트오버 로우",
+    "nameKo": "리버스 그립 벤트 오버 로우",
     "bodyPart": "back",
     "equipment": "barbell",
     "category": "strength",
@@ -12080,7 +12062,7 @@
   {
     "id": 240672,
     "name": "Reverse Grip Triceps Pushdown",
-    "nameKo": "리버스 그립 삼두근 푸시다운",
+    "nameKo": "리버스 그립 트라이셉스 푸시다운",
     "bodyPart": "arms",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -12098,7 +12080,7 @@
   {
     "id": 240673,
     "name": "Reverse Hyperextension",
-    "nameKo": "역방향 하이퍼신전",
+    "nameKo": "리버스 하이퍼익스텐션",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "strength",
@@ -12170,7 +12152,7 @@
   {
     "id": 240677,
     "name": "Rhomboids-SMR",
-    "nameKo": "능형근 폼롤링",
+    "nameKo": "롬보이드 폼롤링",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -12188,7 +12170,7 @@
   {
     "id": 240678,
     "name": "Rickshaw Carry",
-    "nameKo": "인력거 운반",
+    "nameKo": "릭쇼 캐리",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",
@@ -12206,7 +12188,7 @@
   {
     "id": 240679,
     "name": "Rickshaw Deadlift",
-    "nameKo": "인력거 데드리프트",
+    "nameKo": "릭쇼 데드리프트",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",
@@ -12224,7 +12206,7 @@
   {
     "id": 240680,
     "name": "Ring Dips",
-    "nameKo": "링 딥",
+    "nameKo": "링 딥스",
     "bodyPart": "arms",
     "equipment": "none",
     "category": "strength",
@@ -12260,7 +12242,7 @@
   {
     "id": 240682,
     "name": "Rocking Standing Calf Raise",
-    "nameKo": "락킹 스탠딩 카프 레이즈",
+    "nameKo": "라킹 스탠딩 카프 레이즈",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "hypertrophy",
@@ -12278,7 +12260,7 @@
   {
     "id": 240683,
     "name": "Rocky Pull-Ups/Pulldowns",
-    "nameKo": "록키 풀업/풀다운",
+    "nameKo": "라키 풀업 / 풀다운",
     "bodyPart": "back",
     "equipment": "none",
     "category": "strength",
@@ -12296,7 +12278,7 @@
   {
     "id": 240684,
     "name": "Romanian Deadlift from Deficit",
-    "nameKo": "적자에서 루마니아 데 드리프트",
+    "nameKo": "루마니안 데드리프트 프롬 데피싯",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -12314,7 +12296,7 @@
   {
     "id": 240685,
     "name": "Rope Climb",
-    "nameKo": "로프 클라이밍",
+    "nameKo": "로프 클라임",
     "bodyPart": "back",
     "equipment": "none",
     "category": "strength",
@@ -12368,7 +12350,7 @@
   {
     "id": 240688,
     "name": "Round The World Shoulder Stretch",
-    "nameKo": "세계일주 어깨 스트레칭",
+    "nameKo": "라운드 더 월드 숄더 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -12386,7 +12368,7 @@
   {
     "id": 240689,
     "name": "Rowing, Stationary",
-    "nameKo": "조정, 고정식",
+    "nameKo": "로잉 , 스테이셔너리",
     "bodyPart": "cardio",
     "equipment": "machine",
     "category": "cardio",
@@ -12404,7 +12386,7 @@
   {
     "id": 240690,
     "name": "Runner's Stretch",
-    "nameKo": "러너의 스트레칭",
+    "nameKo": "러너스 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -12422,7 +12404,7 @@
   {
     "id": 240691,
     "name": "Running, Treadmill",
-    "nameKo": "달리기, 런닝머신",
+    "nameKo": "러닝 , 트레드밀",
     "bodyPart": "cardio",
     "equipment": "machine",
     "category": "cardio",
@@ -12458,7 +12440,7 @@
   {
     "id": 240693,
     "name": "Scapular Pull-Up",
-    "nameKo": "견갑골 풀업",
+    "nameKo": "스캐퓰러 풀업",
     "bodyPart": "back",
     "equipment": "none",
     "category": "hypertrophy",
@@ -12476,7 +12458,7 @@
   {
     "id": 240694,
     "name": "Scissor Kick",
-    "nameKo": "가위차기",
+    "nameKo": "시저 킥",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -12494,7 +12476,7 @@
   {
     "id": 240695,
     "name": "Scissors Jump",
-    "nameKo": "가위 점프",
+    "nameKo": "시저 점프",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -12602,7 +12584,7 @@
   {
     "id": 240701,
     "name": "Seated Bent-Over Two-Arm Dumbbell Triceps Extension",
-    "nameKo": "시티드 벤트 오버 투 암 덤벨 트라이셉스 익스텐션",
+    "nameKo": "시티드 벤트 오버 투암 덤벨 트라이셉스 익스텐션",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -12620,7 +12602,7 @@
   {
     "id": 240702,
     "name": "Seated Biceps",
-    "nameKo": "앉은 팔뚝",
+    "nameKo": "시티드 바이셉스",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -12656,7 +12638,7 @@
   {
     "id": 240704,
     "name": "Seated Calf Raise",
-    "nameKo": "앉아서 송아지 키우기",
+    "nameKo": "시티드 카프 레이즈",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "hypertrophy",
@@ -12674,7 +12656,7 @@
   {
     "id": 240705,
     "name": "Seated Calf Stretch",
-    "nameKo": "앉은 종아리 스트레칭",
+    "nameKo": "시티드 카프 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -12746,7 +12728,7 @@
   {
     "id": 240709,
     "name": "Seated Dumbbell Palms-Down Wrist Curl",
-    "nameKo": "시티드 덤벨 팜스 다운 리스트 컬",
+    "nameKo": "시티드 덤벨 팜 다운 리스트 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -12764,7 +12746,7 @@
   {
     "id": 240710,
     "name": "Seated Dumbbell Palms-Up Wrist Curl",
-    "nameKo": "시티드 덤벨 손바닥 위로 손목 컬",
+    "nameKo": "시티드 덤벨 팜 업 리스트 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -12800,7 +12782,7 @@
   {
     "id": 240712,
     "name": "Seated Flat Bench Leg Pull-In",
-    "nameKo": "시티드 플랫 벤치 레그 풀인",
+    "nameKo": "시티드 플랫 벤치 레그 풀 인",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -12818,7 +12800,7 @@
   {
     "id": 240713,
     "name": "Seated Floor Hamstring Stretch",
-    "nameKo": "앉은 바닥 햄스트링 스트레칭",
+    "nameKo": "시티드 플로어 햄스트링 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -12836,7 +12818,7 @@
   {
     "id": 240714,
     "name": "Seated Front Deltoid",
-    "nameKo": "앉은 전면 삼각근",
+    "nameKo": "시티드 프론트 델토이드",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -12854,7 +12836,7 @@
   {
     "id": 240715,
     "name": "Seated Glute",
-    "nameKo": "앉은 둔근",
+    "nameKo": "시티드 글루트",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -12872,7 +12854,7 @@
   {
     "id": 240716,
     "name": "Seated Good Mornings",
-    "nameKo": "앉아 좋은 아침",
+    "nameKo": "시티드 굿 모닝",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -12908,7 +12890,7 @@
   {
     "id": 240718,
     "name": "Seated Hamstring and Calf Stretch",
-    "nameKo": "시티드 햄스트링 및 종아리 스트레칭",
+    "nameKo": "시티드 햄스트링 & 카프 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -12926,7 +12908,7 @@
   {
     "id": 240719,
     "name": "Seated Head Harness Neck Resistance",
-    "nameKo": "앉아있는 머리 하네스 목 저항",
+    "nameKo": "시티드 헤드 하네스 넥 레지스턴스",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "hypertrophy",
@@ -12962,7 +12944,7 @@
   {
     "id": 240721,
     "name": "Seated Leg Tucks",
-    "nameKo": "시티드 레그 턱츠",
+    "nameKo": "시티드 레그 턱",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "hypertrophy",
@@ -12980,7 +12962,7 @@
   {
     "id": 240722,
     "name": "Seated One-Arm Dumbbell Palms-Down Wrist Curl",
-    "nameKo": "시티드 원암 덤벨 손바닥 아래 손목 컬",
+    "nameKo": "시티드 원암 덤벨 팜 다운 리스트 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -12998,7 +12980,7 @@
   {
     "id": 240723,
     "name": "Seated One-Arm Dumbbell Palms-Up Wrist Curl",
-    "nameKo": "앉아서 하는 한 팔 덤벨 손바닥 위로 손목 컬",
+    "nameKo": "시티드 원암 덤벨 팜 업 리스트 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -13034,7 +13016,7 @@
   {
     "id": 240725,
     "name": "Seated Overhead Stretch",
-    "nameKo": "앉아서 머리 위로 스트레칭",
+    "nameKo": "시티드 오버헤드 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -13052,7 +13034,7 @@
   {
     "id": 240726,
     "name": "Seated Palm-Up Barbell Wrist Curl",
-    "nameKo": "시티드 팜업 바벨 리스트 컬",
+    "nameKo": "시티드 팜 업 바벨 리스트 컬",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "hypertrophy",
@@ -13070,7 +13052,7 @@
   {
     "id": 240727,
     "name": "Seated Palms-Down Barbell Wrist Curl",
-    "nameKo": "시티드 팜스다운 바벨 리스트 컬",
+    "nameKo": "시티드 팜 다운 바벨 리스트 컬",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "hypertrophy",
@@ -13124,7 +13106,7 @@
   {
     "id": 240730,
     "name": "Seated Two-Arm Palms-Up Low-Pulley Wrist Curl",
-    "nameKo": "앉은 두 팔 손바닥 위로 로우 풀리 손목 컬",
+    "nameKo": "시티드 투암 팜 업 로우 풀리 리스트 컬",
     "bodyPart": "arms",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -13178,7 +13160,7 @@
   {
     "id": 240733,
     "name": "Shoulder Circles",
-    "nameKo": "어깨 원",
+    "nameKo": "숄더 서클",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -13196,7 +13178,7 @@
   {
     "id": 240734,
     "name": "Shoulder Press - With Bands",
-    "nameKo": "숄더 프레스 - 밴드 포함",
+    "nameKo": "숄더 프레스 밴드",
     "bodyPart": "shoulders",
     "equipment": "resistance_band",
     "category": "strength",
@@ -13214,7 +13196,7 @@
   {
     "id": 240735,
     "name": "Shoulder Raise",
-    "nameKo": "어깨 올리기",
+    "nameKo": "숄더 레이즈",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -13232,7 +13214,7 @@
   {
     "id": 240736,
     "name": "Shoulder Stretch",
-    "nameKo": "어깨 스트레칭",
+    "nameKo": "숄더 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -13250,7 +13232,7 @@
   {
     "id": 240737,
     "name": "Side-Lying Floor Stretch",
-    "nameKo": "옆으로 누운 바닥 스트레칭",
+    "nameKo": "사이드 라잉 플로어 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -13340,7 +13322,7 @@
   {
     "id": 240742,
     "name": "Side Laterals to Front Raise",
-    "nameKo": "사이드 래터럴에서 프론트 레이즈까지",
+    "nameKo": "사이드 레터럴 투 프론트 레이즈",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -13376,7 +13358,7 @@
   {
     "id": 240744,
     "name": "Side Lying Groin Stretch",
-    "nameKo": "옆으로 누운 사타구니 스트레칭",
+    "nameKo": "사이드 라잉 그로인 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -13394,7 +13376,7 @@
   {
     "id": 240745,
     "name": "Side Neck Stretch",
-    "nameKo": "옆 목 스트레칭",
+    "nameKo": "사이드 넥 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -13412,7 +13394,7 @@
   {
     "id": 240746,
     "name": "Side Standing Long Jump",
-    "nameKo": "옆으로 서서 멀리뛰기",
+    "nameKo": "사이드 스탠딩 롱 점프",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -13430,7 +13412,7 @@
   {
     "id": 240747,
     "name": "Side To Side Chins",
-    "nameKo": "좌우 턱",
+    "nameKo": "사이드 투 사이드 친",
     "bodyPart": "back",
     "equipment": "none",
     "category": "strength",
@@ -13448,7 +13430,7 @@
   {
     "id": 240748,
     "name": "Side Wrist Pull",
-    "nameKo": "측면 손목 당기기",
+    "nameKo": "사이드 리스트 풀",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -13466,7 +13448,7 @@
   {
     "id": 240749,
     "name": "Side to Side Box Shuffle",
-    "nameKo": "좌우 박스 셔플",
+    "nameKo": "사이드 투 사이드 박스 셔플",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -13484,7 +13466,7 @@
   {
     "id": 240750,
     "name": "Single-Arm Cable Crossover",
-    "nameKo": "단일 암 케이블 크로스오버",
+    "nameKo": "싱글 암 케이블 크로스오버",
     "bodyPart": "chest",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -13502,7 +13484,7 @@
   {
     "id": 240751,
     "name": "Single-Arm Linear Jammer",
-    "nameKo": "단일 암 선형 방해기",
+    "nameKo": "싱글 암 리니어 재머",
     "bodyPart": "shoulders",
     "equipment": "barbell",
     "category": "strength",
@@ -13520,7 +13502,7 @@
   {
     "id": 240752,
     "name": "Single-Arm Push-Up",
-    "nameKo": "한쪽 팔 푸쉬업",
+    "nameKo": "싱글 암 푸시업",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -13538,7 +13520,7 @@
   {
     "id": 240753,
     "name": "Single-Cone Sprint Drill",
-    "nameKo": "단일 콘 스프린트 드릴",
+    "nameKo": "싱글 콘 스프린트 드릴",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -13574,7 +13556,7 @@
   {
     "id": 240755,
     "name": "Single-Leg Hop Progression",
-    "nameKo": "단일 다리 홉 진행",
+    "nameKo": "싱글 레그 홉 프로그레션",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -13592,7 +13574,7 @@
   {
     "id": 240756,
     "name": "Single-Leg Lateral Hop",
-    "nameKo": "단일 다리 측면 홉",
+    "nameKo": "싱글 레그 레터럴 홉",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -13610,7 +13592,7 @@
   {
     "id": 240757,
     "name": "Single-Leg Leg Extension",
-    "nameKo": "단일 다리 다리 확장",
+    "nameKo": "싱글 레그 레그 익스텐션",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "hypertrophy",
@@ -13628,7 +13610,7 @@
   {
     "id": 240758,
     "name": "Single-Leg Stride Jump",
-    "nameKo": "외다리 보폭 점프",
+    "nameKo": "싱글 레그 스트라이드 점프",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -13664,7 +13646,7 @@
   {
     "id": 240760,
     "name": "Single Leg Butt Kick",
-    "nameKo": "한쪽 다리 엉덩이 차기",
+    "nameKo": "싱글 레그 버트 킥",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -13682,7 +13664,7 @@
   {
     "id": 240761,
     "name": "Single Leg Glute Bridge",
-    "nameKo": "단일 다리 둔근 다리",
+    "nameKo": "싱글 레그 글루트 브리지",
     "bodyPart": "glutes",
     "equipment": "bodyweight",
     "category": "hypertrophy",
@@ -13700,7 +13682,7 @@
   {
     "id": 240762,
     "name": "Single Leg Push-off",
-    "nameKo": "단일 다리 푸시오프",
+    "nameKo": "싱글 레그 푸시 오프",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -13718,7 +13700,7 @@
   {
     "id": 240763,
     "name": "Sit-Up",
-    "nameKo": "윗몸일으키기",
+    "nameKo": "싯업",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "hypertrophy",
@@ -13736,7 +13718,7 @@
   {
     "id": 240764,
     "name": "Sit Squats",
-    "nameKo": "앉아서 스쿼트",
+    "nameKo": "싯 스쿼트",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -13754,7 +13736,7 @@
   {
     "id": 240765,
     "name": "Skating",
-    "nameKo": "스케이트",
+    "nameKo": "스케이팅",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -13772,7 +13754,7 @@
   {
     "id": 240766,
     "name": "Sled Drag - Harness",
-    "nameKo": "슬레드 드래그 - 하네스",
+    "nameKo": "슬레드 드래그 하네스",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",
@@ -13790,7 +13772,7 @@
   {
     "id": 240767,
     "name": "Sled Overhead Backward Walk",
-    "nameKo": "썰매 머리 위 뒤로 걷기",
+    "nameKo": "슬레드 오버헤드 백워드 워크",
     "bodyPart": "shoulders",
     "equipment": "none",
     "category": "strength",
@@ -13826,7 +13808,7 @@
   {
     "id": 240769,
     "name": "Sled Reverse Flye",
-    "nameKo": "썰매 리버스 플라이",
+    "nameKo": "슬레드 리버스 플라이",
     "bodyPart": "shoulders",
     "equipment": "none",
     "category": "hypertrophy",
@@ -13844,7 +13826,7 @@
   {
     "id": 240770,
     "name": "Sled Row",
-    "nameKo": "썰매 행",
+    "nameKo": "슬레드 로우",
     "bodyPart": "back",
     "equipment": "none",
     "category": "strength",
@@ -13862,7 +13844,7 @@
   {
     "id": 240771,
     "name": "Sledgehammer Swings",
-    "nameKo": "큰 망치 휘두르기",
+    "nameKo": "슬레지해머 스윙",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -14114,7 +14096,7 @@
   {
     "id": 240785,
     "name": "Smith Machine Pistol Squat",
-    "nameKo": "스미스 머신 권총 스쿼트",
+    "nameKo": "스미스 머신 피스톨 스쿼트",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "strength",
@@ -14168,7 +14150,7 @@
   {
     "id": 240788,
     "name": "Smith Machine Stiff-Legged Deadlift",
-    "nameKo": "스미스 머신 스티프 레그 데드리프트",
+    "nameKo": "스미스 머신 스티프 레그드 데드리프트",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "strength",
@@ -14222,7 +14204,7 @@
   {
     "id": 240791,
     "name": "Snatch",
-    "nameKo": "날치기",
+    "nameKo": "스내치",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -14276,7 +14258,7 @@
   {
     "id": 240794,
     "name": "Snatch Pull",
-    "nameKo": "잡아당기기",
+    "nameKo": "스내치 풀",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -14294,7 +14276,7 @@
   {
     "id": 240795,
     "name": "Snatch Shrug",
-    "nameKo": "어깨를 으쓱하다",
+    "nameKo": "스내치 슈러그",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -14312,7 +14294,7 @@
   {
     "id": 240796,
     "name": "Snatch from Blocks",
-    "nameKo": "블록에서 빼앗기",
+    "nameKo": "스내치 프롬 블록",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -14330,7 +14312,7 @@
   {
     "id": 240797,
     "name": "Speed Band Overhead Triceps",
-    "nameKo": "스피드 밴드 오버헤드 삼두근",
+    "nameKo": "스피드 밴드 오버헤드 트라이셉스",
     "bodyPart": "arms",
     "equipment": "resistance_band",
     "category": "hypertrophy",
@@ -14384,7 +14366,7 @@
   {
     "id": 240800,
     "name": "Spell Caster",
-    "nameKo": "주문 캐스터",
+    "nameKo": "스펠 캐스터",
     "bodyPart": "abs",
     "equipment": "dumbbell",
     "category": "strength",
@@ -14402,7 +14384,7 @@
   {
     "id": 240801,
     "name": "Spider Crawl",
-    "nameKo": "스파이더 크롤링",
+    "nameKo": "스파이더 크롤",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -14438,7 +14420,7 @@
   {
     "id": 240803,
     "name": "Spinal Stretch",
-    "nameKo": "척추 스트레칭",
+    "nameKo": "스파이널 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -14456,7 +14438,7 @@
   {
     "id": 240804,
     "name": "Split Clean",
-    "nameKo": "분할 청소",
+    "nameKo": "스플릿 클린",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -14528,7 +14510,7 @@
   {
     "id": 240808,
     "name": "Split Squat with Dumbbells",
-    "nameKo": "덤벨을 이용한 스플릿 스쿼트",
+    "nameKo": "스플릿 스쿼트 덤벨",
     "bodyPart": "legs",
     "equipment": "dumbbell",
     "category": "strength",
@@ -14582,7 +14564,7 @@
   {
     "id": 240811,
     "name": "Squat with Bands",
-    "nameKo": "밴드를 이용한 스쿼트",
+    "nameKo": "스쿼트 밴드",
     "bodyPart": "full_body",
     "equipment": "resistance_band",
     "category": "strength",
@@ -14600,7 +14582,7 @@
   {
     "id": 240812,
     "name": "Squat with Chains",
-    "nameKo": "체인을 이용한 스쿼트",
+    "nameKo": "스쿼트 체인",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -14618,7 +14600,7 @@
   {
     "id": 240813,
     "name": "Squat with Plate Movers",
-    "nameKo": "플레이트 무버를 이용한 스쿼트",
+    "nameKo": "스쿼트 플레이트 무버",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -14654,7 +14636,7 @@
   {
     "id": 240815,
     "name": "Stairmaster",
-    "nameKo": "계단마스터",
+    "nameKo": "스테어마스터",
     "bodyPart": "cardio",
     "equipment": "machine",
     "category": "cardio",
@@ -14672,7 +14654,7 @@
   {
     "id": 240816,
     "name": "Standing Alternating Dumbbell Press",
-    "nameKo": "스탠딩 교대 덤벨 프레스",
+    "nameKo": "스탠딩 얼터네이팅 덤벨 프레스",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "strength",
@@ -14726,7 +14708,7 @@
   {
     "id": 240819,
     "name": "Standing Bent-Over One-Arm Dumbbell Triceps Extension",
-    "nameKo": "스탠딩 벤트오버 한 팔 덤벨 트라이셉스 익스텐션",
+    "nameKo": "스탠딩 벤트 오버 원암 덤벨 트라이셉스 익스텐션",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -14744,7 +14726,7 @@
   {
     "id": 240820,
     "name": "Standing Bent-Over Two-Arm Dumbbell Triceps Extension",
-    "nameKo": "스탠딩 벤트 오버 투 암 덤벨 트라이셉스 익스텐션",
+    "nameKo": "스탠딩 벤트 오버 투암 덤벨 트라이셉스 익스텐션",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -14780,7 +14762,7 @@
   {
     "id": 240822,
     "name": "Standing Biceps Stretch",
-    "nameKo": "스탠딩 이두근 스트레칭",
+    "nameKo": "스탠딩 바이셉스 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -14960,7 +14942,7 @@
   {
     "id": 240832,
     "name": "Standing Dumbbell Straight-Arm Front Delt Raise Above Head",
-    "nameKo": "스탠딩 덤벨 스트레이트 암 프론트 델트 머리 위로 올리기",
+    "nameKo": "스탠딩 덤벨 스트레이트 암 프론트 델트 레이즈 어보브 헤드",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -15032,7 +15014,7 @@
   {
     "id": 240836,
     "name": "Standing Front Barbell Raise Over Head",
-    "nameKo": "스탠딩 프론트 바벨 머리 위로 올리기",
+    "nameKo": "스탠딩 프론트 바벨 레이즈 오버 헤드",
     "bodyPart": "shoulders",
     "equipment": "barbell",
     "category": "hypertrophy",
@@ -15050,7 +15032,7 @@
   {
     "id": 240837,
     "name": "Standing Gastrocnemius Calf Stretch",
-    "nameKo": "기립 비복근 종아리 스트레칭",
+    "nameKo": "스탠딩 가스트록니미어스 카프 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -15068,7 +15050,7 @@
   {
     "id": 240838,
     "name": "Standing Hamstring and Calf Stretch",
-    "nameKo": "스탠딩 햄스트링 및 종아리 스트레칭",
+    "nameKo": "스탠딩 햄스트링 & 카프 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -15104,7 +15086,7 @@
   {
     "id": 240840,
     "name": "Standing Hip Flexors",
-    "nameKo": "기립 고관절 굴근",
+    "nameKo": "스탠딩 힙 플렉서",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -15122,7 +15104,7 @@
   {
     "id": 240841,
     "name": "Standing Inner-Biceps Curl",
-    "nameKo": "스탠딩 내부 이두박근 컬",
+    "nameKo": "스탠딩 이너 바이셉스 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -15140,7 +15122,7 @@
   {
     "id": 240842,
     "name": "Standing Lateral Stretch",
-    "nameKo": "스탠딩 측면 스트레칭",
+    "nameKo": "스탠딩 레터럴 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -15176,7 +15158,7 @@
   {
     "id": 240844,
     "name": "Standing Long Jump",
-    "nameKo": "서서 멀리뛰기",
+    "nameKo": "스탠딩 롱 점프",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -15194,7 +15176,7 @@
   {
     "id": 240845,
     "name": "Standing Low-Pulley Deltoid Raise",
-    "nameKo": "스탠딩 로우 풀리 삼각근 레이즈",
+    "nameKo": "스탠딩 로우 풀리 델토이드 레이즈",
     "bodyPart": "shoulders",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -15212,7 +15194,7 @@
   {
     "id": 240846,
     "name": "Standing Low-Pulley One-Arm Triceps Extension",
-    "nameKo": "스탠딩 로우 풀리 원암 삼두근 익스텐션",
+    "nameKo": "스탠딩 로우 풀리 원암 트라이셉스 익스텐션",
     "bodyPart": "arms",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -15284,7 +15266,7 @@
   {
     "id": 240850,
     "name": "Standing One-Arm Dumbbell Curl Over Incline Bench",
-    "nameKo": "인클라인 벤치 위의 스탠딩 원암 덤벨 컬",
+    "nameKo": "스탠딩 원암 덤벨 컬 오버 인클라인 벤치",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -15338,7 +15320,7 @@
   {
     "id": 240853,
     "name": "Standing Palm-In One-Arm Dumbbell Press",
-    "nameKo": "스탠딩 팜인 원암 덤벨 프레스",
+    "nameKo": "스탠딩 팜 인 원암 덤벨 프레스",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "strength",
@@ -15356,7 +15338,7 @@
   {
     "id": 240854,
     "name": "Standing Palms-In Dumbbell Press",
-    "nameKo": "스탠딩 팜스 인 덤벨 프레스",
+    "nameKo": "스탠딩 팜 인 덤벨 프레스",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "strength",
@@ -15374,7 +15356,7 @@
   {
     "id": 240855,
     "name": "Standing Palms-Up Barbell Behind The Back Wrist Curl",
-    "nameKo": "스탠딩 팜업 바벨 비하인드 더 백 리스트 컬",
+    "nameKo": "스탠딩 팜 업 바벨 비하인드 더 백 리스트 컬",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "hypertrophy",
@@ -15392,7 +15374,7 @@
   {
     "id": 240856,
     "name": "Standing Pelvic Tilt",
-    "nameKo": "선 자세 골반 기울기",
+    "nameKo": "스탠딩 펠빅 틸트",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -15428,7 +15410,7 @@
   {
     "id": 240858,
     "name": "Standing Soleus And Achilles Stretch",
-    "nameKo": "서서 하는 가자미근과 아킬레스건 스트레칭",
+    "nameKo": "스탠딩 솔레우스 & 아킬레스 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -15446,7 +15428,7 @@
   {
     "id": 240859,
     "name": "Standing Toe Touches",
-    "nameKo": "서서 발가락 접촉",
+    "nameKo": "스탠딩 토 터치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -15482,7 +15464,7 @@
   {
     "id": 240861,
     "name": "Standing Two-Arm Overhead Throw",
-    "nameKo": "서서 두 팔로 머리 위로 던지기",
+    "nameKo": "스탠딩 투암 오버헤드 스로우",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -15518,7 +15500,7 @@
   {
     "id": 240863,
     "name": "Step-up with Knee Raise",
-    "nameKo": "니 레이즈를 이용한 스텝업",
+    "nameKo": "스텝업 니 레이즈",
     "bodyPart": "glutes",
     "equipment": "bodyweight",
     "category": "strength",
@@ -15536,7 +15518,7 @@
   {
     "id": 240864,
     "name": "Step Mill",
-    "nameKo": "스텝밀",
+    "nameKo": "스텝 밀",
     "bodyPart": "cardio",
     "equipment": "machine",
     "category": "cardio",
@@ -15554,7 +15536,7 @@
   {
     "id": 240865,
     "name": "Stiff-Legged Barbell Deadlift",
-    "nameKo": "스티프 레그 바벨 데드리프트",
+    "nameKo": "스티프 레그드 바벨 데드리프트",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -15572,7 +15554,7 @@
   {
     "id": 240866,
     "name": "Stiff-Legged Dumbbell Deadlift",
-    "nameKo": "스티프 레그 덤벨 데드리프트",
+    "nameKo": "스티프 레그드 덤벨 데드리프트",
     "bodyPart": "legs",
     "equipment": "dumbbell",
     "category": "strength",
@@ -15590,7 +15572,7 @@
   {
     "id": 240867,
     "name": "Stiff Leg Barbell Good Morning",
-    "nameKo": "뻣뻣한 다리 바벨 좋은 아침",
+    "nameKo": "스티프 레그 바벨 굿 모닝",
     "bodyPart": "back",
     "equipment": "barbell",
     "category": "strength",
@@ -15608,7 +15590,7 @@
   {
     "id": 240868,
     "name": "Stomach Vacuum",
-    "nameKo": "위 진공",
+    "nameKo": "스토머크 배큠",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -15680,7 +15662,7 @@
   {
     "id": 240872,
     "name": "Straight Raises on Incline Bench",
-    "nameKo": "인클라인 벤치에서의 스트레이트 레이즈",
+    "nameKo": "스트레이트 레이즈 온 인클라인 벤치",
     "bodyPart": "shoulders",
     "equipment": "barbell",
     "category": "hypertrophy",
@@ -15716,7 +15698,7 @@
   {
     "id": 240874,
     "name": "Sumo Deadlift with Bands",
-    "nameKo": "밴드를 이용한 스모 데드리프트",
+    "nameKo": "스모 데드리프트 밴드",
     "bodyPart": "full_body",
     "equipment": "resistance_band",
     "category": "strength",
@@ -15734,7 +15716,7 @@
   {
     "id": 240875,
     "name": "Sumo Deadlift with Chains",
-    "nameKo": "체인을 이용한 스모 데드리프트",
+    "nameKo": "스모 데드리프트 체인",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -15770,7 +15752,7 @@
   {
     "id": 240877,
     "name": "Supine Chest Throw",
-    "nameKo": "앙와위 가슴 던지기",
+    "nameKo": "수파인 체스트 스로우",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -15788,7 +15770,7 @@
   {
     "id": 240878,
     "name": "Supine One-Arm Overhead Throw",
-    "nameKo": "앙와위 한 팔 오버헤드 던지기",
+    "nameKo": "수파인 원암 오버헤드 스로우",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -15806,7 +15788,7 @@
   {
     "id": 240879,
     "name": "Supine Two-Arm Overhead Throw",
-    "nameKo": "앙와위 양팔 오버헤드 던지기",
+    "nameKo": "수파인 투암 오버헤드 스로우",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -15824,7 +15806,7 @@
   {
     "id": 240880,
     "name": "Suspended Fallout",
-    "nameKo": "중단된 낙진",
+    "nameKo": "서스펜디드 폴아웃",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "hypertrophy",
@@ -15842,7 +15824,7 @@
   {
     "id": 240881,
     "name": "Suspended Push-Up",
-    "nameKo": "서스펜디드 푸쉬업",
+    "nameKo": "서스펜디드 푸시업",
     "bodyPart": "chest",
     "equipment": "none",
     "category": "strength",
@@ -15878,7 +15860,7 @@
   {
     "id": 240883,
     "name": "Suspended Row",
-    "nameKo": "일시 중단된 행",
+    "nameKo": "서스펜디드 로우",
     "bodyPart": "back",
     "equipment": "none",
     "category": "strength",
@@ -15914,7 +15896,7 @@
   {
     "id": 240885,
     "name": "Svend Press",
-    "nameKo": "스벤 프레스",
+    "nameKo": "스벤드 프레스",
     "bodyPart": "chest",
     "equipment": "none",
     "category": "strength",
@@ -15950,7 +15932,7 @@
   {
     "id": 240887,
     "name": "The Straddle",
-    "nameKo": "스트래들",
+    "nameKo": "더 스트래들",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -15968,7 +15950,7 @@
   {
     "id": 240888,
     "name": "Thigh Abductor",
-    "nameKo": "허벅지 납치범",
+    "nameKo": "사이 앱덕터",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "hypertrophy",
@@ -15986,7 +15968,7 @@
   {
     "id": 240889,
     "name": "Thigh Adductor",
-    "nameKo": "허벅지 내전근",
+    "nameKo": "사이 어덕터",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "hypertrophy",
@@ -16004,7 +15986,7 @@
   {
     "id": 240890,
     "name": "Tire Flip",
-    "nameKo": "타이어 뒤집기",
+    "nameKo": "타이어 플립",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",
@@ -16022,7 +16004,7 @@
   {
     "id": 240891,
     "name": "Toe Touchers",
-    "nameKo": "발가락 접촉기",
+    "nameKo": "토 터치",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -16040,7 +16022,7 @@
   {
     "id": 240892,
     "name": "Torso Rotation",
-    "nameKo": "몸통 회전",
+    "nameKo": "토르소 로테이션",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -16058,7 +16040,7 @@
   {
     "id": 240893,
     "name": "Trail Running/Walking",
-    "nameKo": "트레일 러닝/워킹",
+    "nameKo": "트레일 러닝 / 워킹",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -16094,7 +16076,7 @@
   {
     "id": 240895,
     "name": "Tricep Dumbbell Kickback",
-    "nameKo": "삼두근 덤벨 킥백",
+    "nameKo": "트라이셉 덤벨 킥백",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -16112,7 +16094,7 @@
   {
     "id": 240896,
     "name": "Tricep Side Stretch",
-    "nameKo": "삼두근 측면 스트레칭",
+    "nameKo": "트라이셉 사이드 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -16130,7 +16112,7 @@
   {
     "id": 240897,
     "name": "Triceps Overhead Extension with Rope",
-    "nameKo": "로프를 이용한 삼두근 오버헤드 익스텐션",
+    "nameKo": "트라이셉스 오버헤드 익스텐션 로프",
     "bodyPart": "arms",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -16146,27 +16128,9 @@
     "createdAt": "2026-05-15T06:50:00.138Z"
   },
   {
-    "id": 240898,
-    "name": "Triceps Pushdown",
-    "nameKo": "삼두근 푸시다운",
-    "bodyPart": "arms",
-    "equipment": "cable",
-    "category": "hypertrophy",
-    "difficulty": "beginner",
-    "description": "Triceps Pushdown",
-    "descriptionKo": null,
-    "primaryMuscles": "[\"triceps\"]",
-    "secondaryMuscles": "[]",
-    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown%2F0.jpg",
-    "secondaryImages": "[\"https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown%2F1.jpg\"]",
-    "instructions": "[\"Attach a straight or angled bar to a high pulley and grab with an overhand grip (palms facing down) at shoulder width.\",\"Standing upright with the torso straight and a very small inclination forward, bring the upper arms close to your body and perpendicular to the floor. The forearms should be pointing up towards the pulley as they hold the bar. This is your starting position.\",\"Using the triceps, bring the bar down until it touches the front of your thighs and the arms are fully extended perpendicular to the floor. The upper arms should always remain stationary next to your torso and only the forearms should move. Exhale as you perform this movement.\",\"After a second hold at the contracted position, bring the bar slowly up to the starting point. Breathe in as you perform this step.\",\"Repeat for the recommended amount of repetitions.\"]",
-    "instructionsKo": "[\"Attach a straight or angled bar to a high pulley and grab with an overhand grip (palms facing down) at shoulder width.\",\"Standing upright with the torso straight and a very small inclination forward, bring the upper arms close to your body and perpendicular to the floor. The forearms should be pointing up towards the pulley as they hold the bar. This is your starting position.\",\"Using the triceps, bring the bar down until it touches the front of your thighs and the arms are fully extended perpendicular to the floor. The upper arms should always remain stationary next to your torso and only the forearms should move. Exhale as you perform this movement.\",\"After a second hold at the contracted position, bring the bar slowly up to the starting point. Breathe in as you perform this step.\",\"Repeat for the recommended amount of repetitions.\"]",
-    "createdAt": "2026-05-15T06:50:00.138Z"
-  },
-  {
     "id": 240899,
     "name": "Triceps Pushdown - V-Bar Attachment",
-    "nameKo": "삼두근 푸시다운 - V-바 부착",
+    "nameKo": "트라이셉스 푸시다운 V 바 어태치먼트",
     "bodyPart": "arms",
     "equipment": "cable",
     "category": "hypertrophy",
@@ -16202,7 +16166,7 @@
   {
     "id": 240901,
     "name": "Two-Arm Dumbbell Preacher Curl",
-    "nameKo": "양팔 덤벨 프리처 컬",
+    "nameKo": "투암 덤벨 프리처 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "hypertrophy",
@@ -16238,7 +16202,7 @@
   {
     "id": 240903,
     "name": "Two-Arm Kettlebell Jerk",
-    "nameKo": "양팔 케틀벨 저크",
+    "nameKo": "투암 케틀벨 저크",
     "bodyPart": "shoulders",
     "equipment": "kettlebell",
     "category": "strength",
@@ -16310,7 +16274,7 @@
   {
     "id": 240907,
     "name": "Upper Back-Leg Grab",
-    "nameKo": "상부 뒷다리 잡기",
+    "nameKo": "어퍼 백 레그 그랩",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -16328,7 +16292,7 @@
   {
     "id": 240908,
     "name": "Upper Back Stretch",
-    "nameKo": "등 위쪽 스트레칭",
+    "nameKo": "어퍼 백 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -16364,7 +16328,7 @@
   {
     "id": 240910,
     "name": "Upright Cable Row",
-    "nameKo": "수직 케이블 행",
+    "nameKo": "업라이트 케이블 로우",
     "bodyPart": "back",
     "equipment": "cable",
     "category": "strength",
@@ -16382,7 +16346,7 @@
   {
     "id": 240911,
     "name": "Upright Row - With Bands",
-    "nameKo": "업라이트 로우 - 밴드 포함",
+    "nameKo": "업라이트 로우 밴드",
     "bodyPart": "back",
     "equipment": "resistance_band",
     "category": "strength",
@@ -16400,7 +16364,7 @@
   {
     "id": 240912,
     "name": "Upward Stretch",
-    "nameKo": "상향 스트레치",
+    "nameKo": "업워드 스트레치",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -16418,7 +16382,7 @@
   {
     "id": 240913,
     "name": "V-Bar Pulldown",
-    "nameKo": "V-바 풀다운",
+    "nameKo": "V 바 풀다운",
     "bodyPart": "back",
     "equipment": "cable",
     "category": "strength",
@@ -16436,7 +16400,7 @@
   {
     "id": 240914,
     "name": "V-Bar Pullup",
-    "nameKo": "V-바 풀업",
+    "nameKo": "V 바 풀업",
     "bodyPart": "back",
     "equipment": "bodyweight",
     "category": "strength",
@@ -16454,7 +16418,7 @@
   {
     "id": 240915,
     "name": "Vertical Swing",
-    "nameKo": "수직 스윙",
+    "nameKo": "버티컬 스윙",
     "bodyPart": "cardio",
     "equipment": "dumbbell",
     "category": "cardio",
@@ -16472,7 +16436,7 @@
   {
     "id": 240916,
     "name": "Walking, Treadmill",
-    "nameKo": "걷기, 런닝머신",
+    "nameKo": "워킹 , 트레드밀",
     "bodyPart": "cardio",
     "equipment": "machine",
     "category": "cardio",
@@ -16508,7 +16472,7 @@
   {
     "id": 240918,
     "name": "Weighted Ball Side Bend",
-    "nameKo": "가중 볼 사이드 벤드",
+    "nameKo": "웨이티드 볼 사이드 벤드",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "hypertrophy",
@@ -16526,7 +16490,7 @@
   {
     "id": 240919,
     "name": "Weighted Bench Dip",
-    "nameKo": "가중 벤치 딥",
+    "nameKo": "웨이티드 벤치 딥",
     "bodyPart": "arms",
     "equipment": "none",
     "category": "strength",
@@ -16598,7 +16562,7 @@
   {
     "id": 240923,
     "name": "Weighted Sissy Squat",
-    "nameKo": "가중 시시 스쿼트",
+    "nameKo": "웨이티드 시시 스쿼트",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -16616,7 +16580,7 @@
   {
     "id": 240924,
     "name": "Weighted Sit-Ups - With Bands",
-    "nameKo": "웨이티드 윗몸일으키기 - 밴드 포함",
+    "nameKo": "웨이티드 싯업 밴드",
     "bodyPart": "abs",
     "equipment": "resistance_band",
     "category": "hypertrophy",
@@ -16634,7 +16598,7 @@
   {
     "id": 240925,
     "name": "Weighted Squat",
-    "nameKo": "가중 스쿼트",
+    "nameKo": "웨이티드 스쿼트",
     "bodyPart": "legs",
     "equipment": "none",
     "category": "strength",
@@ -16724,7 +16688,7 @@
   {
     "id": 240930,
     "name": "Wide-Grip Pulldown Behind The Neck",
-    "nameKo": "목 뒤의 와이드 그립 풀다운",
+    "nameKo": "와이드 그립 풀다운 비하인드 넥",
     "bodyPart": "back",
     "equipment": "cable",
     "category": "strength",
@@ -16796,7 +16760,7 @@
   {
     "id": 240934,
     "name": "Wide Stance Stiff Legs",
-    "nameKo": "넓은 자세 뻣뻣한 다리",
+    "nameKo": "와이드 스탠스 스티프 레그",
     "bodyPart": "full_body",
     "equipment": "barbell",
     "category": "strength",
@@ -16832,7 +16796,7 @@
   {
     "id": 240936,
     "name": "Windmills",
-    "nameKo": "풍차",
+    "nameKo": "윈드밀",
     "bodyPart": "stretching",
     "equipment": "none",
     "category": "flexibility",
@@ -16850,7 +16814,7 @@
   {
     "id": 240937,
     "name": "Wrist Circles",
-    "nameKo": "손목 서클",
+    "nameKo": "리스트 서클",
     "bodyPart": "stretching",
     "equipment": "bodyweight",
     "category": "flexibility",
@@ -16868,7 +16832,7 @@
   {
     "id": 240938,
     "name": "Wrist Roller",
-    "nameKo": "손목 롤러",
+    "nameKo": "리스트 롤러",
     "bodyPart": "arms",
     "equipment": "none",
     "category": "hypertrophy",
@@ -16886,7 +16850,7 @@
   {
     "id": 240939,
     "name": "Wrist Rotations with Straight Bar",
-    "nameKo": "직선 막대를 사용한 손목 회전",
+    "nameKo": "스트레이트 바 리스트 로테이션",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "hypertrophy",
@@ -16904,7 +16868,7 @@
   {
     "id": 240940,
     "name": "Yoke Walk",
-    "nameKo": "멍에 걷기",
+    "nameKo": "요크 워크",
     "bodyPart": "full_body",
     "equipment": "none",
     "category": "strength",

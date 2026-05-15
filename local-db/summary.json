@@ -1,6 +1,6 @@
 {
   "sourceDatabase": "HfVccHhCtMME6GEsJxyASd",
-  "createdAt": "2026-05-14T04:37:34.914Z",
+  "createdAt": "2026-05-15T07:27:10.872Z",
   "tables": [
     {
       "table": "__drizzle_migrations",
@@ -20,7 +20,7 @@
     },
     {
       "table": "exercises",
-      "rows": 103
+      "rows": 941
     },
     {
       "table": "routine_exercises",

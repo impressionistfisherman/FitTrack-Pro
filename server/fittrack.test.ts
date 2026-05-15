@@ -105,6 +105,23 @@ describe("exercises.list", () => {
     expect(match).toBeTruthy();
     expect(match?.nameKo).toBe("파머스 워크");
   });
+
+  it("uses phonetic Korean labels for imported exercise names", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.exercises.list({ search: "Lateral Bound" });
+    const match = result.find((exercise) => exercise.name === "Lateral Bound");
+    expect(match).toBeTruthy();
+    expect(match?.nameKo).toBe("레터럴 바운드");
+  });
+
+  it("does not keep redundant imported duplicate variants", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.exercises.list({ search: "Chest Push" });
+    expect(result.some((exercise) => exercise.name === "Chest Push (multiple response)")).toBe(true);
+    expect(result.some((exercise) => exercise.name === "Chest Push (single response)")).toBe(false);
+  });
 });
 
 describe("exercises.detail", () => {
