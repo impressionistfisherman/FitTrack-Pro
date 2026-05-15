@@ -15,6 +15,7 @@ import History from "./pages/History";
 import AICoach from "./pages/AICoach";
 import Profile from "@/pages/Profile";
 import BodyWeight from "@/pages/BodyWeight";
+import { Analytics } from "@vercel/analytics/react";
 
 const routerBase =
   import.meta.env.BASE_URL && import.meta.env.BASE_URL !== "/"
@@ -59,6 +60,7 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark" switchable>
         <AppInner />
+        <Analytics />
       </ThemeProvider>
     </ErrorBoundary>
   );
