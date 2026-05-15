@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarDays, ChevronDown, Dumbbell, Minus, Plus, Search, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { CalendarDays, ChevronDown, Dumbbell, Loader2, Minus, Plus, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -132,8 +133,14 @@ export default function FreeWorkoutDialog({
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<SelectedExercise[]>([]);
 
-  const { data: exercises } = trpc.exercises.list.useQuery({ search: search || undefined }, { enabled: open });
-  const { data: weights } = trpc.bodyWeight.list.useQuery({ limit: 1 }, { enabled: open });
+  const { data: exercises, isLoading: exercisesLoading, isFetching: exercisesFetching } = trpc.exercises.list.useQuery(
+    { search: search || undefined },
+    { enabled: open, staleTime: 1000 * 60 * 5 }
+  );
+  const { data: weights } = trpc.bodyWeight.list.useQuery(
+    { limit: 1 },
+    { enabled: open, staleTime: 1000 * 60 * 5 }
+  );
   const startSession = trpc.workout.startSession.useMutation();
   const addLog = trpc.workout.addLog.useMutation();
   const completeSession = trpc.workout.completeSession.useMutation();
@@ -271,12 +278,18 @@ export default function FreeWorkoutDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-y-auto border-border bg-card p-4 text-foreground sm:max-w-[min(100vw-2rem,64rem)] sm:p-6">
+      <DialogContent className={cn(
+        "flex max-h-[92dvh] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-y-auto border-border bg-card p-4 text-foreground sm:p-6",
+        selected.length > 0 ? "sm:max-w-[min(100vw-2rem,56rem)]" : "sm:max-w-[26rem]"
+      )}>
         <DialogHeader>
           <DialogTitle className="text-foreground">자유 운동 기록</DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(240px,320px)_minmax(0,1fr)]">
+        <div className={cn(
+          "grid gap-4",
+          selected.length > 0 && "xl:grid-cols-[minmax(240px,300px)_minmax(0,1fr)]"
+        )}>
           <div className="min-w-0 space-y-3">
             <div className="space-y-1.5">
               <Label className="text-sm text-muted-foreground">운동 날짜</Label>
@@ -322,9 +335,19 @@ export default function FreeWorkoutDialog({
               </div>
             </div>
 
-            <ScrollArea className="h-56 rounded-lg border border-border lg:max-h-[56dvh]">
+            <ScrollArea className="h-56 rounded-lg border border-border xl:max-h-[52dvh]">
               <div className="p-2 space-y-1">
-                {filteredExercises.map((exercise) => (
+                {exercisesLoading ? (
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <div key={index} className="flex items-center gap-2 rounded-md p-2">
+                      <div className="h-4 w-4 skeleton rounded" />
+                      <div className="min-w-0 flex-1 space-y-1.5">
+                        <div className="h-3.5 w-2/3 skeleton rounded" />
+                        <div className="h-3 w-1/2 skeleton rounded" />
+                      </div>
+                    </div>
+                  ))
+                ) : filteredExercises.length > 0 ? filteredExercises.map((exercise) => (
                   <button
                     key={exercise.id}
                     type="button"
@@ -338,18 +361,24 @@ export default function FreeWorkoutDialog({
                     </span>
                     <Plus size={14} className="ml-auto text-muted-foreground shrink-0" />
                   </button>
-                ))}
+                )) : (
+                  <div className="flex h-28 items-center justify-center rounded-md text-center text-sm text-muted-foreground">
+                    검색 결과가 없습니다
+                  </div>
+                )}
               </div>
             </ScrollArea>
+            {exercisesFetching && !exercisesLoading && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Loader2 size={12} className="animate-spin" />
+                목록 업데이트 중
+              </div>
+            )}
           </div>
 
-          <div className="min-w-0 space-y-3">
-              {selected.length === 0 ? (
-                <div className="h-36 rounded-lg border border-dashed border-border flex items-center justify-center px-4 text-center text-sm text-muted-foreground sm:h-48">
-                  위 검색에서 운동을 추가하세요
-                </div>
-              ) : (
-                selected.map((item) => (
+          {selected.length > 0 && (
+            <div className="min-w-0 space-y-3">
+              {selected.map((item) => (
                   <div key={item.exercise.id} className="min-w-0 rounded-lg border border-border bg-accent/30 p-3">
                     <div className="mb-3 flex flex-wrap items-start gap-2">
                       <div className="min-w-0">
@@ -484,9 +513,9 @@ export default function FreeWorkoutDialog({
                       예상 시간: <span className="font-semibold text-foreground">{estimateExerciseDuration(item)}분</span>
                     </div>
                   </div>
-                ))
-              )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {selected.length > 0 && (

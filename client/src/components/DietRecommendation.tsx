@@ -145,7 +145,7 @@ export default function DietRecommendation() {
     staleTime: 1000 * 60 * 30, // 30분 캐시
   });
 
-  if (isLoading || isFetching) {
+  if ((isLoading || isFetching) && !data) {
     return (
       <div className="space-y-4">
         <div className="h-32 skeleton rounded-xl" />
@@ -171,10 +171,11 @@ export default function DietRecommendation() {
         </div>
         <button
           onClick={() => refetch()}
-          className="text-muted-foreground hover:text-foreground transition-colors"
+          className="text-muted-foreground hover:text-foreground transition-colors disabled:cursor-wait disabled:opacity-60"
           title="새로 추천받기"
+          disabled={isFetching}
         >
-          <RefreshCw size={14} />
+          <RefreshCw size={14} className={isFetching ? "animate-spin" : undefined} />
         </button>
       </div>
 
