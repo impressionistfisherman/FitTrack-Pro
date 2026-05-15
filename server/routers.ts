@@ -342,6 +342,7 @@ export const appRouter = router({
           reps: z.number().optional(),
           weightKg: z.number().optional(),
           durationSeconds: z.number().optional(),
+          distanceM: z.number().optional(),
           isWarmup: z.boolean().optional(),
           rpe: z.number().min(1).max(10).optional(),
           memo: z.string().max(200).optional(),
