@@ -55,6 +55,13 @@ function getAppRedirectUrl(req: Request) {
 
 function getAppRedirectUrlWithSession(req: Request, sessionToken: string) {
   const redirectUrl = new URL(getAppRedirectUrl(req));
+  const backendOrigin = normalizeOrigin(new URL(getBackendOrigin(req)).origin);
+  const redirectOrigin = normalizeOrigin(redirectUrl.origin);
+
+  if (redirectOrigin === backendOrigin) {
+    return redirectUrl.toString();
+  }
+
   const hash = new URLSearchParams(redirectUrl.hash.replace(/^#/, ""));
   hash.set("session_token", sessionToken);
   redirectUrl.hash = hash.toString();
