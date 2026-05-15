@@ -54,6 +54,26 @@ const equipmentLabels: Record<string, string> = {
   none: "기구 없음",
 };
 
+const bodyPartLabels: Record<string, string> = {
+  chest: "가슴",
+  back: "등",
+  shoulders: "어깨",
+  arms: "팔",
+  legs: "하체",
+  glutes: "둔근",
+  abs: "복근",
+  cardio: "유산소",
+};
+
+const splitPreferenceLabels: Record<string, string> = {
+  auto: "AI가 목표와 빈도에 맞춰 자동 구성",
+  full_body: "전신 운동 중심",
+  upper_lower: "상체/하체 분할",
+  push_pull_legs: "푸시/풀/레그(PPL) 분할",
+  body_part: "부위별 분할",
+  hybrid: "근력 운동과 컨디셔닝을 섞은 혼합 분할",
+};
+
 const weekdayOrder: Record<string, number> = {
   월요일: 1,
   화요일: 2,
@@ -590,6 +610,12 @@ ${historyText}
         equipment: z.array(z.string()).default([]),
         sessionDuration: z.number().int().min(20).max(180).default(60),
         daysPerWeek: z.number().int().min(1).max(7).default(3),
+        splitPreference: z.string().default("auto"),
+        excludedBodyParts: z.array(z.string()).default([]),
+        includeCardio: z.boolean().default(true),
+        includeCore: z.boolean().default(true),
+        dayFocusNotes: z.string().max(500).optional(),
+        customRequest: z.string().max(500).optional(),
       }).optional())
       .mutation(async ({ ctx, input }) => {
       const goal = await getUserGoal(ctx.user.id);
@@ -620,6 +646,23 @@ ${historyText}
 
       const daysPerWeek = input?.daysPerWeek ?? goal?.weeklyWorkouts ?? goals[0]?.weeklyWorkouts ?? 3;
       const weeklyFrequencyText = `주 운동일 수: ${daysPerWeek}일`;
+      const splitText = `선호 분할 방식: ${splitPreferenceLabels[input?.splitPreference ?? "auto"] ?? input?.splitPreference ?? "AI 자동"}`;
+      const excludedBodyParts = input?.excludedBodyParts ?? [];
+      const excludedText = excludedBodyParts.length
+        ? `제외할 부위/운동: ${excludedBodyParts.map((item) => bodyPartLabels[item] || item).join(", ")}`
+        : "제외할 부위/운동: 없음";
+      const includeCardio = input?.includeCardio ?? true;
+      const includeCore = input?.includeCore ?? true;
+      const accessoryText = [
+        includeCardio ? "유산소를 주간 계획에 적절히 포함" : "유산소는 제외",
+        includeCore ? "복근/코어를 주간 계획에 적절히 포함" : "복근/코어는 제외",
+      ].join(", ");
+      const dayFocusText = input?.dayFocusNotes?.trim()
+        ? `요일별 희망 구성: ${input.dayFocusNotes.trim()}`
+        : "요일별 희망 구성: AI가 회복을 고려해 배치";
+      const customRequestText = input?.customRequest?.trim()
+        ? `사용자 추가 요청: ${input.customRequest.trim()}`
+        : "사용자 추가 요청: 없음";
 
       const goalText = goals.length
         ? `목표: ${goals.map((item: any) => item.goal).join(", ")}, 주 ${daysPerWeek}회 운동`
@@ -642,6 +685,9 @@ ${historyText}
             - 홈트레이닝이면 맨몸 운동 위주로, 헬스장이면 기구 운동을 포함하세요.
             - 머신과 케이블은 서로 다른 기구입니다. 케이블이 선택되지 않았으면 케이블 운동을 넣지 말고, 머신이 선택되지 않았으면 머신 운동을 넣지 마세요.
             - 운동명은 한국어 운동명을 우선 사용하고, 필요하면 괄호 안에 영어명을 보조로 적으세요.
+            - 사용자가 제외한 부위/운동은 넣지 마세요.
+            - 유산소/복근 포함 여부와 사용자 추가 요청을 우선순위 높게 반영하세요.
+            - 각 운동일은 워밍업, 메인 운동, 보조 운동, 선택된 경우 유산소/복근을 균형 있게 구성하세요.
             응답은 반드시 JSON 형식으로 해주세요.`,
           },
           {
@@ -657,9 +703,14 @@ ${locationText}
 ${equipmentText}
 ${durationText}
 ${weeklyFrequencyText}
+${splitText}
+${excludedText}
+추가 구성: ${accessoryText}
+${dayFocusText}
+${customRequestText}
 
 위 정보를 바탕으로 이번 주 운동 프로그램을 추천해주세요.
-반드시 지정된 기구와 운동 시간 조건에 맞는 운동만 포함하고, 각 운동일에 대한 구체적인 운동 목록과 조언을 포함해주세요.`,
+반드시 지정된 기구, 운동 시간, 제외 부위, 분할 방식, 사용자 요청 조건에 맞는 운동만 포함하고, 각 운동일에 대한 구체적인 운동 목록과 조언을 포함해주세요.`,
           },
         ],
         response_format: {

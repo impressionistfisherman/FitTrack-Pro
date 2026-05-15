@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 const equipmentOptions = [
@@ -17,11 +18,37 @@ const equipmentOptions = [
   { value: "resistance_band", label: "밴드" },
 ];
 
+const splitOptions = [
+  { value: "auto", label: "AI 자동" },
+  { value: "full_body", label: "전신" },
+  { value: "upper_lower", label: "상/하체" },
+  { value: "push_pull_legs", label: "PPL" },
+  { value: "body_part", label: "부위 분할" },
+  { value: "hybrid", label: "혼합" },
+];
+
+const bodyPartOptions = [
+  { value: "chest", label: "가슴" },
+  { value: "back", label: "등" },
+  { value: "shoulders", label: "어깨" },
+  { value: "arms", label: "팔" },
+  { value: "legs", label: "하체" },
+  { value: "glutes", label: "둔근" },
+  { value: "abs", label: "복근" },
+  { value: "cardio", label: "유산소" },
+];
+
 function ProgramRecommendation() {
   const [location, setLocation] = useState<"gym" | "home" | "outdoor">("gym");
   const [sessionDuration, setSessionDuration] = useState("60");
   const [daysPerWeek, setDaysPerWeek] = useState("3");
   const [equipment, setEquipment] = useState<string[]>(["dumbbell", "barbell", "machine", "cable"]);
+  const [splitPreference, setSplitPreference] = useState("auto");
+  const [excludedBodyParts, setExcludedBodyParts] = useState<string[]>([]);
+  const [includeCardio, setIncludeCardio] = useState(true);
+  const [includeCore, setIncludeCore] = useState(true);
+  const [dayFocusNotes, setDayFocusNotes] = useState("");
+  const [customRequest, setCustomRequest] = useState("");
   const utils = trpc.useUtils();
   const programMutation = trpc.ai.programRecommendation.useMutation();
   const saveProgram = trpc.ai.saveProgramAsRoutines.useMutation({
@@ -40,6 +67,10 @@ function ProgramRecommendation() {
     setEquipment((items) => items.includes(value) ? items.filter((item) => item !== value) : [...items, value]);
   };
 
+  const toggleExcludedBodyPart = (value: string) => {
+    setExcludedBodyParts((items) => items.includes(value) ? items.filter((item) => item !== value) : [...items, value]);
+  };
+
   const requestProgram = () => {
     if (location !== "outdoor" && equipment.length === 0) {
       toast.error("사용 가능한 기구를 하나 이상 선택하세요.");
@@ -50,6 +81,12 @@ function ProgramRecommendation() {
       equipment: location === "gym" ? equipment : location === "home" ? equipment : ["bodyweight"],
       sessionDuration: Number(sessionDuration),
       daysPerWeek: Number(daysPerWeek),
+      splitPreference,
+      excludedBodyParts,
+      includeCardio,
+      includeCore,
+      dayFocusNotes: dayFocusNotes.trim() || undefined,
+      customRequest: customRequest.trim() || undefined,
     });
   };
 
@@ -132,6 +169,80 @@ function ProgramRecommendation() {
               </div>
             </div>
           )}
+
+          <div className="grid gap-3 lg:grid-cols-2">
+            <div>
+              <div className="mb-1.5 text-xs text-muted-foreground">분할 방식</div>
+              <Select value={splitPreference} onValueChange={setSplitPreference}>
+                <SelectTrigger className="bg-accent border-border text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  {splitOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <div className="mb-1.5 text-xs text-muted-foreground">추가 구성</div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIncludeCardio((value) => !value)}
+                  className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${includeCardio ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
+                >
+                  유산소 포함
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIncludeCore((value) => !value)}
+                  className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${includeCore ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
+                >
+                  복근 포함
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-1.5 text-xs text-muted-foreground">추천에서 뺄 부위</div>
+            <div className="flex flex-wrap gap-2">
+              {bodyPartOptions.map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => toggleExcludedBodyPart(item.value)}
+                  className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${excludedBodyParts.includes(item.value) ? "border-destructive/40 bg-destructive/10 text-destructive" : "border-border bg-accent text-muted-foreground"}`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-2">
+            <div>
+              <div className="mb-1.5 text-xs text-muted-foreground">요일별 희망 구성</div>
+              <Textarea
+                value={dayFocusNotes}
+                onChange={(event) => setDayFocusNotes(event.target.value)}
+                placeholder="예: 월 가슴/삼두, 수 등/이두, 금 하체. 어깨는 가볍게만."
+                className="min-h-24 resize-none bg-accent border-border text-foreground"
+                maxLength={500}
+              />
+            </div>
+            <div>
+              <div className="mb-1.5 text-xs text-muted-foreground">원하는 요청사항</div>
+              <Textarea
+                value={customRequest}
+                onChange={(event) => setCustomRequest(event.target.value)}
+                placeholder="예: 무릎 부담 적게, 벤치프레스 늘리고 싶음, 러닝은 20분 이하."
+                className="min-h-24 resize-none bg-accent border-border text-foreground"
+                maxLength={500}
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
