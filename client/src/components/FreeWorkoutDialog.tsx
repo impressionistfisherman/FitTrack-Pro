@@ -137,13 +137,13 @@ export default function FreeWorkoutDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card border-border text-foreground max-w-3xl max-h-[90vh]">
+      <DialogContent className="bg-card border-border text-foreground w-[calc(100vw-1rem)] max-w-3xl max-h-[92vh] overflow-hidden p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-foreground">자유 운동 기록</DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 md:grid-cols-[280px_1fr]">
-          <div className="space-y-3">
+        <div className="grid min-h-0 gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+          <div className="min-w-0 space-y-3">
             <div className="space-y-1.5">
               <Label className="text-sm text-muted-foreground">운동 날짜</Label>
               <Input
@@ -167,7 +167,7 @@ export default function FreeWorkoutDialog({
               </div>
             </div>
 
-            <ScrollArea className="h-[360px] rounded-lg border border-border">
+            <ScrollArea className="h-44 rounded-lg border border-border sm:h-60 lg:h-[360px]">
               <div className="p-2 space-y-1">
                 {filteredExercises.map((exercise) => (
                   <button
@@ -188,15 +188,15 @@ export default function FreeWorkoutDialog({
             </ScrollArea>
           </div>
 
-          <ScrollArea className="h-[470px] pr-3">
-            <div className="space-y-3">
+          <ScrollArea className="min-w-0 h-[38vh] pr-2 sm:h-[44vh] lg:h-[470px] lg:pr-3">
+            <div className="min-w-0 space-y-3">
               {selected.length === 0 ? (
-                <div className="h-48 rounded-lg border border-dashed border-border flex items-center justify-center text-sm text-muted-foreground">
+                <div className="h-36 rounded-lg border border-dashed border-border flex items-center justify-center px-4 text-center text-sm text-muted-foreground sm:h-48">
                   왼쪽에서 운동을 추가하세요
                 </div>
               ) : (
                 selected.map((item) => (
-                  <div key={item.exercise.id} className="rounded-lg border border-border bg-accent/30 p-3">
+                  <div key={item.exercise.id} className="min-w-0 rounded-lg border border-border bg-accent/30 p-3">
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="min-w-0">
                         <div className="font-semibold text-sm truncate">{item.exercise.nameKo}</div>
@@ -213,7 +213,7 @@ export default function FreeWorkoutDialog({
                     </div>
 
                     <div className="flex items-center gap-2 mb-3">
-                      <Label className="text-xs text-muted-foreground">세트 수</Label>
+                      <Label className="w-12 shrink-0 text-xs text-muted-foreground">세트 수</Label>
                       <Select
                         value={String(item.sets.length)}
                         onValueChange={(value) => updateSetCount(item.exercise.id, Number(value))}
@@ -231,21 +231,21 @@ export default function FreeWorkoutDialog({
 
                     <div className="space-y-2">
                       {item.sets.map((set) => (
-                        <div key={set.setNumber} className="grid grid-cols-[48px_1fr_1fr] gap-2 items-center">
+                        <div key={set.setNumber} className="grid min-w-0 grid-cols-[44px_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2">
                           <div className="text-xs text-muted-foreground">{set.setNumber}세트</div>
                           <Input
                             inputMode="decimal"
-                            placeholder="무게 kg"
+                            placeholder="kg"
                             value={set.weightKg}
                             onChange={(event) => updateSet(item.exercise.id, set.setNumber, "weightKg", event.target.value)}
-                            className="h-8 bg-card border-border text-foreground"
+                            className="h-8 min-w-0 bg-card border-border px-2 text-center text-foreground"
                           />
                           <Input
                             inputMode="numeric"
-                            placeholder="횟수"
+                            placeholder="회"
                             value={set.reps}
                             onChange={(event) => updateSet(item.exercise.id, set.setNumber, "reps", event.target.value)}
-                            className="h-8 bg-card border-border text-foreground"
+                            className="h-8 min-w-0 bg-card border-border px-2 text-center text-foreground"
                           />
                         </div>
                       ))}
@@ -257,11 +257,11 @@ export default function FreeWorkoutDialog({
           </ScrollArea>
         </div>
 
-        <div className="flex justify-end gap-2 pt-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
+        <div className="grid grid-cols-2 gap-2 pt-2 sm:flex sm:justify-end">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving} className="min-w-0">
             취소
           </Button>
-          <Button onClick={handleComplete} disabled={isSaving || selected.length === 0}>
+          <Button onClick={handleComplete} disabled={isSaving || selected.length === 0} className="min-w-0">
             {isSaving ? "저장 중..." : "세션 완료"}
           </Button>
         </div>
