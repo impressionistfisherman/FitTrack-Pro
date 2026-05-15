@@ -82,6 +82,12 @@ function estimateExerciseDuration(item: SelectedExercise) {
   return Number(item.durationMinutes) || 0;
 }
 
+function hasExerciseInput(item: SelectedExercise) {
+  const mode = getExerciseInputMode(item.exercise);
+  if (mode === "strength") return item.sets.some((set) => set.reps.trim() || set.weightKg.trim());
+  return Number(item.durationMinutes) > 0;
+}
+
 function todayInputValue() {
   const date = new Date();
   return toDateInputValue(date);
@@ -183,11 +189,7 @@ export default function FreeWorkoutDialog({
   };
 
   const handleComplete = async () => {
-    const validEntries = selected.filter((item) => {
-      const mode = getExerciseInputMode(item.exercise);
-      if (mode === "strength") return item.sets.some((set) => set.reps.trim() || set.weightKg.trim());
-      return Number(item.durationMinutes) > 0;
-    });
+    const validEntries = selected.filter(hasExerciseInput);
 
     if (!selected.length || !validEntries.length) {
       toast.error("운동 기록을 입력해주세요.");
@@ -250,15 +252,16 @@ export default function FreeWorkoutDialog({
   const totalCalories = selected.reduce((sum, item) => sum + estimateExerciseCalories(item, bodyWeightKg), 0);
   const totalDuration = selected.reduce((sum, item) => sum + estimateExerciseDuration(item), 0);
   const selectedWorkoutDate = parseDateInputValue(workoutDate);
+  const canSave = selected.some(hasExerciseInput);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card border-border text-foreground w-[calc(100vw-1rem)] max-w-4xl max-h-[92vh] overflow-hidden p-4 sm:p-6">
+      <DialogContent className="flex max-h-[92vh] w-[calc(100vw-1rem)] max-w-4xl flex-col overflow-hidden border-border bg-card p-4 text-foreground sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-foreground">자유 운동 기록</DialogTitle>
         </DialogHeader>
 
-        <div className="grid min-h-0 gap-4">
+        <div className="grid min-h-0 flex-1 gap-4 overflow-hidden">
           <div className="min-w-0 space-y-3">
             <div className="space-y-1.5">
               <Label className="text-sm text-muted-foreground">운동 날짜</Label>
@@ -461,12 +464,12 @@ export default function FreeWorkoutDialog({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-2 pt-2 sm:flex sm:justify-end">
+        <div className="-mx-4 grid shrink-0 grid-cols-2 gap-2 border-t border-border bg-card/95 px-4 pt-3 backdrop-blur sm:-mx-6 sm:flex sm:justify-end sm:px-6">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving} className="min-w-0">
             취소
           </Button>
-          <Button onClick={handleComplete} disabled={isSaving || selected.length === 0} className="min-w-0">
-            {isSaving ? "저장 중..." : "세션 완료"}
+          <Button onClick={handleComplete} disabled={isSaving || !canSave} className="min-w-0">
+            {isSaving ? "저장 중..." : "운동 기록 저장"}
           </Button>
         </div>
       </DialogContent>
