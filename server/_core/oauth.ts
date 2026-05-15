@@ -16,13 +16,41 @@ function getCookie(req: Request, key: string): string | undefined {
   return cookies[key];
 }
 
+function normalizeOrigin(origin: string) {
+  return origin.replace(/\/$/, "");
+}
+
 function getBackendOrigin(req: Request) {
   if (ENV.backendOrigin) return ENV.backendOrigin.replace(/\/$/, "");
   return `${req.protocol}://${req.get("host")}`;
 }
 
+function getAllowedRedirectOrigins(req: Request) {
+  return new Set(
+    [ENV.appOrigin, ENV.appRedirectUrl, getBackendOrigin(req)]
+      .filter(Boolean)
+      .map((value) => normalizeOrigin(new URL(value).origin))
+  );
+}
+
+function getSafeReturnTo(req: Request) {
+  const returnTo = getQueryParam(req, "return_to") || getCookie(req, "oauth_return_to");
+  if (!returnTo) return null;
+
+  try {
+    const url = new URL(returnTo);
+    if (getAllowedRedirectOrigins(req).has(normalizeOrigin(url.origin))) {
+      return url.toString();
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
 function getAppRedirectUrl(req: Request) {
-  return ENV.appRedirectUrl || ENV.appOrigin || getBackendOrigin(req);
+  return getSafeReturnTo(req) || ENV.appRedirectUrl || ENV.appOrigin || getBackendOrigin(req);
 }
 
 function getAppRedirectUrlWithSession(req: Request, sessionToken: string) {
@@ -42,7 +70,10 @@ export function registerOAuthRoutes(app: Express) {
 
     const redirectUri = `${getBackendOrigin(req)}/api/auth/google/callback`;
     const state = crypto.randomUUID();
-    res.cookie("oauth_state", state, { ...getSessionCookieOptions(req), maxAge: 10 * 60 * 1000 });
+    const cookieOptions = getSessionCookieOptions(req);
+    res.cookie("oauth_state", state, { ...cookieOptions, maxAge: 10 * 60 * 1000 });
+    const returnTo = getSafeReturnTo(req);
+    if (returnTo) res.cookie("oauth_return_to", returnTo, { ...cookieOptions, maxAge: 10 * 60 * 1000 });
 
     const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
     url.searchParams.set("client_id", ENV.googleClientId);
@@ -104,7 +135,10 @@ export function registerOAuthRoutes(app: Express) {
 
     const redirectUri = `${getBackendOrigin(req)}/api/auth/github/callback`;
     const state = crypto.randomUUID();
-    res.cookie("oauth_state", state, { ...getSessionCookieOptions(req), maxAge: 10 * 60 * 1000 });
+    const cookieOptions = getSessionCookieOptions(req);
+    res.cookie("oauth_state", state, { ...cookieOptions, maxAge: 10 * 60 * 1000 });
+    const returnTo = getSafeReturnTo(req);
+    if (returnTo) res.cookie("oauth_return_to", returnTo, { ...cookieOptions, maxAge: 10 * 60 * 1000 });
 
     const url = new URL("https://github.com/login/oauth/authorize");
     url.searchParams.set("client_id", ENV.githubClientId);
@@ -230,6 +264,7 @@ async function signInProviderUser(
 
   const cookieOptions = getSessionCookieOptions(req);
   res.clearCookie("oauth_state", cookieOptions);
+  res.clearCookie("oauth_return_to", cookieOptions);
   res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
   res.redirect(302, getAppRedirectUrlWithSession(req, sessionToken));
 }

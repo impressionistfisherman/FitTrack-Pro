@@ -57,13 +57,23 @@ const isGitHubPages = () =>
   typeof globalThis !== "undefined" &&
   globalThis.location?.hostname.endsWith("github.io");
 
+const getCurrentReturnUrl = () => {
+  if (typeof globalThis === "undefined" || !globalThis.location) return "";
+  return globalThis.location.href;
+};
+
 // Generate login URL at runtime so redirect URI reflects the current origin.
 export const getLoginUrl = (provider: "google" | "github" = "google") => {
   if (provider === "google" || provider === "github") {
     const apiBaseUrl = getApiBaseUrl();
-    if (apiBaseUrl) return `${apiBaseUrl}/api/auth/${provider}`;
+    const returnTo = getCurrentReturnUrl();
+    const loginPath = `/api/auth/${provider}`;
+    const loginUrl = new URL(apiBaseUrl ? `${apiBaseUrl}${loginPath}` : loginPath, globalThis.location.origin);
+    if (returnTo) loginUrl.searchParams.set("return_to", returnTo);
+
+    if (apiBaseUrl) return loginUrl.toString();
     if (isGitHubPages()) return "";
-    return `/api/auth/${provider}`;
+    return `${loginUrl.pathname}${loginUrl.search}`;
   }
 
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
