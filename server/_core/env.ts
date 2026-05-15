@@ -11,7 +11,7 @@ export const ENV = {
   githubClientId: process.env.GITHUB_CLIENT_ID ?? "",
   githubClientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
   geminiApiKey: process.env.GEMINI_API_KEY ?? "",
-  geminiModel: process.env.GEMINI_MODEL ?? "gemini-2.5-flash",
+  geminiModel: process.env.GEMINI_MODEL ?? "gemini-1.5-flash",
   backendOrigin: process.env.BACKEND_ORIGIN ?? "",
   appOrigin: process.env.APP_ORIGIN ?? "",
   appRedirectUrl: process.env.APP_REDIRECT_URL ?? "",

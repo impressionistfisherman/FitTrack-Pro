@@ -110,6 +110,18 @@ export type ResponseFormat =
   | { type: "json_object" }
   | { type: "json_schema"; json_schema: JsonSchema };
 
+type GeminiGenerateContentResponse = {
+  candidates?: Array<{
+    content?: { parts?: Array<{ text?: string }> };
+    finishReason?: string;
+  }>;
+  usageMetadata?: {
+    promptTokenCount?: number;
+    candidatesTokenCount?: number;
+    totalTokenCount?: number;
+  };
+};
+
 const ensureArray = (
   value: MessageContent | MessageContent[]
 ): MessageContent[] => (Array.isArray(value) ? value : [value]);
@@ -361,36 +373,45 @@ async function invokeGemini(params: InvokeParams): Promise<InvokeResult> {
   };
   if (systemInstruction) body.systemInstruction = systemInstruction;
 
-  const model = ENV.geminiModel || "gemini-2.5-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(ENV.geminiApiKey)}`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  const configuredModel = ENV.geminiModel || "gemini-1.5-flash";
+  const modelCandidates = Array.from(new Set([
+    configuredModel,
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-latest",
+  ]));
+  let usedModel = modelCandidates[0];
+  let lastError = "";
+  let data: GeminiGenerateContentResponse | null = null;
 
-  if (!response.ok) {
+  for (const model of modelCandidates) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(ENV.geminiApiKey)}`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (response.ok) {
+      data = await response.json() as GeminiGenerateContentResponse;
+      usedModel = model;
+      break;
+    }
+
     const errorText = await response.text();
-    throw new Error(`Gemini invoke failed: ${response.status} ${response.statusText} – ${errorText}`);
+    lastError = `Gemini invoke failed: ${response.status} ${response.statusText} – ${errorText}`;
+    if (response.status !== 404) break;
   }
 
-  const data = await response.json() as {
-    candidates?: Array<{
-      content?: { parts?: Array<{ text?: string }> };
-      finishReason?: string;
-    }>;
-    usageMetadata?: {
-      promptTokenCount?: number;
-      candidatesTokenCount?: number;
-      totalTokenCount?: number;
-    };
-  };
+  if (!data) {
+    throw new Error(lastError || "Gemini invoke failed");
+  }
+
   const content = data.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("") ?? "";
 
   return {
     id: crypto.randomUUID(),
     created: Math.floor(Date.now() / 1000),
-    model,
+    model: usedModel,
     choices: [
       {
         index: 0,
