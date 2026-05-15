@@ -91,6 +91,33 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 function ExerciseProgressItem({ exercise, maxWeight, maxReps, goalData }: any) {
+  const logs = exercise.logs ?? [];
+  const durationSeconds = logs.reduce((sum: number, item: any) => sum + (item.log.durationSeconds ?? 0), 0);
+  const distanceM = logs.reduce((sum: number, item: any) => sum + (item.log.distanceM ?? 0), 0);
+  const hasStrengthRecord = logs.some((item: any) => item.log.reps || item.log.weightKg);
+  const minutes = Math.round(durationSeconds / 60);
+  const distanceKm = distanceM > 0 ? (distanceM / 1000).toFixed(distanceM >= 10000 ? 0 : 1) : null;
+
+  if (!hasStrengthRecord) {
+    return (
+      <div>
+        <div className="flex items-center justify-between gap-3 text-xs mb-1">
+          <span className="font-medium text-foreground">{exercise.nameKo}</span>
+          <span className="text-[10px] text-muted-foreground">
+            {minutes > 0 ? `${minutes}분` : "시간 기록"}
+            {distanceKm && ` · ${distanceKm}km`}
+          </span>
+        </div>
+        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full bg-primary/70"
+            style={{ width: `${Math.min(100, Math.max(12, minutes))}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   if (!goalData) {
     return (
       <div>
@@ -140,8 +167,15 @@ function ExerciseProgressItem({ exercise, maxWeight, maxReps, goalData }: any) {
 
 function SessionCard({ session }: { session: any }) {
   const exerciseCount = new Set(session.logs.map((l: any) => l.log.exerciseId)).size;
-  const totalVolume = session.logs.reduce((sum: number, l: any) =>
+  const strengthLogs = session.logs.filter((l: any) => l.log.reps || l.log.weightKg);
+  const timedLogs = session.logs.filter((l: any) => l.log.durationSeconds);
+  const totalVolume = strengthLogs.reduce((sum: number, l: any) =>
     sum + (l.log.reps ?? 0) * (l.log.weightKg ?? 0), 0);
+  const totalDurationSeconds = timedLogs.reduce((sum: number, l: any) => sum + (l.log.durationSeconds ?? 0), 0);
+  const totalDistanceM = timedLogs.reduce((sum: number, l: any) => sum + (l.log.distanceM ?? 0), 0);
+  const totalMinutes = Math.round(totalDurationSeconds / 60);
+  const distanceText = totalDistanceM > 0 ? `${(totalDistanceM / 1000).toFixed(totalDistanceM >= 10000 ? 0 : 1)}km` : "-";
+  const hasTimedOnly = timedLogs.length > 0 && strengthLogs.length === 0;
   // 훅 규칙 위반 방지: map() 내부에서 useQuery 호출 금지
   // goalData는 null로 처리하여 ExerciseProgressItem이 목표 없이 렌더링하도록 함
 
@@ -167,12 +201,14 @@ function SessionCard({ session }: { session: any }) {
             <div className="text-[10px] text-muted-foreground">운동 종류</div>
           </div>
           <div className="p-2 bg-accent/50 rounded-lg">
-            <div className="text-sm font-bold text-foreground">{session.logs.length}</div>
-            <div className="text-[10px] text-muted-foreground">총 세트</div>
+            <div className="text-sm font-bold text-foreground">{hasTimedOnly ? totalMinutes : strengthLogs.length}</div>
+            <div className="text-[10px] text-muted-foreground">{hasTimedOnly ? "총 시간(분)" : "총 세트"}</div>
           </div>
           <div className="p-2 bg-primary/10 rounded-lg">
-            <div className="text-sm font-bold text-primary">{Math.round(totalVolume).toLocaleString()}</div>
-            <div className="text-[10px] text-muted-foreground">볼륨 (kg)</div>
+            <div className="text-sm font-bold text-primary">
+              {hasTimedOnly ? distanceText : Math.round(totalVolume).toLocaleString()}
+            </div>
+            <div className="text-[10px] text-muted-foreground">{hasTimedOnly ? "거리" : "볼륨 (kg)"}</div>
           </div>
         </div>
 
@@ -181,12 +217,13 @@ function SessionCard({ session }: { session: any }) {
           <div className="mt-3 space-y-2">
             {Array.from(new Map(session.logs.map((l: any) => [l.log.exerciseId, l.exercise])).values()).map((ex: any, idx: number) => {
               const exerciseLogs = session.logs.filter((l: any) => l.log.exerciseId === ex.id);
-              const maxWeight = Math.max(...exerciseLogs.map((l: any) => l.log.weightKg || 0));
-              const maxReps = Math.max(...exerciseLogs.map((l: any) => l.log.reps || 0));
+              const strengthExerciseLogs = exerciseLogs.filter((l: any) => l.log.reps || l.log.weightKg);
+              const maxWeight = strengthExerciseLogs.length ? Math.max(...strengthExerciseLogs.map((l: any) => l.log.weightKg || 0)) : 0;
+              const maxReps = strengthExerciseLogs.length ? Math.max(...strengthExerciseLogs.map((l: any) => l.log.reps || 0)) : 0;
               return (
                 <ExerciseProgressItem 
                   key={ex.id}
-                  exercise={ex}
+                  exercise={{ ...ex, logs: exerciseLogs }}
                   maxWeight={maxWeight}
                   maxReps={maxReps}
                   goalData={null}
