@@ -99,7 +99,7 @@ function QuickStartCard() {
             자유 운동 시작
           </Button>
 
-          {routines?.slice(0, 2).map((routine) => (
+          {routines?.slice(0, 4).map((routine) => (
             <Button
               key={routine.id}
               className="w-full justify-start gap-3 bg-accent/50 border border-border text-foreground hover:bg-accent h-11"
