@@ -25,6 +25,14 @@ function getAppRedirectUrl(req: Request) {
   return ENV.appRedirectUrl || ENV.appOrigin || getBackendOrigin(req);
 }
 
+function getAppRedirectUrlWithSession(req: Request, sessionToken: string) {
+  const redirectUrl = new URL(getAppRedirectUrl(req));
+  const hash = new URLSearchParams(redirectUrl.hash.replace(/^#/, ""));
+  hash.set("session_token", sessionToken);
+  redirectUrl.hash = hash.toString();
+  return redirectUrl.toString();
+}
+
 export function registerOAuthRoutes(app: Express) {
   app.get("/api/auth/google", (req: Request, res: Response) => {
     if (!ENV.googleClientId || !ENV.googleClientSecret) {
@@ -194,7 +202,7 @@ export function registerOAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      res.redirect(302, getAppRedirectUrl(req));
+      res.redirect(302, getAppRedirectUrlWithSession(req, sessionToken));
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
       res.status(500).json({ error: "OAuth callback failed" });
@@ -223,5 +231,5 @@ async function signInProviderUser(
   const cookieOptions = getSessionCookieOptions(req);
   res.clearCookie("oauth_state", cookieOptions);
   res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-  res.redirect(302, getAppRedirectUrl(req));
+  res.redirect(302, getAppRedirectUrlWithSession(req, sessionToken));
 }

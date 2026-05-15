@@ -1,5 +1,44 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
+const SESSION_TOKEN_STORAGE_KEY = "fittrack.sessionToken";
+
+export const getStoredSessionToken = () => {
+  if (typeof globalThis === "undefined" || !globalThis.localStorage) return null;
+  return globalThis.localStorage.getItem(SESSION_TOKEN_STORAGE_KEY);
+};
+
+export const setStoredSessionToken = (token: string) => {
+  if (typeof globalThis === "undefined" || !globalThis.localStorage) return;
+  globalThis.localStorage.setItem(SESSION_TOKEN_STORAGE_KEY, token);
+};
+
+export const clearStoredSessionToken = () => {
+  if (typeof globalThis === "undefined" || !globalThis.localStorage) return;
+  globalThis.localStorage.removeItem(SESSION_TOKEN_STORAGE_KEY);
+};
+
+export const consumeSessionTokenFromHash = () => {
+  if (typeof globalThis === "undefined" || !globalThis.location) return;
+
+  const hash = globalThis.location.hash.replace(/^#/, "");
+  if (!hash) return;
+
+  const params = new URLSearchParams(hash);
+  const token = params.get("session_token");
+  if (!token) return;
+
+  setStoredSessionToken(token);
+  params.delete("session_token");
+
+  const nextHash = params.toString();
+  const nextUrl =
+    globalThis.location.pathname +
+    globalThis.location.search +
+    (nextHash ? `#${nextHash}` : "");
+
+  globalThis.history.replaceState(null, "", nextUrl);
+};
+
 export const getAppPath = (path: string) => {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const base = import.meta.env.BASE_URL;

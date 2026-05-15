@@ -5,8 +5,10 @@ import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
-import { getApiBaseUrl, getLoginUrl } from "./const";
+import { consumeSessionTokenFromHash, getApiBaseUrl, getLoginUrl, getStoredSessionToken } from "./const";
 import "./index.css";
+
+consumeSessionTokenFromHash();
 
 const queryClient = new QueryClient();
 
@@ -42,6 +44,10 @@ const trpcClient = trpc.createClient({
     httpBatchLink({
       url: `${getApiBaseUrl()}/api/trpc`,
       transformer: superjson,
+      headers() {
+        const sessionToken = getStoredSessionToken();
+        return sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {};
+      },
       fetch(input, init) {
         return globalThis.fetch(input, {
           ...(init ?? {}),
