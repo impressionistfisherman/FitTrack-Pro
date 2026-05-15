@@ -522,8 +522,8 @@
   z-index: 50;
 }
 
-/* 데스크톱 (1024px 이상) */
-@media (min-width: 1024px) {
+/* 데스크톱 (1280px 이상) */
+@media (min-width: 1280px) {
   .app-sidebar {
     display: flex;
   }

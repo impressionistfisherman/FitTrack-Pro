@@ -271,14 +271,14 @@ export default function History() {
       />
 
       <div className="mb-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">운동 기록</h1>
             <p className="text-sm text-muted-foreground mt-0.5">달력과 차트로 운동 진행 상황을 확인하세요</p>
           </div>
           <Button
             onClick={() => setFreeWorkoutOpen(true)}
-            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+            className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
           >
             <Plus size={16} />
             자유 운동 기록
