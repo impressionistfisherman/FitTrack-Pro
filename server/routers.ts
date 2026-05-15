@@ -224,7 +224,11 @@ export const appRouter = router({
       .query(async ({ ctx, input }) => {
         const routine = await getRoutineById(input.id);
         if (!routine || routine.userId !== ctx.user.id) return null;
-        const exercises = await getRoutineExercises(input.id);
+        const exercises = (await getRoutineExercises(input.id)).map((item: any) => ({
+          ...item,
+          re: item.routineExercise,
+          ex: item.exercise,
+        }));
         return { ...routine, exercises } as any;
       }),
 
@@ -371,6 +375,55 @@ export const appRouter = router({
       .input(z.object({ limit: z.number().default(20) }))
       .query(async ({ ctx, input }) => {
         return await getWorkoutSessionsByUser(ctx.user.id, input.limit);
+      }),
+
+    saveSessionAsRoutine: protectedProcedure
+      .input(z.object({
+        sessionId: z.number(),
+        name: z.string().min(1).max(200),
+        description: z.string().max(500).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const session = await getWorkoutSessionById(input.sessionId);
+        if (!session || session.userId !== ctx.user.id) throw new Error("Not found");
+        const logs = await getWorkoutLogsBySession(input.sessionId);
+        if (!logs.length) throw new Error("No workout logs");
+
+        const goal = await getUserGoal(ctx.user.id);
+        const grouped = new Map<number, any[]>();
+        for (const item of logs) {
+          const exerciseId = item.log.exerciseId;
+          if (!grouped.has(exerciseId)) grouped.set(exerciseId, []);
+          grouped.get(exerciseId)!.push(item.log);
+        }
+
+        const routineId = await createRoutine(ctx.user.id, {
+          name: input.name,
+          description: input.description ?? `운동 세션 '${session.name ?? "운동"}'에서 저장한 루틴`,
+          goal: goal?.goal ?? "general",
+          daysPerWeek: 1,
+        });
+
+        let order = 1;
+        for (const [exerciseId, sets] of grouped.entries()) {
+          const sortedSets = sets.sort((a, b) => (a.setNumber ?? 0) - (b.setNumber ?? 0));
+          await addExerciseToRoutine(
+            routineId,
+            exerciseId,
+            order,
+            sortedSets.length,
+            sortedSets[0]?.reps ?? 10,
+            90,
+            sortedSets.map((set, index) => ({
+              setNumber: index + 1,
+              weightKg: set.weightKg ?? undefined,
+              reps: set.reps ?? undefined,
+            })),
+          );
+          order += 1;
+        }
+
+        return { success: true, routineId };
       }),
   }),
 

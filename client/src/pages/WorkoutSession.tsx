@@ -2,7 +2,7 @@ import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
   Calculator, ChevronDown, ChevronUp, Clock, Dumbbell, MessageSquare,
-  Minus, MonitorOff, MonitorUp, Plus, Save, X, CheckCircle, Timer, Trophy
+  Flame, Minus, MonitorOff, MonitorUp, Plus, RefreshCw, Save, X, CheckCircle, Timer, Trophy
 } from "lucide-react";
 import OneRMCalculator from "@/components/OneRMCalculator";
 import WorkoutShareCard from "@/components/WorkoutShareCard";
@@ -11,7 +11,7 @@ import { useParams } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useWakeLock } from "@/hooks/useWakeLock";
 import RestTimerOverlay from "@/components/RestTimerOverlay";
@@ -34,6 +34,10 @@ interface ExerciseEntry {
   restSeconds: number;
   sets: SetLog[];
   expanded: boolean;
+}
+
+function estimateCalories(durationMinutes: number, completedSets: number) {
+  return Math.max(0, Math.round(durationMinutes * 5.5 + completedSets * 2));
 }
 
 function TimerDisplay({ startTime }: { startTime: Date }) {
@@ -163,8 +167,15 @@ function AddExerciseModal({ onAdd }: { onAdd: (exercise: any, restSecs: number) 
   );
 }
 
-function ExerciseBlock({ entry, sessionId, onUpdate, onRemove, onSetComplete }:
-  { entry: ExerciseEntry; sessionId: number; onUpdate: (e: ExerciseEntry) => void; onRemove: () => void; onSetComplete: (restSecs: number) => void }) {
+function ExerciseBlock({ entry, sessionId, onUpdate, onRemove, onSetComplete, routineAlternatives = [] }:
+  {
+    entry: ExerciseEntry;
+    sessionId: number;
+    onUpdate: (e: ExerciseEntry) => void;
+    onRemove: () => void;
+    onSetComplete: (restSecs: number) => void;
+    routineAlternatives?: { id: number; nameKo: string; name: string; restSeconds?: number }[];
+  }) {
 
   const addLog = trpc.workout.addLog.useMutation();
   const deleteLog = trpc.workout.deleteLog.useMutation();
@@ -229,6 +240,19 @@ function ExerciseBlock({ entry, sessionId, onUpdate, onRemove, onSetComplete }:
   };
 
   const completedCount = entry.sets.filter(s => s.completed).length;
+  const canChangeExercise = routineAlternatives.length > 1 && completedCount === 0;
+
+  const changeExercise = (exercise: { id: number; nameKo: string; name: string; restSeconds?: number }) => {
+    if (!canChangeExercise) return;
+    onUpdate({
+      ...entry,
+      exerciseId: exercise.id,
+      nameKo: exercise.nameKo,
+      name: exercise.name,
+      restSeconds: exercise.restSeconds ?? entry.restSeconds,
+    });
+    toast.success(`${exercise.nameKo}로 변경했습니다.`);
+  };
 
   return (
     <Card className="bg-card border-border">
@@ -247,6 +271,47 @@ function ExerciseBlock({ entry, sessionId, onUpdate, onRemove, onSetComplete }:
             </div>
           </div>
           <div className="flex items-center gap-1">
+            {routineAlternatives.length > 1 && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    disabled={!canChangeExercise}
+                    title={completedCount > 0 ? "완료한 세트가 있는 운동은 변경할 수 없습니다." : "루틴 내 운동으로 변경"}
+                  >
+                    <RefreshCw size={13} />
+                    <span className="hidden sm:inline">변경</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-card border-border text-foreground max-w-md">
+                  <DialogHeader><DialogTitle>루틴 내 운동으로 변경</DialogTitle></DialogHeader>
+                  <div className="space-y-2 max-h-[55vh] overflow-y-auto">
+                    {routineAlternatives.map((exercise) => (
+                      <button
+                        key={exercise.id}
+                        type="button"
+                        onClick={() => changeExercise(exercise)}
+                        className={cn(
+                          "w-full flex items-center gap-3 rounded-xl border p-3 text-left transition-colors",
+                          exercise.id === entry.exerciseId
+                            ? "border-primary/40 bg-primary/10 text-primary"
+                            : "border-border bg-accent/50 text-foreground hover:border-primary/30"
+                        )}
+                      >
+                        <Dumbbell size={14} className="flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-medium">{exercise.nameKo}</div>
+                          <div className="truncate text-xs text-muted-foreground">{exercise.name}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
             <button onClick={toggleExpand} className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground">
               {entry.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </button>
@@ -401,6 +466,10 @@ export default function WorkoutSession() {
   const [prs, setPrs] = useState<Array<{ exerciseName: string; newMax: number; prevMax: number }>>([]);
   const [showPRDialog, setShowPRDialog] = useState(false);
   const [checkPREnabled, setCheckPREnabled] = useState(false);
+  const [sessionCompleted, setSessionCompleted] = useState(false);
+  const [saveAsRoutine, setSaveAsRoutine] = useState(false);
+  const [newRoutineName, setNewRoutineName] = useState("");
+  const [finishedDuration, setFinishedDuration] = useState(0);
   const { data: prCheckResult } = trpc.pr.check.useQuery({ sessionId: sid }, { enabled: checkPREnabled, retry: false });
 
   const { isActive: wakeLockActive, isSupported: wakeLockSupported, toggle: toggleWakeLock } = useWakeLock(true);
@@ -408,6 +477,7 @@ export default function WorkoutSession() {
   const completeSession = trpc.workout.completeSession.useMutation({
     onSuccess: () => {
       // PR 확인을 위해 쉼리 스스템 단계로 전환
+      setSessionCompleted(true);
       setCheckPREnabled(true);
       toast.success("운동이 완료되었습니다! 🎉");
     },
@@ -419,11 +489,13 @@ export default function WorkoutSession() {
     if (prCheckResult && prCheckResult.length > 0) {
       setPrs(prCheckResult);
       setShowPRDialog(true);
-    } else if (prCheckResult && prCheckResult.length === 0 && checkPREnabled) {
-      // PR가 없으면 단순히 다시 동로 돌아가기
-      setTimeout(() => { window.location.href = "/history"; }, 1500);
     }
   }, [prCheckResult, checkPREnabled]);
+
+  const saveSessionAsRoutine = trpc.workout.saveSessionAsRoutine.useMutation({
+    onSuccess: () => toast.success("오늘 진행한 내용으로 루틴을 저장했습니다."),
+    onError: () => toast.error("루틴 저장에 실패했습니다."),
+  });
 
   // 루틴 운동 목록 로드 (루틴 시작 시 자동 로드)
   const { data: routineExercises } = trpc.routines.detail.useQuery(
@@ -513,18 +585,31 @@ export default function WorkoutSession() {
   const completedSets = exercises.reduce((s, ex) => s + ex.sets.filter(set => set.completed).length, 0);
   const totalVolume = exercises.reduce((s, ex) =>
     s + ex.sets.filter(set => set.completed).reduce((s2, set) => s2 + set.reps * set.weightKg, 0), 0);
+  const currentDurationMinutes = Math.max(1, Math.floor((Date.now() - startTime.current.getTime()) / 60000));
+  const displayDurationMinutes = finishedDuration || currentDurationMinutes;
+  const estimatedCalories = estimateCalories(displayDurationMinutes, completedSets);
+  const routineAlternatives = routineExercises?.exercises?.map((item: any) => ({
+    id: item.ex.id,
+    nameKo: item.ex.nameKo,
+    name: item.ex.name,
+    restSeconds: item.re.restSeconds || 90,
+  })) ?? [];
 
-  const [finishedDuration, setFinishedDuration] = useState(0);
-
-  const handleFinish = () => {
+  const handleFinish = async () => {
     const durationMinutes = Math.max(1, Math.floor((Date.now() - startTime.current.getTime()) / 60000));
     setFinishedDuration(durationMinutes);
+    if (saveAsRoutine) {
+      await saveSessionAsRoutine.mutateAsync({
+        sessionId: sid,
+        name: newRoutineName.trim() || `${new Date().toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" })} 진행 루틴`,
+        description: `${completedSets}세트 · ${Math.round(totalVolume).toLocaleString()}kg · 예상 ${estimateCalories(durationMinutes, completedSets)}kcal`,
+      });
+    }
     completeSession.mutate({ sessionId: sid, durationMinutes, notes });
   };
 
   const handlePRClose = () => {
     setShowPRDialog(false);
-    setTimeout(() => { window.location.href = "/history"; }, 500);
   };
 
   return (
@@ -616,11 +701,18 @@ export default function WorkoutSession() {
             onUpdate={updated => setExercises(prev => prev.map((e, i) => i === idx ? updated : e))}
             onRemove={() => setExercises(prev => prev.filter((_, i) => i !== idx))}
             onSetComplete={secs => { setRestSeconds(secs); setShowRestTimer(true); }}
+            routineAlternatives={session?.routineId ? routineAlternatives : []}
           />
         ))}
       </div>
 
-      <AddExerciseModal onAdd={addExercise} />
+      {session?.routineId ? (
+        <div className="rounded-xl border border-border bg-card p-3 text-center text-xs text-muted-foreground">
+          루틴 운동 중에는 운동 추가 대신 각 운동의 변경 버튼으로 루틴 내 운동을 교체할 수 있습니다.
+        </div>
+      ) : (
+        <AddExerciseModal onAdd={addExercise} />
+      )}
 
       {/* 공유 카드 */}
       {showShareCard && (
@@ -656,40 +748,88 @@ export default function WorkoutSession() {
       {/* 완료 다이얼로그 */}
       <Dialog open={showFinish} onOpenChange={setShowFinish}>
         <DialogContent className="bg-card border-border text-foreground max-w-sm">
-          <DialogHeader><DialogTitle>운동 완료 🎉</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{sessionCompleted ? "운동 결과" : "운동 완료"}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="text-center p-3 bg-primary/10 rounded-xl">
                 <div className="text-2xl font-bold text-primary">{completedSets}</div>
-                <div className="text-xs text-muted-foreground">완료 세트</div>
+                <div className="text-xs text-muted-foreground">총 세트 수</div>
               </div>
               <div className="text-center p-3 bg-accent rounded-xl">
                 <div className="text-2xl font-bold text-foreground">{Math.round(totalVolume).toLocaleString()}</div>
-                <div className="text-xs text-muted-foreground">총 볼륨 (kg)</div>
+                <div className="text-xs text-muted-foreground">총 중량 (kg)</div>
+              </div>
+              <div className="text-center p-3 bg-orange-400/10 rounded-xl">
+                <div className="flex items-center justify-center gap-1 text-2xl font-bold text-orange-400">
+                  <Flame size={18} />
+                  {estimatedCalories}
+                </div>
+                <div className="text-xs text-muted-foreground">예상 소모 kcal</div>
+              </div>
+              <div className="text-center p-3 bg-blue-400/10 rounded-xl">
+                <div className="text-2xl font-bold text-blue-400">{displayDurationMinutes}</div>
+                <div className="text-xs text-muted-foreground">운동 시간 (분)</div>
               </div>
             </div>
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs text-muted-foreground mb-1.5 block">메모 (선택)</label>
-                <Input placeholder="오늘 운동 메모..." value={notes} onChange={e => setNotes(e.target.value)}
-                  className="bg-accent border-border text-foreground" />
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1 border-border" onClick={() => setShowFinish(false)}>계속하기</Button>
+
+            {!sessionCompleted ? (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1.5 block">메모 (선택)</label>
+                  <Input placeholder="오늘 운동 메모..." value={notes} onChange={e => setNotes(e.target.value)}
+                    className="bg-accent border-border text-foreground" />
+                </div>
+                <label className="flex items-start gap-3 rounded-xl border border-border bg-accent/40 p-3">
+                  <input
+                    type="checkbox"
+                    checked={saveAsRoutine}
+                    onChange={(e) => setSaveAsRoutine(e.target.checked)}
+                    className="mt-1"
+                  />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-foreground">오늘 진행한 내용으로 루틴 저장</div>
+                    <div className="text-xs text-muted-foreground">완료한 세트의 무게와 횟수를 새 루틴에 반영합니다.</div>
+                  </div>
+                </label>
+                {saveAsRoutine && (
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1.5 block">새 루틴 이름</label>
+                    <Input
+                      placeholder="예: 오늘의 상체 루틴"
+                      value={newRoutineName}
+                      onChange={e => setNewRoutineName(e.target.value)}
+                      className="bg-accent border-border text-foreground"
+                    />
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1 border-border" onClick={() => setShowFinish(false)}>계속하기</Button>
+                  <Button
+                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={handleFinish}
+                    disabled={completeSession.isPending || saveSessionAsRoutine.isPending}
+                  >
+                    {completeSession.isPending || saveSessionAsRoutine.isPending ? "저장 중..." : "운동 종료"}
+                  </Button>
+                </div>
                 <Button
-                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                  onClick={handleFinish} disabled={completeSession.isPending}>
-                  {completeSession.isPending ? "저장 중..." : "저장 완료"}
+                  variant="outline"
+                  className="w-full gap-2 border-border text-muted-foreground hover:text-foreground"
+                  onClick={() => { setShowFinish(false); setShowShareCard(true); }}
+                >
+                  공유 카드 만들기
                 </Button>
               </div>
-              <Button
-                variant="outline"
-                className="w-full gap-2 border-border text-muted-foreground hover:text-foreground"
-                onClick={() => { setShowFinish(false); setShowShareCard(true); }}
-              >
-                공유 카드 만들기
-              </Button>
-            </div>
+            ) : (
+              <div className="space-y-2">
+                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => { window.location.href = "/history"; }}>
+                  기록 보러가기
+                </Button>
+                <Button variant="outline" className="w-full gap-2 border-border" onClick={() => setShowShareCard(true)}>
+                  공유 카드 만들기
+                </Button>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
