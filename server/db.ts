@@ -231,6 +231,220 @@ function normalizeUser<T extends Row | null>(user: T): T {
 
 export const db = pgPool ?? mysqlPool ?? sqlite;
 
+const supplementalExercises = [
+  {
+    name: "Basketball",
+    nameKo: "농구",
+    bodyPart: "full_body",
+    equipment: "none",
+    category: "cardio",
+    difficulty: "beginner",
+    description: "Court sport combining sprints, jumps, agility, and coordination.",
+    descriptionKo: "질주, 점프, 민첩성, 협응력을 함께 쓰는 전신 구기 운동입니다.",
+    primaryMuscles: ["full body", "cardiovascular system"],
+    secondaryMuscles: ["legs", "core", "shoulders"],
+    instructions: ["가볍게 드리블과 슈팅으로 몸을 풉니다.", "짧은 질주와 방향 전환을 반복합니다.", "무릎과 발목 충격을 줄이도록 착지에 집중합니다."],
+  },
+  {
+    name: "Soccer",
+    nameKo: "축구",
+    bodyPart: "full_body",
+    equipment: "none",
+    category: "cardio",
+    difficulty: "beginner",
+    description: "Field sport emphasizing running endurance, acceleration, and lower-body coordination.",
+    descriptionKo: "지구력, 순간 가속, 하체 협응력을 함께 기르는 구기 운동입니다.",
+    primaryMuscles: ["legs", "cardiovascular system"],
+    secondaryMuscles: ["core", "glutes"],
+    instructions: ["동적 스트레칭 후 가볍게 패스와 드리블을 시작합니다.", "전력 질주와 회복 조깅을 번갈아 수행합니다.", "발목과 햄스트링 부상을 막기 위해 충분히 정리운동합니다."],
+  },
+  {
+    name: "Badminton",
+    nameKo: "배드민턴",
+    bodyPart: "full_body",
+    equipment: "none",
+    category: "cardio",
+    difficulty: "beginner",
+    description: "Racket sport for agility, shoulder endurance, and interval conditioning.",
+    descriptionKo: "민첩성, 어깨 지구력, 인터벌 체력을 기르는 라켓 구기 운동입니다.",
+    primaryMuscles: ["shoulders", "legs", "cardiovascular system"],
+    secondaryMuscles: ["arms", "core"],
+    instructions: ["손목과 어깨를 충분히 풀어줍니다.", "풋워크를 짧고 빠르게 유지합니다.", "스매시 후에는 어깨에 무리가 가지 않게 회복 시간을 둡니다."],
+  },
+  {
+    name: "Tennis",
+    nameKo: "테니스",
+    bodyPart: "full_body",
+    equipment: "none",
+    category: "cardio",
+    difficulty: "intermediate",
+    description: "Racket sport using rotational power, agility, and repeated acceleration.",
+    descriptionKo: "회전 파워, 민첩성, 반복 가속 능력을 쓰는 전신 구기 운동입니다.",
+    primaryMuscles: ["core", "legs", "shoulders"],
+    secondaryMuscles: ["arms", "cardiovascular system"],
+    instructions: ["어깨와 흉추 회전을 충분히 준비합니다.", "스텝으로 공 위치에 먼저 접근합니다.", "허리 부담을 줄이도록 팔만 쓰지 말고 몸통 회전을 사용합니다."],
+  },
+  {
+    name: "Table Tennis",
+    nameKo: "탁구",
+    bodyPart: "full_body",
+    equipment: "none",
+    category: "cardio",
+    difficulty: "beginner",
+    description: "Fast racket sport for reaction speed, coordination, and light conditioning.",
+    descriptionKo: "반응 속도, 협응력, 가벼운 유산소 능력을 기르는 구기 운동입니다.",
+    primaryMuscles: ["arms", "core"],
+    secondaryMuscles: ["legs", "shoulders"],
+    instructions: ["손목과 팔꿈치를 가볍게 풀어줍니다.", "상체를 낮추고 짧은 스텝을 유지합니다.", "반복 플레이 후 전완과 어깨를 스트레칭합니다."],
+  },
+  {
+    name: "Volleyball",
+    nameKo: "배구",
+    bodyPart: "full_body",
+    equipment: "none",
+    category: "cardio",
+    difficulty: "intermediate",
+    description: "Team sport emphasizing jumping power, shoulder endurance, and quick reactions.",
+    descriptionKo: "점프력, 어깨 지구력, 빠른 반응을 요구하는 전신 구기 운동입니다.",
+    primaryMuscles: ["legs", "shoulders", "glutes"],
+    secondaryMuscles: ["core", "arms"],
+    instructions: ["어깨와 무릎을 충분히 준비합니다.", "점프 후 무릎이 안쪽으로 무너지지 않게 착지합니다.", "어깨 사용량이 많으면 강도를 조절합니다."],
+  },
+  {
+    name: "Cable Rope Hammer Curl",
+    nameKo: "케이블 로프 해머 컬",
+    bodyPart: "arms",
+    equipment: "cable",
+    category: "hypertrophy",
+    difficulty: "beginner",
+    description: "Cable biceps and brachialis exercise with constant tension.",
+    descriptionKo: "지속 장력으로 이두근과 상완근을 자극하는 케이블 운동입니다.",
+    primaryMuscles: ["biceps", "brachialis"],
+    secondaryMuscles: ["forearms"],
+    instructions: ["로프를 하단 케이블에 연결합니다.", "팔꿈치를 몸 옆에 고정합니다.", "손목을 중립으로 유지하며 로프를 들어 올립니다.", "천천히 내려 장력을 유지합니다."],
+  },
+  {
+    name: "Cable Overhead Triceps Extension",
+    nameKo: "케이블 오버헤드 트라이셉스 익스텐션",
+    bodyPart: "arms",
+    equipment: "cable",
+    category: "hypertrophy",
+    difficulty: "intermediate",
+    description: "Cable triceps exercise emphasizing the long head.",
+    descriptionKo: "삼두근 장두를 강조하는 케이블 삼두 운동입니다.",
+    primaryMuscles: ["triceps"],
+    secondaryMuscles: ["core"],
+    instructions: ["로프를 케이블에 연결하고 등을 돌려 섭니다.", "팔꿈치를 머리 옆에 고정합니다.", "팔을 펴며 로프를 앞으로 밀어냅니다.", "팔꿈치 위치가 흔들리지 않게 돌아옵니다."],
+  },
+  {
+    name: "Straight Arm Cable Pulldown",
+    nameKo: "스트레이트 암 케이블 풀다운",
+    bodyPart: "back",
+    equipment: "cable",
+    category: "hypertrophy",
+    difficulty: "beginner",
+    description: "Cable lat isolation movement using straight arms.",
+    descriptionKo: "팔을 거의 편 상태로 광배근을 고립하는 케이블 운동입니다.",
+    primaryMuscles: ["lats"],
+    secondaryMuscles: ["triceps", "core"],
+    instructions: ["상단 케이블에 바를 연결합니다.", "팔꿈치를 살짝 굽힌 채 고정합니다.", "광배근으로 바를 허벅지 쪽으로 당깁니다.", "어깨가 으쓱하지 않게 천천히 돌아갑니다."],
+  },
+  {
+    name: "Cable High Row",
+    nameKo: "케이블 하이 로우",
+    bodyPart: "back",
+    equipment: "cable",
+    category: "hypertrophy",
+    difficulty: "intermediate",
+    description: "Cable row variation targeting upper back and lats.",
+    descriptionKo: "상부 등과 광배근을 함께 자극하는 케이블 로우 변형입니다.",
+    primaryMuscles: ["lats", "upper back"],
+    secondaryMuscles: ["biceps", "rear delts"],
+    instructions: ["케이블을 가슴보다 높은 위치에 둡니다.", "팔꿈치를 뒤쪽 아래로 당깁니다.", "견갑을 모으며 등을 수축합니다.", "반동 없이 천천히 팔을 폅니다."],
+  },
+  {
+    name: "Cable Reverse Fly",
+    nameKo: "케이블 리버스 플라이",
+    bodyPart: "shoulders",
+    equipment: "cable",
+    category: "hypertrophy",
+    difficulty: "intermediate",
+    description: "Cable rear delt and upper back isolation exercise.",
+    descriptionKo: "후면 삼각근과 상부 등을 고립하는 케이블 운동입니다.",
+    primaryMuscles: ["rear delts"],
+    secondaryMuscles: ["upper back", "traps"],
+    instructions: ["케이블을 어깨 높이에 맞춥니다.", "반대쪽 손잡이를 각각 잡습니다.", "팔꿈치를 살짝 굽힌 채 양옆으로 벌립니다.", "후면 어깨 수축을 느끼며 천천히 돌아옵니다."],
+  },
+  {
+    name: "Cable Woodchopper",
+    nameKo: "케이블 우드초퍼",
+    bodyPart: "abs",
+    equipment: "cable",
+    category: "strength",
+    difficulty: "intermediate",
+    description: "Rotational cable core exercise.",
+    descriptionKo: "회전 저항으로 코어와 복사근을 강화하는 케이블 운동입니다.",
+    primaryMuscles: ["obliques", "core"],
+    secondaryMuscles: ["shoulders", "glutes"],
+    instructions: ["케이블을 높거나 낮은 위치에 설정합니다.", "몸통을 회전해 손잡이를 대각선으로 당깁니다.", "골반과 코어를 단단히 고정합니다.", "반동 없이 시작 자세로 돌아옵니다."],
+  },
+  {
+    name: "Cable Pull Through",
+    nameKo: "케이블 풀 스루",
+    bodyPart: "glutes",
+    equipment: "cable",
+    category: "hypertrophy",
+    difficulty: "beginner",
+    description: "Hip hinge cable exercise for glutes and hamstrings.",
+    descriptionKo: "힙 힌지 패턴으로 둔근과 햄스트링을 자극하는 케이블 운동입니다.",
+    primaryMuscles: ["glutes", "hamstrings"],
+    secondaryMuscles: ["lower back", "core"],
+    instructions: ["하단 케이블에 로프를 연결하고 등을 돌려 섭니다.", "엉덩이를 뒤로 빼며 상체를 숙입니다.", "둔근을 수축해 골반을 앞으로 밀어냅니다.", "허리가 꺾이지 않게 코어를 유지합니다."],
+  },
+  {
+    name: "Low To High Cable Fly",
+    nameKo: "로우 투 하이 케이블 플라이",
+    bodyPart: "chest",
+    equipment: "cable",
+    category: "hypertrophy",
+    difficulty: "intermediate",
+    description: "Cable fly variation emphasizing upper chest.",
+    descriptionKo: "상부 가슴을 강조하는 아래에서 위로 당기는 케이블 플라이입니다.",
+    primaryMuscles: ["upper chest"],
+    secondaryMuscles: ["front delts", "biceps"],
+    instructions: ["케이블을 하단에 설정합니다.", "양손을 아래에서 위로 모읍니다.", "팔꿈치를 살짝 굽힌 각도를 유지합니다.", "가슴 수축 후 천천히 내려옵니다."],
+  },
+] as const;
+
+let supplementalExercisesReady = false;
+
+async function ensureSupplementalExercises() {
+  if (supplementalExercisesReady) return;
+  for (const exercise of supplementalExercises) {
+    const existing = await get("SELECT id FROM exercises WHERE name = ? OR nameKo = ? LIMIT 1", exercise.name, exercise.nameKo);
+    if (existing) continue;
+    await run(
+      `INSERT INTO exercises
+       (name, nameKo, bodyPart, equipment, category, difficulty, description, descriptionKo, primaryMuscles, secondaryMuscles, instructions, instructionsKo, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      exercise.name,
+      exercise.nameKo,
+      exercise.bodyPart,
+      exercise.equipment,
+      exercise.category,
+      exercise.difficulty,
+      exercise.description,
+      exercise.descriptionKo,
+      JSON.stringify(exercise.primaryMuscles),
+      JSON.stringify(exercise.secondaryMuscles),
+      JSON.stringify(exercise.instructions),
+      JSON.stringify(exercise.instructions),
+      new Date().toISOString(),
+    );
+  }
+  supplementalExercisesReady = true;
+}
+
 export async function getUserByOpenId(openId: string): Promise<any> {
   return normalizeUser(await get("SELECT * FROM users WHERE openId = ? LIMIT 1", openId));
 }
@@ -277,6 +491,8 @@ export async function getExercises(filters?: {
   category?: string;
   search?: string;
 }): Promise<Row[]> {
+  await ensureSupplementalExercises();
+
   const where: string[] = [];
   const params: any[] = [];
 

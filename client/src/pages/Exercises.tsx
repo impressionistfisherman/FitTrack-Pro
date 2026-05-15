@@ -260,7 +260,7 @@ export default function Exercises() {
         <div>
           <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--foreground)', margin: 0 }}>운동 탐색</h1>
           <p style={{ fontSize: '13px', color: 'var(--muted-foreground)', marginTop: '4px' }}>
-            103개 운동 · 부위별 · 기구별 분류
+            구기종목 포함 · 부위별 · 기구별 분류
           </p>
         </div>
         {isAuthenticated && (

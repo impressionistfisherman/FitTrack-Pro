@@ -15,7 +15,9 @@ import {
   LogIn,
   Play,
   Plus,
+  Scale,
   Target,
+  TrendingDown,
   TrendingUp,
   Trophy,
   Zap,
@@ -172,6 +174,96 @@ function StreakCard() {
   );
 }
 
+function BodyWeightSummaryCard() {
+  const { data: weights, isLoading } = trpc.bodyWeight.list.useQuery({ limit: 8 }, { retry: false });
+  const { data: goal } = trpc.goals.get.useQuery(undefined, { retry: false });
+
+  if (isLoading) {
+    return (
+      <Card className="bg-card border-border">
+        <CardContent className="p-5">
+          <div className="animate-pulse space-y-3">
+            <div className="h-4 bg-muted rounded w-24"></div>
+            <div className="h-8 bg-muted rounded w-20"></div>
+            <div className="h-2 bg-muted rounded"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const latest = weights?.[0];
+  const previous = weights?.[1];
+  const diff = latest && previous ? Math.round((latest.weightKg - previous.weightKg) * 10) / 10 : null;
+  const targetWeight = (goal as any)?.targetWeight;
+  const targetDiff = latest && targetWeight ? Math.round((latest.weightKg - targetWeight) * 10) / 10 : null;
+
+  return (
+    <Link href="/body-weight">
+      <Card className="bg-card border-border hover:border-primary/30 transition-all duration-200 cursor-pointer">
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Scale size={16} className="text-primary" />
+              <h3 className="font-semibold text-foreground">체중 추적</h3>
+            </div>
+            <ChevronRight size={14} className="text-muted-foreground" />
+          </div>
+
+          {latest ? (
+            <div className="space-y-3">
+              <div className="flex items-end justify-between gap-3">
+                <div>
+                  <div className="text-3xl font-bold text-foreground">
+                    {latest.weightKg}
+                    <span className="ml-1 text-sm font-medium text-muted-foreground">kg</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {new Date(latest.recordedAt).toLocaleDateString("ko-KR", { month: "short", day: "numeric" })}
+                  </div>
+                </div>
+                {diff !== null && (
+                  <Badge className={cn(
+                    "border text-xs",
+                    diff < 0 ? "border-green-400/20 bg-green-400/10 text-green-400"
+                      : diff > 0 ? "border-orange-400/20 bg-orange-400/10 text-orange-400"
+                        : "border-border bg-accent text-muted-foreground"
+                  )}>
+                    {diff < 0 ? <TrendingDown size={11} className="mr-1" /> : <TrendingUp size={11} className="mr-1" />}
+                    {diff > 0 ? "+" : ""}{diff}kg
+                  </Badge>
+                )}
+              </div>
+
+              {targetWeight ? (
+                <div className="rounded-xl bg-accent/35 p-3">
+                  <div className="mb-1 flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">목표 체중</span>
+                    <span className="font-semibold text-foreground">{targetWeight}kg</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {targetDiff === 0 ? "목표 달성" : targetDiff && targetDiff > 0 ? `${targetDiff}kg 감량 필요` : `${Math.abs(targetDiff ?? 0)}kg 목표보다 낮음`}
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl bg-accent/35 p-3 text-xs text-muted-foreground">
+                  프로필에서 목표 체중을 설정하면 진행 상황이 함께 표시됩니다.
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="py-4 text-center">
+              <Scale size={28} className="mx-auto mb-2 text-muted-foreground opacity-40" />
+              <p className="text-sm text-muted-foreground">체중 기록이 없습니다</p>
+              <p className="text-xs text-muted-foreground mt-1">오늘 체중을 기록해보세요.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
+
 function MonthlyStatsCard() {
   const { data: stats, isLoading } = trpc.monthlyStats.get.useQuery({ months: 6 }, { retry: false });
 
@@ -293,7 +385,7 @@ function RecentWorkouts() {
 
 function FeatureCards() {
   const features = [
-    { href: "/exercises", icon: Dumbbell, label: "운동 탐색", desc: "103개 운동 데이터베이스", color: "text-primary bg-primary/10" },
+    { href: "/exercises", icon: Dumbbell, label: "운동 탐색", desc: "구기종목 포함 운동 DB", color: "text-primary bg-primary/10" },
     { href: "/routines", icon: Activity, label: "루틴 관리", desc: "맞춤 루틴 생성", color: "text-blue-400 bg-blue-400/10" },
     { href: "/history", icon: Calendar, label: "운동 기록", desc: "달력 & 차트 분석", color: "text-orange-400 bg-orange-400/10" },
     { href: "/ai-coach", icon: Bot, label: "AI 코치", desc: "맞춤 추천 & 분석", color: "text-purple-400 bg-purple-400/10" },
@@ -341,13 +433,13 @@ export default function Home() {
           <h1 className="text-4xl font-display tracking-wider text-foreground mb-2">FITTRACK PRO</h1>
           <p className="text-muted-foreground mb-2 text-sm font-medium">스마트 운동 관리 플랫폼</p>
           <p className="text-muted-foreground/70 text-xs mb-8 leading-relaxed">
-            103개 운동 데이터베이스 · AI 맞춤 추천<br />
+            구기종목 포함 운동 데이터베이스 · AI 맞춤 추천<br />
             루틴 관리 · 운동 기록 · 진행 분석
           </p>
 
           <div className="grid grid-cols-3 gap-4 mb-8">
             {[
-              { icon: Dumbbell, label: "103개 운동" },
+              { icon: Dumbbell, label: "운동 DB" },
               { icon: Bot, label: "AI 추천" },
               { icon: TrendingUp, label: "진행 분석" },
             ].map((item) => (
@@ -439,7 +531,7 @@ export default function Home() {
       {/* Streak & Monthly Stats */}
       <div className="grid lg:grid-cols-2 gap-4">
         <StreakCard />
-        <MonthlyStatsCard />
+        <BodyWeightSummaryCard />
       </div>
 
       {/* Main Grid */}
@@ -450,6 +542,7 @@ export default function Home() {
         </div>
         <div className="space-y-4">
           <FeatureCards />
+          <MonthlyStatsCard />
           {/* AI Coach CTA */}
           <Link href="/ai-coach">
             <Card className="bg-gradient-to-br from-primary/10 to-blue-500/10 border-primary/20 cursor-pointer hover:border-primary/40 transition-all duration-200">
