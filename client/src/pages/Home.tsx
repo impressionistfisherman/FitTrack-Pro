@@ -322,6 +322,8 @@ export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const { data: stats } = trpc.history.stats.useQuery(undefined, { enabled: isAuthenticated, retry: false });
   const { data: goal } = trpc.goals.get.useQuery(undefined, { enabled: isAuthenticated, retry: false });
+  const { data: goals } = trpc.goals.list.useQuery(undefined, { enabled: isAuthenticated, retry: false });
+  const { data: preferences } = trpc.preferences.get.useQuery(undefined, { enabled: isAuthenticated, retry: false });
 
   if (!isAuthenticated) {
     return (
@@ -386,6 +388,13 @@ export default function Home() {
     if (hour < 18) return "안녕하세요";
     return "수고하셨어요";
   };
+  const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
+  const activeGoals = goals?.length ? goals : goal ? [goal] : [];
+  const experienceLabel = preferences?.experienceLevel === "advanced"
+    ? "헬창"
+    : preferences?.experienceLevel === "intermediate"
+      ? "운동러"
+      : "헬린이";
 
   return (
     <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-6 animate-fade-in">
@@ -393,13 +402,18 @@ export default function Home() {
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-muted-foreground">{greeting()},</p>
-          <h1 className="text-2xl font-bold text-foreground">{user?.name || "운동러"} 님 👋</h1>
-          {goal && (
-            <Badge className={cn("mt-2 text-xs border", goalColors[goal.goal] || goalColors.general)}>
-              <Target size={10} className="mr-1" />
-              목표: {goalLabels[goal.goal] || goal.goal}
+          <h1 className="text-2xl font-bold text-foreground">{displayName} 님 👋</h1>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <Badge className="text-xs border border-primary/20 bg-primary/10 text-primary">
+              {experienceLabel}
             </Badge>
-          )}
+            {activeGoals.map((item: any) => (
+              <Badge key={item.id ?? item.goal} className={cn("text-xs border", goalColors[item.goal] || goalColors.general)}>
+                <Target size={10} className="mr-1" />
+                {goalLabels[item.goal] || item.goal}
+              </Badge>
+            ))}
+          </div>
         </div>
         <Link href="/ai-coach">
           <Button className="gap-2 bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20" variant="outline">

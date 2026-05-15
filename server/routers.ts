@@ -26,6 +26,8 @@ import {
   getRoutinesByUser,
   getSessionsInDateRange,
   getUserGoal,
+  getUserGoals,
+  getUserPreference,
   getUserStats,
   getWeeklyStats,
   getWorkoutLogsBySession,
@@ -34,6 +36,8 @@ import {
   getWorkoutStreak,
   isFavorite,
   removeExerciseFromRoutine,
+  replaceUserGoals,
+  setUserPreference,
   toggleFavorite,
   updateRoutine,
   upsertUserGoal,
@@ -90,28 +94,45 @@ export const appRouter = router({
     get: protectedProcedure.query(async ({ ctx }) => {
       return await getUserGoal(ctx.user.id);
     }),
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return await getUserGoals(ctx.user.id);
+    }),
 
     set: protectedProcedure
       .input(
         z.object({
           goal: z.enum(["hypertrophy", "fat_loss", "strength", "endurance", "flexibility", "general"]),
+          goals: z.array(z.enum(["hypertrophy", "fat_loss", "strength", "endurance", "flexibility", "general"])).optional(),
           weeklyWorkouts: z.number().min(1).max(7),
           targetWeight: z.number().optional(),
           heightCm: z.number().min(100).max(250).optional(),
           gender: z.enum(["male", "female"]).optional(),
           birthYear: z.number().min(1920).max(2010).optional(),
+          experienceLevel: z.enum(["beginner", "intermediate", "advanced"]).optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
-        await upsertUserGoal(
-          ctx.user.id,
-          input.goal,
-          input.weeklyWorkouts,
-          input.targetWeight,
-          input.heightCm,
-          input.gender,
-          input.birthYear,
-        );
+        const goals = input.goals?.length ? input.goals : [input.goal];
+        await replaceUserGoals(ctx.user.id, goals, input.weeklyWorkouts, input.targetWeight, input.heightCm, input.gender, input.birthYear);
+        if (input.experienceLevel) {
+          await setUserPreference(ctx.user.id, "experienceLevel", input.experienceLevel);
+        }
+        return { success: true };
+      }),
+  }),
+
+  preferences: router({
+    get: protectedProcedure.query(async ({ ctx }) => {
+      return {
+        experienceLevel: await getUserPreference(ctx.user.id, "experienceLevel") ?? "beginner",
+      };
+    }),
+    set: protectedProcedure
+      .input(z.object({
+        experienceLevel: z.enum(["beginner", "intermediate", "advanced"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await setUserPreference(ctx.user.id, "experienceLevel", input.experienceLevel);
         return { success: true };
       }),
   }),
@@ -432,6 +453,8 @@ export const appRouter = router({
 
         const history = await getExerciseHistory(ctx.user.id, input.exerciseId, 5);
         const goal = await getUserGoal(ctx.user.id);
+        const goals = await getUserGoals(ctx.user.id);
+        const experienceLevel = await getUserPreference(ctx.user.id, "experienceLevel") ?? "beginner";
 
         if (history.length === 0) {
           return {
@@ -448,7 +471,9 @@ export const appRouter = router({
           })
           .join("\n");
 
-        const goalText = goal ? `사용자 목표: ${goal.goal}` : "목표 미설정";
+        const goalText = goals.length
+          ? `사용자 목표: ${goals.map((item: any) => item.goal).join(", ")}`
+          : goal ? `사용자 목표: ${goal.goal}` : "목표 미설정";
 
         const response = await invokeLLM({
           messages: [
@@ -461,6 +486,7 @@ export const appRouter = router({
               role: "user",
               content: `운동: ${exercise.nameKo} (${exercise.name})
 ${goalText}
+숙련도: ${experienceLevel}
 
 최근 운동 기록:
 ${historyText}
@@ -510,6 +536,8 @@ ${historyText}
       }).optional())
       .mutation(async ({ ctx, input }) => {
       const goal = await getUserGoal(ctx.user.id);
+      const goals = await getUserGoals(ctx.user.id);
+      const experienceLevel = await getUserPreference(ctx.user.id, "experienceLevel") ?? "beginner";
       const stats = await getUserStats(ctx.user.id);
       const recentSessions = await getWorkoutSessionsByUser(ctx.user.id, 5);
 
@@ -533,8 +561,10 @@ ${historyText}
         ? `1회 운동 가능 시간: ${input.sessionDuration}분`
         : "1회 운동 가능 시간: 60분";
 
-      const goalText = goal
-        ? `목표: ${goal.goal}, 주 ${goal.weeklyWorkouts}회 운동`
+      const goalText = goals.length
+        ? `목표: ${goals.map((item: any) => item.goal).join(", ")}, 주 ${goal?.weeklyWorkouts ?? goals[0]?.weeklyWorkouts ?? 3}회 운동`
+        : goal
+          ? `목표: ${goal.goal}, 주 ${goal.weeklyWorkouts}회 운동`
         : "목표 미설정 (일반 건강 관리)";
 
       const statsText = stats
@@ -555,6 +585,7 @@ ${historyText}
             role: "user",
             content: `사용자 정보:
 ${goalText}
+숙련도: ${experienceLevel}
 ${statsText}
 최근 운동 세션 수: ${recentSessions.length}회
 
@@ -618,6 +649,8 @@ ${durationText}
 
     dietRecommendation: protectedProcedure.query(async ({ ctx }) => {
       const goal = await getUserGoal(ctx.user.id);
+      const goals = await getUserGoals(ctx.user.id);
+      const experienceLevel = await getUserPreference(ctx.user.id, "experienceLevel") ?? "beginner";
       const stats = await getUserStats(ctx.user.id);
       const recentSessions = await getWorkoutSessionsByUser(ctx.user.id, 7);
 
@@ -652,8 +685,10 @@ ${durationText}
         else recommendedCalories = tdee;
       }
 
-      const goalText = goal
-        ? `운동 목표: ${goal.goal}, 주 ${goal.weeklyWorkouts}회${goal.targetWeight ? `, 목표 체중: ${goal.targetWeight}kg` : ""}`
+      const goalText = goals.length
+        ? `운동 목표: ${goals.map((item: any) => item.goal).join(", ")}, 주 ${goal?.weeklyWorkouts ?? goals[0]?.weeklyWorkouts ?? 3}회${goal?.targetWeight ? `, 목표 체중: ${goal.targetWeight}kg` : ""}`
+        : goal
+          ? `운동 목표: ${goal.goal}, 주 ${goal.weeklyWorkouts}회${goal.targetWeight ? `, 목표 체중: ${goal.targetWeight}kg` : ""}`
         : "목표 미설정";
       const bodyInfoText = `신장: ${heightCm}cm, 성별: ${gender === "female" ? "여성" : "남성"}, 나이: ${age}세${latestBodyFat ? `, 체지방률: ${latestBodyFat}%` : ""}`;
       const weightText = latestWeight
@@ -679,6 +714,7 @@ ${durationText}
             role: "user",
             content: `사용자 정보:
 ${goalText}
+숙련도: ${experienceLevel}
 ${bodyInfoText}
 ${weightText}
 ${statsText}

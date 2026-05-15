@@ -119,8 +119,12 @@ function AddWeightDialog({ onAdded }: { onAdded: () => void }) {
 export default function BodyWeightTracker() {
   const utils = trpc.useUtils();
   const { data: weights, isLoading } = trpc.bodyWeight.list.useQuery({ limit: 30 });
+  const invalidateWeightData = () => {
+    utils.bodyWeight.list.invalidate();
+    utils.ai.dietRecommendation.invalidate();
+  };
   const deleteWeight = trpc.bodyWeight.delete.useMutation({
-    onSuccess: () => { toast.success("삭제되었습니다."); utils.bodyWeight.list.invalidate(); },
+    onSuccess: () => { toast.success("삭제되었습니다."); invalidateWeightData(); },
   });
 
   if (isLoading) {
@@ -150,7 +154,7 @@ export default function BodyWeightTracker() {
             <Scale size={16} className="text-primary" />
             <span className="font-semibold text-foreground text-sm">체중 트래킹</span>
           </div>
-          <AddWeightDialog onAdded={() => utils.bodyWeight.list.invalidate()} />
+          <AddWeightDialog onAdded={invalidateWeightData} />
         </div>
 
         {weights && weights.length > 0 ? (

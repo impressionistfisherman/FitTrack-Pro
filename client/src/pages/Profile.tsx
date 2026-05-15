@@ -28,13 +28,23 @@ const goalOptions = [
   { value: "general", label: "일반 건강", desc: "전반적 건강", color: "text-primary bg-primary/10 border-primary/20" },
 ];
 
+const experienceOptions = [
+  { value: "beginner", label: "헬린이", desc: "운동을 막 시작했어요" },
+  { value: "intermediate", label: "운동러", desc: "기본 루틴은 익숙해요" },
+  { value: "advanced", label: "헬창", desc: "고강도 훈련도 가능해요" },
+] as const;
+
 export default function Profile() {
   const { user, isAuthenticated, logout } = useAuth();
   const utils = trpc.useUtils();
   const { data: stats } = trpc.history.stats.useQuery(undefined, { enabled: isAuthenticated });
   const { data: goal } = trpc.goals.get.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: goals } = trpc.goals.list.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: preferences } = trpc.preferences.get.useQuery(undefined, { enabled: isAuthenticated });
   const { data: weights } = trpc.bodyWeight.list.useQuery({ limit: 30 }, { enabled: isAuthenticated });
   const [selectedGoal, setSelectedGoal] = useState<string>("");
+  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const [experienceLevel, setExperienceLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
   const [weeklyWorkouts, setWeeklyWorkouts] = useState("3");
   const [targetWeight, setTargetWeight] = useState("");
   const [heightCm, setHeightCm] = useState("");
@@ -45,21 +55,28 @@ export default function Profile() {
   const [initialized, setInitialized] = useState(false);
   
   useEffect(() => {
-    if (goal && !initialized) {
+    if ((goal || goals || preferences) && !initialized) {
       setInitialized(true);
-      if (goal.goal) setSelectedGoal(goal.goal);
-      if (goal.weeklyWorkouts) setWeeklyWorkouts(String(goal.weeklyWorkouts));
-      if (goal.targetWeight) setTargetWeight(String(goal.targetWeight));
+      const activeGoals = goals?.length ? goals.map((item: any) => item.goal) : goal?.goal ? [goal.goal] : [];
+      if (activeGoals.length) {
+        setSelectedGoals(activeGoals);
+        setSelectedGoal(activeGoals[0]);
+      }
+      if (goal?.weeklyWorkouts) setWeeklyWorkouts(String(goal.weeklyWorkouts));
+      if (goal?.targetWeight) setTargetWeight(String(goal.targetWeight));
       if ((goal as any).heightCm) setHeightCm(String((goal as any).heightCm));
       if ((goal as any).gender) setGender((goal as any).gender);
       if ((goal as any).birthYear) setBirthYear(String((goal as any).birthYear));
+      if ((preferences as any)?.experienceLevel) setExperienceLevel((preferences as any).experienceLevel);
     }
-  }, [goal, initialized]);
+  }, [goal, goals, preferences, initialized]);
 
   const setGoalMutation = trpc.goals.set.useMutation({
     onSuccess: () => {
       toast.success("목표가 업데이트되었습니다!");
       utils.goals.get.invalidate();
+      utils.goals.list.invalidate();
+      utils.preferences.get.invalidate();
       utils.ai.dietRecommendation.invalidate();
     },
     onError: () => toast.error("목표 설정에 실패했습니다."),
@@ -78,6 +95,14 @@ export default function Profile() {
   }
 
   const currentGoalConfig = goal ? goalOptions.find((g) => g.value === goal.goal) : null;
+  const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
+  const toggleGoal = (value: string) => {
+    setSelectedGoals((items) => {
+      const next = items.includes(value) ? items.filter((item) => item !== value) : [...items, value];
+      if (next.length > 0) setSelectedGoal(next[0]);
+      return next;
+    });
+  };
 
   return (
     <div className="p-4 lg:p-8 max-w-3xl mx-auto animate-fade-in">
@@ -91,7 +116,7 @@ export default function Profile() {
               <User size={28} className="text-primary" />
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-foreground">{user?.name || "사용자"}</h2>
+              <h2 className="text-xl font-bold text-foreground">{displayName}</h2>
               <p className="text-sm text-muted-foreground">{user?.email || ""}</p>
               {currentGoalConfig && (
                 <Badge className={cn("mt-2 text-xs border", currentGoalConfig.color)}>
@@ -406,23 +431,25 @@ export default function Profile() {
             <span className="font-semibold text-foreground">운동 목표 설정</span>
           </div>
 
-          {goal && (
-            <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-xl mb-4">
-              <Target size={14} className="text-primary" />
-              <span className="text-sm text-primary font-medium">
-                현재: {goalOptions.find((g) => g.value === goal.goal)?.label} · 주 {goal.weeklyWorkouts}회
-              </span>
-            </div>
-          )}
+            {(goals?.length || goal) && (
+              <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-xl mb-4">
+                <Target size={14} className="text-primary" />
+                <span className="text-sm text-primary font-medium">
+                  현재: {(goals?.length ? goals : goal ? [goal] : [])
+                    .map((item: any) => goalOptions.find((g) => g.value === item.goal)?.label || item.goal)
+                    .join(" + ")} · 주 {goal?.weeklyWorkouts ?? 3}회
+                </span>
+              </div>
+            )}
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
             {goalOptions.map((g) => (
               <button
                 key={g.value}
-                onClick={() => setSelectedGoal(g.value)}
+                onClick={() => toggleGoal(g.value)}
                 className={cn(
                   "p-3 rounded-xl border text-left transition-all",
-                  selectedGoal === g.value
+                  selectedGoals.includes(g.value)
                     ? g.color
                     : "bg-accent border-border text-muted-foreground hover:border-primary/30"
                 )}
@@ -431,6 +458,28 @@ export default function Profile() {
                 <div className="text-xs opacity-70">{g.desc}</div>
               </button>
             ))}
+          </div>
+
+          <div className="mb-4">
+            <Label className="text-xs text-muted-foreground mb-1.5 block">운동 숙련도</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {experienceOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setExperienceLevel(option.value)}
+                  className={cn(
+                    "rounded-xl border p-3 text-left transition-all",
+                    experienceLevel === option.value
+                      ? "border-primary/40 bg-primary/10 text-primary"
+                      : "border-border bg-accent text-muted-foreground hover:border-primary/30"
+                  )}
+                >
+                  <div className="text-sm font-semibold">{option.label}</div>
+                  <div className="text-[11px] opacity-75">{option.desc}</div>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* 주 운동 횟수 */}
@@ -509,14 +558,16 @@ export default function Profile() {
 
           <Button
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-            disabled={!selectedGoal || setGoalMutation.isPending}
+            disabled={selectedGoals.length === 0 || setGoalMutation.isPending}
             onClick={() => setGoalMutation.mutate({
-              goal: selectedGoal as any,
+              goal: (selectedGoals[0] || selectedGoal) as any,
+              goals: selectedGoals as any,
               weeklyWorkouts: parseInt(weeklyWorkouts),
               targetWeight: targetWeight ? parseFloat(targetWeight) : undefined,
               heightCm: heightCm ? parseFloat(heightCm) : undefined,
               gender: gender || undefined,
               birthYear: birthYear ? parseInt(birthYear) : undefined,
+              experienceLevel,
             })}
           >
             {setGoalMutation.isPending ? "저장 중..." : "목표 저장"}

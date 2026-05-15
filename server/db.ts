@@ -99,7 +99,7 @@ function quotePostgresIdentifiers(sql: string) {
 
 function preparePostgresSql(sql: string) {
   let text = quotePostgresIdentifiers(sql.trim());
-  if (/^insert\s+/i.test(text) && !/\breturning\b/i.test(text)) {
+  if (/^insert\s+/i.test(text) && !/\buser_preferences\b/i.test(text) && !/\breturning\b/i.test(text)) {
     text = `${text} RETURNING id`;
   }
   return text;
@@ -216,8 +216,15 @@ function normalizeRoutineExercise<T extends Row>(row: T): T {
 
 function normalizeUser<T extends Row | null>(user: T): T {
   if (!user) return user;
+  const displayName =
+    typeof user.name === "string" && user.name.trim()
+      ? user.name.trim()
+      : typeof user.email === "string" && user.email.includes("@")
+        ? user.email.split("@")[0]
+        : "사용자";
   return {
     ...user,
+    name: displayName,
     role: user.role ?? "user",
   };
 }
@@ -239,9 +246,9 @@ export async function upsertUser(input: InsertUser): Promise<any> {
       `UPDATE users
        SET name = ?, email = ?, loginMethod = ?, lastSignedIn = ?, updatedAt = ?
        WHERE id = ?`,
-      input.name ?? null,
-      input.email ?? null,
-      input.loginMethod ?? null,
+      input.name ?? existing.name ?? null,
+      input.email ?? existing.email ?? null,
+      input.loginMethod ?? existing.loginMethod ?? null,
       new Date().toISOString(),
       new Date().toISOString(),
       existing.id,
@@ -313,6 +320,17 @@ export async function getUserGoal(userId: number): Promise<Row | null> {
   return goal ? { ...goal, isActive: bool(goal.isActive) } : null;
 }
 
+export async function getUserGoals(userId: number): Promise<Row[]> {
+  const goals = await all(
+    `SELECT * FROM user_goals
+     WHERE userId = ? AND isActive = ?
+     ORDER BY createdAt DESC`,
+    userId,
+    true,
+  );
+  return goals.map((goal) => ({ ...goal, isActive: bool(goal.isActive) }));
+}
+
 export async function upsertUserGoal(
   userId: number,
   goal: string,
@@ -358,6 +376,99 @@ export async function upsertUserGoal(
     now,
   );
   return getInsertId(result);
+}
+
+export async function replaceUserGoals(
+  userId: number,
+  goals: string[],
+  weeklyWorkouts: number,
+  targetWeight?: number,
+  heightCm?: number,
+  gender?: "male" | "female",
+  birthYear?: number,
+): Promise<void> {
+  const uniqueGoals = Array.from(new Set(goals)).filter(Boolean);
+  const now = new Date().toISOString();
+
+  await run(
+    `UPDATE user_goals SET isActive = ?, updatedAt = ? WHERE userId = ?`,
+    false,
+    now,
+    userId,
+  );
+
+  for (const goal of uniqueGoals) {
+    await run(
+      `INSERT INTO user_goals
+       (userId, goal, targetWeight, weeklyWorkouts, heightCm, gender, birthYear, isActive, createdAt, updatedAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      userId,
+      goal,
+      targetWeight ?? null,
+      weeklyWorkouts,
+      heightCm ?? null,
+      gender ?? null,
+      birthYear ?? null,
+      true,
+      now,
+      now,
+    );
+  }
+}
+
+let preferencesReady = false;
+
+async function ensureUserPreferencesTable() {
+  if (preferencesReady) return;
+  await run(
+    `CREATE TABLE IF NOT EXISTS user_preferences (
+      user_id integer NOT NULL,
+      pref_key varchar(100) NOT NULL,
+      pref_value text,
+      updated_at timestamp,
+      PRIMARY KEY (user_id, pref_key)
+    )`,
+  );
+  preferencesReady = true;
+}
+
+export async function getUserPreference(userId: number, key: string): Promise<string | null> {
+  await ensureUserPreferencesTable();
+  const row = await get(
+    "SELECT pref_value FROM user_preferences WHERE user_id = ? AND pref_key = ? LIMIT 1",
+    userId,
+    key,
+  );
+  return typeof row?.pref_value === "string" ? row.pref_value : null;
+}
+
+export async function setUserPreference(userId: number, key: string, value: string): Promise<void> {
+  await ensureUserPreferencesTable();
+  const now = new Date().toISOString();
+  const existing = await get(
+    "SELECT pref_value FROM user_preferences WHERE user_id = ? AND pref_key = ? LIMIT 1",
+    userId,
+    key,
+  );
+
+  if (existing) {
+    await run(
+      "UPDATE user_preferences SET pref_value = ?, updated_at = ? WHERE user_id = ? AND pref_key = ?",
+      value,
+      now,
+      userId,
+      key,
+    );
+    return;
+  }
+
+  await run(
+    "INSERT INTO user_preferences (user_id, pref_key, pref_value, updated_at) VALUES (?, ?, ?, ?)",
+    userId,
+    key,
+    value,
+    now,
+  );
 }
 
 export async function getRoutinesByUser(userId: number): Promise<Row[]> {

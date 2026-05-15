@@ -63,6 +63,7 @@ function MobileNavItem({ href, icon: Icon, label }: {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
 
   return (
     <div className="app-layout-root">
@@ -97,7 +98,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     <User size={14} className="text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-foreground truncate">{user.name || "사용자"}</div>
+                    <div className="text-sm font-medium text-foreground truncate">{displayName}</div>
                     <div className="text-xs text-muted-foreground truncate">{user.email || ""}</div>
                   </div>
                 </div>

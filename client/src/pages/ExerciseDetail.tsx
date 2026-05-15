@@ -44,6 +44,32 @@ const difficultyConfig: Record<string, { label: string; color: string }> = {
   advanced: { label: "고급", color: "text-red-400 bg-red-400/10 border-red-400/20" },
 };
 
+const muscleLabels: Record<string, string> = {
+  chest: "가슴",
+  pectorals: "대흉근",
+  back: "등",
+  lats: "광배근",
+  traps: "승모근",
+  shoulders: "어깨",
+  delts: "삼각근",
+  biceps: "이두근",
+  triceps: "삼두근",
+  forearms: "전완근",
+  quads: "대퇴사두근",
+  quadriceps: "대퇴사두근",
+  hamstrings: "햄스트링",
+  glutes: "둔근",
+  calves: "종아리",
+  abs: "복근",
+  core: "코어",
+  obliques: "복사근",
+  hip_flexors: "고관절 굴곡근",
+  full_body: "전신",
+};
+
+const formatMuscles = (muscles: string[]) =>
+  muscles.map((muscle) => muscleLabels[muscle] || muscleLabels[muscle.toLowerCase()] || muscle).join(", ");
+
 // 근육 SVG 다이어그램
 function MuscleBodySVG({ bodyPart }: { bodyPart: string }) {
   const primaryColor = "oklch(0.74 0.18 160)";
@@ -342,7 +368,7 @@ export default function ExerciseDetail() {
                   <div className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="text-muted-foreground font-medium">주동근: </span>
-                    <span className="text-foreground">{(exercise.primaryMuscles as string[]).join(", ")}</span>
+                    <span className="text-foreground">{formatMuscles(exercise.primaryMuscles as string[])}</span>
                   </div>
                 </div>
                 {(exercise.secondaryMuscles as string[]).length > 0 && (
@@ -350,7 +376,7 @@ export default function ExerciseDetail() {
                     <div className="w-2.5 h-2.5 rounded-full bg-blue-400 flex-shrink-0 mt-0.5" />
                     <div>
                       <span className="text-muted-foreground font-medium">협력근: </span>
-                      <span className="text-foreground">{(exercise.secondaryMuscles as string[]).join(", ")}</span>
+                      <span className="text-foreground">{formatMuscles(exercise.secondaryMuscles as string[])}</span>
                     </div>
                   </div>
                 )}
