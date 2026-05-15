@@ -1,18 +1,9 @@
 import "dotenv/config";
-import express from "express";
 import { createServer } from "http";
 import net from "net";
-import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerCors } from "./cors";
-import { registerOAuthRoutes } from "./oauth";
-import { registerStorageProxy } from "./storageProxy";
-import { appRouter } from "../routers";
-import { createContext } from "./context";
-import { serveStatic, setupVite } from "./vite";
+import { app } from "./app";
 
-export const app = express();
 const server = createServer(app);
-let appConfigured = false;
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -33,31 +24,12 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
-function configureApp() {
-  if (appConfigured) return;
-  appConfigured = true;
-
-  app.set("trust proxy", 1);
-  registerCors(app);
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
-  registerStorageProxy(app);
-  registerOAuthRoutes(app);
-  app.use(
-    "/api/trpc",
-    createExpressMiddleware({
-      router: appRouter,
-      createContext,
-    })
-  );
-}
-
 async function startServer() {
-  configureApp();
-
   if (process.env.NODE_ENV !== "production") {
+    const { setupVite } = await import("./vite");
     await setupVite(app, server);
   } else if (!process.env.VERCEL) {
+    const { serveStatic } = await import("./vite");
     serveStatic(app);
   }
 
@@ -73,8 +45,8 @@ async function startServer() {
   });
 }
 
-configureApp();
-
 if (!process.env.VERCEL) {
   startServer().catch(console.error);
 }
+
+export { app };
