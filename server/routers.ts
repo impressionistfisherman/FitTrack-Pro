@@ -63,6 +63,8 @@ const bodyPartLabels: Record<string, string> = {
   glutes: "둔근",
   abs: "복근",
   cardio: "유산소",
+  stretching: "스트레칭",
+  full_body: "전신",
 };
 
 const splitPreferenceLabels: Record<string, string> = {
@@ -117,6 +119,105 @@ async function findExerciseForRoutine(exerciseText: string) {
     .map((exercise: any) => ({ exercise, score: scoreExerciseMatch(exerciseText, exercise) }))
     .sort((a, b) => b.score - a.score)[0];
   return best && best.score >= 35 ? best.exercise : null;
+}
+
+function toArrayValue(value: unknown): string[] {
+  if (Array.isArray(value)) return value.map(String);
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed.map(String) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function getDetailedStretchTarget(exercise: any) {
+  const haystack = [
+    exercise.name,
+    exercise.nameKo,
+    exercise.bodyPart,
+    ...toArrayValue(exercise.primaryMuscles),
+    ...toArrayValue(exercise.secondaryMuscles),
+  ].join(" ").toLowerCase();
+
+  if (/(chest|pectoral|가슴|체스트)/.test(haystack)) return "가슴 스트레칭";
+  if (/(lat|back|rhomboid|traps|등|광배|백|트랩)/.test(haystack)) return "등 스트레칭";
+  if (/(shoulder|deltoid|rotator|어깨|숄더|델트)/.test(haystack)) return "어깨 스트레칭";
+  if (/(bicep|tricep|forearm|wrist|arm|팔|이두|삼두|트라이셉|바이셉|리스트)/.test(haystack)) return "팔/손목 스트레칭";
+  if (/(hamstring|quad|calf|adductor|abductor|groin|leg|하체|햄스트링|쿼드|카프|어덕터|앱덕터|그로인)/.test(haystack)) return "하체 스트레칭";
+  if (/(glute|hip|둔근|힙|고관절)/.test(haystack)) return "둔근/고관절 스트레칭";
+  if (/(abdominal|oblique|abs|core|복근|코어|오블리크)/.test(haystack)) return "복근/코어 스트레칭";
+  if (/(neck|목|넥)/.test(haystack)) return "목 스트레칭";
+  return "전신 스트레칭";
+}
+
+function getRecommendationEquipmentSet(location: string, equipment: string[]) {
+  const selected = equipment.length ? equipment : ["dumbbell", "barbell", "machine", "cable", "resistance_band", "kettlebell"];
+  if (location === "outdoor") return new Set(["bodyweight", "none"]);
+  if (location === "home") return new Set(["bodyweight", "none", ...selected]);
+  return new Set(["bodyweight", "none", ...selected]);
+}
+
+function formatCatalogExercise(exercise: any) {
+  const equipment = equipmentLabels[exercise.equipment] ?? exercise.equipment;
+  const bodyPart = bodyPartLabels[exercise.bodyPart] ?? exercise.bodyPart;
+  const category = exercise.category === "flexibility" || exercise.bodyPart === "stretching"
+    ? getDetailedStretchTarget(exercise)
+    : bodyPart;
+  return `${exercise.nameKo} (${exercise.name}) | ${category} | ${equipment}`;
+}
+
+async function buildRecommendationExerciseCatalog(input: {
+  location: "gym" | "home" | "outdoor";
+  equipment: string[];
+  excludedBodyParts: string[];
+  includeCardio: boolean;
+  includeCore: boolean;
+}) {
+  const allExercises = await getExercises();
+  const allowedEquipment = getRecommendationEquipmentSet(input.location, input.equipment);
+  const excluded = new Set(input.excludedBodyParts);
+
+  const usable = allExercises.filter((exercise: any) => {
+    if (!allowedEquipment.has(exercise.equipment)) return false;
+    if (excluded.has(exercise.bodyPart)) return false;
+    if (!input.includeCardio && exercise.bodyPart === "cardio") return false;
+    if (!input.includeCore && exercise.bodyPart === "abs") return false;
+    return true;
+  });
+
+  const primary = usable.filter((exercise: any) => exercise.bodyPart !== "stretching" && exercise.category !== "flexibility");
+  const stretches = usable.filter((exercise: any) => exercise.bodyPart === "stretching" || exercise.category === "flexibility");
+
+  const lines: string[] = [];
+  for (const bodyPart of ["chest", "back", "shoulders", "arms", "legs", "glutes", "abs", "cardio", "full_body"]) {
+    const items = primary.filter((exercise: any) => exercise.bodyPart === bodyPart).slice(0, 14);
+    if (!items.length) continue;
+    lines.push(`\n[${bodyPartLabels[bodyPart] ?? bodyPart}]`);
+    lines.push(...items.map(formatCatalogExercise));
+  }
+
+  const stretchGroups = new Map<string, any[]>();
+  for (const exercise of stretches) {
+    const target = getDetailedStretchTarget(exercise);
+    const items = stretchGroups.get(target) ?? [];
+    if (items.length < 5) items.push(exercise);
+    stretchGroups.set(target, items);
+  }
+  if (stretchGroups.size) {
+    lines.push("\n[부위별 스트레칭 후보]");
+    for (const [target, items] of stretchGroups.entries()) {
+      lines.push(`${target}: ${items.map((exercise) => `${exercise.nameKo} (${exercise.name})`).join(", ")}`);
+    }
+  }
+
+  return {
+    count: usable.length,
+    text: lines.join("\n").trim(),
+  };
 }
 
 export const appRouter = router({
@@ -677,6 +778,13 @@ ${historyText}
       const experienceLevel = await getUserPreference(ctx.user.id, "experienceLevel") ?? "beginner";
       const stats = await getUserStats(ctx.user.id);
       const recentSessions = await getWorkoutSessionsByUser(ctx.user.id, 5);
+      const recommendationCatalog = await buildRecommendationExerciseCatalog({
+        location: input?.location ?? "gym",
+        equipment: input?.equipment ?? [],
+        excludedBodyParts: input?.excludedBodyParts ?? [],
+        includeCardio: input?.includeCardio ?? true,
+        includeCore: input?.includeCore ?? true,
+      });
 
       const locationLabels: Record<string, string> = {
         gym: "헬스장 (모든 기구 사용 가능)",
@@ -733,6 +841,8 @@ ${historyText}
           {
             role: "system",
             content: `당신은 전문 퍼스널 트레이너입니다. 사용자의 목표, 운동 환경, 가용 기구, 운동 시간을 반드시 고려하여 맞춤 운동 프로그램을 추천해주세요.
+            - 아래 "사용 가능한 운동 DB 후보"에 있는 운동명만 추천하세요. 새 운동명을 지어내지 마세요.
+            - exercises 배열의 각 항목은 반드시 "한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
             - 지정된 기구만 사용하는 운동으로 구성하세요.
             - weeklyPlan은 반드시 사용자가 선택한 주 운동일 수와 같은 개수로 구성하세요.
             - 각 운동일의 총 시간이 지정된 운동 가능 시간을 초과하지 않도록 하세요.
@@ -742,6 +852,7 @@ ${historyText}
             - 사용자가 제외한 부위/운동은 넣지 마세요.
             - 유산소/복근 포함 여부와 사용자 추가 요청을 우선순위 높게 반영하세요.
             - 각 운동일은 워밍업, 메인 운동, 보조 운동, 선택된 경우 유산소/복근을 균형 있게 구성하세요.
+            - 스트레칭은 그냥 "스트레칭"이라고 쓰지 말고, DB 후보의 부위별 스트레칭에서 골라 "가슴 스트레칭", "어깨 스트레칭", "하체 스트레칭"처럼 해당 운동일의 타겟 부위에 맞게 구체적으로 넣으세요.
             응답은 반드시 JSON 형식으로 해주세요.`,
           },
           {
@@ -763,8 +874,12 @@ ${excludedText}
 ${dayFocusText}
 ${customRequestText}
 
+사용 가능한 운동 DB 후보 (${recommendationCatalog.count}개 중 추천용 요약):
+${recommendationCatalog.text}
+
 위 정보를 바탕으로 이번 주 운동 프로그램을 추천해주세요.
-반드시 지정된 기구, 운동 시간, 제외 부위, 분할 방식, 사용자 요청 조건에 맞는 운동만 포함하고, 각 운동일에 대한 구체적인 운동 목록과 조언을 포함해주세요.`,
+반드시 위 DB 후보에 있는 운동만 사용하고, 지정된 기구, 운동 시간, 제외 부위, 분할 방식, 사용자 요청 조건에 맞는 운동만 포함해주세요.
+각 운동일에는 타겟 부위별 워밍업/스트레칭도 구체적인 운동명으로 포함해주세요.`,
           },
         ],
         response_format: {
@@ -813,6 +928,7 @@ ${customRequestText}
         program: parsed,
         goal,
         stats,
+        catalogCount: recommendationCatalog.count,
       };
     }),
 
