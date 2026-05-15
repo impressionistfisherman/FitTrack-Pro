@@ -95,7 +95,7 @@ function ExerciseProgressItem({ exercise, maxWeight, maxReps, goalData }: any) {
   const durationSeconds = logs.reduce((sum: number, item: any) => sum + (item.log.durationSeconds ?? 0), 0);
   const distanceM = logs.reduce((sum: number, item: any) => sum + (item.log.distanceM ?? 0), 0);
   const hasStrengthRecord = logs.some((item: any) => item.log.reps || item.log.weightKg);
-  const minutes = Math.round(durationSeconds / 60);
+  const minutes = Math.round(durationSeconds / 60) || exercise.fallbackDurationMinutes || 0;
   const distanceKm = distanceM > 0 ? (distanceM / 1000).toFixed(distanceM >= 10000 ? 0 : 1) : null;
 
   if (!hasStrengthRecord) {
@@ -173,9 +173,10 @@ function SessionCard({ session }: { session: any }) {
     sum + (l.log.reps ?? 0) * (l.log.weightKg ?? 0), 0);
   const totalDurationSeconds = timedLogs.reduce((sum: number, l: any) => sum + (l.log.durationSeconds ?? 0), 0);
   const totalDistanceM = timedLogs.reduce((sum: number, l: any) => sum + (l.log.distanceM ?? 0), 0);
-  const totalMinutes = Math.round(totalDurationSeconds / 60);
+  const totalMinutes = Math.round(totalDurationSeconds / 60) || session.durationMinutes || 0;
   const distanceText = totalDistanceM > 0 ? `${(totalDistanceM / 1000).toFixed(totalDistanceM >= 10000 ? 0 : 1)}km` : "-";
-  const hasTimedOnly = timedLogs.length > 0 && strengthLogs.length === 0;
+  const hasTimedOnly = strengthLogs.length === 0 && (timedLogs.length > 0 || totalMinutes > 0);
+  const uniqueExerciseIds = Array.from(new Set(session.logs.map((l: any) => l.log.exerciseId)));
   // 훅 규칙 위반 방지: map() 내부에서 useQuery 호출 금지
   // goalData는 null로 처리하여 ExerciseProgressItem이 목표 없이 렌더링하도록 함
 
@@ -220,10 +221,11 @@ function SessionCard({ session }: { session: any }) {
               const strengthExerciseLogs = exerciseLogs.filter((l: any) => l.log.reps || l.log.weightKg);
               const maxWeight = strengthExerciseLogs.length ? Math.max(...strengthExerciseLogs.map((l: any) => l.log.weightKg || 0)) : 0;
               const maxReps = strengthExerciseLogs.length ? Math.max(...strengthExerciseLogs.map((l: any) => l.log.reps || 0)) : 0;
+              const fallbackDurationMinutes = uniqueExerciseIds.length === 1 && strengthExerciseLogs.length === 0 ? totalMinutes : 0;
               return (
                 <ExerciseProgressItem 
                   key={ex.id}
-                  exercise={{ ...ex, logs: exerciseLogs }}
+                  exercise={{ ...ex, logs: exerciseLogs, fallbackDurationMinutes }}
                   maxWeight={maxWeight}
                   maxReps={maxReps}
                   goalData={null}
