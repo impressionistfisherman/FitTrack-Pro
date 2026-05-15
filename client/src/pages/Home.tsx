@@ -49,13 +49,13 @@ const goalColors: Record<string, string> = {
 function StatCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: string | number; color: string }) {
   return (
     <Card className="bg-card border-border hover:border-primary/30 transition-all duration-200">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", color)}>
-            <Icon size={18} />
+      <CardContent className="p-3">
+        <div className="flex items-center gap-2.5">
+          <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0", color)}>
+            <Icon size={16} />
           </div>
-          <div>
-            <div className="text-xl font-bold text-foreground">{value}</div>
+          <div className="min-w-0">
+            <div className="text-lg font-bold text-foreground leading-tight">{value}</div>
             <div className="text-xs text-muted-foreground">{label}</div>
           </div>
         </div>
@@ -79,7 +79,7 @@ function QuickStartCard() {
   return (
     <Card className="bg-card border-border">
       <CardContent className="p-5">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-foreground">빠른 시작</h3>
           <Link href="/routines">
             <Button variant="ghost" size="sm" className="text-xs text-muted-foreground gap-1">
@@ -99,7 +99,7 @@ function QuickStartCard() {
             자유 운동 시작
           </Button>
 
-          {routines?.slice(0, 3).map((routine) => (
+          {routines?.slice(0, 2).map((routine) => (
             <Button
               key={routine.id}
               className="w-full justify-start gap-3 bg-accent/50 border border-border text-foreground hover:bg-accent h-11"
@@ -152,17 +152,17 @@ function StreakCard() {
 
   return (
     <Card className="bg-card border-border">
-      <CardContent className="p-5">
+      <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div>
             <div className="text-sm text-muted-foreground mb-1">현재 스트릭</div>
             <div className="flex items-baseline gap-2">
-              <div className="text-3xl font-bold text-orange-400">{streak.current}</div>
+              <div className="text-2xl font-bold text-orange-400">{streak.current}</div>
               <div className="text-sm text-muted-foreground">일</div>
             </div>
             <div className="text-xs text-muted-foreground mt-2">최장: {streak.longest}일</div>
           </div>
-          <div className="text-5xl animate-pulse">🔥</div>
+          <Flame size={34} className="text-orange-400" />
         </div>
         {streak.lastWorkoutDate && (
           <div className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border">
@@ -181,7 +181,7 @@ function BodyWeightSummaryCard() {
   if (isLoading) {
     return (
       <Card className="bg-card border-border">
-        <CardContent className="p-5">
+        <CardContent className="p-4">
           <div className="animate-pulse space-y-3">
             <div className="h-4 bg-muted rounded w-24"></div>
             <div className="h-8 bg-muted rounded w-20"></div>
@@ -201,8 +201,8 @@ function BodyWeightSummaryCard() {
   return (
     <Link href="/body-weight">
       <Card className="bg-card border-border hover:border-primary/30 transition-all duration-200 cursor-pointer">
-        <CardContent className="p-5">
-          <div className="flex items-center justify-between mb-4">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Scale size={16} className="text-primary" />
               <h3 className="font-semibold text-foreground">체중 추적</h3>
@@ -214,7 +214,7 @@ function BodyWeightSummaryCard() {
             <div className="space-y-3">
               <div className="flex items-end justify-between gap-3">
                 <div>
-                  <div className="text-3xl font-bold text-foreground">
+                  <div className="text-2xl font-bold text-foreground">
                     {latest.weightKg}
                     <span className="ml-1 text-sm font-medium text-muted-foreground">kg</span>
                   </div>
@@ -236,7 +236,7 @@ function BodyWeightSummaryCard() {
               </div>
 
               {targetWeight ? (
-                <div className="rounded-xl bg-accent/35 p-3">
+                <div className="rounded-xl bg-accent/35 p-2.5">
                   <div className="mb-1 flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">목표 체중</span>
                     <span className="font-semibold text-foreground">{targetWeight}kg</span>
@@ -246,7 +246,7 @@ function BodyWeightSummaryCard() {
                   </div>
                 </div>
               ) : (
-                <div className="rounded-xl bg-accent/35 p-3 text-xs text-muted-foreground">
+                <div className="rounded-xl bg-accent/35 p-2.5 text-xs text-muted-foreground">
                   프로필에서 목표 체중을 설정하면 진행 상황이 함께 표시됩니다.
                 </div>
               )}
@@ -270,7 +270,7 @@ function MonthlyStatsCard() {
   if (isLoading) {
     return (
       <Card className="bg-card border-border">
-        <CardContent className="p-5">
+        <CardContent className="p-4">
           <div className="animate-pulse space-y-3">
             <div className="h-4 bg-muted rounded w-24"></div>
             <div className="h-40 bg-muted rounded"></div>
@@ -285,7 +285,7 @@ function MonthlyStatsCard() {
       <Card className="bg-card border-border">
         <CardContent className="p-5">
           <h3 className="font-semibold text-foreground mb-4">월별 요약</h3>
-          <div className="text-center py-8 text-muted-foreground">
+          <div className="text-center py-5 text-muted-foreground">
             <p className="text-sm">아직 운동 기록이 없습니다.</p>
             <p className="text-xs mt-2">운동을 시작하면 월별 통계가 표시됩니다.</p>
           </div>
@@ -303,9 +303,9 @@ function MonthlyStatsCard() {
 
   return (
     <Card className="bg-card border-border">
-      <CardContent className="p-5">
-        <h3 className="font-semibold text-foreground mb-4">월별 요약</h3>
-        <ResponsiveContainer width="100%" height={250}>
+      <CardContent className="p-4">
+        <h3 className="font-semibold text-foreground mb-3">월별 요약</h3>
+        <ResponsiveContainer width="100%" height={190}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
             <XAxis dataKey="month" stroke="var(--color-muted-foreground)" style={{ fontSize: "12px" }} />
@@ -489,12 +489,12 @@ export default function Home() {
       : "헬린이";
 
   return (
-    <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-6 animate-fade-in">
+    <div className="p-4 lg:p-6 max-w-6xl mx-auto space-y-4 animate-fade-in">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-muted-foreground">{greeting()},</p>
-          <h1 className="text-2xl font-bold text-foreground">{displayName} 님 👋</h1>
+          <p className="text-xs text-muted-foreground">{greeting()},</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">{displayName} 님 👋</h1>
           <div className="mt-2 flex flex-wrap gap-1.5">
             <Badge className="text-xs border border-primary/20 bg-primary/10 text-primary">
               {experienceLabel}
@@ -515,51 +515,50 @@ export default function Home() {
         </Link>
       </div>
 
-      {/* Weekly Goal Dashboard */}
-      <WeeklyGoalDashboard />
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+        <WeeklyGoalDashboard />
+        <QuickStartCard />
+      </div>
 
-      {/* Stats */}
-      {stats && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <StatCard icon={Trophy} label="총 운동 횟수" value={`${stats.totalSessions}회`} color="bg-primary/10 text-primary" />
-          <StatCard icon={Flame} label="이번 주" value={`${stats.recentSessionCount}회`} color="bg-orange-400/10 text-orange-400" />
-          <StatCard icon={TrendingUp} label="총 볼륨" value={`${(stats.totalVolume / 1000).toFixed(1)}t`} color="bg-blue-400/10 text-blue-400" />
-          <StatCard icon={Calendar} label="총 운동 시간" value={`${Math.round(stats.totalDurationMinutes / 60)}h`} color="bg-purple-400/10 text-purple-400" />
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+        {stats && (
+          <div className="grid grid-cols-2 gap-3">
+            <StatCard icon={Trophy} label="총 운동" value={`${stats.totalSessions}회`} color="bg-primary/10 text-primary" />
+            <StatCard icon={Flame} label="이번 주" value={`${stats.recentSessionCount}회`} color="bg-orange-400/10 text-orange-400" />
+            <StatCard icon={TrendingUp} label="총 볼륨" value={`${(stats.totalVolume / 1000).toFixed(1)}t`} color="bg-blue-400/10 text-blue-400" />
+            <StatCard icon={Calendar} label="운동 시간" value={`${Math.round(stats.totalDurationMinutes / 60)}h`} color="bg-purple-400/10 text-purple-400" />
+          </div>
+        )}
+        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2">
+          <StreakCard />
+          <BodyWeightSummaryCard />
         </div>
-      )}
-
-      {/* Streak & Monthly Stats */}
-      <div className="grid lg:grid-cols-2 gap-4">
-        <StreakCard />
-        <BodyWeightSummaryCard />
       </div>
 
       {/* Main Grid */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <div className="space-y-4">
-          <QuickStartCard />
           <RecentWorkouts />
-        </div>
-        <div className="space-y-4">
-          <FeatureCards />
-          <MonthlyStatsCard />
-          {/* AI Coach CTA */}
           <Link href="/ai-coach">
             <Card className="bg-gradient-to-br from-primary/10 to-blue-500/10 border-primary/20 cursor-pointer hover:border-primary/40 transition-all duration-200">
-              <CardContent className="p-5">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                    <Bot size={24} className="text-primary" />
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
+                    <Bot size={20} className="text-primary" />
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="font-semibold text-foreground">AI 코치에게 물어보세요</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">운동 기록 분석 · 무게 추천 · 맞춤 프로그램</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">운동 분석 · 무게 추천 · 맞춤 프로그램</div>
                   </div>
                   <ArrowRight size={18} className="text-primary flex-shrink-0" />
                 </div>
               </CardContent>
             </Card>
           </Link>
+        </div>
+        <div className="space-y-4">
+          <FeatureCards />
+          <MonthlyStatsCard />
         </div>
       </div>
     </div>
