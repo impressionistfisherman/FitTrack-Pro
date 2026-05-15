@@ -271,12 +271,12 @@ export default function FreeWorkoutDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[min(92dvh,760px)] w-[calc(100vw-1rem)] max-w-4xl flex-col overflow-hidden border-border bg-card p-4 text-foreground sm:p-6">
+      <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-1rem)] max-w-4xl flex-col overflow-hidden border-border bg-card p-4 text-foreground sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-foreground">자유 운동 기록</DialogTitle>
         </DialogHeader>
 
-        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-4 overflow-hidden md:grid-cols-[minmax(0,1fr)_minmax(280px,1fr)] md:grid-rows-1">
+        <div className="grid min-h-0 gap-4 overflow-y-auto pr-1 md:grid-cols-[minmax(0,1fr)_minmax(280px,1fr)]">
           <div className="min-w-0 space-y-3">
             <div className="space-y-1.5">
               <Label className="text-sm text-muted-foreground">운동 날짜</Label>
@@ -322,7 +322,7 @@ export default function FreeWorkoutDialog({
               </div>
             </div>
 
-            <ScrollArea className="h-44 rounded-lg border border-border sm:h-56">
+            <ScrollArea className="h-56 rounded-lg border border-border md:max-h-[46dvh]">
               <div className="p-2 space-y-1">
                 {filteredExercises.map((exercise) => (
                   <button
@@ -343,8 +343,8 @@ export default function FreeWorkoutDialog({
             </ScrollArea>
           </div>
 
-          <ScrollArea className="h-full min-h-0 min-w-0 pr-2">
-            <div className="min-w-0 space-y-3 pb-28 md:pb-8">
+          <ScrollArea className="min-w-0 pr-2 md:max-h-[56dvh]">
+            <div className="min-w-0 space-y-3 pb-4">
               {selected.length === 0 ? (
                 <div className="h-36 rounded-lg border border-dashed border-border flex items-center justify-center px-4 text-center text-sm text-muted-foreground sm:h-48">
                   위 검색에서 운동을 추가하세요
