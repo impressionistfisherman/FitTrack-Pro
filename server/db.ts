@@ -1,30 +1,171 @@
 import path from "node:path";
 import { createRequire } from "node:module";
 import type { InsertUser } from "../drizzle/schema";
+import mysql from "mysql2/promise";
+import { Pool as PgPool } from "pg";
 
-const require = createRequire(import.meta.url);
-const { DatabaseSync } = require("node:sqlite") as any;
-
+const databaseUrl = process.env.DATABASE_URL?.trim();
 const sqlitePath = process.env.SQLITE_DB_PATH
   ? path.resolve(process.env.SQLITE_DB_PATH)
   : path.resolve("local-db", "fittrack_local.sqlite");
 
-const sqlite = new DatabaseSync(sqlitePath);
-sqlite.exec("PRAGMA foreign_keys = OFF");
-sqlite.exec("PRAGMA journal_mode = WAL");
+let sqlite: any = null;
+let mysqlPool: mysql.Pool | null = null;
+let pgPool: PgPool | null = null;
+let databaseType: "sqlite" | "mysql" | "postgres" = "sqlite";
+
+if (databaseUrl) {
+  const parsed = new URL(databaseUrl);
+  const protocol = parsed.protocol.replace(":", "");
+
+  if (protocol === "postgres" || protocol === "postgresql") {
+    databaseType = "postgres";
+    pgPool = new PgPool({ connectionString: databaseUrl, max: 10 });
+  } else if (protocol === "mysql" || protocol === "mysql2") {
+    databaseType = "mysql";
+    mysqlPool = mysql.createPool({
+      uri: databaseUrl,
+      waitForConnections: true,
+      connectionLimit: 10,
+    });
+  } else {
+    throw new Error(`Unsupported DATABASE_URL protocol: ${protocol}`);
+  }
+} else {
+  const require = createRequire(import.meta.url);
+  const { DatabaseSync } = require("node:sqlite") as any;
+
+  sqlite = new DatabaseSync(sqlitePath);
+  sqlite.exec("PRAGMA foreign_keys = OFF");
+  sqlite.exec("PRAGMA journal_mode = WAL");
+}
 
 type Row = Record<string, any>;
 
-function all<T = Row>(sql: string, ...params: any[]): T[] {
-  return sqlite.prepare(sql).all(...params) as T[];
+const pgQuotedIdentifiers = [
+  "openId",
+  "loginMethod",
+  "createdAt",
+  "updatedAt",
+  "lastSignedIn",
+  "nameKo",
+  "bodyPart",
+  "descriptionKo",
+  "primaryMuscles",
+  "secondaryMuscles",
+  "secondaryImages",
+  "instructionsKo",
+  "targetWeight",
+  "weeklyWorkouts",
+  "heightCm",
+  "birthYear",
+  "isActive",
+  "daysPerWeek",
+  "isPublic",
+  "routineId",
+  "exerciseId",
+  "weightKg",
+  "restSeconds",
+  "setDetails",
+  "startedAt",
+  "completedAt",
+  "durationMinutes",
+  "totalVolume",
+  "workoutDate",
+  "sessionId",
+  "setNumber",
+  "durationSeconds",
+  "distanceM",
+  "isWarmup",
+  "recordedAt",
+  "bodyFatPct",
+  "muscleMassPct",
+  "targetWeightKg",
+  "targetReps",
+] as const;
+
+function quotePostgresIdentifiers(sql: string) {
+  return pgQuotedIdentifiers.reduce((current, identifier) => {
+    const pattern = new RegExp(`(?<!["\\w])${identifier}(?!["\\w])`, "g");
+    return current.replace(pattern, `"${identifier}"`);
+  }, sql);
 }
 
-function get<T = Row>(sql: string, ...params: any[]): T | null {
-  return (sqlite.prepare(sql).get(...params) as T | undefined) ?? null;
+function preparePostgresSql(sql: string) {
+  let text = quotePostgresIdentifiers(sql.trim());
+  if (/^insert\s+/i.test(text) && !/\breturning\b/i.test(text)) {
+    text = `${text} RETURNING id`;
+  }
+  return text;
 }
 
-function run(sql: string, ...params: any[]) {
-  return sqlite.prepare(sql).run(...params);
+function buildQuery(sql: string, params: any[]): { text: string; values: any[] } {
+  if (databaseType === "postgres") {
+    let index = 0;
+    return {
+      text: preparePostgresSql(sql).replace(/\?/g, () => `$${++index}`),
+      values: params,
+    };
+  }
+
+  return { text: sql, values: params };
+}
+
+function getInsertId(result: any) {
+  if (databaseType === "postgres") {
+    return Number(result?.rows?.[0]?.id ?? 0);
+  }
+  return Number(result?.insertId ?? result?.lastInsertRowid ?? 0);
+}
+
+function sqliteParams(params: any[]) {
+  return params.map((param) => typeof param === "boolean" ? (param ? 1 : 0) : param);
+}
+
+async function all<T = Row>(sql: string, ...params: any[]): Promise<T[]> {
+  if (databaseType === "mysql" && mysqlPool) {
+    const [rows] = await mysqlPool.execute(sql, params);
+    return rows as T[];
+  }
+
+  if (databaseType === "postgres" && pgPool) {
+    const { text, values } = buildQuery(sql, params);
+    const result = await pgPool.query(text, values);
+    return result.rows as T[];
+  }
+
+  return sqlite.prepare(sql).all(...sqliteParams(params)) as T[];
+}
+
+async function get<T = Row>(sql: string, ...params: any[]): Promise<T | null> {
+  if (databaseType === "mysql" && mysqlPool) {
+    const [rows] = await mysqlPool.execute(sql, params);
+    const result = (rows as T[])[0];
+    return (result as T | undefined) ?? null;
+  }
+
+  if (databaseType === "postgres" && pgPool) {
+    const { text, values } = buildQuery(sql, params);
+    const result = await pgPool.query(text, values);
+    return (result.rows[0] as T | undefined) ?? null;
+  }
+
+  return (sqlite.prepare(sql).get(...sqliteParams(params)) as T | undefined) ?? null;
+}
+
+async function run(sql: string, ...params: any[]) {
+  if (databaseType === "mysql" && mysqlPool) {
+    const [result] = await mysqlPool.execute(sql, params);
+    return result;
+  }
+
+  if (databaseType === "postgres" && pgPool) {
+    const { text, values } = buildQuery(sql, params);
+    const result = await pgPool.query(text, values);
+    return result;
+  }
+
+  return sqlite.prepare(sql).run(...sqliteParams(params));
 }
 
 function toDbDate(value?: Date | string | null) {
@@ -75,20 +216,20 @@ function normalizeUser<T extends Row | null>(user: T): T {
   };
 }
 
-export const db = sqlite;
+export const db = pgPool ?? mysqlPool ?? sqlite;
 
 export async function getUserByOpenId(openId: string): Promise<any> {
-  return normalizeUser(get("SELECT * FROM users WHERE openId = ? LIMIT 1", openId));
+  return normalizeUser(await get("SELECT * FROM users WHERE openId = ? LIMIT 1", openId));
 }
 
 export async function getFirstUser(): Promise<any> {
-  return normalizeUser(get("SELECT * FROM users ORDER BY id LIMIT 1"));
+  return normalizeUser(await get("SELECT * FROM users ORDER BY id LIMIT 1"));
 }
 
 export async function upsertUser(input: InsertUser): Promise<any> {
   const existing = await getUserByOpenId(input.openId);
   if (existing) {
-    run(
+    await run(
       `UPDATE users
        SET name = ?, email = ?, loginMethod = ?, lastSignedIn = ?, updatedAt = ?
        WHERE id = ?`,
@@ -102,7 +243,7 @@ export async function upsertUser(input: InsertUser): Promise<any> {
     return existing.id;
   }
 
-  const result = run(
+  const result = await run(
     `INSERT INTO users (openId, name, email, loginMethod, role, createdAt, updatedAt, lastSignedIn)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     input.openId,
@@ -114,7 +255,7 @@ export async function upsertUser(input: InsertUser): Promise<any> {
     toDbDate(input.updatedAt as any) ?? new Date().toISOString(),
     toDbDate(input.lastSignedIn as any) ?? new Date().toISOString(),
   );
-  return Number(result.lastInsertRowid);
+  return getInsertId(result);
 }
 
 export async function getExercises(filters?: {
@@ -143,7 +284,7 @@ export async function getExercises(filters?: {
     params.push(`%${filters.search}%`, `%${filters.search}%`);
   }
 
-  const rows = all(
+  const rows = await all(
     `SELECT * FROM exercises ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY nameKo`,
     ...params,
   );
@@ -151,16 +292,17 @@ export async function getExercises(filters?: {
 }
 
 export async function getExerciseById(id: number): Promise<Row | null> {
-  return normalizeExercise(get("SELECT * FROM exercises WHERE id = ? LIMIT 1", id));
+  return normalizeExercise(await get("SELECT * FROM exercises WHERE id = ? LIMIT 1", id));
 }
 
 export async function getUserGoal(userId: number): Promise<Row | null> {
-  const goal = get(
+  const goal = await get(
     `SELECT * FROM user_goals
-     WHERE userId = ? AND isActive = 1
+     WHERE userId = ? AND isActive = ?
      ORDER BY createdAt DESC
      LIMIT 1`,
     userId,
+    true,
   );
   return goal ? { ...goal, isActive: bool(goal.isActive) } : null;
 }
@@ -177,9 +319,9 @@ export async function upsertUserGoal(
   const existing = await getUserGoal(userId);
   const now = new Date().toISOString();
   if (existing) {
-    run(
+    await run(
       `UPDATE user_goals
-       SET goal = ?, weeklyWorkouts = ?, targetWeight = ?, heightCm = ?, gender = ?, birthYear = ?, isActive = 1, updatedAt = ?
+       SET goal = ?, weeklyWorkouts = ?, targetWeight = ?, heightCm = ?, gender = ?, birthYear = ?, isActive = ?, updatedAt = ?
        WHERE id = ?`,
       goal,
       weeklyWorkouts,
@@ -187,16 +329,17 @@ export async function upsertUserGoal(
       heightCm ?? null,
       gender ?? null,
       birthYear ?? null,
+      true,
       now,
       existing.id,
     );
     return existing.id;
   }
 
-  const result = run(
+  const result = await run(
     `INSERT INTO user_goals
      (userId, goal, targetWeight, weeklyWorkouts, heightCm, gender, birthYear, isActive, createdAt, updatedAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     userId,
     goal,
     targetWeight ?? null,
@@ -204,19 +347,20 @@ export async function upsertUserGoal(
     heightCm ?? null,
     gender ?? null,
     birthYear ?? null,
+    true,
     now,
     now,
   );
-  return Number(result.lastInsertRowid);
+  return getInsertId(result);
 }
 
 export async function getRoutinesByUser(userId: number): Promise<Row[]> {
-  return all("SELECT * FROM routines WHERE userId = ? ORDER BY createdAt DESC", userId)
+  return (await all("SELECT * FROM routines WHERE userId = ? ORDER BY createdAt DESC", userId))
     .map((routine) => ({ ...routine, isPublic: bool(routine.isPublic) }));
 }
 
 export async function getRoutineById(id: number): Promise<Row | null> {
-  const routine = get("SELECT * FROM routines WHERE id = ? LIMIT 1", id);
+  const routine = await get("SELECT * FROM routines WHERE id = ? LIMIT 1", id);
   return routine ? { ...routine, isPublic: bool(routine.isPublic) } : null;
 }
 
@@ -227,25 +371,26 @@ export async function createRoutine(userId: number, input: {
   daysPerWeek: number;
 }): Promise<any> {
   const now = new Date().toISOString();
-  const result = run(
+  const result = await run(
     `INSERT INTO routines (userId, name, description, goal, daysPerWeek, isPublic, createdAt, updatedAt)
-     VALUES (?, ?, ?, ?, ?, 0, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     userId,
     input.name,
     input.description ?? null,
     input.goal,
     input.daysPerWeek,
+    false,
     now,
     now,
   );
-  return Number(result.lastInsertRowid);
+  return getInsertId(result);
 }
 
 export async function updateRoutine(id: number, input: Row): Promise<any> {
   const allowed = ["name", "description", "goal", "daysPerWeek"];
   const keys = allowed.filter((key) => key in input);
   if (!keys.length) return;
-  run(
+  await run(
     `UPDATE routines SET ${keys.map((key) => `${key} = ?`).join(", ")}, updatedAt = ? WHERE id = ?`,
     ...keys.map((key) => input[key] ?? null),
     new Date().toISOString(),
@@ -254,12 +399,12 @@ export async function updateRoutine(id: number, input: Row): Promise<any> {
 }
 
 export async function deleteRoutine(id: number): Promise<any> {
-  run("DELETE FROM routine_exercises WHERE routineId = ?", id);
-  run("DELETE FROM routines WHERE id = ?", id);
+  await run("DELETE FROM routine_exercises WHERE routineId = ?", id);
+  await run("DELETE FROM routines WHERE id = ?", id);
 }
 
 export async function getRoutineExercises(routineId: number): Promise<Row[]> {
-  return all(
+  return (await all(
     `SELECT
        re.id AS re_id, re.routineId AS re_routineId, re.exerciseId AS re_exerciseId, re."order" AS re_order,
        re.sets AS re_sets, re.reps AS re_reps, re.weightKg AS re_weightKg, re.restSeconds AS re_restSeconds,
@@ -270,7 +415,7 @@ export async function getRoutineExercises(routineId: number): Promise<Row[]> {
      WHERE re.routineId = ?
      ORDER BY re."order"`,
     routineId,
-  ).map((row) => ({
+  )).map((row) => ({
     routineExercise: normalizeRoutineExercise({
       id: row.re_id,
       routineId: row.re_routineId,
@@ -296,7 +441,7 @@ export async function addExerciseToRoutine(
   restSeconds: number,
   setDetails?: { setNumber: number; weightKg?: number; reps?: number }[],
 ): Promise<any> {
-  const result = run(
+  const result = await run(
     `INSERT INTO routine_exercises (routineId, exerciseId, "order", sets, reps, restSeconds, setDetails)
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
     routineId,
@@ -307,11 +452,11 @@ export async function addExerciseToRoutine(
     restSeconds,
     JSON.stringify(setDetails ?? []),
   );
-  return Number(result.lastInsertRowid);
+  return getInsertId(result);
 }
 
 export async function removeExerciseFromRoutine(id: number): Promise<any> {
-  run("DELETE FROM routine_exercises WHERE id = ?", id);
+  await run("DELETE FROM routine_exercises WHERE id = ?", id);
 }
 
 export async function createWorkoutSession(userId: number, input: {
@@ -320,7 +465,7 @@ export async function createWorkoutSession(userId: number, input: {
   workoutDate?: Date;
 }): Promise<any> {
   const workoutDate = toDbDate(input.workoutDate) ?? new Date().toISOString();
-  const result = run(
+  const result = await run(
     `INSERT INTO workout_sessions
      (userId, routineId, name, startedAt, workoutDate, createdAt)
      VALUES (?, ?, ?, ?, ?, ?)`,
@@ -331,17 +476,17 @@ export async function createWorkoutSession(userId: number, input: {
     workoutDate,
     new Date().toISOString(),
   );
-  return Number(result.lastInsertRowid);
+  return getInsertId(result);
 }
 
 export async function getWorkoutSessionById(id: number): Promise<Row | null> {
-  return get("SELECT * FROM workout_sessions WHERE id = ? LIMIT 1", id);
+  return await get("SELECT * FROM workout_sessions WHERE id = ? LIMIT 1", id);
 }
 
 export async function completeWorkoutSession(sessionId: number, durationMinutes: number, notes?: string): Promise<any> {
-  const logs = all("SELECT reps, weightKg FROM workout_logs WHERE sessionId = ?", sessionId);
+  const logs = await all("SELECT reps, weightKg FROM workout_logs WHERE sessionId = ?", sessionId);
   const totalVolume = logs.reduce((sum, log) => sum + (log.reps ?? 0) * (log.weightKg ?? 0), 0);
-  run(
+  await run(
     `UPDATE workout_sessions
      SET completedAt = ?, durationMinutes = ?, notes = ?, totalVolume = ?
      WHERE id = ?`,
@@ -354,7 +499,7 @@ export async function completeWorkoutSession(sessionId: number, durationMinutes:
 }
 
 export async function addWorkoutLog(input: Row): Promise<any> {
-  const result = run(
+  const result = await run(
     `INSERT INTO workout_logs
      (sessionId, exerciseId, setNumber, reps, weightKg, durationSeconds, distanceM, isWarmup, rpe, memo, notes, createdAt)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -365,21 +510,21 @@ export async function addWorkoutLog(input: Row): Promise<any> {
     input.weightKg ?? null,
     input.durationSeconds ?? null,
     input.distanceM ?? null,
-    input.isWarmup ? 1 : 0,
+    Boolean(input.isWarmup),
     input.rpe ?? null,
     input.memo ?? null,
     input.notes ?? null,
     new Date().toISOString(),
   );
-  return Number(result.lastInsertRowid);
+  return getInsertId(result);
 }
 
 export async function deleteWorkoutLog(logId: number): Promise<any> {
-  run("DELETE FROM workout_logs WHERE id = ?", logId);
+  await run("DELETE FROM workout_logs WHERE id = ?", logId);
 }
 
 export async function getWorkoutLogsBySession(sessionId: number): Promise<Row[]> {
-  return all(
+  return (await all(
     `SELECT
        wl.id AS wl_id, wl.sessionId AS wl_sessionId, wl.exerciseId AS wl_exerciseId, wl.setNumber AS wl_setNumber,
        wl.reps AS wl_reps, wl.weightKg AS wl_weightKg, wl.durationSeconds AS wl_durationSeconds,
@@ -391,7 +536,7 @@ export async function getWorkoutLogsBySession(sessionId: number): Promise<Row[]>
      WHERE wl.sessionId = ?
      ORDER BY wl.exerciseId, wl.setNumber`,
     sessionId,
-  ).map((row) => ({
+  )).map((row) => ({
     log: {
       id: row.wl_id,
       sessionId: row.wl_sessionId,
@@ -412,7 +557,7 @@ export async function getWorkoutLogsBySession(sessionId: number): Promise<Row[]>
 }
 
 export async function getWorkoutSessionsByUser(userId: number, limit = 20): Promise<Row[]> {
-  return all(
+  return await all(
     `SELECT * FROM workout_sessions
      WHERE userId = ?
      ORDER BY COALESCE(workoutDate, startedAt) DESC, startedAt DESC
@@ -423,9 +568,9 @@ export async function getWorkoutSessionsByUser(userId: number, limit = 20): Prom
 }
 
 export async function getSessionsInDateRange(userId: number, from: Date, to: Date): Promise<Row[]> {
-  return all(
+  return await all(
     `SELECT * FROM workout_sessions
-     WHERE userId = ? AND datetime(COALESCE(workoutDate, startedAt)) >= datetime(?) AND datetime(COALESCE(workoutDate, startedAt)) <= datetime(?)
+     WHERE userId = ? AND COALESCE(workoutDate, startedAt) >= ? AND COALESCE(workoutDate, startedAt) <= ?
      ORDER BY COALESCE(workoutDate, startedAt)`,
     userId,
     from.toISOString(),
@@ -480,7 +625,7 @@ export async function getWeeklyStats(userId: number): Promise<Row> {
 }
 
 export async function getExerciseHistory(userId: number, exerciseId: number, limit = 10): Promise<Row[]> {
-  const rows = all(
+  const rows = await all(
     `SELECT
        wl.*, ws.workoutDate AS sessionWorkoutDate, ws.startedAt AS sessionStartedAt, ws.id AS sessionId
      FROM workout_logs wl
@@ -569,7 +714,7 @@ export async function checkPRs(userId: number, sessionId: number): Promise<any> 
 }
 
 export async function getFavorites(userId: number): Promise<Row[]> {
-  return all(
+  return (await all(
     `SELECT
        ef.id AS fav_id, ef.userId AS fav_userId, ef.exerciseId AS fav_exerciseId, ef.createdAt AS fav_createdAt,
        e.*
@@ -578,7 +723,7 @@ export async function getFavorites(userId: number): Promise<Row[]> {
      WHERE ef.userId = ?
      ORDER BY ef.createdAt DESC`,
     userId,
-  ).map((row) => ({
+  )).map((row) => ({
     fav: {
       id: row.fav_id,
       userId: row.fav_userId,
@@ -590,7 +735,7 @@ export async function getFavorites(userId: number): Promise<Row[]> {
 }
 
 export async function isFavorite(userId: number, exerciseId: number): Promise<boolean> {
-  return Boolean(get(
+  return Boolean(await get(
     "SELECT id FROM exercise_favorites WHERE userId = ? AND exerciseId = ? LIMIT 1",
     userId,
     exerciseId,
@@ -599,10 +744,10 @@ export async function isFavorite(userId: number, exerciseId: number): Promise<bo
 
 export async function toggleFavorite(userId: number, exerciseId: number): Promise<boolean> {
   if (await isFavorite(userId, exerciseId)) {
-    run("DELETE FROM exercise_favorites WHERE userId = ? AND exerciseId = ?", userId, exerciseId);
+    await run("DELETE FROM exercise_favorites WHERE userId = ? AND exerciseId = ?", userId, exerciseId);
     return false;
   }
-  run(
+  await run(
     "INSERT INTO exercise_favorites (userId, exerciseId, createdAt) VALUES (?, ?, ?)",
     userId,
     exerciseId,
@@ -619,7 +764,7 @@ export async function upsertExerciseGoal(userId: number, exerciseId: number, inp
   const existing = await getExerciseProgress(userId, exerciseId);
   const now = new Date().toISOString();
   if (existing) {
-    run(
+    await run(
       `UPDATE exercise_goals
        SET targetWeightKg = ?, targetReps = ?, notes = ?, updatedAt = ?
        WHERE id = ?`,
@@ -632,7 +777,7 @@ export async function upsertExerciseGoal(userId: number, exerciseId: number, inp
     return existing.id;
   }
 
-  const result = run(
+  const result = await run(
     `INSERT INTO exercise_goals (userId, exerciseId, targetWeightKg, targetReps, notes, createdAt, updatedAt)
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
     userId,
@@ -643,11 +788,11 @@ export async function upsertExerciseGoal(userId: number, exerciseId: number, inp
     now,
     now,
   );
-  return Number(result.lastInsertRowid);
+  return getInsertId(result);
 }
 
 export async function getExerciseProgress(userId: number, exerciseId: number): Promise<Row | null> {
-  return get(
+  return await get(
     "SELECT * FROM exercise_goals WHERE userId = ? AND exerciseId = ? LIMIT 1",
     userId,
     exerciseId,
@@ -655,7 +800,7 @@ export async function getExerciseProgress(userId: number, exerciseId: number): P
 }
 
 export async function getBodyWeights(userId: number, limit = 30): Promise<Row[]> {
-  return all(
+  return await all(
     "SELECT * FROM body_weights WHERE userId = ? ORDER BY recordedAt DESC LIMIT ?",
     userId,
     limit,
@@ -669,7 +814,7 @@ export async function addBodyWeight(userId: number, input: {
   notes?: string;
   recordedAt?: Date;
 }): Promise<any> {
-  const result = run(
+  const result = await run(
     `INSERT INTO body_weights (userId, weightKg, bodyFatPct, muscleMassPct, notes, recordedAt, createdAt)
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
     userId,
@@ -680,11 +825,11 @@ export async function addBodyWeight(userId: number, input: {
     toDbDate(input.recordedAt) ?? new Date().toISOString(),
     new Date().toISOString(),
   );
-  return Number(result.lastInsertRowid);
+  return getInsertId(result);
 }
 
 export async function deleteBodyWeight(id: number, userId: number): Promise<any> {
-  run("DELETE FROM body_weights WHERE id = ? AND userId = ?", id, userId);
+  await run("DELETE FROM body_weights WHERE id = ? AND userId = ?", id, userId);
 }
 
 function getWeekStart(date: Date) {
@@ -696,6 +841,3 @@ function getWeekStart(date: Date) {
 function stripTime(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
-
-
-

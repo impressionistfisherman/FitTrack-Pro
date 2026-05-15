@@ -17,17 +17,13 @@ VITE_API_BASE_URL=https://fittrack-pro-api.onrender.com
 
 ## Backend
 
-Render serves the Node API and OAuth callbacks:
+The backend can now run on Vercel as a Node API while the frontend stays on GitHub Pages.
 
 ```text
-https://fittrack-pro-api.onrender.com
+https://<your-vercel-app>.vercel.app
 ```
 
-Create the Render service from `render.yaml`. It uses Docker, copies the initial SQLite DB from `local-db/fittrack_local.sqlite`, and stores the working DB on the Render disk at:
-
-```text
-/var/data/fittrack_local.sqlite
-```
+The Vercel backend uses `api/[...slug].ts` to route all `/api/*` requests and can connect to Supabase Postgres via `DATABASE_URL`.
 
 Render persistent disks require a paid web service. A free Render web service can run the app, but SQLite changes are lost when the service restarts or redeploys.
 
@@ -44,6 +40,60 @@ GOOGLE_CLIENT_SECRET=<Google OAuth client secret>
 GITHUB_CLIENT_ID=<GitHub OAuth client id>
 GITHUB_CLIENT_SECRET=<GitHub OAuth client secret>
 ```
+
+## Free hosting alternative
+
+The backend now supports `DATABASE_URL`, so you can use a free MySQL-compatible hosted database instead of SQLite.
+
+1. Use GitHub Pages for the frontend as before.
+2. Deploy the backend to a free Node host (Vercel, Fly, Railway, Cloudflare Pages with Workers, etc.).
+3. Provision a free cloud database on Supabase / Neon / PlanetScale / Railway MySQL.
+4. Set the backend env var:
+
+```text
+DATABASE_URL=<your MySQL-compatible connection string>
+```
+
+5. Also set these env vars for the backend:
+
+```text
+APP_ORIGIN=https://impressionistfisherman.github.io
+APP_REDIRECT_URL=https://impressionistfisherman.github.io/FitTrack-Pro/
+JWT_SECRET=<secret>
+GOOGLE_CLIENT_ID=<Google OAuth client id>
+GOOGLE_CLIENT_SECRET=<Google OAuth client secret>
+GITHUB_CLIENT_ID=<GitHub OAuth client id>
+GITHUB_CLIENT_SECRET=<GitHub OAuth client secret>
+```
+
+6. Do not use `SQLITE_DB_PATH` when `DATABASE_URL` is set. The app will use the cloud database instead.
+
+## Vercel + Supabase
+
+For the Vercel backend path, set these environment variables in your Vercel project:
+
+```text
+DATABASE_URL=<your Supabase Postgres connection string>
+APP_ORIGIN=https://impressionistfisherman.github.io
+APP_REDIRECT_URL=https://impressionistfisherman.github.io/FitTrack-Pro/
+JWT_SECRET=<secret>
+GOOGLE_CLIENT_ID=<Google OAuth client id>
+GOOGLE_CLIENT_SECRET=<Google OAuth client secret>
+GITHUB_CLIENT_ID=<GitHub OAuth client id>
+GITHUB_CLIENT_SECRET=<GitHub OAuth client secret>
+```
+
+Make sure the Supabase database schema is created before using the app. The backend currently supports raw SQL against Postgres via `DATABASE_URL`.
+
+To create the Supabase schema and copy the local SQLite data into it:
+
+```bash
+DATABASE_URL="postgresql://..." pnpm db:migrate:postgres
+```
+
+This runs `scripts/supabase-schema.sql` and imports the data from `local-db/fittrack_local.sqlite`.
+
+> Note: Render persistent disks require payment information. If you cannot add billing, use the free database + free Node host path instead.
 
 ## OAuth URLs
 

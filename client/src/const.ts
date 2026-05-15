@@ -15,7 +15,8 @@ export const getApiBaseUrl = () => {
 };
 
 const isGitHubPages = () =>
-  typeof window !== "undefined" && window.location.hostname.endsWith("github.io");
+  typeof globalThis !== "undefined" &&
+  globalThis.location?.hostname.endsWith("github.io");
 
 // Generate login URL at runtime so redirect URI reflects the current origin.
 export const getLoginUrl = (provider: "google" | "github" = "google") => {
@@ -28,7 +29,7 @@ export const getLoginUrl = (provider: "google" | "github" = "google") => {
 
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
   const appId = import.meta.env.VITE_APP_ID;
-  const redirectUri = `${window.location.origin}/api/oauth/callback`;
+  const redirectUri = `${globalThis.location.origin}/api/oauth/callback`;
   const state = btoa(redirectUri);
 
   if (!oauthPortalUrl || !appId) {
@@ -48,11 +49,11 @@ export const startLogin = (provider: "google" | "github" = "google") => {
   const loginUrl = getLoginUrl(provider);
 
   if (!loginUrl) {
-    window.alert(
+    globalThis.alert(
       "GitHub Pages는 정적 호스팅이라 로그인과 DB API를 직접 실행할 수 없습니다. 로컬 서버 또는 별도 Node 서버 배포 URL에서 로그인하세요."
     );
     return;
   }
 
-  window.location.href = loginUrl;
+  globalThis.location.href = loginUrl;
 };

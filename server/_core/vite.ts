@@ -2,7 +2,7 @@ import express, { type Express } from "express";
 import fs from "fs";
 import { type Server } from "http";
 import { nanoid } from "nanoid";
-import path from "path";
+import path from "node:path";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
 
