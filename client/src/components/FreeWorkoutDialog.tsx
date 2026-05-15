@@ -279,20 +279,20 @@ export default function FreeWorkoutDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
-        "flex max-h-[92dvh] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-y-auto border-border bg-card p-4 text-foreground sm:p-6",
-        selected.length > 0 ? "sm:max-w-[min(100vw-2rem,56rem)]" : "sm:max-w-[26rem]"
+        "flex max-h-[90dvh] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-hidden border-border bg-card p-0 text-foreground",
+        selected.length > 0 ? "sm:max-w-[min(100vw-2rem,54rem)]" : "sm:max-w-[26rem]"
       )}>
-        <DialogHeader>
+        <DialogHeader className="shrink-0 border-b border-border px-5 py-4">
           <DialogTitle className="text-foreground">자유 운동 기록</DialogTitle>
         </DialogHeader>
 
         <div className={cn(
-          "grid gap-4",
-          selected.length > 0 && "xl:grid-cols-[minmax(240px,300px)_minmax(0,1fr)]"
+          "grid flex-1 gap-4 overflow-y-auto px-5 py-4",
+          selected.length > 0 && "lg:grid-cols-[minmax(260px,300px)_minmax(0,1fr)]"
         )}>
           <div className="min-w-0 space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-sm text-muted-foreground">운동 날짜</Label>
+              <Label className="text-xs text-muted-foreground">운동 날짜</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -323,7 +323,7 @@ export default function FreeWorkoutDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-sm text-muted-foreground">운동 검색</Label>
+              <Label className="text-xs text-muted-foreground">운동 검색</Label>
               <div className="relative">
                 <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -335,7 +335,7 @@ export default function FreeWorkoutDialog({
               </div>
             </div>
 
-            <ScrollArea className="h-56 rounded-lg border border-border xl:max-h-[52dvh]">
+            <ScrollArea className="h-56 rounded-lg border border-border lg:h-[224px]">
               <div className="p-2 space-y-1">
                 {exercisesLoading ? (
                   Array.from({ length: 5 }).map((_, index) => (
@@ -377,31 +377,31 @@ export default function FreeWorkoutDialog({
           </div>
 
           {selected.length > 0 && (
-            <div className="min-w-0 space-y-3">
+            <div className="min-w-0 space-y-3 lg:max-h-[calc(90dvh-11rem)] lg:overflow-y-auto lg:pr-1">
               {selected.map((item) => (
-                  <div key={item.exercise.id} className="min-w-0 rounded-lg border border-border bg-accent/30 p-3">
-                    <div className="mb-3 flex flex-wrap items-start gap-2">
+                  <div key={item.exercise.id} className="min-w-0 rounded-xl border border-border bg-accent/20 p-3">
+                    <div className="mb-3 flex items-start gap-2">
                       <div className="min-w-0">
                         <div className="font-semibold text-sm truncate">{item.exercise.nameKo}</div>
                         <div className="text-xs text-muted-foreground truncate">{item.exercise.name}</div>
                       </div>
-                      <div className="ml-auto rounded-full border border-primary/20 bg-primary/10 px-2 py-1 text-[10px] text-primary">
+                      <div className="ml-auto shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2 py-1 text-[10px] text-primary">
                         {getExerciseInputMode(item.exercise) === "strength" ? "세트 기록" : getExerciseInputMode(item.exercise) === "cardio" ? "시간/거리" : "시간 기록"}
                       </div>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
                         onClick={() => removeExercise(item.exercise.id)}
                       >
-                        <Trash2 size={15} />
+                        <Trash2 size={14} />
                       </Button>
                     </div>
 
                     {getExerciseInputMode(item.exercise) === "strength" ? (
                       <>
-                        <div className="mb-3 flex flex-wrap items-center gap-2">
-                          <Label className="w-12 shrink-0 text-xs text-muted-foreground">세트 수</Label>
+                        <div className="mb-3 grid grid-cols-[44px_auto_1fr] items-center gap-2">
+                          <Label className="shrink-0 text-xs text-muted-foreground">세트 수</Label>
                           <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-1">
                             <Button
                               type="button"
@@ -434,7 +434,7 @@ export default function FreeWorkoutDialog({
                             type="button"
                             variant="outline"
                             size="sm"
-                            className="h-8 gap-1 border-dashed border-border text-xs text-muted-foreground hover:text-foreground"
+                            className="h-8 justify-self-start gap-1 border-dashed border-border text-xs text-muted-foreground hover:text-foreground"
                             onClick={() => addSetToExercise(item.exercise.id)}
                           >
                             <Plus size={12} />
@@ -444,21 +444,21 @@ export default function FreeWorkoutDialog({
 
                         <div className="space-y-2">
                           {item.sets.map((set) => (
-                            <div key={set.setNumber} className="grid min-w-0 grid-cols-[42px_minmax(72px,1fr)_minmax(72px,1fr)] items-center gap-2 sm:grid-cols-[52px_minmax(100px,1fr)_minmax(100px,1fr)]">
+                            <div key={set.setNumber} className="grid min-w-0 grid-cols-[44px_minmax(72px,1fr)_minmax(72px,1fr)] items-center gap-2 sm:grid-cols-[52px_minmax(100px,1fr)_minmax(100px,1fr)]">
                               <div className="text-xs text-muted-foreground sm:whitespace-nowrap">{set.setNumber}세트</div>
                               <Input
                                 inputMode="decimal"
                                 placeholder="kg"
                                 value={set.weightKg}
                                 onChange={(event) => updateSet(item.exercise.id, set.setNumber, "weightKg", event.target.value)}
-                                className="h-8 min-w-0 bg-card border-border px-2 text-center text-foreground"
+                                className="h-8 min-w-0 rounded-lg bg-card border-border px-2 text-center text-foreground"
                               />
                               <Input
                                 inputMode="numeric"
                                 placeholder="회"
                                 value={set.reps}
                                 onChange={(event) => updateSet(item.exercise.id, set.setNumber, "reps", event.target.value)}
-                                className="h-8 min-w-0 bg-card border-border px-2 text-center text-foreground"
+                                className="h-8 min-w-0 rounded-lg bg-card border-border px-2 text-center text-foreground"
                               />
                             </div>
                           ))}
@@ -507,7 +507,7 @@ export default function FreeWorkoutDialog({
                       </div>
                     )}
 
-                    <div className="mt-3 rounded-md bg-card/70 px-3 py-2 text-xs text-muted-foreground">
+                    <div className="mt-3 rounded-lg bg-card/70 px-3 py-2 text-xs text-muted-foreground">
                       예상 소모: <span className="font-semibold text-primary">{estimateExerciseCalories(item, bodyWeightKg)} kcal</span>
                       <span className="mx-2">·</span>
                       예상 시간: <span className="font-semibold text-foreground">{estimateExerciseDuration(item)}분</span>
@@ -518,26 +518,27 @@ export default function FreeWorkoutDialog({
           )}
         </div>
 
-        {selected.length > 0 && (
-          <div className="grid grid-cols-2 gap-2 rounded-lg border border-border bg-accent/30 p-3 text-center text-xs">
-            <div>
-              <div className="text-lg font-bold text-primary">{totalCalories}</div>
-              <div className="text-muted-foreground">예상 kcal</div>
+        <div className="grid shrink-0 gap-3 border-t border-border bg-card/95 px-5 py-4 backdrop-blur sm:flex sm:items-center sm:justify-between">
+          {selected.length > 0 ? (
+            <div className="grid grid-cols-2 gap-2 text-center text-xs sm:w-56">
+              <div className="rounded-lg border border-border bg-accent/40 px-3 py-2">
+                <div className="text-base font-bold text-primary">{totalCalories}</div>
+                <div className="text-muted-foreground">예상 kcal</div>
+              </div>
+              <div className="rounded-lg border border-border bg-accent/40 px-3 py-2">
+                <div className="text-base font-bold text-foreground">{totalDuration}</div>
+                <div className="text-muted-foreground">예상 분</div>
+              </div>
             </div>
-            <div>
-              <div className="text-lg font-bold text-foreground">{totalDuration}</div>
-              <div className="text-muted-foreground">예상 분</div>
-            </div>
+          ) : <div />}
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving} className="min-w-0">
+              취소
+            </Button>
+            <Button onClick={handleComplete} disabled={isSaving || !canSave} className="min-w-0">
+              {isSaving ? "저장 중..." : "운동 기록 저장"}
+            </Button>
           </div>
-        )}
-
-        <div className="-mx-4 grid shrink-0 grid-cols-2 gap-2 border-t border-border bg-card/95 px-4 pt-3 backdrop-blur sm:-mx-6 sm:flex sm:justify-end sm:px-6">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving} className="min-w-0">
-            취소
-          </Button>
-          <Button onClick={handleComplete} disabled={isSaving || !canSave} className="min-w-0">
-            {isSaving ? "저장 중..." : "운동 기록 저장"}
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
