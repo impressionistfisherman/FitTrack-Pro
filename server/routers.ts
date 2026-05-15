@@ -105,6 +105,43 @@ function normalizeExerciseName(value: string) {
     .trim();
 }
 
+function isStretchExerciseText(value: string) {
+  const text = normalizeExerciseName(value);
+  return /stretch|mobility|warm.?up|cool.?down|스트레칭|모빌리티|가동성|워밍업|정리운동/.test(text);
+}
+
+function normalizeProgramRecommendation(program: any) {
+  if (!program?.weeklyPlan || !Array.isArray(program.weeklyPlan)) return program;
+
+  return {
+    ...program,
+    weeklyPlan: program.weeklyPlan.map((day: any) => {
+      const exercises = Array.isArray(day.exercises) ? day.exercises : [];
+      const warmupStretch = Array.isArray(day.warmupStretch) ? day.warmupStretch : [];
+      const cooldownStretch = Array.isArray(day.cooldownStretch) ? day.cooldownStretch : [];
+      const mixedStretches = exercises.filter((item: string) => isStretchExerciseText(String(item)));
+      const mainExercises = exercises.filter((item: string) => !isStretchExerciseText(String(item)));
+
+      if (!warmupStretch.length && !cooldownStretch.length && mixedStretches.length) {
+        const midpoint = Math.ceil(mixedStretches.length / 2);
+        return {
+          ...day,
+          warmupStretch: mixedStretches.slice(0, midpoint),
+          cooldownStretch: mixedStretches.slice(midpoint),
+          exercises: mainExercises,
+        };
+      }
+
+      return {
+        ...day,
+        warmupStretch,
+        cooldownStretch,
+        exercises: mainExercises,
+      };
+    }),
+  };
+}
+
 function buildNutritionStrategy(goalValues: string[], tdee: number, latestWeight?: number) {
   const goals = new Set(goalValues);
   const hasHypertrophy = goals.has("hypertrophy");
@@ -907,8 +944,11 @@ ${historyText}
             - 운동명은 한국어 운동명을 우선 사용하고, 필요하면 괄호 안에 영어명을 보조로 적으세요.
             - 사용자가 제외한 부위/운동은 넣지 마세요.
             - 유산소/복근 포함 여부와 사용자 추가 요청을 우선순위 높게 반영하세요.
-            - 각 운동일은 워밍업, 메인 운동, 보조 운동, 선택된 경우 유산소/복근을 균형 있게 구성하세요.
-            - 스트레칭은 그냥 "스트레칭"이라고 쓰지 말고, DB 후보의 부위별 스트레칭에서 골라 "가슴 스트레칭", "어깨 스트레칭", "하체 스트레칭"처럼 해당 운동일의 타겟 부위에 맞게 구체적으로 넣으세요.
+            - exercises에는 메인 운동, 보조 운동, 선택된 경우 유산소/복근만 넣으세요. 스트레칭은 exercises에 넣지 마세요.
+            - 각 운동일마다 warmupStretch 배열과 cooldownStretch 배열을 반드시 작성하세요.
+            - warmupStretch는 운동 전 동적 스트레칭/가동성 루틴 총 20분, cooldownStretch는 운동 후 정적 스트레칭 총 20분으로 구성하세요.
+            - 스트레칭은 DB 후보의 부위별 스트레칭에서 골라 "등 스트레칭 - 5분", "어깨 스트레칭 - 5분"처럼 시간 단위로 적고, 세트x횟수/휴식 형식을 쓰지 마세요.
+            - warmupStretch와 cooldownStretch는 해당 운동일의 타겟 부위에 맞게 다르게 구성하세요.
             응답은 반드시 JSON 형식으로 해주세요.`,
           },
           {
@@ -935,7 +975,7 @@ ${recommendationCatalog.text}
 
 위 정보를 바탕으로 이번 주 운동 프로그램을 추천해주세요.
 반드시 위 DB 후보에 있는 운동만 사용하고, 지정된 기구, 운동 시간, 제외 부위, 분할 방식, 사용자 요청 조건에 맞는 운동만 포함해주세요.
-각 운동일에는 타겟 부위별 워밍업/스트레칭도 구체적인 운동명으로 포함해주세요.`,
+각 운동일에는 운동 전 스트레칭 20분과 운동 후 스트레칭 20분을 따로 분리해서 포함해주세요. 스트레칭은 exercises에 섞지 마세요.`,
           },
         ],
         response_format: {
@@ -953,14 +993,24 @@ ${recommendationCatalog.text}
                     properties: {
                       day: { type: "string", description: "요일 (예: 월요일)" },
                       focus: { type: "string", description: "운동 포커스 (예: 가슴/삼두)" },
+                      warmupStretch: {
+                        type: "array",
+                        items: { type: "string" },
+                        description: "운동 전 동적 스트레칭/가동성 루틴. 총 20분.",
+                      },
                       exercises: {
                         type: "array",
                         items: { type: "string" },
-                        description: "운동 목록",
+                        description: "메인/보조/유산소/복근 운동 목록. 스트레칭 제외.",
+                      },
+                      cooldownStretch: {
+                        type: "array",
+                        items: { type: "string" },
+                        description: "운동 후 정적 스트레칭 루틴. 총 20분.",
                       },
                       duration: { type: "string", description: "예상 운동 시간" },
                     },
-                    required: ["day", "focus", "exercises", "duration"],
+                    required: ["day", "focus", "warmupStretch", "exercises", "cooldownStretch", "duration"],
                     additionalProperties: false,
                   },
                 },
@@ -979,6 +1029,7 @@ ${recommendationCatalog.text}
       const content2 = typeof rawContent2 === 'string' ? rawContent2 : null;
       let parsed = null;
       try { parsed = content2 ? JSON.parse(content2) : null; } catch { parsed = null; }
+      parsed = normalizeProgramRecommendation(parsed);
 
       return {
         program: parsed,

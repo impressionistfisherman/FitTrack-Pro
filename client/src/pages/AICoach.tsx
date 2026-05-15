@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import DietRecommendation from "@/components/DietRecommendation";
 import { trpc } from "@/lib/trpc";
-import { Bot, Dumbbell, RefreshCw, Save, Utensils } from "lucide-react";
+import { Bot, Dumbbell, RefreshCw, Save, Sparkles, Utensils } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -281,6 +281,32 @@ function ProgramRecommendation() {
                   </div>
                   <div className="text-xs text-muted-foreground">{day.duration}</div>
                 </div>
+                {(day.warmupStretch?.length || day.cooldownStretch?.length) && (
+                  <div className="mb-3 grid gap-2 md:grid-cols-2">
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+                      <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-primary">
+                        <Sparkles size={12} />
+                        운동 전 스트레칭 20분
+                      </div>
+                      <div className="space-y-1">
+                        {day.warmupStretch?.map((stretch: string, i: number) => (
+                          <div key={i} className="text-xs leading-relaxed text-muted-foreground">{stretch}</div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-blue-400/20 bg-blue-400/5 p-3">
+                      <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-blue-300">
+                        <Sparkles size={12} />
+                        운동 후 스트레칭 20분
+                      </div>
+                      <div className="space-y-1">
+                        {day.cooldownStretch?.map((stretch: string, i: number) => (
+                          <div key={i} className="text-xs leading-relaxed text-muted-foreground">{stretch}</div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-1">
                   {day.exercises?.map((exercise: string, i: number) => (
                     <div key={i} className="rounded-lg bg-accent/50 px-3 py-2 text-sm text-foreground">{exercise}</div>
