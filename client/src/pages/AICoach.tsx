@@ -346,17 +346,17 @@ export default function AICoach() {
         </CardContent>
       </Card>
       <Tabs defaultValue="program" className="space-y-4">
-        <TabsList className="grid h-11 w-full grid-cols-2 gap-1 rounded-xl border border-border bg-card p-1">
+        <TabsList className="grid h-11 w-full grid-cols-2 gap-1 rounded-xl border border-border bg-accent/30 p-1">
           <TabsTrigger
             value="program"
-            className="h-full gap-2 rounded-lg text-xs text-muted-foreground transition-colors data-[state=active]:border-primary/40 data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:shadow-[0_0_0_1px_hsl(var(--primary)/0.25)] sm:text-sm"
+            className="h-full gap-2 rounded-lg text-xs text-muted-foreground transition-colors hover:bg-accent/70 hover:text-foreground data-[state=active]:!border-primary/60 data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground data-[state=active]:shadow-[0_0_0_1px_hsl(var(--primary)/0.35),0_8px_24px_hsl(var(--primary)/0.18)] sm:text-sm"
           >
             <Dumbbell size={14} />
             맞춤 운동 추천
           </TabsTrigger>
           <TabsTrigger
             value="diet"
-            className="h-full gap-2 rounded-lg text-xs text-muted-foreground transition-colors data-[state=active]:border-primary/40 data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:shadow-[0_0_0_1px_hsl(var(--primary)/0.25)] sm:text-sm"
+            className="h-full gap-2 rounded-lg text-xs text-muted-foreground transition-colors hover:bg-accent/70 hover:text-foreground data-[state=active]:!border-primary/60 data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground data-[state=active]:shadow-[0_0_0_1px_hsl(var(--primary)/0.35),0_8px_24px_hsl(var(--primary)/0.18)] sm:text-sm"
           >
             <Utensils size={14} />
             맞춤 식단 추천
