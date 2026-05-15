@@ -142,7 +142,7 @@ export default function FreeWorkoutDialog({
           <DialogTitle className="text-foreground">자유 운동 기록</DialogTitle>
         </DialogHeader>
 
-        <div className="grid min-h-0 gap-4 xl:grid-cols-[280px_minmax(320px,1fr)]">
+        <div className="grid min-h-0 gap-4">
           <div className="min-w-0 space-y-3">
             <div className="space-y-1.5">
               <Label className="text-sm text-muted-foreground">운동 날짜</Label>
@@ -167,7 +167,7 @@ export default function FreeWorkoutDialog({
               </div>
             </div>
 
-            <ScrollArea className="h-44 rounded-lg border border-border sm:h-60 xl:h-[360px]">
+            <ScrollArea className="h-44 rounded-lg border border-border sm:h-56">
               <div className="p-2 space-y-1">
                 {filteredExercises.map((exercise) => (
                   <button
@@ -188,7 +188,7 @@ export default function FreeWorkoutDialog({
             </ScrollArea>
           </div>
 
-          <ScrollArea className="min-w-0 h-[40vh] pr-2 sm:h-[44vh] xl:h-[470px] xl:pr-3">
+          <ScrollArea className="min-w-0 h-[42vh] pr-2 sm:h-[44vh]">
             <div className="min-w-0 space-y-3">
               {selected.length === 0 ? (
                 <div className="h-36 rounded-lg border border-dashed border-border flex items-center justify-center px-4 text-center text-sm text-muted-foreground sm:h-48">
