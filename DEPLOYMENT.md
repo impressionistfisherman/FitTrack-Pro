@@ -12,7 +12,7 @@ The Pages workflow builds with:
 
 ```text
 VITE_BASE_PATH=/FitTrack-Pro/
-VITE_API_BASE_URL=https://fittrack-pro-api.onrender.com
+VITE_API_BASE_URL=https://fit-track-pro-tawny.vercel.app
 ```
 
 ## Backend
@@ -20,7 +20,7 @@ VITE_API_BASE_URL=https://fittrack-pro-api.onrender.com
 The backend can now run on Vercel as a Node API while the frontend stays on GitHub Pages.
 
 ```text
-https://<your-vercel-app>.vercel.app
+https://fit-track-pro-tawny.vercel.app
 ```
 
 The Vercel backend uses `api/[...slug].ts` to route all `/api/*` requests and can connect to Supabase Postgres via `DATABASE_URL`.
@@ -59,6 +59,7 @@ DATABASE_URL=<your MySQL-compatible connection string>
 ```text
 APP_ORIGIN=https://impressionistfisherman.github.io
 APP_REDIRECT_URL=https://impressionistfisherman.github.io/FitTrack-Pro/
+BACKEND_ORIGIN=https://fit-track-pro-tawny.vercel.app
 JWT_SECRET=<secret>
 GOOGLE_CLIENT_ID=<Google OAuth client id>
 GOOGLE_CLIENT_SECRET=<Google OAuth client secret>
@@ -100,17 +101,17 @@ This runs `scripts/supabase-schema.sql` and imports the data from `local-db/fitt
 Google OAuth authorized JavaScript origin:
 
 ```text
-https://fittrack-pro-api.onrender.com
+https://fit-track-pro-tawny.vercel.app
 ```
 
 Google OAuth authorized redirect URI:
 
 ```text
-https://fittrack-pro-api.onrender.com/api/auth/google/callback
+https://fit-track-pro-tawny.vercel.app/api/auth/google/callback
 ```
 
 GitHub OAuth callback URL:
 
 ```text
-https://fittrack-pro-api.onrender.com/api/auth/github/callback
+https://fit-track-pro-tawny.vercel.app/api/auth/github/callback
 ```
