@@ -157,6 +157,9 @@ export default function DietRecommendation() {
   }
 
   const diet = data?.diet;
+  const goalSummary = (data as any)?.goalSummary
+    ?? (data?.goal ? goalLabels[data.goal.goal] || data.goal.goal : "-");
+  const nutritionStrategy = (data as any)?.nutritionStrategy;
 
   return (
     <div className="space-y-4">
@@ -186,8 +189,8 @@ export default function DietRecommendation() {
         </div>
         <div className="p-3 bg-card border border-border rounded-xl text-center">
           <Flame size={14} className="mx-auto mb-1 text-orange-400" />
-          <div className="text-sm font-bold text-foreground">
-            {data?.goal ? goalLabels[data.goal.goal] || data.goal.goal : "-"}
+          <div className="text-sm font-bold text-foreground leading-tight break-keep">
+            {goalSummary}
           </div>
           <div className="text-[10px] text-muted-foreground">운동 목표</div>
         </div>
@@ -206,6 +209,29 @@ export default function DietRecommendation() {
           <div className="text-[10px] text-muted-foreground">권장 칼로리</div>
         </div>
       </div>
+
+      {nutritionStrategy && (
+        <Card className="bg-primary/6 border-primary/25">
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center flex-shrink-0">
+                  <Sparkles size={16} className="text-primary" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-foreground">{nutritionStrategy.label}</div>
+                  <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
+                    {nutritionStrategy.description}
+                  </p>
+                </div>
+              </div>
+              <div className="text-xs font-semibold text-primary bg-primary/10 border border-primary/20 rounded-full px-3 py-1.5 self-start sm:self-center">
+                단백질 {nutritionStrategy.proteinTarget}g+
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {diet ? (
         <>

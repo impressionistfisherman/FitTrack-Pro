@@ -76,6 +76,15 @@ const splitPreferenceLabels: Record<string, string> = {
   hybrid: "근력 운동과 컨디셔닝을 섞은 혼합 분할",
 };
 
+const goalLabels: Record<string, string> = {
+  hypertrophy: "근비대",
+  fat_loss: "다이어트",
+  strength: "근력",
+  endurance: "지구력",
+  flexibility: "유연성",
+  general: "일반 건강",
+};
+
 const weekdayOrder: Record<string, number> = {
   월요일: 1,
   화요일: 2,
@@ -94,6 +103,53 @@ function normalizeExerciseName(value: string) {
     .replace(/\b\d+\s*(세트|set|sets|회|rep|reps|분|min|minutes|kg)\b/gi, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function buildNutritionStrategy(goalValues: string[], tdee: number, latestWeight?: number) {
+  const goals = new Set(goalValues);
+  const hasHypertrophy = goals.has("hypertrophy");
+  const hasFatLoss = goals.has("fat_loss");
+  const hasStrength = goals.has("strength");
+  const hasEndurance = goals.has("endurance");
+
+  let label = "일반 건강";
+  let description = "유지 칼로리 근처에서 균형 잡힌 식단";
+  let calories = tdee;
+  let proteinTarget = latestWeight ? Math.round(latestWeight * 1.6) : 120;
+
+  if (hasHypertrophy && hasFatLoss) {
+    label = "바디 리컴포지션 / 상승 다이어트";
+    description = "근육량은 최대한 유지하거나 늘리면서 체지방을 천천히 줄이는 전략";
+    calories = Math.round(tdee * 0.95);
+    proteinTarget = latestWeight ? Math.round(latestWeight * 2.1) : 160;
+  } else if (hasHypertrophy) {
+    label = "린매스업";
+    description = "체지방 증가를 억제하면서 근육량 증가를 노리는 소폭 칼로리 흑자";
+    calories = Math.round(tdee * 1.08);
+    proteinTarget = latestWeight ? Math.round(latestWeight * 1.9) : 150;
+  } else if (hasFatLoss) {
+    label = "다이어트";
+    description = "근손실을 줄이기 위해 단백질을 높게 잡는 체지방 감량 전략";
+    calories = Math.round(tdee * 0.8);
+    proteinTarget = latestWeight ? Math.round(latestWeight * 2.0) : 150;
+  } else if (hasStrength) {
+    label = "근력 향상";
+    description = "훈련 퍼포먼스와 회복을 우선하는 유지~소폭 흑자 전략";
+    calories = Math.round(tdee * 1.03);
+    proteinTarget = latestWeight ? Math.round(latestWeight * 1.8) : 140;
+  } else if (hasEndurance) {
+    label = "지구력 향상";
+    description = "훈련량을 버틸 수 있게 탄수화물 비중을 충분히 확보하는 전략";
+    calories = Math.round(tdee * 1.0);
+    proteinTarget = latestWeight ? Math.round(latestWeight * 1.6) : 120;
+  }
+
+  return {
+    label,
+    description,
+    calories,
+    proteinTarget,
+  };
 }
 
 function scoreExerciseMatch(query: string, exercise: any) {
@@ -1003,6 +1059,15 @@ ${recommendationCatalog.text}
       let bmr = 0;
       let tdee = 0;
       let recommendedCalories = 0;
+      const selectedGoalValues = goals.length
+        ? goals.map((item: any) => item.goal).filter(Boolean)
+        : goal?.goal
+          ? [goal.goal]
+          : [];
+      const goalSummary = selectedGoalValues.length
+        ? selectedGoalValues.map((value) => goalLabels[value] ?? value).join(" + ")
+        : "목표 미설정";
+      let nutritionStrategy = buildNutritionStrategy(selectedGoalValues, 0, latestWeight);
       if (latestWeight) {
         const genderOffset = gender === "female" ? -161 : 5;
         bmr = Math.round(10 * latestWeight + 6.25 * heightCm - 5 * age + genderOffset);
@@ -1010,17 +1075,14 @@ ${recommendationCatalog.text}
           ? goal.weeklyWorkouts >= 5 ? 1.725 : goal.weeklyWorkouts >= 3 ? 1.55 : 1.375
           : 1.375;
         tdee = Math.round(bmr * activityMultiplier);
-        // 목표별 칼로리 조정
-        if (goal?.goal === "fat_loss") recommendedCalories = Math.round(tdee * 0.8);
-        else if (goal?.goal === "hypertrophy") recommendedCalories = Math.round(tdee * 1.1);
-        else if (goal?.goal === "strength") recommendedCalories = Math.round(tdee * 1.05);
-        else recommendedCalories = tdee;
+        nutritionStrategy = buildNutritionStrategy(selectedGoalValues, tdee, latestWeight);
+        recommendedCalories = nutritionStrategy.calories;
       }
 
       const goalText = goals.length
-        ? `운동 목표: ${goals.map((item: any) => item.goal).join(", ")}, 주 ${goal?.weeklyWorkouts ?? goals[0]?.weeklyWorkouts ?? 3}회${goal?.targetWeight ? `, 목표 체중: ${goal.targetWeight}kg` : ""}`
+        ? `운동 목표: ${goalSummary}, 주 ${goal?.weeklyWorkouts ?? goals[0]?.weeklyWorkouts ?? 3}회${goal?.targetWeight ? `, 목표 체중: ${goal.targetWeight}kg` : ""}`
         : goal
-          ? `운동 목표: ${goal.goal}, 주 ${goal.weeklyWorkouts}회${goal.targetWeight ? `, 목표 체중: ${goal.targetWeight}kg` : ""}`
+          ? `운동 목표: ${goalSummary}, 주 ${goal.weeklyWorkouts}회${goal.targetWeight ? `, 목표 체중: ${goal.targetWeight}kg` : ""}`
         : "목표 미설정";
       const bodyInfoText = `신장: ${heightCm}cm, 성별: ${gender === "female" ? "여성" : "남성"}, 나이: ${age}세${latestBodyFat ? `, 체지방률: ${latestBodyFat}%` : ""}`;
       const weightText = latestWeight
@@ -1046,13 +1108,15 @@ ${recommendationCatalog.text}
             role: "user",
             content: `사용자 정보:
 ${goalText}
+식단 전략: ${nutritionStrategy.label} - ${nutritionStrategy.description}
+단백질 목표: 하루 ${nutritionStrategy.proteinTarget}g 이상
 숙련도: ${experienceLevel}
 ${bodyInfoText}
 ${weightText}
 ${statsText}
 운동 횟수: 총 ${stats?.totalSessions || 0}회
 
-위 정보를 바탕으로 오늘 하루 맞춤 식단을 추천해주세요. 특히 해리스-베네딕트 공식으로 계산된 권장 칼로리(${recommendedCalories}kcal)를 기준으로 식단을 설계해주세요.`,
+위 정보를 바탕으로 오늘 하루 맞춤 식단을 추천해주세요. 특히 권장 칼로리(${recommendedCalories}kcal), 식단 전략(${nutritionStrategy.label}), 단백질 목표(${nutritionStrategy.proteinTarget}g)를 기준으로 식단을 설계해주세요.`,
           },
         ],
         response_format: {
@@ -1115,6 +1179,8 @@ ${statsText}
         bmr,
         tdee,
         recommendedCalories,
+        goalSummary,
+        nutritionStrategy,
         stats,
       };
     }),
