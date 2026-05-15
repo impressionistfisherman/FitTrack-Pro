@@ -265,7 +265,153 @@ const normalizeResponseFormat = ({
   };
 };
 
-export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
+function getTextFromMessageContent(content: MessageContent | MessageContent[]) {
+  return ensureArray(content)
+    .map((part) => {
+      if (typeof part === "string") return part;
+      if (part.type === "text") return part.text;
+      if (part.type === "image_url") return `[image: ${part.image_url.url}]`;
+      if (part.type === "file_url") return `[file: ${part.file_url.url}]`;
+      return "";
+    })
+    .filter(Boolean)
+    .join("\n");
+}
+
+function toGeminiSchema(schema: Record<string, unknown>): Record<string, unknown> {
+  if (Array.isArray(schema)) return schema.map((item) => typeof item === "object" && item ? toGeminiSchema(item as Record<string, unknown>) : item) as unknown as Record<string, unknown>;
+
+  const next: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(schema)) {
+    if (key === "additionalProperties" || key === "$schema" || key === "strict") continue;
+
+    if (key === "type" && typeof value === "string") {
+      next[key] = value.toUpperCase();
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      next[key] = value.map((item) => typeof item === "object" && item ? toGeminiSchema(item as Record<string, unknown>) : item);
+      continue;
+    }
+
+    if (typeof value === "object" && value !== null) {
+      next[key] = toGeminiSchema(value as Record<string, unknown>);
+      continue;
+    }
+
+    next[key] = value;
+  }
+  return next;
+}
+
+function toGeminiContents(messages: Message[]) {
+  const systemInstructionParts: Array<{ text: string }> = [];
+  const contents: Array<{ role: "user" | "model"; parts: Array<{ text: string }> }> = [];
+
+  for (const message of messages) {
+    const text = getTextFromMessageContent(message.content);
+    if (!text) continue;
+
+    if (message.role === "system") {
+      systemInstructionParts.push({ text });
+      continue;
+    }
+
+    contents.push({
+      role: message.role === "assistant" ? "model" : "user",
+      parts: [{ text }],
+    });
+  }
+
+  return {
+    contents,
+    systemInstruction: systemInstructionParts.length > 0
+      ? { parts: systemInstructionParts }
+      : undefined,
+  };
+}
+
+async function invokeGemini(params: InvokeParams): Promise<InvokeResult> {
+  if (!ENV.geminiApiKey) {
+    throw new Error("GEMINI_API_KEY is not configured");
+  }
+
+  const normalizedResponseFormat = normalizeResponseFormat({
+    responseFormat: params.responseFormat,
+    response_format: params.response_format,
+    outputSchema: params.outputSchema,
+    output_schema: params.output_schema,
+  });
+  const { contents, systemInstruction } = toGeminiContents(params.messages);
+  const generationConfig: Record<string, unknown> = {
+    maxOutputTokens: params.maxTokens ?? params.max_tokens ?? 8192,
+  };
+
+  if (normalizedResponseFormat?.type === "json_schema") {
+    generationConfig.responseMimeType = "application/json";
+    generationConfig.responseSchema = toGeminiSchema(normalizedResponseFormat.json_schema.schema);
+  } else if (normalizedResponseFormat?.type === "json_object") {
+    generationConfig.responseMimeType = "application/json";
+  }
+
+  const body: Record<string, unknown> = {
+    contents,
+    generationConfig,
+  };
+  if (systemInstruction) body.systemInstruction = systemInstruction;
+
+  const model = ENV.geminiModel || "gemini-2.5-flash";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(ENV.geminiApiKey)}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Gemini invoke failed: ${response.status} ${response.statusText} – ${errorText}`);
+  }
+
+  const data = await response.json() as {
+    candidates?: Array<{
+      content?: { parts?: Array<{ text?: string }> };
+      finishReason?: string;
+    }>;
+    usageMetadata?: {
+      promptTokenCount?: number;
+      candidatesTokenCount?: number;
+      totalTokenCount?: number;
+    };
+  };
+  const content = data.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("") ?? "";
+
+  return {
+    id: crypto.randomUUID(),
+    created: Math.floor(Date.now() / 1000),
+    model,
+    choices: [
+      {
+        index: 0,
+        message: {
+          role: "assistant",
+          content,
+        },
+        finish_reason: data.candidates?.[0]?.finishReason ?? null,
+      },
+    ],
+    usage: data.usageMetadata
+      ? {
+          prompt_tokens: data.usageMetadata.promptTokenCount ?? 0,
+          completion_tokens: data.usageMetadata.candidatesTokenCount ?? 0,
+          total_tokens: data.usageMetadata.totalTokenCount ?? 0,
+        }
+      : undefined,
+  };
+}
+
+async function invokeForgeLLM(params: InvokeParams): Promise<InvokeResult> {
   assertApiKey();
 
   const {
@@ -329,4 +475,12 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   }
 
   return (await response.json()) as InvokeResult;
+}
+
+export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
+  if (ENV.geminiApiKey) {
+    return invokeGemini(params);
+  }
+
+  return invokeForgeLLM(params);
 }

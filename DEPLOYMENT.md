@@ -39,6 +39,8 @@ GOOGLE_CLIENT_ID=<Google OAuth client id>
 GOOGLE_CLIENT_SECRET=<Google OAuth client secret>
 GITHUB_CLIENT_ID=<GitHub OAuth client id>
 GITHUB_CLIENT_SECRET=<GitHub OAuth client secret>
+GEMINI_API_KEY=<Google AI Studio API key>
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
 ## Free hosting alternative
