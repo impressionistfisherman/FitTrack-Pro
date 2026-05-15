@@ -38,7 +38,7 @@ if (databaseUrl) {
   }
 } else {
   const require = createRequire(import.meta.url);
-  const { DatabaseSync } = require("node:sqlite") as any;
+  const { DatabaseSync } = require("node:sqlite");
 
   sqlite = new DatabaseSync(sqlitePath);
   sqlite.exec("PRAGMA foreign_keys = OFF");
@@ -93,8 +93,8 @@ const pgQuotedIdentifiers = [
 
 function quotePostgresIdentifiers(sql: string) {
   return pgQuotedIdentifiers.reduce((current, identifier) => {
-    const pattern = new RegExp(`(?<!["\\w])${identifier}(?!["\\w])`, "g");
-    return current.replace(pattern, `"${identifier}"`);
+    const pattern = new RegExp(String.raw`(?<!["\w])${identifier}(?!["\w])`, "g");
+    return current.replaceAll(pattern, `"${identifier}"`);
   }, sql);
 }
 
@@ -110,7 +110,7 @@ function buildQuery(sql: string, params: any[]): { text: string; values: any[] }
   if (databaseType === "postgres") {
     let index = 0;
     return {
-      text: preparePostgresSql(sql).replace(/\?/g, () => `$${++index}`),
+      text: preparePostgresSql(sql).replaceAll(/\?/g, () => `$${++index}`),
       values: params,
     };
   }
@@ -126,7 +126,10 @@ function getInsertId(result: any) {
 }
 
 function sqliteParams(params: any[]) {
-  return params.map((param) => typeof param === "boolean" ? (param ? 1 : 0) : param);
+  return params.map((param) => {
+    if (typeof param !== "boolean") return param;
+    return param ? 1 : 0;
+  });
 }
 
 async function all<T = Row>(sql: string, ...params: any[]): Promise<T[]> {
@@ -148,7 +151,7 @@ async function get<T = Row>(sql: string, ...params: any[]): Promise<T | null> {
   if (databaseType === "mysql" && mysqlPool) {
     const [rows] = await mysqlPool.execute(sql, params);
     const result = (rows as T[])[0];
-    return (result as T | undefined) ?? null;
+    return result ?? null;
   }
 
   if (databaseType === "postgres" && pgPool) {
@@ -192,10 +195,6 @@ function parseJson(value: unknown, fallback: any = null) {
   }
 }
 
-function bool(value: unknown) {
-  return Boolean(value);
-}
-
 function normalizeExercise<T extends Row | null>(exercise: T): T {
   if (!exercise) return exercise;
   return {
@@ -217,12 +216,13 @@ function normalizeRoutineExercise<T extends Row>(row: T): T {
 
 function normalizeUser<T extends Row | null>(user: T): T {
   if (!user) return user;
-  const displayName =
-    typeof user.name === "string" && user.name.trim()
-      ? user.name.trim()
-      : typeof user.email === "string" && user.email.includes("@")
-        ? user.email.split("@")[0]
-        : "사용자";
+  let displayName = "사용자";
+  if (typeof user.email === "string" && user.email.includes("@")) {
+    displayName = user.email.split("@")[0];
+  }
+  if (typeof user.name === "string" && user.name.trim()) {
+    displayName = user.name.trim();
+  }
   return {
     ...user,
     name: displayName,
@@ -437,12 +437,15 @@ type SeedExercise = {
 let supplementalExercisesReady = false;
 
 function normalizeExerciseSeedKey(value: unknown): string {
-  return String(value ?? "")
+  if (value == null) return "";
+  if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") return "";
+
+  return String(value)
     .toLowerCase()
-    .replace(/\(multiple response\)|\(single response\)|- medium grip/g, "")
-    .replace(/rope jumping/g, "jump rope")
-    .replace(/triceps/g, "tricep")
-    .replace(/[^a-z0-9가-힣]+/g, "");
+    .replaceAll(/\(multiple response\)|\(single response\)|- medium grip/g, "")
+    .replaceAll(/rope jumping/g, "jump rope")
+    .replaceAll(/triceps/g, "tricep")
+    .replaceAll(/[^a-z0-9가-힣]+/g, "");
 }
 
 async function ensureSupplementalExercises() {
@@ -561,10 +564,8 @@ export async function getExercises(filters?: {
     params.push(`%${filters.search}%`, `%${filters.search}%`);
   }
 
-  const rows = await all(
-    `SELECT * FROM exercises ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY nameKo`,
-    ...params,
-  );
+  const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
+  const rows = await all(`SELECT * FROM exercises ${whereClause} ORDER BY nameKo`, ...params);
   return rows.map((row) => normalizeExercise(row));
 }
 
@@ -581,7 +582,7 @@ export async function getUserGoal(userId: number): Promise<Row | null> {
     userId,
     true,
   );
-  return goal ? { ...goal, isActive: bool(goal.isActive) } : null;
+  return goal ? { ...goal, isActive: Boolean(goal.isActive) } : null;
 }
 
 export async function getUserGoals(userId: number): Promise<Row[]> {
@@ -592,7 +593,7 @@ export async function getUserGoals(userId: number): Promise<Row[]> {
     userId,
     true,
   );
-  return goals.map((goal) => ({ ...goal, isActive: bool(goal.isActive) }));
+  return goals.map((goal) => ({ ...goal, isActive: Boolean(goal.isActive) }));
 }
 
 export async function upsertUserGoal(
@@ -737,12 +738,12 @@ export async function setUserPreference(userId: number, key: string, value: stri
 
 export async function getRoutinesByUser(userId: number): Promise<Row[]> {
   return (await all("SELECT * FROM routines WHERE userId = ? ORDER BY createdAt DESC", userId))
-    .map((routine) => ({ ...routine, isPublic: bool(routine.isPublic) }));
+    .map((routine) => ({ ...routine, isPublic: Boolean(routine.isPublic) }));
 }
 
 export async function getRoutineById(id: number): Promise<Row | null> {
   const routine = await get("SELECT * FROM routines WHERE id = ? LIMIT 1", id);
-  return routine ? { ...routine, isPublic: bool(routine.isPublic) } : null;
+  return routine ? { ...routine, isPublic: Boolean(routine.isPublic) } : null;
 }
 
 export async function createRoutine(userId: number, input: {
@@ -771,8 +772,9 @@ export async function updateRoutine(id: number, input: Row): Promise<any> {
   const allowed = ["name", "description", "goal", "daysPerWeek"];
   const keys = allowed.filter((key) => key in input);
   if (!keys.length) return;
+  const assignments = keys.map((key) => `${key} = ?`).join(", ");
   await run(
-    `UPDATE routines SET ${keys.map((key) => `${key} = ?`).join(", ")}, updatedAt = ? WHERE id = ?`,
+    `UPDATE routines SET ${assignments}, updatedAt = ? WHERE id = ?`,
     ...keys.map((key) => input[key] ?? null),
     new Date().toISOString(),
     id,
@@ -932,7 +934,7 @@ export async function getWorkoutLogsBySession(sessionId: number): Promise<Row[]>
       weightKg: row.wl_weightKg,
       durationSeconds: row.wl_durationSeconds,
       distanceM: row.wl_distanceM,
-      isWarmup: bool(row.wl_isWarmup),
+      isWarmup: Boolean(row.wl_isWarmup),
       rpe: row.wl_rpe,
       memo: row.wl_memo,
       notes: row.wl_notes,
@@ -990,7 +992,7 @@ export async function getWeeklyStats(userId: number): Promise<Row> {
   to.setMilliseconds(to.getMilliseconds() - 1);
 
   const sessions = await getSessionsInDateRange(userId, from, to);
-  const workoutsByDay = Array(7).fill(false) as boolean[];
+  const workoutsByDay = new Array<boolean>(7).fill(false);
   const completedDates = new Set<string>();
 
   for (const session of sessions) {
@@ -1068,7 +1070,8 @@ export async function getWorkoutStreak(userId: number): Promise<Row> {
 
   let current = 0;
   let cursor = stripTime(new Date());
-  if (days[0] && days[0].getTime() !== cursor.getTime()) {
+  const latestDay = days[0];
+  if (latestDay?.getTime() !== undefined && latestDay.getTime() !== cursor.getTime()) {
     cursor.setDate(cursor.getDate() - 1);
   }
   for (const day of days) {

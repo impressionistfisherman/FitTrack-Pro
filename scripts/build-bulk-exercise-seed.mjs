@@ -725,24 +725,27 @@ const cleanupReplacements = [
 function normalizeKey(value) {
   return String(value)
     .toLowerCase()
-    .replace(/\(multiple response\)|\(single response\)|- medium grip/g, "")
-    .replace(/rope jumping/g, "jump rope")
-    .replace(/triceps/g, "tricep")
-    .replace(/[^a-z0-9가-힣]+/g, "");
+    .replaceAll(/\(multiple response\)|\(single response\)|- medium grip/g, "")
+    .replaceAll(/rope jumping/g, "jump rope")
+    .replaceAll(/triceps/g, "tricep")
+    .replaceAll(/[^a-z0-9가-힣]+/g, "");
 }
 
 function translateFallback(name) {
   const lower = name.toLowerCase();
   let value = ` ${lower} `;
-  for (const [from, to] of englishPhraseMap.sort((a, b) => b[0].length - a[0].length)) {
-    const pattern = new RegExp(`(?<![a-z])${from.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![a-z])`, "gi");
-    value = value.replace(pattern, ` ${to} `);
+  const sortedEnglishPhraseMap = [...englishPhraseMap];
+  sortedEnglishPhraseMap.sort((a, b) => b[0].length - a[0].length);
+  for (const [from, to] of sortedEnglishPhraseMap) {
+    const escapedFrom = from.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+    const pattern = new RegExp(`(?<![a-z])${escapedFrom}(?![a-z])`, "gi");
+    value = value.replaceAll(pattern, ` ${to} `);
   }
   value = value
-    .replace(/[()]/g, " ")
-    .replace(/\//g, " / ")
-    .replace(/-/g, " ")
-    .replace(/\s+/g, " ")
+    .replaceAll(/[()]/g, " ")
+    .replaceAll(/\//g, " / ")
+    .replaceAll(/-/g, " ")
+    .replaceAll(/\s+/g, " ")
     .trim();
   let titled = value
     .split(" ")
@@ -753,7 +756,7 @@ function translateFallback(name) {
       return token.charAt(0).toUpperCase() + token.slice(1);
     })
     .join(" ");
-  for (const [pattern, replacement] of cleanupReplacements) titled = titled.replace(pattern, replacement).trim();
+  for (const [pattern, replacement] of cleanupReplacements) titled = titled.replaceAll(pattern, replacement).trim();
   return titled;
 }
 
@@ -788,6 +791,24 @@ function mapCategory(exercise) {
   return "strength";
 }
 
+const bodyPartRules = [
+  ["chest", /(chest|pectoral)/],
+  ["back", /(lat|middle back|lower back|traps|trapezius|rhomboids|erector spinae)/],
+  ["shoulders", /(deltoid|shoulder|rotator cuff|levator scapulae)/],
+  ["arms", /(biceps|triceps|forearms|brachialis|brachioradialis|wrist flexors)/],
+  ["legs", /(quadriceps|hamstrings|calves|adductors|abductors|tibialis|groin)/],
+  ["glutes", /(glutes|glute medius|glute)/],
+  ["abs", /(abdominals|obliques|abs|serratus)/],
+];
+
+function findBodyPart(text, allowAbs = true) {
+  for (const [bodyPart, pattern] of bodyPartRules) {
+    if (bodyPart === "abs" && !allowAbs) continue;
+    if (pattern.test(text)) return bodyPart;
+  }
+  return null;
+}
+
 function mapBodyPart(exercise) {
   const category = String(exercise.category ?? "").toLowerCase();
   if (category === "stretching") return "stretching";
@@ -799,21 +820,11 @@ function mapBodyPart(exercise) {
   const primaryText = primary.join(" ");
   const combinedText = [...primary, ...secondary].join(" ");
 
-  if (/(chest|pectoral)/.test(primaryText)) return "chest";
-  if (/(lat|middle back|lower back|traps|trapezius|rhomboids|erector spinae)/.test(primaryText)) return "back";
-  if (/(deltoid|shoulder|rotator cuff|levator scapulae)/.test(primaryText)) return "shoulders";
-  if (/(biceps|triceps|forearms|brachialis|brachioradialis|wrist flexors)/.test(primaryText)) return "arms";
-  if (/(quadriceps|hamstrings|calves|adductors|abductors|tibialis|groin)/.test(primaryText)) return "legs";
-  if (/(glutes|glute medius|glute)/.test(primaryText)) return "glutes";
-  if (/(abdominals|obliques|abs|serratus)/.test(primaryText) && primary.length <= 2) return "abs";
+  const primaryBodyPart = findBodyPart(primaryText, primary.length <= 2);
+  if (primaryBodyPart) return primaryBodyPart;
 
-  if (/(chest|pectoral)/.test(combinedText)) return "chest";
-  if (/(lat|middle back|lower back|traps|trapezius|rhomboids|erector spinae)/.test(combinedText)) return "back";
-  if (/(deltoid|shoulder|rotator cuff|levator scapulae)/.test(combinedText)) return "shoulders";
-  if (/(biceps|triceps|forearms|brachialis|brachioradialis|wrist flexors)/.test(combinedText)) return "arms";
-  if (/(quadriceps|hamstrings|calves|adductors|abductors|tibialis|groin)/.test(combinedText)) return "legs";
-  if (/(glutes|glute medius|glute)/.test(combinedText)) return "glutes";
-  if (/(abdominals|obliques|abs|serratus)/.test(combinedText)) return "abs";
+  const combinedBodyPart = findBodyPart(combinedText);
+  if (combinedBodyPart) return combinedBodyPart;
 
   if ((exercise.primaryMuscles ?? []).length >= 3) return "full_body";
   return "full_body";
@@ -871,7 +882,9 @@ async function main() {
   console.log(`Generated ${output.length} bulk exercises to ${path.relative(projectRoot, targetPath)}`);
 }
 
-main().catch((error) => {
+try {
+  await main();
+} catch (error) {
   console.error(error);
   process.exitCode = 1;
-});
+}
