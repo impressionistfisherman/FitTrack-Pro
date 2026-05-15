@@ -288,7 +288,7 @@ export default function FreeWorkoutDialog({
 
         <div className={cn(
           "grid flex-1 gap-4 overflow-y-auto px-5 py-4",
-          selected.length > 0 && "lg:grid-cols-[minmax(260px,300px)_minmax(0,1fr)]"
+          selected.length > 0 && "lg:grid-cols-[300px_minmax(0,1fr)] lg:items-stretch"
         )}>
           <div className="min-w-0 space-y-3">
             <div className="space-y-1.5">
@@ -377,9 +377,10 @@ export default function FreeWorkoutDialog({
           </div>
 
           {selected.length > 0 && (
-            <div className="min-w-0 space-y-3 lg:max-h-[calc(90dvh-11rem)] lg:overflow-y-auto lg:pr-1">
-              {selected.map((item) => (
-                  <div key={item.exercise.id} className="min-w-0 rounded-xl border border-border bg-accent/20 p-3">
+            <div className="min-w-0 rounded-xl border border-border bg-accent/10 p-3 lg:min-h-[360px] lg:max-h-[calc(90dvh-11rem)] lg:overflow-y-auto">
+              <div className="space-y-3">
+                {selected.map((item) => (
+                  <div key={item.exercise.id} className="min-w-0 rounded-lg border border-border bg-card/70 p-3">
                     <div className="mb-3 flex items-start gap-2">
                       <div className="min-w-0">
                         <div className="font-semibold text-sm truncate">{item.exercise.nameKo}</div>
@@ -513,29 +514,30 @@ export default function FreeWorkoutDialog({
                       예상 시간: <span className="font-semibold text-foreground">{estimateExerciseDuration(item)}분</span>
                     </div>
                   </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
         </div>
 
         <div className="grid shrink-0 gap-3 border-t border-border bg-card/95 px-5 py-4 backdrop-blur sm:flex sm:items-center sm:justify-between">
           {selected.length > 0 ? (
-            <div className="grid grid-cols-2 gap-2 text-center text-xs sm:w-56">
-              <div className="rounded-lg border border-border bg-accent/40 px-3 py-2">
+            <div className="grid grid-cols-2 gap-2 text-center text-xs sm:w-72">
+              <div className="flex h-12 flex-col items-center justify-center rounded-lg border border-border bg-accent/40 px-3">
                 <div className="text-base font-bold text-primary">{totalCalories}</div>
                 <div className="text-muted-foreground">예상 kcal</div>
               </div>
-              <div className="rounded-lg border border-border bg-accent/40 px-3 py-2">
+              <div className="flex h-12 flex-col items-center justify-center rounded-lg border border-border bg-accent/40 px-3">
                 <div className="text-base font-bold text-foreground">{totalDuration}</div>
                 <div className="text-muted-foreground">예상 분</div>
               </div>
             </div>
           ) : <div />}
           <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving} className="min-w-0">
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving} className="h-10 min-w-0">
               취소
             </Button>
-            <Button onClick={handleComplete} disabled={isSaving || !canSave} className="min-w-0">
+            <Button onClick={handleComplete} disabled={isSaving || !canSave} className="h-10 min-w-0">
               {isSaving ? "저장 중..." : "운동 기록 저장"}
             </Button>
           </div>
