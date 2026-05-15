@@ -17,6 +17,7 @@ function getCookie(req: Request, key: string): string | undefined {
 }
 
 function getBackendOrigin(req: Request) {
+  if (ENV.backendOrigin) return ENV.backendOrigin.replace(/\/$/, "");
   return `${req.protocol}://${req.get("host")}`;
 }
 

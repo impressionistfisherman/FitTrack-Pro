@@ -10,6 +10,7 @@ export const ENV = {
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
   githubClientId: process.env.GITHUB_CLIENT_ID ?? "",
   githubClientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
+  backendOrigin: process.env.BACKEND_ORIGIN ?? "",
   appOrigin: process.env.APP_ORIGIN ?? "",
   appRedirectUrl: process.env.APP_REDIRECT_URL ?? "",
   localAutoLogin: process.env.LOCAL_AUTO_LOGIN === "true",
