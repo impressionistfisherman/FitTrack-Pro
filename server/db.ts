@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import type { InsertUser } from "../drizzle/schema";
 import mysql from "mysql2/promise";
 import { Pool as PgPool } from "pg";
+import bulkExercises from "./data/bulk-exercises.json";
 
 const databaseUrl = process.env.DATABASE_URL?.trim();
 const sqlitePath = process.env.SQLITE_DB_PATH
@@ -416,31 +417,67 @@ const supplementalExercises = [
   },
 ] as const;
 
+type SeedExercise = {
+  name: string;
+  nameKo: string;
+  bodyPart: string;
+  equipment: string;
+  category: string;
+  difficulty: string;
+  description?: string | null;
+  descriptionKo?: string | null;
+  primaryMuscles?: readonly string[];
+  secondaryMuscles?: readonly string[];
+  gifUrl?: string | null;
+  secondaryImages?: readonly string[];
+  instructions?: readonly string[];
+  instructionsKo?: readonly string[] | null;
+};
+
 let supplementalExercisesReady = false;
 
 async function ensureSupplementalExercises() {
   if (supplementalExercisesReady) return;
-  for (const exercise of supplementalExercises) {
-    const existing = await get("SELECT id FROM exercises WHERE name = ? OR nameKo = ? LIMIT 1", exercise.name, exercise.nameKo);
-    if (existing) continue;
+
+  const existingRows = await all("SELECT name, nameKo FROM exercises");
+  const existingKeys = new Set<string>();
+  for (const row of existingRows) {
+    if (typeof row.name === "string") existingKeys.add(row.name.trim().toLowerCase());
+    if (typeof row.nameKo === "string") existingKeys.add(row.nameKo.trim().toLowerCase());
+  }
+
+  const seedExercises: SeedExercise[] = [
+    ...supplementalExercises.map((exercise) => ({ ...exercise })),
+    ...(bulkExercises as SeedExercise[]),
+  ];
+
+  for (const exercise of seedExercises) {
+    const nameKey = typeof exercise.name === "string" ? exercise.name.trim().toLowerCase() : "";
+    const nameKoKey = typeof exercise.nameKo === "string" ? exercise.nameKo.trim().toLowerCase() : "";
+    if ((nameKey && existingKeys.has(nameKey)) || (nameKoKey && existingKeys.has(nameKoKey))) continue;
+
     await run(
       `INSERT INTO exercises
-       (name, nameKo, bodyPart, equipment, category, difficulty, description, descriptionKo, primaryMuscles, secondaryMuscles, instructions, instructionsKo, createdAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (name, nameKo, bodyPart, equipment, category, difficulty, description, descriptionKo, primaryMuscles, secondaryMuscles, gifUrl, secondaryImages, instructions, instructionsKo, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       exercise.name,
       exercise.nameKo,
       exercise.bodyPart,
       exercise.equipment,
       exercise.category,
       exercise.difficulty,
-      exercise.description,
-      exercise.descriptionKo,
-      JSON.stringify(exercise.primaryMuscles),
-      JSON.stringify(exercise.secondaryMuscles),
-      JSON.stringify(exercise.instructions),
-      JSON.stringify(exercise.instructions),
+      exercise.description ?? null,
+      exercise.descriptionKo ?? null,
+      JSON.stringify(exercise.primaryMuscles ?? []),
+      JSON.stringify(exercise.secondaryMuscles ?? []),
+      exercise.gifUrl ?? null,
+      JSON.stringify(exercise.secondaryImages ?? []),
+      JSON.stringify(exercise.instructions ?? []),
+      JSON.stringify(exercise.instructionsKo ?? exercise.instructions ?? []),
       new Date().toISOString(),
     );
+    if (nameKey) existingKeys.add(nameKey);
+    if (nameKoKey) existingKeys.add(nameKoKey);
   }
   supplementalExercisesReady = true;
 }

@@ -1,0 +1,3590 @@
+[
+  {
+    "id": 240001,
+    "name": "Barbell Bench Press",
+    "nameKo": "바벨 벤치프레스",
+    "bodyPart": "chest",
+    "equipment": "barbell",
+    "category": "strength",
+    "difficulty": "intermediate",
+    "description": "The classic chest exercise using a barbell on a flat bench.",
+    "descriptionKo": "플랫 벤치에서 바벨을 이용한 클래식 가슴 운동입니다.",
+    "primaryMuscles": [
+      "pectoralis major"
+    ],
+    "secondaryMuscles": [
+      "anterior deltoid",
+      "triceps"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press_-_Medium_Grip%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press_-_Medium_Grip%2F1.jpg"
+    ],
+    "instructions": [
+      "Lie flat on bench",
+      "Grip bar slightly wider than shoulder width",
+      "Lower bar to chest",
+      "Press bar up explosively"
+    ],
+    "createdAt": "2026-05-11T19:33:48.000Z",
+    "instructionsKo": [
+      "플랫 벤치에 등을 대고 눕습니다.",
+      "바를 어깨너비보다 약간 넓게 잡습니다.",
+      "바를 가슴 중앙까지 천천히 내립니다.",
+      "가슴 근육을 수축하며 바를 힘차게 밀어 올립니다.",
+      "팔꿈치를 완전히 펴지 않도록 주의하며 반복합니다."
+    ]
+  },
+  {
+    "id": 240002,
+    "name": "Incline Barbell Bench Press",
+    "nameKo": "인클라인 바벨 벤치프레스",
+    "bodyPart": "chest",
+    "equipment": "barbell",
+    "category": "hypertrophy",
+    "difficulty": "intermediate",
+    "description": "Targets the upper chest with an inclined bench.",
+    "descriptionKo": "인클라인 벤치를 사용하여 상부 가슴을 집중적으로 자극합니다.",
+    "primaryMuscles": [
+      "upper pectoralis major"
+    ],
+    "secondaryMuscles": [
+      "anterior deltoid",
+      "triceps"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Incline_Bench_Press_-_Medium_Grip%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Incline_Bench_Press_-_Medium_Grip%2F1.jpg"
+    ],
+    "instructions": [
+      "Set bench to 30-45 degrees",
+      "Grip bar wider than shoulder width",
+      "Lower to upper chest",
+      "Press up and slightly back"
+    ],
+    "createdAt": "2026-05-11T19:33:48.000Z",
+    "instructionsKo": [
+      "벤치를 30~45도로 기울여 설정합니다.",
+      "어깨너비보다 넓게 바를 잡습니다.",
+      "바를 상부 가슴까지 천천히 내립니다.",
+      "상부 가슴을 수축하며 위로 밀어 올립니다.",
+      "동작 내내 허리가 과도하게 아치되지 않도록 합니다."
+    ]
+  },
+  {
+    "id": 240003,
+    "name": "Dumbbell Bench Press",
+    "nameKo": "덤벨 벤치프레스",
+    "bodyPart": "chest",
+    "equipment": "dumbbell",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Chest press using dumbbells for greater range of motion.",
+    "descriptionKo": "덤벨을 사용하여 더 넓은 가동 범위로 가슴을 자극합니다.",
+    "primaryMuscles": [
+      "pectoralis major"
+    ],
+    "secondaryMuscles": [
+      "anterior deltoid",
+      "triceps"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press%2F1.jpg"
+    ],
+    "instructions": [
+      "Lie on bench with dumbbells",
+      "Lower dumbbells to chest level",
+      "Press up while keeping control",
+      "Squeeze chest at top"
+    ],
+    "createdAt": "2026-05-11T19:33:48.000Z",
+    "instructionsKo": [
+      "양손에 덤벨을 들고 플랫 벤치에 눕습니다.",
+      "덤벨을 가슴 옆으로 천천히 내립니다.",
+      "가슴 근육을 수축하며 덤벨을 위로 밀어 올립니다.",
+      "정점에서 덤벨을 살짝 모아 가슴을 더 수축합니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240004,
+    "name": "Dumbbell Flyes",
+    "nameKo": "덤벨 플라이",
+    "bodyPart": "chest",
+    "equipment": "dumbbell",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Isolation exercise for chest using a wide arc motion.",
+    "descriptionKo": "넓은 호 동작으로 가슴을 고립시키는 운동입니다.",
+    "primaryMuscles": [
+      "pectoralis major"
+    ],
+    "secondaryMuscles": [
+      "anterior deltoid"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Flyes%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Flyes%2F1.jpg"
+    ],
+    "instructions": [
+      "Lie on bench with dumbbells",
+      "Open arms wide in arc",
+      "Feel chest stretch",
+      "Bring arms back together"
+    ],
+    "createdAt": "2026-05-11T19:33:48.000Z",
+    "instructionsKo": [
+      "양손에 덤벨을 들고 플랫 벤치에 눕습니다.",
+      "팔꿈치를 약간 구부린 상태로 팔을 옆으로 넓게 벌립니다.",
+      "가슴 근육이 충분히 늘어나는 것을 느낍니다.",
+      "가슴 근육을 수축하며 팔을 다시 모읍니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240005,
+    "name": "Cable Crossover",
+    "nameKo": "케이블 크로스오버",
+    "bodyPart": "chest",
+    "equipment": "cable",
+    "category": "hypertrophy",
+    "difficulty": "intermediate",
+    "description": "Cable exercise for chest isolation and peak contraction.",
+    "descriptionKo": "케이블을 이용한 가슴 고립 및 피크 수축 운동입니다.",
+    "primaryMuscles": [
+      "pectoralis major"
+    ],
+    "secondaryMuscles": [
+      "anterior deltoid"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Crossover%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Crossover%2F1.jpg"
+    ],
+    "instructions": [
+      "Stand between cable stations",
+      "Pull cables down and across",
+      "Squeeze chest at bottom",
+      "Slowly return to start"
+    ],
+    "createdAt": "2026-05-11T19:33:49.000Z",
+    "instructionsKo": [
+      "케이블 머신 중앙에 서서 양손으로 케이블을 잡습니다.",
+      "상체를 약간 앞으로 기울입니다.",
+      "케이블을 아래로 당기며 양손을 모읍니다.",
+      "가슴 근육이 완전히 수축되는 것을 느낍니다.",
+      "천천히 원래 위치로 돌아가며 반복합니다."
+    ]
+  },
+  {
+    "id": 240006,
+    "name": "Push-Up",
+    "nameKo": "푸시업",
+    "bodyPart": "chest",
+    "equipment": "bodyweight",
+    "category": "endurance",
+    "difficulty": "beginner",
+    "description": "Classic bodyweight chest exercise.",
+    "descriptionKo": "클래식 맨몸 가슴 운동입니다.",
+    "primaryMuscles": [
+      "pectoralis major"
+    ],
+    "secondaryMuscles": [
+      "anterior deltoid",
+      "triceps",
+      "core"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Start in plank position",
+      "Lower chest to floor",
+      "Push back up",
+      "Keep core tight throughout"
+    ],
+    "createdAt": "2026-05-11T19:33:49.000Z",
+    "instructionsKo": [
+      "손을 어깨너비로 벌리고 플랭크 자세를 취합니다.",
+      "몸을 일직선으로 유지하며 가슴이 바닥에 닿을 때까지 내립니다.",
+      "가슴 근육을 수축하며 몸을 밀어 올립니다.",
+      "동작 내내 코어를 단단히 유지합니다.",
+      "목표 횟수만큼 반복합니다."
+    ]
+  },
+  {
+    "id": 240007,
+    "name": "Decline Bench Press",
+    "nameKo": "디클라인 벤치프레스",
+    "bodyPart": "chest",
+    "equipment": "barbell",
+    "category": "strength",
+    "difficulty": "intermediate",
+    "description": "Targets the lower chest with a declined bench.",
+    "descriptionKo": "디클라인 벤치로 하부 가슴을 집중 자극합니다.",
+    "primaryMuscles": [
+      "lower pectoralis major"
+    ],
+    "secondaryMuscles": [
+      "triceps"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Set bench to -15 to -30 degrees",
+      "Secure feet",
+      "Lower bar to lower chest",
+      "Press up powerfully"
+    ],
+    "createdAt": "2026-05-11T19:33:49.000Z",
+    "instructionsKo": [
+      "벤치를 -15~-30도로 기울이고 발을 고정합니다.",
+      "어깨너비보다 넓게 바를 잡습니다.",
+      "바를 하부 가슴까지 천천히 내립니다.",
+      "하부 가슴을 수축하며 바를 힘차게 밀어 올립니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240008,
+    "name": "Chest Dips",
+    "nameKo": "체스트 딥스",
+    "bodyPart": "chest",
+    "equipment": "bodyweight",
+    "category": "strength",
+    "difficulty": "intermediate",
+    "description": "Dips leaning forward to emphasize chest.",
+    "descriptionKo": "앞으로 기울여 가슴을 강조하는 딥스 운동입니다.",
+    "primaryMuscles": [
+      "lower pectoralis major"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "anterior deltoid"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Grip parallel bars",
+      "Lean forward slightly",
+      "Lower until chest stretches",
+      "Push back up"
+    ],
+    "createdAt": "2026-05-11T19:33:49.000Z",
+    "instructionsKo": [
+      "평행봉을 양손으로 잡고 몸을 들어 올립니다.",
+      "상체를 약간 앞으로 기울입니다.",
+      "가슴이 충분히 늘어날 때까지 천천히 내려갑니다.",
+      "가슴 근육을 수축하며 다시 밀어 올립니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240009,
+    "name": "Deadlift",
+    "nameKo": "데드리프트",
+    "bodyPart": "back",
+    "equipment": "barbell",
+    "category": "strength",
+    "difficulty": "advanced",
+    "description": "The king of all exercises targeting the entire posterior chain.",
+    "descriptionKo": "전체 후면 근육을 자극하는 운동의 왕입니다.",
+    "primaryMuscles": [
+      "erector spinae",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "trapezius",
+      "rhomboids",
+      "lats"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift%2F1.jpg"
+    ],
+    "instructions": [
+      "Stand with bar over feet",
+      "Hip hinge to grip bar",
+      "Brace core and lift",
+      "Lock out hips at top"
+    ],
+    "createdAt": "2026-05-11T19:33:50.000Z",
+    "instructionsKo": [
+      "발을 어깨너비로 벌리고 바벨 앞에 섭니다.",
+      "엉덩이를 뒤로 빼며 상체를 숙여 바를 잡습니다.",
+      "코어와 등을 단단히 유지하며 바를 들어 올립니다.",
+      "엉덩이를 앞으로 밀며 완전히 서서 동작을 마무리합니다.",
+      "천천히 바를 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240010,
+    "name": "Pull-Up",
+    "nameKo": "풀업",
+    "bodyPart": "back",
+    "equipment": "bodyweight",
+    "category": "strength",
+    "difficulty": "intermediate",
+    "description": "Classic upper body pulling exercise.",
+    "descriptionKo": "클래식 상체 당기기 운동입니다.",
+    "primaryMuscles": [
+      "latissimus dorsi"
+    ],
+    "secondaryMuscles": [
+      "biceps",
+      "rhomboids",
+      "trapezius"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Hang from bar with overhand grip",
+      "Pull chest to bar",
+      "Lower slowly",
+      "Repeat"
+    ],
+    "createdAt": "2026-05-11T19:33:50.000Z",
+    "instructionsKo": [
+      "오버핸드 그립으로 철봉을 어깨너비보다 넓게 잡습니다.",
+      "팔을 완전히 펴고 매달립니다.",
+      "가슴을 철봉 쪽으로 당기며 몸을 올립니다.",
+      "턱이 철봉 위로 올라오면 잠시 유지합니다.",
+      "천천히 내려가며 반복합니다."
+    ]
+  },
+  {
+    "id": 240011,
+    "name": "Barbell Row",
+    "nameKo": "바벨 로우",
+    "bodyPart": "back",
+    "equipment": "barbell",
+    "category": "strength",
+    "difficulty": "intermediate",
+    "description": "Compound rowing movement for back thickness.",
+    "descriptionKo": "등 두께를 위한 복합 로잉 운동입니다.",
+    "primaryMuscles": [
+      "rhomboids",
+      "middle trapezius"
+    ],
+    "secondaryMuscles": [
+      "latissimus dorsi",
+      "biceps",
+      "rear deltoid"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Hinge at hips with bar",
+      "Pull bar to lower chest",
+      "Squeeze shoulder blades",
+      "Lower with control"
+    ],
+    "createdAt": "2026-05-11T19:33:50.000Z",
+    "instructionsKo": [
+      "발을 어깨너비로 벌리고 바벨을 잡습니다.",
+      "엉덩이를 뒤로 빼며 상체를 약 45도로 숙입니다.",
+      "바를 복부 쪽으로 당깁니다.",
+      "날개뼈를 모으며 등 근육을 수축합니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240012,
+    "name": "Lat Pulldown",
+    "nameKo": "랫 풀다운",
+    "bodyPart": "back",
+    "equipment": "cable",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Machine exercise targeting the latissimus dorsi.",
+    "descriptionKo": "광배근을 타겟으로 하는 머신 운동입니다.",
+    "primaryMuscles": [
+      "latissimus dorsi"
+    ],
+    "secondaryMuscles": [
+      "biceps",
+      "rear deltoid"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Sit at pulldown machine",
+      "Grip bar wider than shoulders",
+      "Pull bar to upper chest",
+      "Slowly return to start"
+    ],
+    "createdAt": "2026-05-11T19:33:50.000Z",
+    "instructionsKo": [
+      "랫 풀다운 머신에 앉아 허벅지를 패드에 고정합니다.",
+      "어깨너비보다 넓게 바를 잡습니다.",
+      "바를 상부 가슴까지 당깁니다.",
+      "광배근이 수축되는 것을 느낍니다.",
+      "천천히 팔을 펴며 반복합니다."
+    ]
+  },
+  {
+    "id": 240013,
+    "name": "Seated Cable Row",
+    "nameKo": "시티드 케이블 로우",
+    "bodyPart": "back",
+    "equipment": "cable",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Seated rowing exercise for back thickness.",
+    "descriptionKo": "등 두께를 위한 앉아서 하는 로잉 운동입니다.",
+    "primaryMuscles": [
+      "rhomboids",
+      "middle trapezius"
+    ],
+    "secondaryMuscles": [
+      "biceps",
+      "rear deltoid"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Sit at cable row machine",
+      "Pull handle to abdomen",
+      "Squeeze shoulder blades",
+      "Extend arms slowly"
+    ],
+    "createdAt": "2026-05-11T19:33:51.000Z",
+    "instructionsKo": [
+      "케이블 로우 머신에 앉아 발을 패드에 고정합니다.",
+      "핸들을 잡고 상체를 약간 앞으로 기울입니다.",
+      "핸들을 복부 쪽으로 당깁니다.",
+      "날개뼈를 모으며 등 근육을 수축합니다.",
+      "천천히 팔을 펴며 반복합니다."
+    ]
+  },
+  {
+    "id": 240014,
+    "name": "Dumbbell Row",
+    "nameKo": "덤벨 로우",
+    "bodyPart": "back",
+    "equipment": "dumbbell",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Single arm rowing for back development.",
+    "descriptionKo": "등 발달을 위한 단팔 로잉 운동입니다.",
+    "primaryMuscles": [
+      "latissimus dorsi",
+      "rhomboids"
+    ],
+    "secondaryMuscles": [
+      "biceps",
+      "rear deltoid"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Place knee and hand on bench",
+      "Row dumbbell to hip",
+      "Squeeze lat at top",
+      "Lower with control"
+    ],
+    "createdAt": "2026-05-11T19:33:51.000Z",
+    "instructionsKo": [
+      "한쪽 무릎과 손을 벤치에 올려 지지합니다.",
+      "반대 손으로 덤벨을 잡습니다.",
+      "덤벨을 엉덩이 쪽으로 당깁니다.",
+      "광배근이 수축되는 것을 느낍니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240015,
+    "name": "T-Bar Row",
+    "nameKo": "T바 로우",
+    "bodyPart": "back",
+    "equipment": "barbell",
+    "category": "strength",
+    "difficulty": "intermediate",
+    "description": "Compound rowing using T-bar attachment.",
+    "descriptionKo": "T바 어태치먼트를 사용한 복합 로잉 운동입니다.",
+    "primaryMuscles": [
+      "middle back",
+      "rhomboids"
+    ],
+    "secondaryMuscles": [
+      "biceps",
+      "lats"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/T-Bar_Row_with_Handle%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/T-Bar_Row_with_Handle%2F1.jpg"
+    ],
+    "instructions": [
+      "Straddle bar with V-grip",
+      "Hinge forward at hips",
+      "Pull bar to chest",
+      "Lower with control"
+    ],
+    "createdAt": "2026-05-11T19:33:51.000Z",
+    "instructionsKo": [
+      "T바를 V자 핸들로 잡고 발을 어깨너비로 벌립니다.",
+      "엉덩이를 뒤로 빼며 상체를 숙입니다.",
+      "바를 가슴 쪽으로 당깁니다.",
+      "날개뼈를 모으며 등 근육을 수축합니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240016,
+    "name": "Face Pull",
+    "nameKo": "페이스 풀",
+    "bodyPart": "back",
+    "equipment": "cable",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Cable exercise for rear deltoids and rotator cuff.",
+    "descriptionKo": "후면 삼각근과 회전근개를 위한 케이블 운동입니다.",
+    "primaryMuscles": [
+      "rear deltoid",
+      "rotator cuff"
+    ],
+    "secondaryMuscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Face_Pull%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Face_Pull%2F1.jpg"
+    ],
+    "instructions": [
+      "Set cable at face height",
+      "Pull rope to face",
+      "Externally rotate at end",
+      "Control return"
+    ],
+    "createdAt": "2026-05-11T19:33:51.000Z",
+    "instructionsKo": [
+      "케이블을 얼굴 높이로 설정하고 로프를 잡습니다.",
+      "로프를 얼굴 쪽으로 당깁니다.",
+      "동작 끝에서 팔꿈치를 뒤로 당기며 외회전합니다.",
+      "후면 삼각근과 회전근개가 수축되는 것을 느낍니다.",
+      "천천히 원래 위치로 돌아가며 반복합니다."
+    ]
+  },
+  {
+    "id": 240017,
+    "name": "Overhead Press",
+    "nameKo": "오버헤드 프레스",
+    "bodyPart": "shoulders",
+    "equipment": "barbell",
+    "category": "strength",
+    "difficulty": "intermediate",
+    "description": "Standing barbell press for shoulder strength.",
+    "descriptionKo": "어깨 힘을 위한 서서 하는 바벨 프레스입니다.",
+    "primaryMuscles": [
+      "anterior deltoid",
+      "medial deltoid"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "upper trapezius",
+      "core"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Shoulder_Press%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Shoulder_Press%2F1.jpg"
+    ],
+    "instructions": [
+      "Stand with bar at shoulders",
+      "Press bar overhead",
+      "Lock out arms at top",
+      "Lower with control"
+    ],
+    "createdAt": "2026-05-11T19:33:52.000Z",
+    "instructionsKo": [
+      "바벨을 어깨 앞에 위치시키고 어깨너비로 잡습니다.",
+      "코어를 단단히 유지하며 바를 머리 위로 밀어 올립니다.",
+      "팔꿈치를 완전히 펴며 정점에서 잠시 유지합니다.",
+      "천천히 바를 어깨 위치로 내립니다.",
+      "반복합니다."
+    ]
+  },
+  {
+    "id": 240018,
+    "name": "Dumbbell Shoulder Press",
+    "nameKo": "덤벨 숄더 프레스",
+    "bodyPart": "shoulders",
+    "equipment": "dumbbell",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Seated or standing dumbbell press for shoulders.",
+    "descriptionKo": "앉거나 서서 하는 덤벨 어깨 프레스입니다.",
+    "primaryMuscles": [
+      "anterior deltoid",
+      "medial deltoid"
+    ],
+    "secondaryMuscles": [
+      "triceps"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shoulder_Press%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shoulder_Press%2F1.jpg"
+    ],
+    "instructions": [
+      "Hold dumbbells at shoulder height",
+      "Press overhead",
+      "Squeeze at top",
+      "Lower slowly"
+    ],
+    "createdAt": "2026-05-11T19:33:52.000Z",
+    "instructionsKo": [
+      "양손에 덤벨을 들고 어깨 높이로 올립니다.",
+      "덤벨을 머리 위로 밀어 올립니다.",
+      "정점에서 어깨 근육을 수축합니다.",
+      "천천히 어깨 높이로 내립니다.",
+      "반복합니다."
+    ]
+  },
+  {
+    "id": 240019,
+    "name": "Lateral Raise",
+    "nameKo": "레터럴 레이즈",
+    "bodyPart": "shoulders",
+    "equipment": "dumbbell",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Isolation exercise for medial deltoid.",
+    "descriptionKo": "중간 삼각근을 고립시키는 운동입니다.",
+    "primaryMuscles": [
+      "medial deltoid"
+    ],
+    "secondaryMuscles": [
+      "anterior deltoid",
+      "trapezius"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Stand with dumbbells at sides",
+      "Raise arms to shoulder height",
+      "Slight bend in elbows",
+      "Lower slowly"
+    ],
+    "createdAt": "2026-05-11T19:33:52.000Z",
+    "instructionsKo": [
+      "양손에 덤벨을 들고 바르게 섭니다.",
+      "팔꿈치를 약간 구부린 상태로 팔을 옆으로 올립니다.",
+      "어깨 높이까지 올려 측면 삼각근을 수축합니다.",
+      "천천히 내리며 반복합니다.",
+      "반동을 사용하지 않도록 주의합니다."
+    ]
+  },
+  {
+    "id": 240020,
+    "name": "Front Raise",
+    "nameKo": "프론트 레이즈",
+    "bodyPart": "shoulders",
+    "equipment": "dumbbell",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Targets the anterior deltoid.",
+    "descriptionKo": "전면 삼각근을 타겟으로 합니다.",
+    "primaryMuscles": [
+      "anterior deltoid"
+    ],
+    "secondaryMuscles": [
+      "medial deltoid"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Stand with dumbbells in front",
+      "Raise one or both arms forward",
+      "Stop at shoulder height",
+      "Lower with control"
+    ],
+    "createdAt": "2026-05-11T19:33:52.000Z",
+    "instructionsKo": [
+      "양손에 덤벨을 들고 바르게 섭니다.",
+      "팔꿈치를 약간 구부린 상태로 팔을 앞으로 올립니다.",
+      "어깨 높이까지 올려 전면 삼각근을 수축합니다.",
+      "천천히 내리며 반복합니다.",
+      "반동을 사용하지 않도록 주의합니다."
+    ]
+  },
+  {
+    "id": 240021,
+    "name": "Rear Delt Fly",
+    "nameKo": "리어 델트 플라이",
+    "bodyPart": "shoulders",
+    "equipment": "dumbbell",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Targets the rear deltoid for balanced shoulder development.",
+    "descriptionKo": "균형잡힌 어깨 발달을 위한 후면 삼각근 운동입니다.",
+    "primaryMuscles": [
+      "rear deltoid"
+    ],
+    "secondaryMuscles": [
+      "rhomboids",
+      "trapezius"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Bend forward at hips",
+      "Raise arms out to sides",
+      "Squeeze rear delts",
+      "Lower slowly"
+    ],
+    "createdAt": "2026-05-11T19:33:53.000Z",
+    "instructionsKo": [
+      "양손에 덤벨을 들고 상체를 앞으로 숙입니다.",
+      "팔꿈치를 약간 구부린 상태로 팔을 옆으로 올립니다.",
+      "후면 삼각근이 수축되는 것을 느낍니다.",
+      "천천히 내리며 반복합니다.",
+      "등이 둥글어지지 않도록 주의합니다."
+    ]
+  },
+  {
+    "id": 240022,
+    "name": "Arnold Press",
+    "nameKo": "아놀드 프레스",
+    "bodyPart": "shoulders",
+    "equipment": "dumbbell",
+    "category": "hypertrophy",
+    "difficulty": "intermediate",
+    "description": "Rotating press invented by Arnold Schwarzenegger.",
+    "descriptionKo": "아놀드 슈워제네거가 개발한 회전 프레스입니다.",
+    "primaryMuscles": [
+      "anterior deltoid",
+      "medial deltoid"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "rear deltoid"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Arnold_Dumbbell_Press%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Arnold_Dumbbell_Press%2F1.jpg"
+    ],
+    "instructions": [
+      "Start with palms facing you",
+      "Rotate palms outward while pressing",
+      "Press to full extension",
+      "Reverse on the way down"
+    ],
+    "createdAt": "2026-05-11T19:33:53.000Z",
+    "instructionsKo": [
+      "양손에 덤벨을 들고 손바닥이 몸 쪽을 향하도록 합니다.",
+      "덤벨을 올리면서 손목을 회전시켜 손바닥이 앞을 향하게 합니다.",
+      "머리 위로 완전히 밀어 올립니다.",
+      "내리면서 반대로 손목을 회전시킵니다.",
+      "반복합니다."
+    ]
+  },
+  {
+    "id": 240023,
+    "name": "Upright Row",
+    "nameKo": "업라이트 로우",
+    "bodyPart": "shoulders",
+    "equipment": "barbell",
+    "category": "hypertrophy",
+    "difficulty": "intermediate",
+    "description": "Vertical pulling for shoulders and traps.",
+    "descriptionKo": "어깨와 승모근을 위한 수직 당기기 운동입니다.",
+    "primaryMuscles": [
+      "medial deltoid",
+      "trapezius"
+    ],
+    "secondaryMuscles": [
+      "anterior deltoid",
+      "biceps"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Hold bar with narrow grip",
+      "Pull bar up along body",
+      "Elbows lead the movement",
+      "Lower with control"
+    ],
+    "createdAt": "2026-05-11T19:33:53.000Z",
+    "instructionsKo": [
+      "바벨을 어깨너비보다 좁게 잡고 허벅지 앞에 위치시킵니다.",
+      "팔꿈치를 높이 들며 바를 턱 아래까지 당깁니다.",
+      "어깨와 승모근이 수축되는 것을 느낍니다.",
+      "천천히 내리며 반복합니다.",
+      "손목이 꺾이지 않도록 주의합니다."
+    ]
+  },
+  {
+    "id": 240024,
+    "name": "Barbell Curl",
+    "nameKo": "바벨 컬",
+    "bodyPart": "arms",
+    "equipment": "barbell",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Classic bicep exercise with barbell.",
+    "descriptionKo": "바벨을 이용한 클래식 이두 운동입니다.",
+    "primaryMuscles": [
+      "biceps brachii"
+    ],
+    "secondaryMuscles": [
+      "brachialis",
+      "brachioradialis"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Curl%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Curl%2F1.jpg"
+    ],
+    "instructions": [
+      "Stand with bar at thighs",
+      "Curl bar to shoulders",
+      "Squeeze biceps at top",
+      "Lower slowly"
+    ],
+    "createdAt": "2026-05-11T19:33:53.000Z",
+    "instructionsKo": [
+      "바벨을 어깨너비로 잡고 바르게 섭니다.",
+      "팔꿈치를 몸에 붙인 채 바를 어깨 쪽으로 올립니다.",
+      "이두근이 완전히 수축되는 것을 느낍니다.",
+      "천천히 내리며 반복합니다.",
+      "반동을 사용하지 않도록 주의합니다."
+    ]
+  },
+  {
+    "id": 240025,
+    "name": "Dumbbell Curl",
+    "nameKo": "덤벨 컬",
+    "bodyPart": "arms",
+    "equipment": "dumbbell",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Alternating or simultaneous dumbbell curls.",
+    "descriptionKo": "교대 또는 동시에 하는 덤벨 컬입니다.",
+    "primaryMuscles": [
+      "biceps brachii"
+    ],
+    "secondaryMuscles": [
+      "brachialis"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Alternate_Bicep_Curl%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Alternate_Bicep_Curl%2F1.jpg"
+    ],
+    "instructions": [
+      "Hold dumbbells at sides",
+      "Curl one or both to shoulders",
+      "Supinate wrist at top",
+      "Lower with control"
+    ],
+    "createdAt": "2026-05-11T19:33:53.000Z",
+    "instructionsKo": [
+      "양손에 덤벨을 들고 바르게 섭니다.",
+      "한 팔씩 번갈아가며 덤벨을 어깨 쪽으로 올립니다.",
+      "이두근이 완전히 수축되는 것을 느낍니다.",
+      "천천히 내리며 반복합니다.",
+      "반동을 사용하지 않도록 주의합니다."
+    ]
+  },
+  {
+    "id": 240026,
+    "name": "Hammer Curl",
+    "nameKo": "해머 컬",
+    "bodyPart": "arms",
+    "equipment": "dumbbell",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Neutral grip curl targeting brachialis.",
+    "descriptionKo": "상완근을 타겟으로 하는 중립 그립 컬입니다.",
+    "primaryMuscles": [
+      "brachialis",
+      "brachioradialis"
+    ],
+    "secondaryMuscles": [
+      "biceps brachii"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hammer_Curls%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hammer_Curls%2F1.jpg"
+    ],
+    "instructions": [
+      "Hold dumbbells with neutral grip",
+      "Curl to shoulder height",
+      "Keep wrist neutral",
+      "Lower slowly"
+    ],
+    "createdAt": "2026-05-11T19:33:54.000Z",
+    "instructionsKo": [
+      "양손에 덤벨을 들고 손바닥이 서로 마주보게 합니다.",
+      "팔꿈치를 몸에 붙인 채 덤벨을 올립니다.",
+      "상완근과 이두근이 수축되는 것을 느낍니다.",
+      "천천히 내리며 반복합니다.",
+      "반동을 사용하지 않도록 주의합니다."
+    ]
+  },
+  {
+    "id": 240027,
+    "name": "Tricep Pushdown",
+    "nameKo": "트라이셉 푸시다운",
+    "bodyPart": "arms",
+    "equipment": "cable",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Cable exercise for tricep isolation.",
+    "descriptionKo": "삼두근 고립을 위한 케이블 운동입니다.",
+    "primaryMuscles": [
+      "triceps brachii"
+    ],
+    "secondaryMuscles": [],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown_-_Rope_Attachment%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown_-_Rope_Attachment%2F1.jpg"
+    ],
+    "instructions": [
+      "Stand at cable machine",
+      "Push bar down to thighs",
+      "Squeeze triceps at bottom",
+      "Control return"
+    ],
+    "createdAt": "2026-05-11T19:33:54.000Z",
+    "instructionsKo": [
+      "케이블 머신에 로프를 연결하고 잡습니다.",
+      "팔꿈치를 몸에 붙인 채 로프를 아래로 밀어 내립니다.",
+      "삼두근이 완전히 수축되는 것을 느낍니다.",
+      "천천히 올리며 반복합니다.",
+      "팔꿈치가 움직이지 않도록 주의합니다."
+    ]
+  },
+  {
+    "id": 240028,
+    "name": "Skull Crushers",
+    "nameKo": "스컬 크러셔",
+    "bodyPart": "arms",
+    "equipment": "barbell",
+    "category": "hypertrophy",
+    "difficulty": "intermediate",
+    "description": "Lying tricep extension for mass.",
+    "descriptionKo": "삼두근 매스를 위한 누워서 하는 익스텐션입니다.",
+    "primaryMuscles": [
+      "triceps brachii"
+    ],
+    "secondaryMuscles": [],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/EZ-Bar_Skullcrusher%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/EZ-Bar_Skullcrusher%2F1.jpg"
+    ],
+    "instructions": [
+      "Lie on bench with EZ bar",
+      "Lower bar to forehead",
+      "Extend arms to start",
+      "Keep elbows tucked"
+    ],
+    "createdAt": "2026-05-11T19:33:54.000Z",
+    "instructionsKo": [
+      "EZ바를 잡고 플랫 벤치에 눕습니다.",
+      "팔꿈치를 고정한 채 바를 이마 쪽으로 내립니다.",
+      "삼두근이 늘어나는 것을 느낍니다.",
+      "삼두근을 수축하며 바를 올립니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240029,
+    "name": "Tricep Dips",
+    "nameKo": "트라이셉 딥스",
+    "bodyPart": "arms",
+    "equipment": "bodyweight",
+    "category": "strength",
+    "difficulty": "beginner",
+    "description": "Bodyweight tricep exercise using a bench.",
+    "descriptionKo": "벤치를 이용한 맨몸 삼두근 운동입니다.",
+    "primaryMuscles": [
+      "triceps brachii"
+    ],
+    "secondaryMuscles": [
+      "anterior deltoid"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Place hands on bench behind you",
+      "Lower body down",
+      "Push back up",
+      "Keep elbows close"
+    ],
+    "createdAt": "2026-05-11T19:33:54.000Z",
+    "instructionsKo": [
+      "평행봉을 양손으로 잡고 몸을 들어 올립니다.",
+      "상체를 수직으로 유지합니다.",
+      "팔꿈치가 90도가 될 때까지 내려갑니다.",
+      "삼두근을 수축하며 다시 밀어 올립니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240030,
+    "name": "Preacher Curl",
+    "nameKo": "프리처 컬",
+    "bodyPart": "arms",
+    "equipment": "machine",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Isolated bicep curl on preacher bench.",
+    "descriptionKo": "프리처 벤치에서 하는 고립 이두 컬입니다.",
+    "primaryMuscles": [
+      "biceps brachii"
+    ],
+    "secondaryMuscles": [
+      "brachialis"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Rest arms on preacher bench",
+      "Curl bar to chin",
+      "Squeeze at top",
+      "Lower fully to stretch"
+    ],
+    "createdAt": "2026-05-11T19:33:55.000Z",
+    "instructionsKo": [
+      "프리처 컬 벤치에 앉아 팔을 패드에 올립니다.",
+      "EZ바를 잡고 팔을 완전히 펍니다.",
+      "이두근을 수축하며 바를 올립니다.",
+      "정점에서 잠시 유지합니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240031,
+    "name": "Overhead Tricep Extension",
+    "nameKo": "오버헤드 트라이셉 익스텐션",
+    "bodyPart": "arms",
+    "equipment": "dumbbell",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Overhead extension for long head of tricep.",
+    "descriptionKo": "삼두근 장두를 위한 오버헤드 익스텐션입니다.",
+    "primaryMuscles": [
+      "triceps brachii (long head)"
+    ],
+    "secondaryMuscles": [],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Hold dumbbell overhead",
+      "Lower behind head",
+      "Extend arms fully",
+      "Keep elbows close"
+    ],
+    "createdAt": "2026-05-11T19:33:55.000Z",
+    "instructionsKo": [
+      "덤벨을 양손으로 잡고 머리 위로 올립니다.",
+      "팔꿈치를 고정한 채 덤벨을 머리 뒤로 내립니다.",
+      "삼두근이 늘어나는 것을 느낍니다.",
+      "삼두근을 수축하며 덤벨을 올립니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240032,
+    "name": "Barbell Squat",
+    "nameKo": "바벨 스쿼트",
+    "bodyPart": "legs",
+    "equipment": "barbell",
+    "category": "strength",
+    "difficulty": "intermediate",
+    "description": "The king of leg exercises for overall lower body strength.",
+    "descriptionKo": "전체 하체 힘을 위한 하체 운동의 왕입니다.",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat%2F1.jpg"
+    ],
+    "instructions": [
+      "Bar on upper back",
+      "Feet shoulder width apart",
+      "Squat to parallel or below",
+      "Drive through heels to stand"
+    ],
+    "createdAt": "2026-05-11T19:33:55.000Z",
+    "instructionsKo": [
+      "바벨을 상부 등에 올리고 발을 어깨너비로 벌립니다.",
+      "가슴을 펴고 코어를 단단히 유지합니다.",
+      "엉덩이를 뒤로 빼며 무릎이 발끝 방향으로 향하게 내려갑니다.",
+      "허벅지가 바닥과 평행이 될 때까지 내려갑니다.",
+      "발뒤꿈치로 바닥을 밀며 일어서서 반복합니다."
+    ]
+  },
+  {
+    "id": 240033,
+    "name": "Romanian Deadlift",
+    "nameKo": "루마니안 데드리프트",
+    "bodyPart": "legs",
+    "equipment": "barbell",
+    "category": "hypertrophy",
+    "difficulty": "intermediate",
+    "description": "Hip hinge movement targeting hamstrings and glutes.",
+    "descriptionKo": "햄스트링과 둔근을 타겟으로 하는 힙 힌지 운동입니다.",
+    "primaryMuscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "erector spinae"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Romanian_Deadlift%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Romanian_Deadlift%2F1.jpg"
+    ],
+    "instructions": [
+      "Hold bar at hips",
+      "Hinge forward keeping bar close",
+      "Feel hamstring stretch",
+      "Drive hips forward to stand"
+    ],
+    "createdAt": "2026-05-11T19:33:55.000Z",
+    "instructionsKo": [
+      "바벨을 어깨너비로 잡고 바르게 섭니다.",
+      "무릎을 약간 구부린 채 엉덩이를 뒤로 빼며 상체를 숙입니다.",
+      "등을 일직선으로 유지합니다.",
+      "햄스트링이 충분히 늘어나면 멈춥니다.",
+      "엉덩이를 앞으로 밀며 다시 서서 반복합니다."
+    ]
+  },
+  {
+    "id": 240034,
+    "name": "Leg Press",
+    "nameKo": "레그 프레스",
+    "bodyPart": "legs",
+    "equipment": "machine",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Machine-based leg press for quad development.",
+    "descriptionKo": "대퇴사두근 발달을 위한 머신 레그 프레스입니다.",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Press%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Press%2F1.jpg"
+    ],
+    "instructions": [
+      "Sit in leg press machine",
+      "Place feet shoulder width on platform",
+      "Lower platform to 90 degrees",
+      "Press back to start"
+    ],
+    "createdAt": "2026-05-11T19:33:56.000Z",
+    "instructionsKo": [
+      "레그 프레스 머신에 앉아 발을 플랫폼에 어깨너비로 놓습니다.",
+      "안전 장치를 해제하고 무릎이 90도가 될 때까지 내립니다.",
+      "발뒤꿈치로 플랫폼을 밀며 다리를 펍니다.",
+      "무릎을 완전히 펴지 않도록 주의합니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240035,
+    "name": "Lunges",
+    "nameKo": "런지",
+    "bodyPart": "legs",
+    "equipment": "bodyweight",
+    "category": "endurance",
+    "difficulty": "beginner",
+    "description": "Unilateral leg exercise for balance and strength.",
+    "descriptionKo": "균형과 힘을 위한 단측 하체 운동입니다.",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "calves"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Lunge%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Lunge%2F1.jpg"
+    ],
+    "instructions": [
+      "Stand tall",
+      "Step forward and lower knee",
+      "Back knee near floor",
+      "Push back to start"
+    ],
+    "createdAt": "2026-05-11T19:33:56.000Z",
+    "instructionsKo": [
+      "바르게 서서 한 발을 앞으로 내딛습니다.",
+      "뒷 무릎이 바닥에 닿을 때까지 내려갑니다.",
+      "앞 무릎이 발끝을 넘지 않도록 합니다.",
+      "앞발로 바닥을 밀며 원래 자세로 돌아옵니다.",
+      "반대 발로 반복합니다."
+    ]
+  },
+  {
+    "id": 240036,
+    "name": "Leg Curl",
+    "nameKo": "레그 컬",
+    "bodyPart": "legs",
+    "equipment": "machine",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Machine isolation for hamstrings.",
+    "descriptionKo": "햄스트링 고립을 위한 머신 운동입니다.",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "calves"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Leg_Curls%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Leg_Curls%2F1.jpg"
+    ],
+    "instructions": [
+      "Lie face down on machine",
+      "Curl legs to glutes",
+      "Squeeze hamstrings",
+      "Lower slowly"
+    ],
+    "createdAt": "2026-05-11T19:33:56.000Z",
+    "instructionsKo": [
+      "레그 컬 머신에 엎드려 발목을 패드에 고정합니다.",
+      "햄스트링을 수축하며 발목을 엉덩이 쪽으로 올립니다.",
+      "정점에서 잠시 유지합니다.",
+      "천천히 내리며 반복합니다.",
+      "허리가 들리지 않도록 주의합니다."
+    ]
+  },
+  {
+    "id": 240037,
+    "name": "Leg Extension",
+    "nameKo": "레그 익스텐션",
+    "bodyPart": "legs",
+    "equipment": "machine",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Machine isolation for quadriceps.",
+    "descriptionKo": "대퇴사두근 고립을 위한 머신 운동입니다.",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Extensions%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Extensions%2F1.jpg"
+    ],
+    "instructions": [
+      "Sit in leg extension machine",
+      "Extend legs fully",
+      "Squeeze quads at top",
+      "Lower slowly"
+    ],
+    "createdAt": "2026-05-11T19:33:56.000Z",
+    "instructionsKo": [
+      "레그 익스텐션 머신에 앉아 발목을 패드에 고정합니다.",
+      "대퇴사두근을 수축하며 다리를 완전히 펍니다.",
+      "정점에서 잠시 유지합니다.",
+      "천천히 내리며 반복합니다.",
+      "무릎 관절에 무리가 가지 않도록 주의합니다."
+    ]
+  },
+  {
+    "id": 240038,
+    "name": "Calf Raise",
+    "nameKo": "카프 레이즈",
+    "bodyPart": "legs",
+    "equipment": "machine",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Isolation exercise for calf muscles.",
+    "descriptionKo": "종아리 근육 고립 운동입니다.",
+    "primaryMuscles": [
+      "gastrocnemius",
+      "soleus"
+    ],
+    "secondaryMuscles": [],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Calf_Raises%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Calf_Raises%2F1.jpg"
+    ],
+    "instructions": [
+      "Stand on calf raise machine",
+      "Rise up on toes",
+      "Squeeze calves at top",
+      "Lower heel below platform"
+    ],
+    "createdAt": "2026-05-11T19:33:57.000Z",
+    "instructionsKo": [
+      "카프 레이즈 머신에 서서 어깨에 패드를 올립니다.",
+      "발뒤꿈치를 최대한 올립니다.",
+      "종아리 근육이 완전히 수축되는 것을 느낍니다.",
+      "발뒤꿈치를 플랫폼 아래로 내립니다.",
+      "충분히 늘어나면 반복합니다."
+    ]
+  },
+  {
+    "id": 240039,
+    "name": "Bulgarian Split Squat",
+    "nameKo": "불가리안 스플릿 스쿼트",
+    "bodyPart": "legs",
+    "equipment": "dumbbell",
+    "category": "hypertrophy",
+    "difficulty": "intermediate",
+    "description": "Unilateral squat with rear foot elevated.",
+    "descriptionKo": "뒷발을 올린 단측 스쿼트입니다.",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "hip flexors"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Rear foot on bench",
+      "Lower front leg to 90 degrees",
+      "Keep torso upright",
+      "Drive through front heel"
+    ],
+    "createdAt": "2026-05-11T19:33:57.000Z",
+    "instructionsKo": [
+      "뒷발을 벤치에 올리고 앞발을 앞으로 내딛습니다.",
+      "상체를 수직으로 유지하며 내려갑니다.",
+      "앞 무릎이 90도가 될 때까지 내려갑니다.",
+      "앞발로 바닥을 밀며 올라옵니다.",
+      "목표 횟수만큼 반복 후 다리를 바꿉니다."
+    ]
+  },
+  {
+    "id": 240040,
+    "name": "Hack Squat",
+    "nameKo": "핵 스쿼트",
+    "bodyPart": "legs",
+    "equipment": "machine",
+    "category": "hypertrophy",
+    "difficulty": "intermediate",
+    "description": "Machine squat emphasizing quadriceps.",
+    "descriptionKo": "대퇴사두근을 강조하는 머신 스쿼트입니다.",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat%2F1.jpg"
+    ],
+    "instructions": [
+      "Position in hack squat machine",
+      "Feet shoulder width on platform",
+      "Lower to 90 degrees",
+      "Press back up"
+    ],
+    "createdAt": "2026-05-11T19:33:57.000Z",
+    "instructionsKo": [
+      "핵 스쿼트 머신에 등을 대고 어깨에 패드를 올립니다.",
+      "발을 플랫폼에 어깨너비로 놓습니다.",
+      "무릎이 90도가 될 때까지 내려갑니다.",
+      "대퇴사두근을 수축하며 올라옵니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240041,
+    "name": "Hip Thrust",
+    "nameKo": "힙 스러스트",
+    "bodyPart": "glutes",
+    "equipment": "barbell",
+    "category": "hypertrophy",
+    "difficulty": "intermediate",
+    "description": "Best exercise for glute development.",
+    "descriptionKo": "둔근 발달을 위한 최고의 운동입니다.",
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "core"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hip_Thrust%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hip_Thrust%2F1.jpg"
+    ],
+    "instructions": [
+      "Sit against bench with bar on hips",
+      "Drive hips up",
+      "Squeeze glutes at top",
+      "Lower with control"
+    ],
+    "createdAt": "2026-05-11T19:33:57.000Z",
+    "instructionsKo": [
+      "벤치에 등 상부를 기대고 바벨을 골반에 올립니다.",
+      "발을 바닥에 어깨너비로 놓습니다.",
+      "엉덩이를 위로 밀어 올립니다.",
+      "정점에서 둔근을 최대한 수축합니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240042,
+    "name": "Crunch",
+    "nameKo": "크런치",
+    "bodyPart": "abs",
+    "equipment": "bodyweight",
+    "category": "endurance",
+    "difficulty": "beginner",
+    "description": "Basic abdominal crunch exercise.",
+    "descriptionKo": "기본 복근 크런치 운동입니다.",
+    "primaryMuscles": [
+      "rectus abdominis"
+    ],
+    "secondaryMuscles": [],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Lie on back with knees bent",
+      "Hands behind head",
+      "Curl shoulders off floor",
+      "Lower slowly"
+    ],
+    "createdAt": "2026-05-11T19:33:58.000Z",
+    "instructionsKo": [
+      "등을 대고 누워 무릎을 구부립니다.",
+      "손을 머리 뒤에 가볍게 올립니다.",
+      "복근을 수축하며 어깨를 바닥에서 들어 올립니다.",
+      "복근이 완전히 수축되는 것을 느낍니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240043,
+    "name": "Plank",
+    "nameKo": "플랭크",
+    "bodyPart": "abs",
+    "equipment": "bodyweight",
+    "category": "endurance",
+    "difficulty": "beginner",
+    "description": "Isometric core stability exercise.",
+    "descriptionKo": "등척성 코어 안정화 운동입니다.",
+    "primaryMuscles": [
+      "core",
+      "transverse abdominis"
+    ],
+    "secondaryMuscles": [
+      "glutes",
+      "shoulders"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank%2F1.jpg"
+    ],
+    "instructions": [
+      "Forearms on floor",
+      "Body in straight line",
+      "Hold position",
+      "Breathe steadily"
+    ],
+    "createdAt": "2026-05-11T19:33:58.000Z",
+    "instructionsKo": [
+      "전완을 바닥에 놓고 플랭크 자세를 취합니다.",
+      "몸을 일직선으로 유지합니다.",
+      "코어를 단단히 수축합니다.",
+      "목표 시간만큼 자세를 유지합니다.",
+      "엉덩이가 처지거나 올라가지 않도록 합니다."
+    ]
+  },
+  {
+    "id": 240044,
+    "name": "Leg Raise",
+    "nameKo": "레그 레이즈",
+    "bodyPart": "abs",
+    "equipment": "bodyweight",
+    "category": "endurance",
+    "difficulty": "intermediate",
+    "description": "Lower ab exercise lying on back.",
+    "descriptionKo": "누워서 하는 하복부 운동입니다.",
+    "primaryMuscles": [
+      "lower rectus abdominis"
+    ],
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Flat_Bench_Leg_Pull-In%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Flat_Bench_Leg_Pull-In%2F1.jpg"
+    ],
+    "instructions": [
+      "Lie flat on back",
+      "Keep legs straight",
+      "Raise to 90 degrees",
+      "Lower slowly without touching floor"
+    ],
+    "createdAt": "2026-05-11T19:33:58.000Z",
+    "instructionsKo": [
+      "등을 대고 누워 다리를 펍니다.",
+      "다리를 곧게 유지하며 90도까지 올립니다.",
+      "하복근이 수축되는 것을 느낍니다.",
+      "바닥에 닿지 않도록 천천히 내립니다.",
+      "반복합니다."
+    ]
+  },
+  {
+    "id": 240045,
+    "name": "Russian Twist",
+    "nameKo": "러시안 트위스트",
+    "bodyPart": "abs",
+    "equipment": "bodyweight",
+    "category": "endurance",
+    "difficulty": "beginner",
+    "description": "Rotational core exercise.",
+    "descriptionKo": "회전 코어 운동입니다.",
+    "primaryMuscles": [
+      "obliques"
+    ],
+    "secondaryMuscles": [
+      "rectus abdominis"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Russian_Twist%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Russian_Twist%2F1.jpg"
+    ],
+    "instructions": [
+      "Sit with knees bent",
+      "Lean back slightly",
+      "Rotate torso side to side",
+      "Keep core engaged"
+    ],
+    "createdAt": "2026-05-11T19:33:58.000Z",
+    "instructionsKo": [
+      "무릎을 구부리고 앉아 상체를 약간 뒤로 기울입니다.",
+      "양손을 모아 몸통을 좌우로 회전합니다.",
+      "복사근이 수축되는 것을 느낍니다.",
+      "코어를 단단히 유지합니다.",
+      "목표 횟수만큼 반복합니다."
+    ]
+  },
+  {
+    "id": 240046,
+    "name": "Cable Crunch",
+    "nameKo": "케이블 크런치",
+    "bodyPart": "abs",
+    "equipment": "cable",
+    "category": "hypertrophy",
+    "difficulty": "intermediate",
+    "description": "Weighted crunch using cable for resistance.",
+    "descriptionKo": "케이블 저항을 이용한 웨이티드 크런치입니다.",
+    "primaryMuscles": [
+      "rectus abdominis"
+    ],
+    "secondaryMuscles": [
+      "obliques"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Crunch%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Crunch%2F1.jpg"
+    ],
+    "instructions": [
+      "Kneel at cable machine",
+      "Hold rope at head",
+      "Crunch down with core",
+      "Return to start"
+    ],
+    "createdAt": "2026-05-11T19:33:59.000Z",
+    "instructionsKo": [
+      "케이블 머신 앞에 무릎을 꿇습니다.",
+      "로프를 머리 옆에 잡습니다.",
+      "복근을 수축하며 아래로 구부립니다.",
+      "복근이 완전히 수축되는 것을 느낍니다.",
+      "천천히 원래 위치로 돌아가며 반복합니다."
+    ]
+  },
+  {
+    "id": 240047,
+    "name": "Hanging Leg Raise",
+    "nameKo": "행잉 레그 레이즈",
+    "bodyPart": "abs",
+    "equipment": "bodyweight",
+    "category": "strength",
+    "difficulty": "advanced",
+    "description": "Advanced core exercise hanging from bar.",
+    "descriptionKo": "바에 매달려 하는 고급 코어 운동입니다.",
+    "primaryMuscles": [
+      "lower rectus abdominis",
+      "hip flexors"
+    ],
+    "secondaryMuscles": [
+      "obliques"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Leg_Raise%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Leg_Raise%2F1.jpg"
+    ],
+    "instructions": [
+      "Hang from pull-up bar",
+      "Raise legs to 90 degrees",
+      "Control the movement",
+      "Lower slowly"
+    ],
+    "createdAt": "2026-05-11T19:33:59.000Z",
+    "instructionsKo": [
+      "철봉에 매달립니다.",
+      "다리를 곧게 유지하며 90도까지 올립니다.",
+      "하복근이 수축되는 것을 느낍니다.",
+      "천천히 내리며 반복합니다.",
+      "반동을 사용하지 않도록 주의합니다."
+    ]
+  },
+  {
+    "id": 240048,
+    "name": "Ab Wheel Rollout",
+    "nameKo": "AB 휠 롤아웃",
+    "bodyPart": "abs",
+    "equipment": "none",
+    "category": "strength",
+    "difficulty": "advanced",
+    "description": "Full core exercise using ab wheel.",
+    "descriptionKo": "AB 휠을 이용한 전체 코어 운동입니다.",
+    "primaryMuscles": [
+      "core",
+      "rectus abdominis"
+    ],
+    "secondaryMuscles": [
+      "lats",
+      "shoulders"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Kneel with ab wheel",
+      "Roll forward until extended",
+      "Pull back using core",
+      "Keep hips low"
+    ],
+    "createdAt": "2026-05-11T19:33:59.000Z",
+    "instructionsKo": [
+      "무릎을 꿇고 AB 휠을 잡습니다.",
+      "코어를 단단히 유지하며 앞으로 굴립니다.",
+      "몸이 완전히 펴질 때까지 굴립니다.",
+      "코어를 수축하며 다시 당겨옵니다.",
+      "허리가 처지지 않도록 주의합니다."
+    ]
+  },
+  {
+    "id": 240049,
+    "name": "Side Plank",
+    "nameKo": "사이드 플랭크",
+    "bodyPart": "abs",
+    "equipment": "bodyweight",
+    "category": "endurance",
+    "difficulty": "beginner",
+    "description": "Lateral core stability exercise.",
+    "descriptionKo": "측면 코어 안정화 운동입니다.",
+    "primaryMuscles": [
+      "obliques"
+    ],
+    "secondaryMuscles": [
+      "core",
+      "hip abductors"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Lie on side",
+      "Support on forearm and feet",
+      "Keep body straight",
+      "Hold position"
+    ],
+    "createdAt": "2026-05-11T19:33:59.000Z",
+    "instructionsKo": [
+      "옆으로 누워 전완을 바닥에 놓습니다.",
+      "엉덩이를 들어 올려 몸을 일직선으로 만듭니다.",
+      "복사근을 수축합니다.",
+      "목표 시간만큼 자세를 유지합니다.",
+      "반대쪽으로 반복합니다."
+    ]
+  },
+  {
+    "id": 240050,
+    "name": "Treadmill Run",
+    "nameKo": "트레드밀 달리기",
+    "bodyPart": "cardio",
+    "equipment": "machine",
+    "category": "cardio",
+    "difficulty": "beginner",
+    "description": "Running on treadmill for cardiovascular fitness.",
+    "descriptionKo": "심폐 체력을 위한 트레드밀 달리기입니다.",
+    "primaryMuscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "secondaryMuscles": [
+      "glutes",
+      "core"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Set desired speed",
+      "Start with warm-up walk",
+      "Increase to running pace",
+      "Cool down at end"
+    ],
+    "createdAt": "2026-05-11T19:34:00.000Z",
+    "instructionsKo": [
+      "원하는 속도를 설정합니다.",
+      "워밍업 걷기로 시작합니다.",
+      "달리기 속도로 증가합니다.",
+      "목표 시간 또는 거리를 달립니다.",
+      "쿨다운 걷기로 마무리합니다."
+    ]
+  },
+  {
+    "id": 240051,
+    "name": "Jump Rope",
+    "nameKo": "줄넘기",
+    "bodyPart": "cardio",
+    "equipment": "none",
+    "category": "cardio",
+    "difficulty": "beginner",
+    "description": "Classic cardio exercise with jump rope.",
+    "descriptionKo": "줄넘기를 이용한 클래식 유산소 운동입니다.",
+    "primaryMuscles": [
+      "calves",
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "core",
+      "forearms"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Hold rope handles",
+      "Jump with both feet",
+      "Keep rhythm consistent",
+      "Land softly on balls of feet"
+    ],
+    "createdAt": "2026-05-11T19:34:00.000Z",
+    "instructionsKo": [
+      "줄넘기 손잡이를 양손에 잡습니다.",
+      "양발로 함께 점프합니다.",
+      "일정한 리듬을 유지합니다.",
+      "발볼로 부드럽게 착지합니다.",
+      "목표 횟수 또는 시간만큼 반복합니다."
+    ]
+  },
+  {
+    "id": 240052,
+    "name": "Burpee",
+    "nameKo": "버피",
+    "bodyPart": "cardio",
+    "equipment": "bodyweight",
+    "category": "cardio",
+    "difficulty": "intermediate",
+    "description": "Full body cardio exercise.",
+    "descriptionKo": "전신 유산소 운동입니다.",
+    "primaryMuscles": [
+      "full body"
+    ],
+    "secondaryMuscles": [],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Start standing",
+      "Drop to push-up position",
+      "Do a push-up",
+      "Jump feet to hands and jump up"
+    ],
+    "createdAt": "2026-05-11T19:34:00.000Z",
+    "instructionsKo": [
+      "바르게 서서 시작합니다.",
+      "손을 바닥에 짚으며 발을 뒤로 뻗어 푸시업 자세를 만듭니다.",
+      "푸시업을 한 번 합니다.",
+      "발을 손 쪽으로 당기며 점프합니다.",
+      "손을 위로 올리며 점프하고 반복합니다."
+    ]
+  },
+  {
+    "id": 240053,
+    "name": "Rowing Machine",
+    "nameKo": "로잉 머신",
+    "bodyPart": "cardio",
+    "equipment": "machine",
+    "category": "cardio",
+    "difficulty": "beginner",
+    "description": "Full body cardio on rowing machine.",
+    "descriptionKo": "로잉 머신을 이용한 전신 유산소 운동입니다.",
+    "primaryMuscles": [
+      "back",
+      "legs",
+      "arms"
+    ],
+    "secondaryMuscles": [
+      "core"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Sit on rowing machine",
+      "Push with legs first",
+      "Pull handle to chest",
+      "Return to start position"
+    ],
+    "createdAt": "2026-05-11T19:34:00.000Z",
+    "instructionsKo": [
+      "로잉 머신에 앉아 발을 고정합니다.",
+      "핸들을 잡고 다리를 먼저 밀어냅니다.",
+      "다리가 펴지면 핸들을 가슴 쪽으로 당깁니다.",
+      "팔을 펴며 상체를 앞으로 기울입니다.",
+      "다리를 구부리며 원래 자세로 돌아가 반복합니다."
+    ]
+  },
+  {
+    "id": 240054,
+    "name": "Stationary Bike",
+    "nameKo": "고정식 자전거",
+    "bodyPart": "cardio",
+    "equipment": "machine",
+    "category": "cardio",
+    "difficulty": "beginner",
+    "description": "Low-impact cardio on stationary bike.",
+    "descriptionKo": "고정식 자전거를 이용한 저충격 유산소 운동입니다.",
+    "primaryMuscles": [
+      "quadriceps",
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "calves",
+      "glutes"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Adjust seat height",
+      "Start pedaling at comfortable pace",
+      "Maintain steady cadence",
+      "Increase resistance as needed"
+    ],
+    "createdAt": "2026-05-11T19:34:00.000Z",
+    "instructionsKo": [
+      "안장 높이를 조절합니다.",
+      "편안한 속도로 페달링을 시작합니다.",
+      "일정한 케이던스를 유지합니다.",
+      "필요에 따라 저항을 높입니다.",
+      "목표 시간만큼 유지합니다."
+    ]
+  },
+  {
+    "id": 240055,
+    "name": "Mountain Climbers",
+    "nameKo": "마운틴 클라이머",
+    "bodyPart": "cardio",
+    "equipment": "bodyweight",
+    "category": "cardio",
+    "difficulty": "beginner",
+    "description": "Dynamic plank exercise for cardio and core.",
+    "descriptionKo": "유산소와 코어를 위한 동적 플랭크 운동입니다.",
+    "primaryMuscles": [
+      "core",
+      "hip flexors"
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "legs"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Start in plank position",
+      "Drive knee to chest alternately",
+      "Keep hips level",
+      "Maintain quick pace"
+    ],
+    "createdAt": "2026-05-11T19:34:01.000Z",
+    "instructionsKo": [
+      "플랭크 자세를 취합니다.",
+      "한쪽 무릎을 가슴 쪽으로 당깁니다.",
+      "빠르게 다리를 교체합니다.",
+      "코어를 단단히 유지합니다.",
+      "목표 횟수 또는 시간만큼 반복합니다."
+    ]
+  },
+  {
+    "id": 240056,
+    "name": "Chest Stretch",
+    "nameKo": "가슴 스트레칭",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Doorway or wall stretch for chest and shoulders.",
+    "descriptionKo": "문이나 벽을 이용한 가슴과 어깨 스트레칭입니다.",
+    "primaryMuscles": [
+      "pectoralis major"
+    ],
+    "secondaryMuscles": [
+      "anterior deltoid"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F1.jpg"
+    ],
+    "instructions": [
+      "Stand in doorway",
+      "Place forearms on frame",
+      "Lean forward gently",
+      "Hold 30 seconds"
+    ],
+    "createdAt": "2026-05-11T19:34:01.000Z",
+    "instructionsKo": [
+      "바르게 서거나 앉습니다.",
+      "양팔을 뒤로 모아 손을 깍지 낍니다.",
+      "가슴을 앞으로 내밀며 어깨를 뒤로 당깁니다.",
+      "가슴 근육이 늘어나는 것을 느낍니다.",
+      "30초간 유지합니다."
+    ]
+  },
+  {
+    "id": 240057,
+    "name": "Hip Flexor Stretch",
+    "nameKo": "고관절 굴곡근 스트레칭",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Kneeling stretch for hip flexors.",
+    "descriptionKo": "무릎 꿇고 하는 고관절 굴곡근 스트레칭입니다.",
+    "primaryMuscles": [
+      "hip flexors",
+      "iliopsoas"
+    ],
+    "secondaryMuscles": [
+      "quadriceps"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Kneel on one knee",
+      "Push hips forward",
+      "Feel stretch in front of hip",
+      "Hold 30 seconds each side"
+    ],
+    "createdAt": "2026-05-11T19:34:01.000Z",
+    "instructionsKo": [
+      "한쪽 무릎을 바닥에 꿇습니다.",
+      "앞발을 앞으로 내딛어 런지 자세를 만듭니다.",
+      "엉덩이를 앞으로 밀며 고관절 굴곡근을 늘입니다.",
+      "상체를 수직으로 유지합니다.",
+      "30초간 유지 후 반대쪽으로 반복합니다."
+    ]
+  },
+  {
+    "id": 240058,
+    "name": "Hamstring Stretch",
+    "nameKo": "햄스트링 스트레칭",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Seated or standing hamstring stretch.",
+    "descriptionKo": "앉거나 서서 하는 햄스트링 스트레칭입니다.",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "lower back"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Sit with legs extended",
+      "Reach toward toes",
+      "Keep back straight",
+      "Hold 30 seconds"
+    ],
+    "createdAt": "2026-05-11T19:34:01.000Z",
+    "instructionsKo": [
+      "바닥에 앉아 다리를 앞으로 펍니다.",
+      "엉덩이를 뒤로 빼며 상체를 앞으로 숙입니다.",
+      "손이 발 쪽으로 향하도록 합니다.",
+      "햄스트링이 늘어나는 것을 느낍니다.",
+      "30~60초간 유지합니다."
+    ]
+  },
+  {
+    "id": 240059,
+    "name": "Shoulder Cross Stretch",
+    "nameKo": "어깨 크로스 스트레칭",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Cross-body shoulder stretch.",
+    "descriptionKo": "몸을 가로질러 하는 어깨 스트레칭입니다.",
+    "primaryMuscles": [
+      "posterior deltoid",
+      "rotator cuff"
+    ],
+    "secondaryMuscles": [
+      "rhomboids"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F1.jpg"
+    ],
+    "instructions": [
+      "Bring arm across chest",
+      "Hold with other arm",
+      "Feel stretch in shoulder",
+      "Hold 30 seconds each side"
+    ],
+    "createdAt": "2026-05-11T19:34:02.000Z",
+    "instructionsKo": [
+      "한쪽 팔을 가슴 앞으로 뻗습니다.",
+      "반대 팔로 뻗은 팔의 팔꿈치를 잡아당깁니다.",
+      "후면 삼각근이 늘어나는 것을 느낍니다.",
+      "30초간 유지합니다.",
+      "반대쪽으로 반복합니다."
+    ]
+  },
+  {
+    "id": 240060,
+    "name": "Cat-Cow Stretch",
+    "nameKo": "캣-카우 스트레칭",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Spinal mobility exercise on all fours.",
+    "descriptionKo": "네발 기기 자세로 하는 척추 가동성 운동입니다.",
+    "primaryMuscles": [
+      "spine",
+      "core"
+    ],
+    "secondaryMuscles": [
+      "neck",
+      "hips"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F1.jpg"
+    ],
+    "instructions": [
+      "Start on hands and knees",
+      "Arch back up (cat)",
+      "Drop belly down (cow)",
+      "Flow between positions"
+    ],
+    "createdAt": "2026-05-11T19:34:02.000Z",
+    "instructionsKo": [
+      "네발 기기 자세를 취합니다.",
+      "숨을 내쉬며 등을 위로 둥글게 만듭니다 (캣 자세).",
+      "숨을 들이쉬며 등을 아래로 내립니다 (카우 자세).",
+      "천천히 반복합니다.",
+      "척추 전체가 움직이는 것을 느낍니다."
+    ]
+  },
+  {
+    "id": 240061,
+    "name": "Pigeon Pose",
+    "nameKo": "비둘기 자세",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "intermediate",
+    "description": "Deep hip opener from yoga.",
+    "descriptionKo": "요가에서 유래한 깊은 고관절 스트레칭입니다.",
+    "primaryMuscles": [
+      "glutes",
+      "hip external rotators"
+    ],
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Bring one leg forward bent",
+      "Extend other leg back",
+      "Lower torso forward",
+      "Hold 60 seconds each side"
+    ],
+    "createdAt": "2026-05-11T19:34:02.000Z",
+    "instructionsKo": [
+      "한쪽 다리를 앞으로 구부려 바닥에 놓습니다.",
+      "뒷다리를 뒤로 뻗습니다.",
+      "상체를 앞으로 숙입니다.",
+      "둔근이 늘어나는 것을 느낍니다.",
+      "30~60초간 유지 후 반대쪽으로 반복합니다."
+    ]
+  },
+  {
+    "id": 240062,
+    "name": "Child's Pose",
+    "nameKo": "아이 자세",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Resting yoga pose for back and hips.",
+    "descriptionKo": "등과 고관절을 위한 휴식 요가 자세입니다.",
+    "primaryMuscles": [
+      "lower back",
+      "hips"
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "ankles"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Kneel and sit back on heels",
+      "Extend arms forward",
+      "Rest forehead on floor",
+      "Breathe deeply"
+    ],
+    "createdAt": "2026-05-11T19:34:02.000Z",
+    "instructionsKo": [
+      "무릎을 꿇고 앉습니다.",
+      "상체를 앞으로 숙이며 팔을 앞으로 뻗습니다.",
+      "이마를 바닥에 내립니다.",
+      "허리와 등이 늘어나는 것을 느낍니다.",
+      "30~60초간 유지합니다."
+    ]
+  },
+  {
+    "id": 240063,
+    "name": "Thoracic Rotation",
+    "nameKo": "흉추 회전 스트레칭",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Upper back rotation for mobility.",
+    "descriptionKo": "가동성을 위한 상부 등 회전 운동입니다.",
+    "primaryMuscles": [
+      "thoracic spine"
+    ],
+    "secondaryMuscles": [
+      "obliques"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F1.jpg"
+    ],
+    "instructions": [
+      "Sit or kneel",
+      "Place hand behind head",
+      "Rotate upper body",
+      "Hold at end range"
+    ],
+    "createdAt": "2026-05-11T19:34:03.000Z",
+    "instructionsKo": [
+      "네발 기기 자세를 취합니다.",
+      "한 손을 머리 뒤에 올립니다.",
+      "팔꿈치를 위로 향하며 상체를 회전합니다.",
+      "흉추가 회전되는 것을 느낍니다.",
+      "반대쪽으로 반복합니다."
+    ]
+  },
+  {
+    "id": 240064,
+    "name": "Calf Stretch",
+    "nameKo": "종아리 스트레칭",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Wall calf stretch for flexibility.",
+    "descriptionKo": "유연성을 위한 벽 종아리 스트레칭입니다.",
+    "primaryMuscles": [
+      "gastrocnemius",
+      "soleus"
+    ],
+    "secondaryMuscles": [],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Stand facing wall",
+      "Place hands on wall",
+      "Step one foot back",
+      "Press heel into floor"
+    ],
+    "createdAt": "2026-05-11T19:34:03.000Z",
+    "instructionsKo": [
+      "벽 앞에 서서 한 발을 뒤로 뻗습니다.",
+      "뒷발 뒤꿈치를 바닥에 붙입니다.",
+      "앞으로 기울이며 종아리를 늘입니다.",
+      "종아리 근육이 늘어나는 것을 느낍니다.",
+      "30초간 유지 후 반대쪽으로 반복합니다."
+    ]
+  },
+  {
+    "id": 240065,
+    "name": "Tricep Stretch",
+    "nameKo": "삼두근 스트레칭",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Overhead tricep stretch.",
+    "descriptionKo": "오버헤드 삼두근 스트레칭입니다.",
+    "primaryMuscles": [
+      "triceps brachii"
+    ],
+    "secondaryMuscles": [
+      "shoulder"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F1.jpg"
+    ],
+    "instructions": [
+      "Raise arm overhead",
+      "Bend elbow behind head",
+      "Push elbow with other hand",
+      "Hold 30 seconds"
+    ],
+    "createdAt": "2026-05-11T19:34:03.000Z",
+    "instructionsKo": [
+      "한 팔을 머리 위로 올립니다.",
+      "팔꿈치를 구부려 손이 등 위쪽에 닿도록 합니다.",
+      "반대 손으로 팔꿈치를 잡아당깁니다.",
+      "삼두근이 늘어나는 것을 느낍니다.",
+      "30초간 유지 후 반대쪽으로 반복합니다."
+    ]
+  },
+  {
+    "id": 240066,
+    "name": "Quad Stretch",
+    "nameKo": "대퇴사두근 스트레칭",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Standing quad stretch.",
+    "descriptionKo": "서서 하는 대퇴사두근 스트레칭입니다.",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Stand on one leg",
+      "Pull other foot to glute",
+      "Keep knees together",
+      "Hold 30 seconds each side"
+    ],
+    "createdAt": "2026-05-11T19:34:03.000Z",
+    "instructionsKo": [
+      "바르게 서서 한 발을 뒤로 들어 올립니다.",
+      "같은 쪽 손으로 발목을 잡습니다.",
+      "무릎을 모으며 대퇴사두근을 늘입니다.",
+      "균형을 유지합니다.",
+      "30초간 유지 후 반대쪽으로 반복합니다."
+    ]
+  },
+  {
+    "id": 240067,
+    "name": "Glute Stretch",
+    "nameKo": "둔근 스트레칭",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Figure-4 glute stretch.",
+    "descriptionKo": "숫자 4 모양의 둔근 스트레칭입니다.",
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hip external rotators"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Lie on back",
+      "Cross ankle over opposite knee",
+      "Pull legs toward chest",
+      "Hold 30 seconds each side"
+    ],
+    "createdAt": "2026-05-11T19:34:04.000Z",
+    "instructionsKo": [
+      "등을 대고 누워 한쪽 무릎을 구부립니다.",
+      "구부린 다리를 반대쪽으로 넘깁니다.",
+      "둔근이 늘어나는 것을 느낍니다.",
+      "30초간 유지합니다.",
+      "반대쪽으로 반복합니다."
+    ]
+  },
+  {
+    "id": 240068,
+    "name": "Clean and Press",
+    "nameKo": "클린 앤 프레스",
+    "bodyPart": "full_body",
+    "equipment": "barbell",
+    "category": "strength",
+    "difficulty": "advanced",
+    "description": "Olympic-style full body power movement.",
+    "descriptionKo": "올림픽 스타일의 전신 파워 운동입니다.",
+    "primaryMuscles": [
+      "full body"
+    ],
+    "secondaryMuscles": [],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat%2F1.jpg"
+    ],
+    "instructions": [
+      "Pull bar from floor",
+      "Catch at shoulders",
+      "Press overhead",
+      "Lower with control"
+    ],
+    "createdAt": "2026-05-11T19:34:04.000Z",
+    "instructionsKo": [
+      "바벨을 어깨너비로 잡고 바르게 섭니다.",
+      "바를 어깨 높이로 빠르게 당겨 올립니다 (클린).",
+      "바를 머리 위로 밀어 올립니다 (프레스).",
+      "천천히 바를 어깨로 내립니다.",
+      "바를 바닥으로 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240069,
+    "name": "Kettlebell Swing",
+    "nameKo": "케틀벨 스윙",
+    "bodyPart": "full_body",
+    "equipment": "kettlebell",
+    "category": "cardio",
+    "difficulty": "intermediate",
+    "description": "Dynamic hip hinge with kettlebell.",
+    "descriptionKo": "케틀벨을 이용한 동적 힙 힌지 운동입니다.",
+    "primaryMuscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "core",
+      "shoulders",
+      "back"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Hinge at hips with kettlebell",
+      "Swing bell between legs",
+      "Drive hips forward",
+      "Let bell float to shoulder height"
+    ],
+    "createdAt": "2026-05-11T19:34:04.000Z",
+    "instructionsKo": [
+      "발을 어깨너비로 벌리고 케틀벨을 잡습니다.",
+      "엉덩이를 뒤로 빼며 케틀벨을 다리 사이로 내립니다.",
+      "엉덩이를 앞으로 밀며 케틀벨을 어깨 높이로 올립니다.",
+      "코어를 단단히 유지합니다.",
+      "리듬감 있게 반복합니다."
+    ]
+  },
+  {
+    "id": 240070,
+    "name": "Turkish Get-Up",
+    "nameKo": "터키시 겟업",
+    "bodyPart": "full_body",
+    "equipment": "kettlebell",
+    "category": "strength",
+    "difficulty": "advanced",
+    "description": "Complex full body movement with kettlebell.",
+    "descriptionKo": "케틀벨을 이용한 복합 전신 운동입니다.",
+    "primaryMuscles": [
+      "full body"
+    ],
+    "secondaryMuscles": [],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat%2F1.jpg"
+    ],
+    "instructions": [
+      "Lie with KB pressed up",
+      "Roll to elbow then hand",
+      "Sweep leg through",
+      "Stand up fully"
+    ],
+    "createdAt": "2026-05-11T19:34:04.000Z",
+    "instructionsKo": [
+      "등을 대고 누워 한 손으로 케틀벨을 들어 올립니다.",
+      "반대 팔과 다리로 지지하며 일어납니다.",
+      "완전히 서서 케틀벨을 위로 유지합니다.",
+      "역순으로 다시 눕습니다.",
+      "반대쪽으로 반복합니다."
+    ]
+  },
+  {
+    "id": 240071,
+    "name": "Thruster",
+    "nameKo": "스러스터",
+    "bodyPart": "full_body",
+    "equipment": "barbell",
+    "category": "cardio",
+    "difficulty": "advanced",
+    "description": "Front squat to overhead press combination.",
+    "descriptionKo": "프론트 스쿼트와 오버헤드 프레스 조합 운동입니다.",
+    "primaryMuscles": [
+      "quadriceps",
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "glutes",
+      "triceps",
+      "core"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat%2F1.jpg"
+    ],
+    "instructions": [
+      "Hold bar at shoulders",
+      "Squat to parallel",
+      "Drive up and press overhead",
+      "Lower bar to shoulders"
+    ],
+    "createdAt": "2026-05-11T19:34:05.000Z",
+    "instructionsKo": [
+      "바벨을 어깨에 올리고 스쿼트 자세를 취합니다.",
+      "스쿼트를 내려갑니다.",
+      "올라오는 힘을 이용해 바를 머리 위로 밀어 올립니다.",
+      "바를 어깨로 내리며 반복합니다.",
+      "전신을 연속적으로 사용합니다."
+    ]
+  },
+  {
+    "id": 240072,
+    "name": "Pec Deck Machine",
+    "nameKo": "펙 덱 머신",
+    "bodyPart": "chest",
+    "equipment": "machine",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Machine fly for chest isolation.",
+    "descriptionKo": "가슴 고립을 위한 머신 플라이입니다.",
+    "primaryMuscles": [
+      "pectoralis major"
+    ],
+    "secondaryMuscles": [
+      "anterior deltoid"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Sit in pec deck machine",
+      "Bring arms together in front",
+      "Squeeze chest",
+      "Open arms slowly"
+    ],
+    "createdAt": "2026-05-11T19:34:05.000Z",
+    "instructionsKo": [
+      "펙 덱 머신에 앉아 등을 패드에 밀착합니다.",
+      "양팔을 패드에 올리고 팔꿈치를 90도로 구부립니다.",
+      "가슴 근육을 수축하며 팔을 앞으로 모읍니다.",
+      "정점에서 1초간 유지합니다.",
+      "천천히 원래 위치로 돌아가며 반복합니다."
+    ]
+  },
+  {
+    "id": 240073,
+    "name": "Incline Dumbbell Fly",
+    "nameKo": "인클라인 덤벨 플라이",
+    "bodyPart": "chest",
+    "equipment": "dumbbell",
+    "category": "hypertrophy",
+    "difficulty": "intermediate",
+    "description": "Upper chest fly on incline bench.",
+    "descriptionKo": "인클라인 벤치에서 하는 상부 가슴 플라이입니다.",
+    "primaryMuscles": [
+      "upper pectoralis major"
+    ],
+    "secondaryMuscles": [
+      "anterior deltoid"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Set bench to 30-45 degrees",
+      "Hold dumbbells above chest",
+      "Lower in wide arc",
+      "Bring back together"
+    ],
+    "createdAt": "2026-05-11T19:34:05.000Z",
+    "instructionsKo": [
+      "벤치를 30~45도로 기울이고 덤벨을 들고 눕습니다.",
+      "팔꿈치를 약간 구부린 상태로 팔을 옆으로 넓게 벌립니다.",
+      "상부 가슴이 충분히 늘어나는 것을 느낍니다.",
+      "상부 가슴을 수축하며 팔을 다시 모읍니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240074,
+    "name": "Chin-Up",
+    "nameKo": "친업",
+    "bodyPart": "back",
+    "equipment": "bodyweight",
+    "category": "strength",
+    "difficulty": "intermediate",
+    "description": "Underhand grip pull-up targeting biceps and lats.",
+    "descriptionKo": "이두근과 광배근을 타겟으로 하는 언더핸드 풀업입니다.",
+    "primaryMuscles": [
+      "latissimus dorsi",
+      "biceps"
+    ],
+    "secondaryMuscles": [
+      "rhomboids"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Chin-Up%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Chin-Up%2F1.jpg"
+    ],
+    "instructions": [
+      "Hang with underhand grip",
+      "Pull chin above bar",
+      "Lower slowly",
+      "Full extension at bottom"
+    ],
+    "createdAt": "2026-05-11T19:34:05.000Z",
+    "instructionsKo": [
+      "언더핸드 그립으로 철봉을 어깨너비로 잡습니다.",
+      "팔을 완전히 펴고 매달립니다.",
+      "가슴을 철봉 쪽으로 당기며 몸을 올립니다.",
+      "턱이 철봉 위로 올라오면 잠시 유지합니다.",
+      "천천히 내려가며 반복합니다."
+    ]
+  },
+  {
+    "id": 240075,
+    "name": "Good Morning",
+    "nameKo": "굿모닝",
+    "bodyPart": "back",
+    "equipment": "barbell",
+    "category": "strength",
+    "difficulty": "intermediate",
+    "description": "Hip hinge for lower back and hamstrings.",
+    "descriptionKo": "허리와 햄스트링을 위한 힙 힌지 운동입니다.",
+    "primaryMuscles": [
+      "erector spinae",
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "glutes"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Good_Morning%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Good_Morning%2F1.jpg"
+    ],
+    "instructions": [
+      "Bar on upper back",
+      "Hinge forward at hips",
+      "Keep back straight",
+      "Return to upright"
+    ],
+    "createdAt": "2026-05-11T19:34:06.000Z",
+    "instructionsKo": [
+      "바벨을 상부 등에 올리고 발을 어깨너비로 벌립니다.",
+      "무릎을 약간 구부린 상태로 엉덩이를 뒤로 빼며 상체를 숙입니다.",
+      "등을 일직선으로 유지합니다.",
+      "햄스트링이 충분히 늘어나면 멈춥니다.",
+      "엉덩이를 앞으로 밀며 다시 서서 반복합니다."
+    ]
+  },
+  {
+    "id": 240076,
+    "name": "Rack Pull",
+    "nameKo": "랙 풀",
+    "bodyPart": "back",
+    "equipment": "barbell",
+    "category": "strength",
+    "difficulty": "intermediate",
+    "description": "Partial deadlift from rack for upper back.",
+    "descriptionKo": "상부 등을 위한 랙에서 하는 부분 데드리프트입니다.",
+    "primaryMuscles": [
+      "trapezius",
+      "erector spinae"
+    ],
+    "secondaryMuscles": [
+      "rhomboids",
+      "lats"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift%2F1.jpg"
+    ],
+    "instructions": [
+      "Set bar at knee height in rack",
+      "Deadlift from this position",
+      "Focus on upper back",
+      "Lower with control"
+    ],
+    "createdAt": "2026-05-11T19:34:06.000Z",
+    "instructionsKo": [
+      "랙에서 바를 무릎 높이로 설정합니다.",
+      "데드리프트 자세로 바를 잡습니다.",
+      "코어와 상부 등을 단단히 유지하며 바를 들어 올립니다.",
+      "엉덩이를 완전히 펴며 동작을 마무리합니다.",
+      "천천히 바를 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240077,
+    "name": "Cable Lateral Raise",
+    "nameKo": "케이블 레터럴 레이즈",
+    "bodyPart": "shoulders",
+    "equipment": "cable",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Cable version of lateral raise for constant tension.",
+    "descriptionKo": "지속적인 장력을 위한 케이블 레터럴 레이즈입니다.",
+    "primaryMuscles": [
+      "medial deltoid"
+    ],
+    "secondaryMuscles": [
+      "anterior deltoid"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Stand beside cable",
+      "Pull cable up to shoulder height",
+      "Keep slight bend in elbow",
+      "Lower slowly"
+    ],
+    "createdAt": "2026-05-11T19:34:06.000Z",
+    "instructionsKo": [
+      "케이블 머신 옆에 서서 케이블을 잡습니다.",
+      "팔꿈치를 약간 구부린 상태로 팔을 옆으로 올립니다.",
+      "어깨 높이까지 올려 측면 삼각근을 수축합니다.",
+      "천천히 내리며 반복합니다.",
+      "케이블이 지속적인 장력을 제공합니다."
+    ]
+  },
+  {
+    "id": 240078,
+    "name": "Shrug",
+    "nameKo": "슈러그",
+    "bodyPart": "shoulders",
+    "equipment": "barbell",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Trapezius exercise for upper back thickness.",
+    "descriptionKo": "상부 등 두께를 위한 승모근 운동입니다.",
+    "primaryMuscles": [
+      "upper trapezius"
+    ],
+    "secondaryMuscles": [
+      "levator scapulae"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Shrug%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Shrug%2F1.jpg"
+    ],
+    "instructions": [
+      "Hold bar at thighs",
+      "Elevate shoulders to ears",
+      "Hold briefly at top",
+      "Lower slowly"
+    ],
+    "createdAt": "2026-05-11T19:34:06.000Z",
+    "instructionsKo": [
+      "바벨을 어깨너비로 잡고 허벅지 앞에 위치시킵니다.",
+      "어깨를 귀 쪽으로 최대한 올립니다.",
+      "정점에서 1~2초 유지합니다.",
+      "천천히 어깨를 내립니다.",
+      "반복합니다."
+    ]
+  },
+  {
+    "id": 240079,
+    "name": "Sumo Deadlift",
+    "nameKo": "스모 데드리프트",
+    "bodyPart": "legs",
+    "equipment": "barbell",
+    "category": "strength",
+    "difficulty": "intermediate",
+    "description": "Wide stance deadlift targeting inner thighs and glutes.",
+    "descriptionKo": "내전근과 둔근을 타겟으로 하는 넓은 스탠스 데드리프트입니다.",
+    "primaryMuscles": [
+      "glutes",
+      "inner thighs"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Sumo_Deadlift%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Sumo_Deadlift%2F1.jpg"
+    ],
+    "instructions": [
+      "Wide stance with toes out",
+      "Grip bar inside legs",
+      "Push floor away",
+      "Lock out hips at top"
+    ],
+    "createdAt": "2026-05-11T19:34:07.000Z",
+    "instructionsKo": [
+      "발을 어깨너비보다 넓게 벌리고 발끝을 바깥으로 향합니다.",
+      "바를 다리 안쪽으로 잡습니다.",
+      "코어를 단단히 유지하며 바를 들어 올립니다.",
+      "엉덩이를 앞으로 밀며 완전히 서서 동작을 마무리합니다.",
+      "천천히 바를 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240080,
+    "name": "Step Up",
+    "nameKo": "스텝업",
+    "bodyPart": "legs",
+    "equipment": "dumbbell",
+    "category": "endurance",
+    "difficulty": "beginner",
+    "description": "Unilateral step exercise for legs.",
+    "descriptionKo": "하체를 위한 단측 스텝 운동입니다.",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat%2F1.jpg"
+    ],
+    "instructions": [
+      "Stand before box or bench",
+      "Step up with one foot",
+      "Bring other foot up",
+      "Step back down"
+    ],
+    "createdAt": "2026-05-11T19:34:07.000Z",
+    "instructionsKo": [
+      "박스나 벤치 앞에 서서 덤벨을 양손에 듭니다.",
+      "한 발을 박스 위에 올립니다.",
+      "앞발로 바닥을 밀며 올라옵니다.",
+      "다른 발을 박스 위로 올립니다.",
+      "천천히 내려와 반복합니다."
+    ]
+  },
+  {
+    "id": 240081,
+    "name": "Wall Sit",
+    "nameKo": "월 싯",
+    "bodyPart": "legs",
+    "equipment": "bodyweight",
+    "category": "endurance",
+    "difficulty": "beginner",
+    "description": "Isometric quad exercise against wall.",
+    "descriptionKo": "벽에 기대어 하는 등척성 대퇴사두근 운동입니다.",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "glutes",
+      "calves"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat%2F1.jpg"
+    ],
+    "instructions": [
+      "Back against wall",
+      "Slide down to 90 degrees",
+      "Hold position",
+      "Keep knees over ankles"
+    ],
+    "createdAt": "2026-05-11T19:34:07.000Z",
+    "instructionsKo": [
+      "벽에 등을 대고 섭니다.",
+      "무릎이 90도가 될 때까지 미끄러져 내려갑니다.",
+      "허벅지가 바닥과 평행이 되도록 합니다.",
+      "이 자세를 목표 시간만큼 유지합니다.",
+      "무릎이 발끝 위에 오도록 합니다."
+    ]
+  },
+  {
+    "id": 240082,
+    "name": "Glute Bridge",
+    "nameKo": "글루트 브릿지",
+    "bodyPart": "glutes",
+    "equipment": "bodyweight",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Floor exercise for glute activation.",
+    "descriptionKo": "둔근 활성화를 위한 바닥 운동입니다.",
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "core"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Lie on back with knees bent",
+      "Drive hips up",
+      "Squeeze glutes at top",
+      "Lower slowly"
+    ],
+    "createdAt": "2026-05-11T19:34:07.000Z",
+    "instructionsKo": [
+      "등을 대고 누워 무릎을 구부리고 발을 바닥에 놓습니다.",
+      "엉덩이를 위로 밀어 올립니다.",
+      "정점에서 둔근을 최대한 수축합니다.",
+      "천천히 내리며 반복합니다.",
+      "허리가 과도하게 아치되지 않도록 합니다."
+    ]
+  },
+  {
+    "id": 240083,
+    "name": "Box Jump",
+    "nameKo": "박스 점프",
+    "bodyPart": "legs",
+    "equipment": "bodyweight",
+    "category": "cardio",
+    "difficulty": "intermediate",
+    "description": "Plyometric jump for explosive power.",
+    "descriptionKo": "폭발적인 파워를 위한 플라이오메트릭 점프입니다.",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "calves"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Stand before box",
+      "Squat slightly",
+      "Jump onto box",
+      "Step down carefully"
+    ],
+    "createdAt": "2026-05-11T19:34:07.000Z",
+    "instructionsKo": [
+      "박스 앞에 어깨너비로 서서 무릎을 약간 구부립니다.",
+      "팔을 뒤로 당겼다가 앞으로 흔들며 박스 위로 점프합니다.",
+      "부드럽게 착지하며 무릎을 구부려 충격을 흡수합니다.",
+      "박스에서 조심스럽게 내려옵니다.",
+      "반복합니다."
+    ]
+  },
+  {
+    "id": 240084,
+    "name": "Cable Curl",
+    "nameKo": "케이블 컬",
+    "bodyPart": "arms",
+    "equipment": "cable",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Bicep curl with cable for constant tension.",
+    "descriptionKo": "지속적인 장력을 위한 케이블 이두 컬입니다.",
+    "primaryMuscles": [
+      "biceps brachii"
+    ],
+    "secondaryMuscles": [
+      "brachialis"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Stand at cable machine",
+      "Curl handle to shoulder",
+      "Squeeze bicep at top",
+      "Lower slowly"
+    ],
+    "createdAt": "2026-05-11T19:34:08.000Z",
+    "instructionsKo": [
+      "케이블 머신 앞에 서서 바를 잡습니다.",
+      "팔꿈치를 몸에 붙인 채 바를 어깨 쪽으로 올립니다.",
+      "이두근이 완전히 수축되는 것을 느낍니다.",
+      "천천히 내리며 반복합니다.",
+      "케이블이 지속적인 장력을 제공합니다."
+    ]
+  },
+  {
+    "id": 240085,
+    "name": "Concentration Curl",
+    "nameKo": "컨센트레이션 컬",
+    "bodyPart": "arms",
+    "equipment": "dumbbell",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Seated isolation curl for bicep peak.",
+    "descriptionKo": "이두근 피크를 위한 앉아서 하는 고립 컬입니다.",
+    "primaryMuscles": [
+      "biceps brachii"
+    ],
+    "secondaryMuscles": [],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Sit with elbow on inner thigh",
+      "Curl dumbbell to shoulder",
+      "Squeeze at top",
+      "Lower fully"
+    ],
+    "createdAt": "2026-05-11T19:34:08.000Z",
+    "instructionsKo": [
+      "벤치에 앉아 팔꿈치를 허벅지 안쪽에 고정합니다.",
+      "덤벨을 잡고 팔을 완전히 펍니다.",
+      "이두근을 수축하며 덤벨을 올립니다.",
+      "정점에서 잠시 유지합니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240086,
+    "name": "Close Grip Bench Press",
+    "nameKo": "클로즈 그립 벤치프레스",
+    "bodyPart": "arms",
+    "equipment": "barbell",
+    "category": "strength",
+    "difficulty": "intermediate",
+    "description": "Narrow grip bench press for tricep mass.",
+    "descriptionKo": "삼두근 매스를 위한 좁은 그립 벤치프레스입니다.",
+    "primaryMuscles": [
+      "triceps brachii"
+    ],
+    "secondaryMuscles": [
+      "pectoralis major",
+      "anterior deltoid"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Grip bar shoulder width",
+      "Lower to lower chest",
+      "Keep elbows close",
+      "Press up explosively"
+    ],
+    "createdAt": "2026-05-11T19:34:08.000Z",
+    "instructionsKo": [
+      "플랫 벤치에 눕고 바를 어깨너비로 좁게 잡습니다.",
+      "팔꿈치를 몸에 붙인 채 바를 하부 가슴까지 내립니다.",
+      "삼두근을 수축하며 바를 밀어 올립니다.",
+      "천천히 내리며 반복합니다.",
+      "손목이 꺾이지 않도록 주의합니다."
+    ]
+  },
+  {
+    "id": 240087,
+    "name": "Wrist Curl",
+    "nameKo": "손목 컬",
+    "bodyPart": "arms",
+    "equipment": "barbell",
+    "category": "endurance",
+    "difficulty": "beginner",
+    "description": "Forearm exercise for wrist flexors.",
+    "descriptionKo": "손목 굴곡근을 위한 전완근 운동입니다.",
+    "primaryMuscles": [
+      "wrist flexors",
+      "forearms"
+    ],
+    "secondaryMuscles": [],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Curl%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Curl%2F1.jpg"
+    ],
+    "instructions": [
+      "Rest forearms on bench",
+      "Hold bar with underhand grip",
+      "Curl wrists up",
+      "Lower fully"
+    ],
+    "createdAt": "2026-05-11T19:34:08.000Z",
+    "instructionsKo": [
+      "벤치에 앉아 전완을 벤치 위에 올립니다.",
+      "바벨을 언더핸드 그립으로 잡습니다.",
+      "손목을 위로 올립니다.",
+      "전완 굴곡근이 수축되는 것을 느낍니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240088,
+    "name": "Bicycle Crunch",
+    "nameKo": "바이시클 크런치",
+    "bodyPart": "abs",
+    "equipment": "bodyweight",
+    "category": "endurance",
+    "difficulty": "beginner",
+    "description": "Rotational crunch for obliques.",
+    "descriptionKo": "복사근을 위한 회전 크런치입니다.",
+    "primaryMuscles": [
+      "obliques",
+      "rectus abdominis"
+    ],
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Lie on back",
+      "Bring opposite elbow to knee",
+      "Alternate sides",
+      "Keep lower back pressed down"
+    ],
+    "createdAt": "2026-05-11T19:34:09.000Z",
+    "instructionsKo": [
+      "등을 대고 누워 손을 머리 뒤에 놓습니다.",
+      "한쪽 무릎을 당기며 반대쪽 팔꿈치를 무릎 쪽으로 가져갑니다.",
+      "좌우를 번갈아가며 반복합니다.",
+      "복사근이 수축되는 것을 느낍니다.",
+      "허리가 바닥에서 들리지 않도록 합니다."
+    ]
+  },
+  {
+    "id": 240089,
+    "name": "V-Up",
+    "nameKo": "V업",
+    "bodyPart": "abs",
+    "equipment": "bodyweight",
+    "category": "strength",
+    "difficulty": "intermediate",
+    "description": "Full body crunch targeting entire core.",
+    "descriptionKo": "전체 코어를 타겟으로 하는 전신 크런치입니다.",
+    "primaryMuscles": [
+      "rectus abdominis",
+      "hip flexors"
+    ],
+    "secondaryMuscles": [
+      "obliques"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Lie flat on back",
+      "Simultaneously raise legs and torso",
+      "Touch toes at top",
+      "Lower with control"
+    ],
+    "createdAt": "2026-05-11T19:34:09.000Z",
+    "instructionsKo": [
+      "등을 대고 팔과 다리를 펴고 눕습니다.",
+      "동시에 상체와 다리를 올립니다.",
+      "손이 발에 닿도록 합니다.",
+      "복근이 완전히 수축되는 것을 느낍니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240090,
+    "name": "Dragon Flag",
+    "nameKo": "드래곤 플래그",
+    "bodyPart": "abs",
+    "equipment": "bodyweight",
+    "category": "strength",
+    "difficulty": "advanced",
+    "description": "Advanced core exercise popularized by Bruce Lee.",
+    "descriptionKo": "브루스 리가 대중화한 고급 코어 운동입니다.",
+    "primaryMuscles": [
+      "rectus abdominis",
+      "core"
+    ],
+    "secondaryMuscles": [
+      "lats",
+      "glutes"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Lie on bench holding behind head",
+      "Raise body to vertical",
+      "Lower slowly keeping body straight",
+      "Stop before touching bench"
+    ],
+    "createdAt": "2026-05-11T19:34:09.000Z",
+    "instructionsKo": [
+      "벤치에 누워 머리 위 벤치를 잡습니다.",
+      "몸을 수직으로 들어 올립니다.",
+      "몸을 일직선으로 유지하며 천천히 내립니다.",
+      "벤치에 닿기 직전에 멈춥니다.",
+      "다시 올리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240091,
+    "name": "Seated Forward Fold",
+    "nameKo": "앉아서 앞으로 굽히기",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Full posterior chain stretch seated.",
+    "descriptionKo": "앉아서 하는 전체 후면 근육 스트레칭입니다.",
+    "primaryMuscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "secondaryMuscles": [
+      "calves"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Sit with legs extended",
+      "Hinge forward from hips",
+      "Reach toward feet",
+      "Hold 60 seconds"
+    ],
+    "createdAt": "2026-05-11T19:34:09.000Z",
+    "instructionsKo": [
+      "바닥에 앉아 다리를 앞으로 펍니다.",
+      "엉덩이를 뒤로 빼며 상체를 앞으로 숙입니다.",
+      "손이 발 쪽으로 향하도록 합니다.",
+      "후면 근육 전체가 늘어나는 것을 느낍니다.",
+      "60초간 유지합니다."
+    ]
+  },
+  {
+    "id": 240092,
+    "name": "Spinal Twist",
+    "nameKo": "척추 비틀기",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Lying spinal rotation for back mobility.",
+    "descriptionKo": "등 가동성을 위한 누워서 하는 척추 회전입니다.",
+    "primaryMuscles": [
+      "spine",
+      "obliques"
+    ],
+    "secondaryMuscles": [
+      "glutes",
+      "IT band"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F1.jpg"
+    ],
+    "instructions": [
+      "Lie on back",
+      "Bring knee across body",
+      "Extend arm opposite direction",
+      "Hold 30 seconds each side"
+    ],
+    "createdAt": "2026-05-11T19:34:10.000Z",
+    "instructionsKo": [
+      "등을 대고 눕습니다.",
+      "한쪽 무릎을 반대쪽으로 넘깁니다.",
+      "반대 팔을 옆으로 뻗습니다.",
+      "척추가 회전되는 것을 느낍니다.",
+      "30초간 유지 후 반대쪽으로 반복합니다."
+    ]
+  },
+  {
+    "id": 240093,
+    "name": "Doorway Shoulder Stretch",
+    "nameKo": "문틀 어깨 스트레칭",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Anterior shoulder and chest stretch in doorway.",
+    "descriptionKo": "문틀에서 하는 전면 어깨와 가슴 스트레칭입니다.",
+    "primaryMuscles": [
+      "anterior deltoid",
+      "pectoralis minor"
+    ],
+    "secondaryMuscles": [
+      "biceps"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F1.jpg"
+    ],
+    "instructions": [
+      "Stand in doorway",
+      "Place arm at 90 degrees on frame",
+      "Lean forward gently",
+      "Hold 30 seconds each side"
+    ],
+    "createdAt": "2026-05-11T19:34:10.000Z",
+    "instructionsKo": [
+      "문틀 앞에 서서 팔을 90도로 구부립니다.",
+      "팔꿈치를 문틀에 올립니다.",
+      "몸을 앞으로 기울입니다.",
+      "전면 어깨와 가슴이 늘어나는 것을 느낍니다.",
+      "30초간 유지 후 반대쪽으로 반복합니다."
+    ]
+  },
+  {
+    "id": 240094,
+    "name": "Neck Stretch",
+    "nameKo": "목 스트레칭",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Gentle neck mobility exercise.",
+    "descriptionKo": "부드러운 목 가동성 운동입니다.",
+    "primaryMuscles": [
+      "neck",
+      "upper trapezius"
+    ],
+    "secondaryMuscles": [],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F1.jpg"
+    ],
+    "instructions": [
+      "Sit or stand tall",
+      "Tilt head to one side",
+      "Gently pull with hand",
+      "Hold 30 seconds each side"
+    ],
+    "createdAt": "2026-05-11T19:34:10.000Z",
+    "instructionsKo": [
+      "바르게 앉거나 섭니다.",
+      "머리를 한쪽으로 기울입니다.",
+      "같은 쪽 손으로 머리를 가볍게 당깁니다.",
+      "목 옆 근육이 늘어나는 것을 느낍니다.",
+      "30초간 유지 후 반대쪽으로 반복합니다."
+    ]
+  },
+  {
+    "id": 240095,
+    "name": "Butterfly Stretch",
+    "nameKo": "나비 스트레칭",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Inner thigh and groin stretch.",
+    "descriptionKo": "내전근과 사타구니 스트레칭입니다.",
+    "primaryMuscles": [
+      "inner thighs",
+      "groin"
+    ],
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Sit with soles of feet together",
+      "Hold feet with hands",
+      "Press knees toward floor",
+      "Hold 60 seconds"
+    ],
+    "createdAt": "2026-05-11T19:34:10.000Z",
+    "instructionsKo": [
+      "바닥에 앉아 발바닥을 서로 붙입니다.",
+      "양손으로 발을 잡습니다.",
+      "무릎을 바닥 쪽으로 누릅니다.",
+      "내전근이 늘어나는 것을 느낍니다.",
+      "60초간 유지합니다."
+    ]
+  },
+  {
+    "id": 240096,
+    "name": "Downward Dog",
+    "nameKo": "다운워드 독",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "beginner",
+    "description": "Yoga pose stretching hamstrings and calves.",
+    "descriptionKo": "햄스트링과 종아리를 스트레칭하는 요가 자세입니다.",
+    "primaryMuscles": [
+      "hamstrings",
+      "calves"
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "back"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Start on hands and knees",
+      "Push hips up and back",
+      "Straighten legs",
+      "Press heels toward floor"
+    ],
+    "createdAt": "2026-05-11T19:34:11.000Z",
+    "instructionsKo": [
+      "네발 기기 자세에서 시작합니다.",
+      "엉덩이를 위로 들어 올립니다.",
+      "다리를 최대한 펍니다.",
+      "발뒤꿈치를 바닥 쪽으로 누릅니다.",
+      "햄스트링과 종아리가 늘어나는 것을 느낍니다."
+    ]
+  },
+  {
+    "id": 240097,
+    "name": "World's Greatest Stretch",
+    "nameKo": "세계 최고의 스트레칭",
+    "bodyPart": "stretching",
+    "equipment": "none",
+    "category": "flexibility",
+    "difficulty": "intermediate",
+    "description": "Multi-joint mobility exercise.",
+    "descriptionKo": "다관절 가동성 운동입니다.",
+    "primaryMuscles": [
+      "hip flexors",
+      "thoracic spine",
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "groin"
+    ],
+    "gifUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F0.jpg",
+    "secondaryImages": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cat_Stretch%2F1.jpg"
+    ],
+    "instructions": [
+      "Start in lunge position",
+      "Place hand inside front foot",
+      "Rotate upper body up",
+      "Reach arm to ceiling"
+    ],
+    "createdAt": "2026-05-11T19:34:11.000Z",
+    "instructionsKo": [
+      "런지 자세를 취합니다.",
+      "앞발 안쪽에 손을 놓습니다.",
+      "상체를 회전하며 팔을 천장 쪽으로 뻗습니다.",
+      "전신의 여러 근육이 늘어나는 것을 느낍니다.",
+      "반대쪽으로 반복합니다."
+    ]
+  },
+  {
+    "id": 240098,
+    "name": "Battle Ropes",
+    "nameKo": "배틀 로프",
+    "bodyPart": "full_body",
+    "equipment": "none",
+    "category": "cardio",
+    "difficulty": "intermediate",
+    "description": "High intensity conditioning with battle ropes.",
+    "descriptionKo": "배틀 로프를 이용한 고강도 컨디셔닝 운동입니다.",
+    "primaryMuscles": [
+      "shoulders",
+      "arms",
+      "core"
+    ],
+    "secondaryMuscles": [
+      "legs",
+      "back"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Hold rope ends",
+      "Create waves alternately",
+      "Keep core tight",
+      "Maintain for set time"
+    ],
+    "createdAt": "2026-05-11T19:34:11.000Z",
+    "instructionsKo": [
+      "로프 끝을 양손에 잡습니다.",
+      "무릎을 약간 구부리고 코어를 단단히 유지합니다.",
+      "번갈아가며 파도를 만들듯 로프를 움직입니다.",
+      "일정한 리듬을 유지합니다.",
+      "목표 시간만큼 반복합니다."
+    ]
+  },
+  {
+    "id": 240099,
+    "name": "Farmer's Walk",
+    "nameKo": "파머스 워크",
+    "bodyPart": "full_body",
+    "equipment": "dumbbell",
+    "category": "strength",
+    "difficulty": "beginner",
+    "description": "Loaded carry for grip and core strength.",
+    "descriptionKo": "그립력과 코어 힘을 위한 무게 들고 걷기 운동입니다.",
+    "primaryMuscles": [
+      "forearms",
+      "core",
+      "trapezius"
+    ],
+    "secondaryMuscles": [
+      "legs",
+      "shoulders"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Hold heavy dumbbells at sides",
+      "Walk with upright posture",
+      "Keep core braced",
+      "Set down with control"
+    ],
+    "createdAt": "2026-05-11T19:34:11.000Z",
+    "instructionsKo": [
+      "무거운 덤벨을 양손에 듭니다.",
+      "상체를 수직으로 유지하며 걷습니다.",
+      "코어를 단단히 유지합니다.",
+      "목표 거리 또는 시간만큼 걷습니다.",
+      "덤벨을 조심스럽게 내려놓습니다."
+    ]
+  },
+  {
+    "id": 240100,
+    "name": "Sled Push",
+    "nameKo": "슬레드 푸시",
+    "bodyPart": "full_body",
+    "equipment": "machine",
+    "category": "cardio",
+    "difficulty": "intermediate",
+    "description": "Pushing weighted sled for conditioning.",
+    "descriptionKo": "컨디셔닝을 위한 무게 슬레드 밀기 운동입니다.",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "core"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Grip sled handles",
+      "Lean forward and drive legs",
+      "Push sled across floor",
+      "Maintain low position"
+    ],
+    "createdAt": "2026-05-11T19:34:12.000Z",
+    "instructionsKo": [
+      "슬레드 핸들을 잡습니다.",
+      "상체를 앞으로 기울이며 다리로 밀어냅니다.",
+      "낮은 자세를 유지합니다.",
+      "목표 거리만큼 슬레드를 밉니다.",
+      "코어를 단단히 유지합니다."
+    ]
+  },
+  {
+    "id": 240101,
+    "name": "Cable Kickback",
+    "nameKo": "케이블 킥백",
+    "bodyPart": "glutes",
+    "equipment": "cable",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Cable exercise for glute isolation.",
+    "descriptionKo": "둔근 고립을 위한 케이블 운동입니다.",
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Attach ankle strap to cable",
+      "Face cable machine",
+      "Kick leg back and up",
+      "Squeeze glute at top"
+    ],
+    "createdAt": "2026-05-11T19:34:12.000Z",
+    "instructionsKo": [
+      "발목에 케이블 스트랩을 연결합니다.",
+      "케이블 머신을 마주 보고 섭니다.",
+      "다리를 뒤로 들어 올립니다.",
+      "둔근이 수축되는 것을 느낍니다.",
+      "천천히 내리며 반복합니다."
+    ]
+  },
+  {
+    "id": 240102,
+    "name": "Donkey Kick",
+    "nameKo": "당나귀 킥",
+    "bodyPart": "glutes",
+    "equipment": "bodyweight",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Bodyweight glute exercise on all fours.",
+    "descriptionKo": "네발 기기 자세로 하는 맨몸 둔근 운동입니다.",
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "core"
+    ],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Start on hands and knees",
+      "Kick one leg up and back",
+      "Squeeze glute at top",
+      "Lower and repeat"
+    ],
+    "createdAt": "2026-05-11T19:34:12.000Z",
+    "instructionsKo": [
+      "네발 기기 자세를 취합니다.",
+      "한 다리를 뒤로 들어 올립니다.",
+      "둔근이 수축되는 것을 느낍니다.",
+      "천천히 내리며 반복합니다.",
+      "반대 다리로 반복합니다."
+    ]
+  },
+  {
+    "id": 240103,
+    "name": "Abductor Machine",
+    "nameKo": "어브덕터 머신",
+    "bodyPart": "glutes",
+    "equipment": "machine",
+    "category": "hypertrophy",
+    "difficulty": "beginner",
+    "description": "Machine exercise for hip abductors.",
+    "descriptionKo": "고관절 외전근을 위한 머신 운동입니다.",
+    "primaryMuscles": [
+      "hip abductors",
+      "glute medius"
+    ],
+    "secondaryMuscles": [],
+    "gifUrl": null,
+    "secondaryImages": [],
+    "instructions": [
+      "Sit in abductor machine",
+      "Push legs outward",
+      "Hold briefly",
+      "Return slowly"
+    ],
+    "createdAt": "2026-05-11T19:34:12.000Z",
+    "instructionsKo": [
+      "어브덕터 머신에 앉아 패드를 허벅지 바깥쪽에 위치시킵니다.",
+      "다리를 바깥쪽으로 밀어 냅니다.",
+      "고관절 외전근이 수축되는 것을 느낍니다.",
+      "천천히 원래 위치로 돌아옵니다.",
+      "반복합니다."
+    ]
+  }
+]

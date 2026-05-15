@@ -1,49 +1,46 @@
-{
-  "database": "local-db\\fittrack_local.sqlite",
-  "tables": [
-    {
-      "table": "__drizzle_migrations",
-      "rows": 1
-    },
-    {
-      "table": "users",
-      "rows": 1
-    },
-    {
-      "table": "exercises",
-      "rows": 103
-    },
-    {
-      "table": "user_goals",
-      "rows": 2
-    },
-    {
-      "table": "routines",
-      "rows": 1
-    },
-    {
-      "table": "routine_exercises",
-      "rows": 0
-    },
-    {
-      "table": "workout_sessions",
-      "rows": 8
-    },
-    {
-      "table": "workout_logs",
-      "rows": 0
-    },
-    {
-      "table": "exercise_favorites",
-      "rows": 0
-    },
-    {
-      "table": "body_weights",
-      "rows": 0
-    },
-    {
-      "table": "exercise_goals",
-      "rows": 0
-    }
-  ]
-}
+[
+  {
+    "table": "__drizzle_migrations",
+    "count": 1
+  },
+  {
+    "table": "body_weights",
+    "count": 0
+  },
+  {
+    "table": "exercise_favorites",
+    "count": 0
+  },
+  {
+    "table": "exercise_goals",
+    "count": 0
+  },
+  {
+    "table": "exercises",
+    "count": 943
+  },
+  {
+    "table": "routine_exercises",
+    "count": 0
+  },
+  {
+    "table": "routines",
+    "count": 1
+  },
+  {
+    "table": "user_goals",
+    "count": 2
+  },
+  {
+    "table": "users",
+    "count": 1
+  },
+  {
+    "table": "workout_logs",
+    "count": 0
+  },
+  {
+    "table": "workout_sessions",
+    "count": 8
+  }
+]

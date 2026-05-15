@@ -96,6 +96,15 @@ describe("exercises.list", () => {
       expect(ex.equipment).toBe("barbell");
     });
   });
+
+  it("includes bulk imported exercises with Korean names", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.exercises.list({ search: "Farmer's Walk" });
+    const match = result.find((exercise) => exercise.name === "Farmer's Walk");
+    expect(match).toBeTruthy();
+    expect(match?.nameKo).toBe("파머스 워크");
+  });
 });
 
 describe("exercises.detail", () => {
