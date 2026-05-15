@@ -171,7 +171,7 @@ class SDKServer {
     return this.signSession(
       {
         openId,
-        appId: ENV.appId,
+        appId: ENV.appId || "fittrack-pro",
         name: options.name || "",
       },
       options
