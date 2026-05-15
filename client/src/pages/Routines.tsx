@@ -180,9 +180,20 @@ function RoutineCard({ routine, onDelete }: { routine: any; onDelete: () => void
 }
 
 export default function Routines() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const utils = trpc.useUtils();
   const { data: routines, isLoading } = trpc.routines.list.useQuery(undefined, { enabled: isAuthenticated });
+
+  if (loading) {
+    return (
+      <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-4">
+        <div className="h-14 skeleton rounded-xl" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-40 skeleton rounded-xl" />)}
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (

@@ -61,7 +61,7 @@ function MobileNavItem({ href, icon: Icon, label }: {
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, loading, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
 
@@ -90,7 +90,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <ThemePicker sidebar />
         </div>
         <div className="p-4 border-t border-sidebar-border">
-          {isAuthenticated && user ? (
+          {loading ? (
+            <div className="space-y-3">
+              <div className="h-14 skeleton rounded-xl" />
+              <div className="h-9 skeleton rounded-lg" />
+            </div>
+          ) : isAuthenticated && user ? (
             <div className="space-y-3">
               <Link href="/profile" className="block">
                 <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-accent cursor-pointer">
@@ -130,7 +135,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </Link>
           <div className="flex items-center gap-1.5">
             <ThemePicker sidebar={false} />
-            {isAuthenticated ? (
+            {loading ? (
+              <div className="h-8 w-8 skeleton rounded-full" />
+            ) : isAuthenticated ? (
               <Link href="/profile" className="block">
                 <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center cursor-pointer">
                   <User size={14} className="text-primary" />

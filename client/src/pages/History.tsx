@@ -252,7 +252,7 @@ function SessionCard({ session, onDelete }: { session: any; onDelete: (sessionId
 }
 
 export default function History() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [chartExerciseId, setChartExerciseId] = useState<number | null>(null);
@@ -295,6 +295,18 @@ export default function History() {
     if (month === 12) { setYear(y => y + 1); setMonth(1); }
     else setMonth(m => m + 1);
   };
+
+  if (loading) {
+    return (
+      <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-4">
+        <div className="h-14 skeleton rounded-xl" />
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="h-80 skeleton rounded-xl" />
+          <div className="h-80 skeleton rounded-xl" />
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (

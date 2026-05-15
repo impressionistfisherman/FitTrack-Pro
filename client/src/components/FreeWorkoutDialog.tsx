@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarDays, ChevronDown, Dumbbell, Plus, Search, Trash2 } from "lucide-react";
+import { CalendarDays, ChevronDown, Dumbbell, Minus, Plus, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -156,8 +156,23 @@ export default function FreeWorkoutDialog({
   };
 
   const updateSetCount = (exerciseId: number, count: number) => {
+    if (!Number.isFinite(count) || count < 1) return;
     setSelected((items) => items.map((item) => (
       item.exercise.id === exerciseId ? { ...item, sets: makeSets(count, item.sets) } : item
+    )));
+  };
+
+  const addSetToExercise = (exerciseId: number) => {
+    setSelected((items) => items.map((item) => (
+      item.exercise.id === exerciseId ? { ...item, sets: makeSets(item.sets.length + 1, item.sets) } : item
+    )));
+  };
+
+  const removeSetFromExercise = (exerciseId: number) => {
+    setSelected((items) => items.map((item) => (
+      item.exercise.id === exerciseId && item.sets.length > 1
+        ? { ...item, sets: makeSets(item.sets.length - 1, item.sets) }
+        : item
     )));
   };
 
@@ -359,19 +374,44 @@ export default function FreeWorkoutDialog({
                       <>
                         <div className="flex items-center gap-2 mb-3">
                           <Label className="w-12 shrink-0 text-xs text-muted-foreground">세트 수</Label>
-                          <Select
-                            value={String(item.sets.length)}
-                            onValueChange={(value) => updateSetCount(item.exercise.id, Number(value))}
+                          <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                              onClick={() => removeSetFromExercise(item.exercise.id)}
+                              disabled={item.sets.length <= 1}
+                            >
+                              <Minus size={13} />
+                            </Button>
+                            <Input
+                              inputMode="numeric"
+                              value={String(item.sets.length)}
+                              onChange={(event) => updateSetCount(item.exercise.id, Number(event.target.value))}
+                              className="h-7 w-14 border-0 bg-transparent p-0 text-center text-sm font-semibold text-foreground focus-visible:ring-0"
+                              aria-label="세트 수"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-primary hover:bg-primary/10 hover:text-primary"
+                              onClick={() => addSetToExercise(item.exercise.id)}
+                            >
+                              <Plus size={13} />
+                            </Button>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-8 gap-1 border-dashed border-border text-xs text-muted-foreground hover:text-foreground"
+                            onClick={() => addSetToExercise(item.exercise.id)}
                           >
-                            <SelectTrigger className="h-8 w-24 bg-card border-border text-foreground">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="bg-card border-border">
-                              {[1, 2, 3, 4, 5].map((count) => (
-                                <SelectItem key={count} value={String(count)}>{count}세트</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            <Plus size={12} />
+                            세트 추가
+                          </Button>
                         </div>
 
                         <div className="space-y-2">

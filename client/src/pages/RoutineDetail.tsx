@@ -162,7 +162,6 @@ function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: nu
                   }} 
                   className="bg-accent border-border text-foreground text-center" 
                   min="1" 
-                  max="10" 
                 />
               </div>
               <div className="space-y-1.5">

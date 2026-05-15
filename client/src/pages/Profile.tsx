@@ -35,7 +35,7 @@ const experienceOptions = [
 ] as const;
 
 export default function Profile() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, loading, logout } = useAuth();
   const utils = trpc.useUtils();
   const { data: stats } = trpc.history.stats.useQuery(undefined, { enabled: isAuthenticated });
   const { data: goal } = trpc.goals.get.useQuery(undefined, { enabled: isAuthenticated });
@@ -82,6 +82,15 @@ export default function Profile() {
     },
     onError: () => toast.error("목표 설정에 실패했습니다."),
   });
+
+  if (loading) {
+    return (
+      <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-4">
+        <div className="h-24 skeleton rounded-xl" />
+        <div className="h-80 skeleton rounded-xl" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (

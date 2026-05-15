@@ -407,11 +407,23 @@ function FeatureCards() {
 }
 
 export default function Home() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
   const { data: stats } = trpc.history.stats.useQuery(undefined, { enabled: isAuthenticated, retry: false });
   const { data: goal } = trpc.goals.get.useQuery(undefined, { enabled: isAuthenticated, retry: false });
   const { data: goals } = trpc.goals.list.useQuery(undefined, { enabled: isAuthenticated, retry: false });
   const { data: preferences } = trpc.preferences.get.useQuery(undefined, { enabled: isAuthenticated, retry: false });
+
+  if (loading) {
+    return (
+      <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-4 animate-fade-in">
+        <div className="h-16 skeleton rounded-xl" />
+        <div className="h-56 skeleton rounded-2xl" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => <div key={index} className="h-28 skeleton rounded-xl" />)}
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
