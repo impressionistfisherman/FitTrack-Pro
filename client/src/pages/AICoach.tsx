@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import DietRecommendation from "@/components/DietRecommendation";
 import { trpc } from "@/lib/trpc";
-import { Dumbbell, RefreshCw, Save, Sparkles, Utensils } from "lucide-react";
+import { CalendarDays, Dumbbell, RefreshCw, Save, Sparkles, Utensils } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -38,6 +38,11 @@ const bodyPartOptions = [
   { value: "cardio", label: "유산소" },
 ];
 
+const targetBodyPartOptions = bodyPartOptions.filter((item) => item.value !== "cardio");
+
+const minuteOptions = [0, 5, 10, 15, 20, 30, 40];
+const cardioMinuteOptions = [0, 10, 15, 20, 25, 30, 40, 60];
+
 function ProgramRecommendation() {
   const [location, setLocation] = useState<"gym" | "home" | "outdoor">("gym");
   const [sessionDuration, setSessionDuration] = useState("60");
@@ -48,6 +53,9 @@ function ProgramRecommendation() {
   const [includeCardio, setIncludeCardio] = useState(true);
   const [avoidCardioOnLegDay, setAvoidCardioOnLegDay] = useState(true);
   const [includeCore, setIncludeCore] = useState(true);
+  const [warmupStretchMinutes, setWarmupStretchMinutes] = useState("20");
+  const [cooldownStretchMinutes, setCooldownStretchMinutes] = useState("20");
+  const [cardioMinutes, setCardioMinutes] = useState("20");
   const [dayFocusNotes, setDayFocusNotes] = useState("");
   const [customRequest, setCustomRequest] = useState("");
   const utils = trpc.useUtils();
@@ -87,6 +95,9 @@ function ProgramRecommendation() {
       includeCardio,
       avoidCardioOnLegDay,
       includeCore,
+      warmupStretchMinutes: Number(warmupStretchMinutes),
+      cooldownStretchMinutes: Number(cooldownStretchMinutes),
+      cardioMinutes: Number(cardioMinutes),
       dayFocusNotes: dayFocusNotes.trim() || undefined,
       customRequest: customRequest.trim() || undefined,
     });
@@ -216,6 +227,48 @@ function ProgramRecommendation() {
             </div>
           </div>
 
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div>
+              <div className="mb-1.5 text-xs text-muted-foreground">운동 전 스트레칭</div>
+              <Select value={warmupStretchMinutes} onValueChange={setWarmupStretchMinutes}>
+                <SelectTrigger className="bg-accent border-border text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  {minuteOptions.map((minutes) => (
+                    <SelectItem key={minutes} value={String(minutes)}>{minutes}분</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <div className="mb-1.5 text-xs text-muted-foreground">운동 후 스트레칭</div>
+              <Select value={cooldownStretchMinutes} onValueChange={setCooldownStretchMinutes}>
+                <SelectTrigger className="bg-accent border-border text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  {minuteOptions.map((minutes) => (
+                    <SelectItem key={minutes} value={String(minutes)}>{minutes}분</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <div className="mb-1.5 text-xs text-muted-foreground">유산소 시간</div>
+              <Select value={cardioMinutes} onValueChange={setCardioMinutes} disabled={!includeCardio}>
+                <SelectTrigger className="bg-accent border-border text-foreground disabled:opacity-50">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  {cardioMinuteOptions.map((minutes) => (
+                    <SelectItem key={minutes} value={String(minutes)}>{minutes}분</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div>
             <div className="mb-1.5 text-xs text-muted-foreground">추천에서 뺄 부위</div>
             <div className="flex flex-wrap gap-2">
@@ -297,7 +350,7 @@ function ProgramRecommendation() {
                     <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
                       <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-primary">
                         <Sparkles size={12} />
-                        운동 전 스트레칭 20분
+                        운동 전 스트레칭 {warmupStretchMinutes}분
                       </div>
                       <div className="space-y-1">
                         {day.warmupStretch?.map((stretch: string, i: number) => (
@@ -308,7 +361,7 @@ function ProgramRecommendation() {
                     <div className="rounded-xl border border-blue-400/20 bg-blue-400/5 p-3">
                       <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-blue-300">
                         <Sparkles size={12} />
-                        운동 후 스트레칭 20분
+                        운동 후 스트레칭 {cooldownStretchMinutes}분
                       </div>
                       <div className="space-y-1">
                         {day.cooldownStretch?.map((stretch: string, i: number) => (
@@ -338,6 +391,279 @@ function ProgramRecommendation() {
   );
 }
 
+function DailyWorkoutRecommendation() {
+  const [location, setLocation] = useState<"gym" | "home" | "outdoor">("gym");
+  const [sessionDuration, setSessionDuration] = useState("60");
+  const [equipment, setEquipment] = useState<string[]>(["dumbbell", "machine", "cable"]);
+  const [targetBodyParts, setTargetBodyParts] = useState<string[]>(["back"]);
+  const [includeCardio, setIncludeCardio] = useState(false);
+  const [includeCore, setIncludeCore] = useState(true);
+  const [warmupStretchMinutes, setWarmupStretchMinutes] = useState("10");
+  const [cooldownStretchMinutes, setCooldownStretchMinutes] = useState("10");
+  const [cardioMinutes, setCardioMinutes] = useState("20");
+  const [intensity, setIntensity] = useState<"light" | "normal" | "hard">("normal");
+  const [customRequest, setCustomRequest] = useState("");
+  const dailyMutation = trpc.ai.dailyWorkoutRecommendation.useMutation();
+  const workout = dailyMutation.data?.workout;
+
+  const toggleEquipment = (value: string) => {
+    setEquipment((items) => items.includes(value) ? items.filter((item) => item !== value) : [...items, value]);
+  };
+
+  const toggleTargetBodyPart = (value: string) => {
+    setTargetBodyParts((items) => {
+      if (items.includes(value)) return items.filter((item) => item !== value);
+      return items.length >= 5 ? items : [...items, value];
+    });
+  };
+
+  const requestDailyWorkout = () => {
+    if (targetBodyParts.length === 0) {
+      toast.error("오늘 운동할 부위를 하나 이상 선택하세요.");
+      return;
+    }
+    if (location !== "outdoor" && equipment.length === 0) {
+      toast.error("사용 가능한 기구를 하나 이상 선택하세요.");
+      return;
+    }
+    dailyMutation.mutate({
+      location,
+      equipment: location === "outdoor" ? ["bodyweight"] : equipment,
+      sessionDuration: Number(sessionDuration),
+      targetBodyParts: targetBodyParts as any,
+      includeCardio,
+      includeCore,
+      warmupStretchMinutes: Number(warmupStretchMinutes),
+      cooldownStretchMinutes: Number(cooldownStretchMinutes),
+      cardioMinutes: Number(cardioMinutes),
+      intensity,
+      customRequest: customRequest.trim() || undefined,
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <CalendarDays size={16} className="text-primary" />
+          <span className="font-semibold text-foreground">AI 오늘 운동 추천</span>
+        </div>
+        <Button size="sm" className="gap-2 bg-primary text-primary-foreground" onClick={requestDailyWorkout} disabled={dailyMutation.isPending}>
+          <RefreshCw size={13} />
+          {dailyMutation.isPending ? "생성 중" : "오늘 추천"}
+        </Button>
+      </div>
+
+      <Card className="bg-card border-border">
+        <CardContent className="p-4 space-y-3">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div>
+              <div className="mb-1.5 text-xs text-muted-foreground">운동 장소</div>
+              <Select value={location} onValueChange={(value) => setLocation(value as any)}>
+                <SelectTrigger className="bg-accent border-border text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  <SelectItem value="gym">헬스장</SelectItem>
+                  <SelectItem value="home">집</SelectItem>
+                  <SelectItem value="outdoor">야외</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <div className="mb-1.5 text-xs text-muted-foreground">가능 시간</div>
+              <Select value={sessionDuration} onValueChange={setSessionDuration}>
+                <SelectTrigger className="bg-accent border-border text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  {[30, 45, 60, 75, 90, 120].map((minutes) => (
+                    <SelectItem key={minutes} value={String(minutes)}>{minutes}분</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <div className="mb-1.5 text-xs text-muted-foreground">오늘 강도</div>
+              <Select value={intensity} onValueChange={(value) => setIntensity(value as any)}>
+                <SelectTrigger className="bg-accent border-border text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  <SelectItem value="light">가볍게</SelectItem>
+                  <SelectItem value="normal">보통</SelectItem>
+                  <SelectItem value="hard">강하게</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-1.5 text-xs text-muted-foreground">오늘 타겟 부위</div>
+            <div className="flex flex-wrap gap-2">
+              {targetBodyPartOptions.map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => toggleTargetBodyPart(item.value)}
+                  className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${targetBodyParts.includes(item.value) ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {location !== "outdoor" && (
+            <div>
+              <div className="mb-1.5 text-xs text-muted-foreground">사용 가능 기구</div>
+              <div className="flex flex-wrap gap-2">
+                {equipmentOptions.map((item) => (
+                  <button
+                    key={item.value}
+                    type="button"
+                    onClick={() => toggleEquipment(item.value)}
+                    className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${equipment.includes(item.value) ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div>
+              <div className="mb-1.5 text-xs text-muted-foreground">운동 전 스트레칭</div>
+              <Select value={warmupStretchMinutes} onValueChange={setWarmupStretchMinutes}>
+                <SelectTrigger className="bg-accent border-border text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  {minuteOptions.map((minutes) => (
+                    <SelectItem key={minutes} value={String(minutes)}>{minutes}분</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <div className="mb-1.5 text-xs text-muted-foreground">운동 후 스트레칭</div>
+              <Select value={cooldownStretchMinutes} onValueChange={setCooldownStretchMinutes}>
+                <SelectTrigger className="bg-accent border-border text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  {minuteOptions.map((minutes) => (
+                    <SelectItem key={minutes} value={String(minutes)}>{minutes}분</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <div className="mb-1.5 text-xs text-muted-foreground">유산소 시간</div>
+              <Select value={cardioMinutes} onValueChange={setCardioMinutes} disabled={!includeCardio}>
+                <SelectTrigger className="bg-accent border-border text-foreground disabled:opacity-50">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  {cardioMinuteOptions.map((minutes) => (
+                    <SelectItem key={minutes} value={String(minutes)}>{minutes}분</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setIncludeCardio((value) => !value)}
+              className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${includeCardio ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
+            >
+              유산소 포함
+            </button>
+            <button
+              type="button"
+              onClick={() => setIncludeCore((value) => !value)}
+              className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${includeCore ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
+            >
+              복근 포함
+            </button>
+          </div>
+
+          <div>
+            <div className="mb-1.5 text-xs text-muted-foreground">오늘 컨디션/요청사항</div>
+            <Textarea
+              value={customRequest}
+              onChange={(event) => setCustomRequest(event.target.value)}
+              placeholder="예: 어제 하체해서 다리 피로함, 허리 부담 적게, 등 위주로 강하게."
+              className="min-h-20 resize-none bg-accent border-border text-foreground"
+              maxLength={500}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {dailyMutation.error && (
+        <Card className="bg-destructive/10 border-destructive/20">
+          <CardContent className="p-4 text-sm text-destructive">오늘 운동 추천 생성에 실패했습니다. 잠시 후 다시 시도하세요.</CardContent>
+        </Card>
+      )}
+
+      {workout && (
+        <Card className="bg-card border-border">
+          <CardContent className="p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <div className="font-semibold text-foreground">오늘 추천 운동</div>
+                <div className="text-xs text-primary">{workout.focus}</div>
+              </div>
+              <div className="text-xs text-muted-foreground">{workout.duration}</div>
+            </div>
+            {(workout.warmupStretch?.length || workout.cooldownStretch?.length) && (
+              <div className="mb-3 grid gap-2 md:grid-cols-2">
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+                  <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-primary">
+                    <Sparkles size={12} />
+                    운동 전 스트레칭 {warmupStretchMinutes}분
+                  </div>
+                  <div className="space-y-1">
+                    {workout.warmupStretch?.map((stretch: string, index: number) => (
+                      <div key={index} className="rounded-lg bg-background/35 px-2 py-1.5 text-xs leading-relaxed text-muted-foreground">{stretch}</div>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-blue-400/20 bg-blue-400/5 p-3">
+                  <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-blue-300">
+                    <Sparkles size={12} />
+                    운동 후 스트레칭 {cooldownStretchMinutes}분
+                  </div>
+                  <div className="space-y-1">
+                    {workout.cooldownStretch?.map((stretch: string, index: number) => (
+                      <div key={index} className="rounded-lg bg-background/35 px-2 py-1.5 text-xs leading-relaxed text-muted-foreground">{stretch}</div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="space-y-1">
+              {workout.exercises?.map((exercise: string, index: number) => (
+                <div key={index} className="rounded-lg bg-accent/50 px-3 py-2 text-sm text-foreground">{exercise}</div>
+              ))}
+            </div>
+            {(dailyMutation.data?.reason || dailyMutation.data?.caution) && (
+              <div className="mt-3 rounded-xl border border-border bg-accent/30 p-3 text-xs leading-relaxed text-muted-foreground">
+                {dailyMutation.data?.reason && <p>{dailyMutation.data.reason}</p>}
+                {dailyMutation.data?.caution && <p className="mt-1">{dailyMutation.data.caution}</p>}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
 export default function AICoach() {
   return (
     <div className="page-shell space-y-4 animate-fade-in">
@@ -346,13 +672,20 @@ export default function AICoach() {
         <p className="page-description">운동 기록과 목표를 바탕으로 추천을 확인하세요</p>
       </div>
       <Tabs defaultValue="program" className="space-y-4">
-        <TabsList className="grid h-11 w-full grid-cols-2 gap-1 rounded-xl border border-border bg-accent/30 p-1">
+        <TabsList className="grid h-11 w-full grid-cols-3 gap-1 rounded-xl border border-border bg-accent/30 p-1">
           <TabsTrigger
             value="program"
             className="h-full gap-2 rounded-lg text-xs text-muted-foreground transition-colors hover:bg-accent/70 hover:text-foreground data-[state=active]:!border-primary/60 data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground data-[state=active]:shadow-[0_0_0_1px_hsl(var(--primary)/0.35),0_8px_24px_hsl(var(--primary)/0.18)] sm:text-sm"
           >
             <Dumbbell size={14} />
-            맞춤 운동 추천
+            루틴 추천
+          </TabsTrigger>
+          <TabsTrigger
+            value="daily"
+            className="h-full gap-2 rounded-lg text-xs text-muted-foreground transition-colors hover:bg-accent/70 hover:text-foreground data-[state=active]:!border-primary/60 data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground data-[state=active]:shadow-[0_0_0_1px_hsl(var(--primary)/0.35),0_8px_24px_hsl(var(--primary)/0.18)] sm:text-sm"
+          >
+            <CalendarDays size={14} />
+            오늘 운동
           </TabsTrigger>
           <TabsTrigger
             value="diet"
@@ -364,6 +697,9 @@ export default function AICoach() {
         </TabsList>
         <TabsContent value="program" className="space-y-4">
           <ProgramRecommendation />
+        </TabsContent>
+        <TabsContent value="daily" className="space-y-4">
+          <DailyWorkoutRecommendation />
         </TabsContent>
         <TabsContent value="diet" className="space-y-4">
           <DietRecommendation />

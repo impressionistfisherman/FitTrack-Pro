@@ -227,24 +227,41 @@ const cooldownStretchCatalog: Record<string, string[]> = {
   ],
 };
 
-function buildDetailedStretchRoutine(day: any, phase: "warmup" | "cooldown") {
+function withStretchDuration(item: string, minutes: number) {
+  return item.replace(/\d+\s*분/, `${minutes}분`);
+}
+
+function distributeMinutes(totalMinutes: number, itemCount: number) {
+  if (totalMinutes <= 0 || itemCount <= 0) return [];
+  const base = Math.floor(totalMinutes / itemCount);
+  const remainder = totalMinutes % itemCount;
+  return Array.from({ length: itemCount }, (_, index) => base + (index < remainder ? 1 : 0));
+}
+
+function buildDetailedStretchRoutine(day: any, phase: "warmup" | "cooldown", totalMinutes = 20) {
+  if (totalMinutes <= 0) return [];
   const catalog = phase === "warmup" ? warmupStretchCatalog : cooldownStretchCatalog;
   const parts = getBodyPartsFromFocus(day);
   const selected: string[] = [];
+  const maxItems = Math.min(4, Math.max(1, Math.ceil(totalMinutes / 5)));
 
   for (const part of parts) {
     for (const item of catalog[part] ?? catalog.full_body) {
       if (!selected.includes(item)) selected.push(item);
-      if (selected.length >= 4) return selected;
+      if (selected.length >= maxItems) {
+        const minutes = distributeMinutes(totalMinutes, selected.length);
+        return selected.map((entry, index) => withStretchDuration(entry, minutes[index] ?? 5));
+      }
     }
   }
 
   for (const item of catalog.full_body) {
     if (!selected.includes(item)) selected.push(item);
-    if (selected.length >= 4) break;
+    if (selected.length >= maxItems) break;
   }
 
-  return selected;
+  const minutes = distributeMinutes(totalMinutes, selected.length);
+  return selected.map((entry, index) => withStretchDuration(entry, minutes[index] ?? 5));
 }
 
 function isGenericStretchLine(value: string) {
@@ -257,13 +274,14 @@ function isNonStretchMovementLine(value: string) {
   return /(푸시업|푸쉬업|풀업|턱걸이|스쿼트|런지|데드\s*버그|버드\s*독|플랭크|브릿지|클램쉘|몬스터\s*워크|push\s*up|pull\s*up|squat|lunge|plank|bridge|dead\s*bug|bird\s*dog)/i.test(String(value));
 }
 
-function normalizeStretchBlock(day: any, phase: "warmup" | "cooldown") {
+function normalizeStretchBlock(day: any, phase: "warmup" | "cooldown", totalMinutes = 20) {
   const key = phase === "warmup" ? "warmupStretch" : "cooldownStretch";
+  if (totalMinutes <= 0) return [];
   const items = Array.isArray(day?.[key]) ? day[key].map(String).filter(Boolean) : [];
   const totalIsTooSmall = items.length < 3;
   const hasGeneric = items.some(isGenericStretchLine);
   const hasNonStretchMovement = items.some(isNonStretchMovementLine);
-  return totalIsTooSmall || hasGeneric || hasNonStretchMovement ? buildDetailedStretchRoutine(day, phase) : items;
+  return totalIsTooSmall || hasGeneric || hasNonStretchMovement ? buildDetailedStretchRoutine(day, phase, totalMinutes) : items;
 }
 
 function isCardioExerciseText(value: string) {
@@ -374,6 +392,23 @@ function dedupeRecommendationExercises(exercises: string[]) {
   });
 }
 
+function normalizeCardioLineDuration(value: string, cardioMinutes: number) {
+  const text = String(value).trim();
+  if (cardioMinutes <= 0) return text;
+  if (/\d+\s*분/.test(text)) return text.replace(/\d+\s*분/, `${cardioMinutes}분`);
+  return `${text} - ${cardioMinutes}분`;
+}
+
+function normalizeCardioExercises(exercises: string[], cardioMinutes: number) {
+  let hasCardio = false;
+  return exercises.flatMap((exercise) => {
+    if (!isCardioExerciseText(exercise)) return [exercise];
+    if (cardioMinutes <= 0 || hasCardio) return [];
+    hasCardio = true;
+    return [normalizeCardioLineDuration(exercise, cardioMinutes)];
+  });
+}
+
 function alignExercisesToDayFocus(weeklyPlan: any[], catalog: any[] = []) {
   const exercisesToMove = new Map<RecommendationBodyPart, string[]>();
   const normalizedDays = weeklyPlan.map((day) => {
@@ -447,13 +482,22 @@ function moveCardioOffLegDays(weeklyPlan: any[]) {
   });
 }
 
-function normalizeProgramRecommendation(program: any, options?: { avoidCardioOnLegDay?: boolean; exerciseCatalog?: any[] }) {
+function normalizeProgramRecommendation(program: any, options?: {
+  avoidCardioOnLegDay?: boolean;
+  exerciseCatalog?: any[];
+  warmupStretchMinutes?: number;
+  cooldownStretchMinutes?: number;
+  cardioMinutes?: number;
+}) {
   if (!program?.weeklyPlan || !Array.isArray(program.weeklyPlan)) return program;
 
   const bodyPartAlignedPlan = alignExercisesToDayFocus(program.weeklyPlan, options?.exerciseCatalog ?? []);
   const sourcePlan = options?.avoidCardioOnLegDay
     ? moveCardioOffLegDays(bodyPartAlignedPlan)
     : bodyPartAlignedPlan;
+  const warmupStretchMinutes = options?.warmupStretchMinutes ?? 20;
+  const cooldownStretchMinutes = options?.cooldownStretchMinutes ?? 20;
+  const cardioMinutes = options?.cardioMinutes ?? 20;
 
   return {
     ...program,
@@ -462,7 +506,10 @@ function normalizeProgramRecommendation(program: any, options?: { avoidCardioOnL
       const warmupStretch = Array.isArray(day.warmupStretch) ? day.warmupStretch : [];
       const cooldownStretch = Array.isArray(day.cooldownStretch) ? day.cooldownStretch : [];
       const mixedStretches = exercises.filter((item: string) => isStretchExerciseText(String(item)));
-      const mainExercises = exercises.filter((item: string) => !isStretchExerciseText(String(item)));
+      const mainExercises = normalizeCardioExercises(
+        exercises.filter((item: string) => !isStretchExerciseText(String(item))),
+        cardioMinutes,
+      );
       const sequenceLabel = `${index + 1}일차`;
 
       if (!warmupStretch.length && !cooldownStretch.length && mixedStretches.length) {
@@ -476,16 +523,16 @@ function normalizeProgramRecommendation(program: any, options?: { avoidCardioOnL
         };
         return {
           ...nextDay,
-          warmupStretch: normalizeStretchBlock(nextDay, "warmup"),
-          cooldownStretch: normalizeStretchBlock(nextDay, "cooldown"),
+          warmupStretch: normalizeStretchBlock(nextDay, "warmup", warmupStretchMinutes),
+          cooldownStretch: normalizeStretchBlock(nextDay, "cooldown", cooldownStretchMinutes),
         };
       }
 
       return {
         ...day,
         day: sequenceLabel,
-        warmupStretch: normalizeStretchBlock({ ...day, exercises: mainExercises, warmupStretch, cooldownStretch }, "warmup"),
-        cooldownStretch: normalizeStretchBlock({ ...day, exercises: mainExercises, warmupStretch, cooldownStretch }, "cooldown"),
+        warmupStretch: normalizeStretchBlock({ ...day, exercises: mainExercises, warmupStretch, cooldownStretch }, "warmup", warmupStretchMinutes),
+        cooldownStretch: normalizeStretchBlock({ ...day, exercises: mainExercises, warmupStretch, cooldownStretch }, "cooldown", cooldownStretchMinutes),
         exercises: mainExercises,
       };
     }),
@@ -495,6 +542,30 @@ function normalizeProgramRecommendation(program: any, options?: { avoidCardioOnL
 function getPlanDayOrder(dayLabel: string) {
   const match = String(dayLabel).match(/(\d+)/);
   return match ? Number(match[1]) : 99;
+}
+
+function formatRecommendationGoal(goals: any[], goal: any, daysPerWeekFallback = 3) {
+  if (goals.length) {
+    return `목표: ${goals.map((item: any) => goalLabels[item.goal] ?? item.goal).join(", ")}, 주 ${goals[0]?.weeklyWorkouts ?? daysPerWeekFallback}회 운동`;
+  }
+  if (goal) {
+    return `목표: ${goalLabels[goal.goal] ?? goal.goal}, 주 ${goal.weeklyWorkouts ?? daysPerWeekFallback}회 운동`;
+  }
+  return "목표 미설정 (일반 건강 관리)";
+}
+
+function summarizeWorkoutHistoryForPrompt(sessions: any[], logsBySession: any[][]) {
+  if (!sessions.length) return "최근 운동 기록 없음";
+  return sessions.map((session, index) => {
+    const logs = logsBySession[index] ?? [];
+    const names = logs
+      .map((log: any) => log.exercise?.nameKo ?? log.exercise?.name)
+      .filter(Boolean)
+      .slice(0, 8)
+      .join(", ");
+    const date = session.workoutDate ?? session.startedAt ?? session.completedAt;
+    return `- ${new Date(date).toLocaleDateString("ko-KR")}: ${session.name ?? "운동 세션"}${names ? ` (${names})` : ""}`;
+  }).join("\n");
 }
 
 function buildNutritionStrategy(goalValues: string[], tdee: number, latestWeight?: number) {
@@ -1293,6 +1364,157 @@ ${historyText}
         };
       }),
 
+    dailyWorkoutRecommendation: protectedProcedure
+      .input(z.object({
+        location: z.enum(["gym", "home", "outdoor"]).default("gym"),
+        equipment: z.array(z.string()).default([]),
+        sessionDuration: z.number().int().min(20).max(180).default(60),
+        targetBodyParts: z.array(z.enum(["chest", "back", "shoulders", "arms", "legs", "glutes", "abs"])).min(1).max(5),
+        includeCardio: z.boolean().default(false),
+        includeCore: z.boolean().default(true),
+        warmupStretchMinutes: z.number().int().min(0).max(40).default(10),
+        cooldownStretchMinutes: z.number().int().min(0).max(40).default(10),
+        cardioMinutes: z.number().int().min(0).max(90).default(20),
+        intensity: z.enum(["light", "normal", "hard"]).default("normal"),
+        customRequest: z.string().max(500).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const goal = await getUserGoal(ctx.user.id);
+        const goals = await getUserGoals(ctx.user.id);
+        const experienceLevel = await getUserPreference(ctx.user.id, "experienceLevel") ?? "beginner";
+        const stats = await getUserStats(ctx.user.id);
+        const recentSessions = await getWorkoutSessionsByUser(ctx.user.id, 8);
+        const logsBySession = await Promise.all(recentSessions.map((session: any) => getWorkoutLogsBySession(session.id)));
+        const recommendationCatalog = await buildRecommendationExerciseCatalog({
+          location: input.location,
+          equipment: input.location === "outdoor" ? ["bodyweight"] : input.equipment,
+          excludedBodyParts: [],
+          includeCardio: input.includeCardio,
+          includeCore: input.includeCore,
+        });
+
+        const targetFocus = input.targetBodyParts.map((part) => bodyPartLabels[part] ?? part).join("/");
+        const locationLabels: Record<string, string> = {
+          gym: "헬스장",
+          home: "홈트레이닝",
+          outdoor: "야외",
+        };
+        const equipmentText = input.location === "outdoor"
+          ? "사용 가능 기구: 맨몸/야외 환경"
+          : input.equipment.length
+            ? `사용 가능 기구: ${input.equipment.map((item) => equipmentLabels[item] || item).join(", ")}`
+            : "사용 가능 기구: 맨몸";
+        const recentHistoryText = summarizeWorkoutHistoryForPrompt(recentSessions, logsBySession);
+        const cardioText = input.includeCardio
+          ? `유산소 포함: ${input.cardioMinutes}분. 단, 하체가 주요 타겟이면 고강도 유산소는 제외하고 저강도 또는 생략.`
+          : "유산소 제외";
+        const coreText = input.includeCore ? "복근/코어 필요 시 포함" : "복근/코어 제외";
+        const intensityText = {
+          light: "가볍게 회복 중심",
+          normal: "보통 강도",
+          hard: "강도 높게",
+        }[input.intensity];
+
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: `당신은 전문 퍼스널 트레이너입니다. 사용자가 오늘 바로 수행할 1회 운동만 추천하세요.
+              - 아래 "사용 가능한 운동 DB 후보"에 있는 운동명만 추천하세요. 새 운동명을 지어내지 마세요.
+              - focus는 사용자가 고른 타겟 부위만 반영하세요.
+              - exercises에는 focus와 맞는 메인/보조 운동만 넣으세요. 타겟 외 부위 운동을 섞지 마세요.
+              - 근력 운동은 "한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
+              - 유산소는 세트/횟수가 아니라 "러닝, 트레드밀 (Running, Treadmill) - ${input.cardioMinutes}분"처럼 시간 형식으로 작성하세요.
+              - 유산소는 하루에 한 줄만 허용합니다.
+              - 하체/둔근이 타겟인 날에는 러닝, 트레드밀, 사이클, 로잉 같은 유산소를 넣지 않거나 아주 가볍게만 넣으세요.
+              - warmupStretch는 운동 전 동적 스트레칭/가동성 루틴 총 ${input.warmupStretchMinutes}분, cooldownStretch는 운동 후 정적 스트레칭 총 ${input.cooldownStretchMinutes}분으로 구성하세요.
+              - 스트레칭 블록에는 푸시업, 풀업, 스쿼트, 런지, 플랭크, 브릿지 같은 운동/근력 동작을 넣지 마세요.
+              - 최근 운동 기록을 보고 같은 부위를 과도하게 연속 자극하지 않도록 볼륨을 조정하세요.
+              응답은 반드시 JSON 형식으로 해주세요.`,
+            },
+            {
+              role: "user",
+              content: `사용자 정보:
+${formatRecommendationGoal(goals, goal)}
+숙련도: ${experienceLevel}
+운동 통계: ${stats ? `총 ${stats.totalSessions}회, 최근 7일 ${stats.recentSessionCount}회, 총 볼륨 ${stats.totalVolume}kg` : "운동 기록 없음"}
+
+오늘 운동 조건:
+타겟 부위: ${targetFocus}
+장소: ${locationLabels[input.location]}
+${equipmentText}
+가능 시간: ${input.sessionDuration}분
+강도: ${intensityText}
+${cardioText}
+${coreText}
+운동 전 스트레칭: ${input.warmupStretchMinutes}분
+운동 후 스트레칭: ${input.cooldownStretchMinutes}분
+추가 요청: ${input.customRequest?.trim() || "없음"}
+
+최근 운동 기록:
+${recentHistoryText}
+
+사용 가능한 운동 DB 후보 (${recommendationCatalog.count}개 중 추천용 요약):
+${recommendationCatalog.text}
+
+오늘 1회 운동을 추천해주세요. 타겟 부위(${targetFocus}) 밖의 근력 운동은 넣지 말고, 최근 기록을 고려해 볼륨과 강도를 조절해주세요.`,
+            },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "daily_workout_recommendation",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  focus: { type: "string", description: "오늘 운동 포커스" },
+                  warmupStretch: { type: "array", items: { type: "string" }, description: "운동 전 스트레칭" },
+                  exercises: { type: "array", items: { type: "string" }, description: "오늘 메인 운동 목록" },
+                  cooldownStretch: { type: "array", items: { type: "string" }, description: "운동 후 스트레칭" },
+                  duration: { type: "string", description: "예상 운동 시간" },
+                  reason: { type: "string", description: "최근 기록과 조건을 반영한 추천 이유" },
+                  caution: { type: "string", description: "주의사항" },
+                },
+                required: ["focus", "warmupStretch", "exercises", "cooldownStretch", "duration", "reason", "caution"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        const rawContent = response.choices[0]?.message?.content;
+        const content = typeof rawContent === "string" ? rawContent : null;
+        let parsed = null;
+        try { parsed = content ? JSON.parse(content) : null; } catch { parsed = null; }
+        const normalized = normalizeProgramRecommendation({
+          weeklyPlan: [{
+            day: "오늘",
+            focus: targetFocus,
+            warmupStretch: parsed?.warmupStretch ?? [],
+            exercises: parsed?.exercises ?? [],
+            cooldownStretch: parsed?.cooldownStretch ?? [],
+            duration: parsed?.duration ?? `${input.sessionDuration}분`,
+          }],
+          generalAdvice: parsed?.reason ?? "",
+          recoveryTip: parsed?.caution ?? "",
+        }, {
+          avoidCardioOnLegDay: true,
+          exerciseCatalog: recommendationCatalog.exercises,
+          warmupStretchMinutes: input.warmupStretchMinutes,
+          cooldownStretchMinutes: input.cooldownStretchMinutes,
+          cardioMinutes: input.includeCardio ? input.cardioMinutes : 0,
+        });
+
+        return {
+          workout: normalized?.weeklyPlan?.[0] ?? null,
+          reason: parsed?.reason ?? normalized?.generalAdvice ?? "",
+          caution: parsed?.caution ?? normalized?.recoveryTip ?? "",
+          stats,
+          catalogCount: recommendationCatalog.count,
+        };
+      }),
+
     programRecommendation: protectedProcedure
       .input(z.object({
         location: z.enum(["gym", "home", "outdoor"]).default("gym"),
@@ -1304,6 +1526,9 @@ ${historyText}
         includeCardio: z.boolean().default(true),
         avoidCardioOnLegDay: z.boolean().default(true),
         includeCore: z.boolean().default(true),
+        warmupStretchMinutes: z.number().int().min(0).max(40).default(20),
+        cooldownStretchMinutes: z.number().int().min(0).max(40).default(20),
+        cardioMinutes: z.number().int().min(0).max(90).default(20),
         dayFocusNotes: z.string().max(500).optional(),
         customRequest: z.string().max(500).optional(),
       }).optional())
@@ -1351,10 +1576,15 @@ ${historyText}
       const includeCardio = input?.includeCardio ?? true;
       const avoidCardioOnLegDay = input?.avoidCardioOnLegDay ?? true;
       const includeCore = input?.includeCore ?? true;
+      const warmupStretchMinutes = input?.warmupStretchMinutes ?? 20;
+      const cooldownStretchMinutes = input?.cooldownStretchMinutes ?? 20;
+      const cardioMinutes = input?.cardioMinutes ?? 20;
       const accessoryText = [
-        includeCardio ? "유산소를 주간 계획에 적절히 포함" : "유산소는 제외",
+        includeCardio ? `유산소를 주간 계획에 적절히 포함, 유산소를 넣는 날은 ${cardioMinutes}분` : "유산소는 제외",
         avoidCardioOnLegDay ? "하체 운동일에는 유산소를 넣지 말고 상체/휴식 부담이 낮은 날에 배치" : "하체 운동일에도 가벼운 유산소 배치 가능",
         includeCore ? "복근/코어를 주간 계획에 적절히 포함" : "복근/코어는 제외",
+        `운동 전 스트레칭 ${warmupStretchMinutes}분`,
+        `운동 후 스트레칭 ${cooldownStretchMinutes}분`,
       ].join(", ");
       const trainingOptimizationRules = [
         avoidCardioOnLegDay
@@ -1364,7 +1594,9 @@ ${historyText}
         "같은 근육군을 연속 운동일에 과도하게 반복하지 말고, 큰 근육군은 최소 1일 이상 회복 간격이 생기게 배치하세요.",
         "각 운동일의 focus와 맞는 운동만 넣으세요. 예를 들어 등/어깨/이두 날에는 스쿼트, 핵스쿼트, 런지, 레그프레스, 레그컬, 카프레이즈 같은 하체 운동을 넣지 말고, 하체 운동은 하체/둔근 포커스 날에만 배치하세요.",
         "가슴 날에는 등/하체 운동을, 등 날에는 가슴/하체 운동을, 어깨/팔 날에는 하체 운동을 섞지 마세요. 복근은 includeCore가 켜진 경우에만 코어 보조로 배치하세요.",
-        "유산소는 같은 운동일에 중복해서 넣지 마세요. 러닝/트레드밀은 하루에 한 줄만 허용합니다.",
+        includeCardio
+          ? `유산소는 같은 운동일에 중복해서 넣지 마세요. 러닝/트레드밀은 하루에 한 줄만 허용하고, 유산소 시간은 ${cardioMinutes}분으로 작성하세요.`
+          : "유산소 운동은 넣지 마세요.",
         "등/이두, 가슴/삼두, 하체, 어깨/코어처럼 서로 보조 작용이 자연스러운 조합을 우선하세요.",
         "사용자가 운동일별 희망 구성을 적으면 그 구성을 우선하되 회복상 무리가 있으면 더 안전한 순서로 조정하세요.",
       ].join("\n            - ");
@@ -1405,7 +1637,7 @@ ${historyText}
             - ${trainingOptimizationRules}
             - exercises에는 메인 운동, 보조 운동, 선택된 경우 유산소/복근만 넣으세요. 스트레칭은 exercises에 넣지 마세요.
             - 각 운동일마다 warmupStretch 배열과 cooldownStretch 배열을 반드시 작성하세요.
-            - warmupStretch는 운동 전 동적 스트레칭/가동성 루틴 총 20분, cooldownStretch는 운동 후 정적 스트레칭 총 20분으로 구성하세요.
+            - warmupStretch는 운동 전 동적 스트레칭/가동성 루틴 총 ${warmupStretchMinutes}분, cooldownStretch는 운동 후 정적 스트레칭 총 ${cooldownStretchMinutes}분으로 구성하세요.
             - 스트레칭은 DB 후보의 부위별 스트레칭에서 골라 "등 스트레칭 - 5분", "어깨 스트레칭 - 5분"처럼 시간 단위로 적고, 세트x횟수/휴식 형식을 쓰지 마세요.
             - warmupStretch와 cooldownStretch에는 푸시업, 풀업, 스쿼트, 런지, 플랭크, 브릿지 같은 운동/근력 동작을 넣지 마세요. 말 그대로 늘리기, 가동성, 호흡, 폼롤러 기반 스트레칭만 넣으세요.
             - warmupStretch와 cooldownStretch는 해당 운동일의 타겟 부위에 맞게 다르게 구성하세요.
@@ -1437,7 +1669,7 @@ ${recommendationCatalog.text}
 반드시 위 DB 후보에 있는 운동만 사용하고, 지정된 기구, 운동 시간, 제외 부위, 분할 방식, 사용자 요청 조건에 맞는 운동만 포함해주세요.
 최적화 규칙:
 - ${trainingOptimizationRules}
-각 운동일에는 운동 전 스트레칭 20분과 운동 후 스트레칭 20분을 따로 분리해서 포함해주세요. 스트레칭은 exercises에 섞지 마세요.
+각 운동일에는 운동 전 스트레칭 ${warmupStretchMinutes}분과 운동 후 스트레칭 ${cooldownStretchMinutes}분을 따로 분리해서 포함해주세요. 스트레칭은 exercises에 섞지 마세요.
 스트레칭 블록에는 푸시업, 풀업, 스쿼트, 런지, 플랭크, 브릿지 같은 운동 동작을 넣지 말고 순수 스트레칭/가동성 동작만 넣으세요.`,
           },
         ],
@@ -1459,7 +1691,7 @@ ${recommendationCatalog.text}
                       warmupStretch: {
                         type: "array",
                         items: { type: "string" },
-                        description: "운동 전 동적 스트레칭/가동성 루틴. 총 20분.",
+                        description: `운동 전 동적 스트레칭/가동성 루틴. 총 ${warmupStretchMinutes}분.`,
                       },
                       exercises: {
                         type: "array",
@@ -1469,7 +1701,7 @@ ${recommendationCatalog.text}
                       cooldownStretch: {
                         type: "array",
                         items: { type: "string" },
-                        description: "운동 후 정적 스트레칭 루틴. 총 20분.",
+                        description: `운동 후 정적 스트레칭 루틴. 총 ${cooldownStretchMinutes}분.`,
                       },
                       duration: { type: "string", description: "예상 운동 시간" },
                     },
@@ -1495,6 +1727,9 @@ ${recommendationCatalog.text}
       parsed = normalizeProgramRecommendation(parsed, {
         avoidCardioOnLegDay,
         exerciseCatalog: recommendationCatalog.exercises,
+        warmupStretchMinutes,
+        cooldownStretchMinutes,
+        cardioMinutes: includeCardio ? cardioMinutes : 0,
       });
 
       return {
