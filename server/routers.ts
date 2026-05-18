@@ -306,6 +306,34 @@ function isLegIsolationExerciseText(value: string) {
 
 const recommendationBodyParts = ["chest", "back", "shoulders", "arms", "legs", "glutes", "abs", "cardio"] as const;
 type RecommendationBodyPart = typeof recommendationBodyParts[number];
+type ArmFocus = "biceps" | "triceps" | "both" | null;
+
+function getArmFocus(value: string): ArmFocus {
+  const text = String(value).toLowerCase();
+  const wantsBiceps = /(이두|바이셉|bicep|biceps|컬|curl)/i.test(text);
+  const wantsTriceps = /(삼두|트라이셉|tricep|triceps|익스텐션|프레스다운|extension|pressdown)/i.test(text);
+  if (wantsBiceps && wantsTriceps) return "both";
+  if (wantsBiceps) return "biceps";
+  if (wantsTriceps) return "triceps";
+  return null;
+}
+
+function getArmExerciseFocus(value: string): ArmFocus {
+  const text = String(value).toLowerCase();
+  const isBiceps = /(이두|바이셉|bicep|biceps|컬|curl|해머|hammer)/i.test(text);
+  const isTriceps = /(삼두|트라이셉|tricep|triceps|익스텐션|프레스다운|킥백|extension|pressdown|kickback|skullcrusher|스컬)/i.test(text);
+  if (isBiceps && isTriceps) return "both";
+  if (isBiceps) return "biceps";
+  if (isTriceps) return "triceps";
+  return null;
+}
+
+function isArmExerciseAllowedForFocus(exerciseText: string, focusText: string) {
+  const focus = getArmFocus(focusText);
+  if (!focus || focus === "both") return true;
+  const exerciseFocus = getArmExerciseFocus(exerciseText);
+  return !exerciseFocus || exerciseFocus === focus;
+}
 
 function getFocusBodyParts(value: string): Set<RecommendationBodyPart> | null {
   const text = String(value).toLowerCase();
@@ -473,7 +501,9 @@ function fillExercisesForDuration(day: any, exercises: string[], options: {
   warmupStretchMinutes: number;
   cooldownStretchMinutes: number;
   cardioMinutes: number;
+  includeCore?: boolean;
 }) {
+  const focusText = String(day?.focus ?? "");
   const allowedParts = getFocusBodyParts(String(day?.focus ?? ""));
   const cardioExercises = exercises.filter((exercise) => isCardioExerciseText(exercise));
   const strengthExercises = exercises.filter((exercise) => !isCardioExerciseText(exercise));
@@ -492,6 +522,7 @@ function fillExercisesForDuration(day: any, exercises: string[], options: {
       if (!part || part === "cardio") return false;
       if (exercise.bodyPart === "stretching" || exercise.category === "flexibility") return false;
       if (allowedParts && !allowedParts.has(part)) return false;
+      if (part === "arms" && !isArmExerciseAllowedForFocus(`${exercise.nameKo} ${exercise.name}`, focusText)) return false;
       const key = normalizeRecommendationExerciseKey(`${exercise.nameKo} ${exercise.name}`);
       return key && !seen.has(key);
     });
@@ -507,7 +538,19 @@ function fillExercisesForDuration(day: any, exercises: string[], options: {
   }
 
   const maxStrengthCount = Math.max(targetCount + 1, 4);
-  return [...filled.slice(0, maxStrengthCount), ...cardioExercises];
+  const selectedStrength = filled.slice(0, maxStrengthCount);
+  const needsCore = options.includeCore && (allowedParts?.has("abs") || /복근|코어|abs|core/i.test(focusText));
+  const hasCore = selectedStrength.some((exercise) => getRecommendationExerciseBodyParts(exercise, options.exerciseCatalog ?? []).has("abs"));
+  if (needsCore && !hasCore && options.exerciseCatalog?.length) {
+    const coreExercise = options.exerciseCatalog.find((exercise: any) => {
+      if (exercise.bodyPart !== "abs") return false;
+      const key = normalizeRecommendationExerciseKey(`${exercise.nameKo} ${exercise.name}`);
+      return key && !seen.has(key);
+    });
+    if (coreExercise) selectedStrength.push(formatDefaultRecommendedExercise(coreExercise));
+  }
+
+  return [...selectedStrength, ...cardioExercises];
 }
 
 function alignExercisesToDayFocus(weeklyPlan: any[], catalog: any[] = []) {
@@ -520,6 +563,7 @@ function alignExercisesToDayFocus(weeklyPlan: any[], catalog: any[] = []) {
 
     const kept = exercises.filter((exercise: string) => {
       const exerciseParts = getRecommendationExerciseBodyParts(exercise, catalog);
+      if (exerciseParts.has("arms") && !isArmExerciseAllowedForFocus(exercise, focus)) return false;
       if (isExerciseAllowedForFocus(exerciseParts, allowedParts)) return true;
 
       const movablePart = recommendationBodyParts.find((part) => part !== "cardio" && exerciseParts.has(part));
@@ -590,6 +634,7 @@ function normalizeProgramRecommendation(program: any, options?: {
   cooldownStretchMinutes?: number;
   cardioMinutes?: number;
   sessionDuration?: number;
+  includeCore?: boolean;
 }) {
   if (!program?.weeklyPlan || !Array.isArray(program.weeklyPlan)) return program;
 
@@ -620,6 +665,7 @@ function normalizeProgramRecommendation(program: any, options?: {
         warmupStretchMinutes,
         cooldownStretchMinutes,
         cardioMinutes,
+        includeCore: options?.includeCore,
       });
       const sequenceLabel = `${index + 1}일차`;
 
@@ -1543,6 +1589,8 @@ ${historyText}
               - exercises의 각 항목은 반드시 사용 가능한 운동 DB 후보의 ID를 포함해 "ID:123 | 한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
               - focus는 사용자가 고른 타겟 부위만 반영하세요.
               - exercises에는 focus와 맞는 메인/보조 운동만 넣으세요. 타겟 외 부위 운동을 섞지 마세요.
+              - 이두를 요청한 날에는 삼두 운동을 넣지 말고, 삼두를 요청한 날에는 이두 운동을 넣지 마세요. "팔" 또는 "이두/삼두"라고 명시된 경우에만 둘 다 넣으세요.
+              - 복근/코어가 focus에 있거나 복근 포함이 켜져 있으면 해당 날 exercises에 복근 운동을 반드시 1개 이상 포함하세요.
               - exercises의 근력 운동은 ${targetExerciseCount}개 안팎으로 구성하세요. 너무 적게 만들지 마세요.
               - 근력 운동은 "ID:123 | 한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
               - 유산소는 세트/횟수가 아니라 "ID:123 | 러닝, 트레드밀 (Running, Treadmill) - ${input.cardioMinutes}분"처럼 시간 형식으로 작성하세요.
@@ -1568,7 +1616,7 @@ ${equipmentText}
 메인 근력 운동 개수 목표: ${targetExerciseCount}개
 강도: ${intensityText}
 ${cardioText}
-${coreText}
+${coreText}. 복근/코어가 오늘 타겟이면 복근 운동 1개 이상 필수.
 운동 전 스트레칭: ${input.warmupStretchMinutes}분
 운동 후 스트레칭: ${input.cooldownStretchMinutes}분
 추가 요청: ${input.customRequest?.trim() || "없음"}
@@ -1628,6 +1676,7 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
           cooldownStretchMinutes: input.cooldownStretchMinutes,
           cardioMinutes: input.includeCardio ? input.cardioMinutes : 0,
           sessionDuration: input.sessionDuration,
+          includeCore: input.includeCore,
         });
 
         return {
@@ -1766,6 +1815,8 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
             - 운동명은 한국어 운동명을 우선 사용하고, 필요하면 괄호 안에 영어명을 보조로 적으세요.
             - 사용자가 제외한 부위/운동은 넣지 마세요.
             - 유산소/복근 포함 여부와 사용자 추가 요청을 우선순위 높게 반영하세요.
+            - 이두를 요청한 날에는 삼두 운동을 넣지 말고, 삼두를 요청한 날에는 이두 운동을 넣지 마세요. "팔" 또는 "이두/삼두"라고 명시된 경우에만 둘 다 넣으세요.
+            - 복근/코어가 focus에 있거나 복근 포함이 켜져 있으면 해당 날 exercises에 복근 운동을 반드시 1개 이상 포함하세요.
             - ${trainingOptimizationRules}
             - exercises에는 메인 운동, 보조 운동, 선택된 경우 유산소/복근만 넣으세요. 스트레칭은 exercises에 넣지 마세요.
             - 각 운동일마다 warmupStretch 배열과 cooldownStretch 배열을 반드시 작성하세요.
@@ -1865,6 +1916,7 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
         cooldownStretchMinutes,
         cardioMinutes: includeCardio ? cardioMinutes : 0,
         sessionDuration: input?.sessionDuration ?? 60,
+        includeCore,
       });
 
       return {
