@@ -685,7 +685,7 @@ export default function AICoach() {
             className="h-full gap-2 rounded-lg text-xs text-muted-foreground transition-colors hover:bg-accent/70 hover:text-foreground data-[state=active]:!border-primary/60 data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground data-[state=active]:shadow-[0_0_0_1px_hsl(var(--primary)/0.35),0_8px_24px_hsl(var(--primary)/0.18)] sm:text-sm"
           >
             <CalendarDays size={14} />
-            오늘 운동
+            오늘의 운동
           </TabsTrigger>
           <TabsTrigger
             value="diet"
