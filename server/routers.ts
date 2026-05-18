@@ -399,18 +399,54 @@ function normalizeCardioLineDuration(value: string, cardioMinutes: number) {
   return `${text} - ${cardioMinutes}분`;
 }
 
+function getExerciseIdFromRecommendation(value: string) {
+  const match = String(value).match(/(?:ID|id|#)\s*:?\s*(\d+)/);
+  return match ? Number(match[1]) : null;
+}
+
+function getExerciseByCatalogId(id: number | null, catalog: any[] = []) {
+  if (!id) return null;
+  return catalog.find((exercise: any) => Number(exercise.id) === id) ?? null;
+}
+
+function extractPrescription(value: string) {
+  const text = String(value);
+  const strength = text.match(/(\d+\s*x\s*\d+\s*-\s*\d+\s*초)/i);
+  if (strength) return strength[1].replace(/\s+/g, "");
+  const timed = text.match(/(\d+\s*분)/);
+  if (timed) return timed[1].replace(/\s+/g, "");
+  return null;
+}
+
+function canonicalizeRecommendationExerciseLine(value: string, catalog: any[] = []) {
+  const exercise = getExerciseByCatalogId(getExerciseIdFromRecommendation(value), catalog);
+  if (!exercise) return String(value);
+  const prescription = extractPrescription(value);
+  const defaultLine = formatDefaultRecommendedExercise(exercise);
+  if (!prescription) return defaultLine;
+  if (String(exercise.bodyPart) === "cardio" || String(exercise.category) === "cardio") {
+    return `${exercise.nameKo} (${exercise.name}) - ${prescription}`;
+  }
+  return `${exercise.nameKo} (${exercise.name}) - ${prescription}`;
+}
+
 function normalizeStrengthExerciseLine(value: string) {
   const text = String(value).trim();
   return /\d+\s*x\s*\d+/i.test(text) ? text.replace(/\s*-\s*\d+\s*분\s*$/i, "") : text;
 }
 
-function normalizeCardioExercises(exercises: string[], cardioMinutes: number) {
+function normalizeCardioExercises(exercises: string[], cardioMinutes: number, catalog: any[] = []) {
   let hasCardio = false;
   return exercises.flatMap((exercise) => {
-    if (!isCardioExerciseText(exercise)) return [normalizeStrengthExerciseLine(exercise)];
+    const catalogExercise = getExerciseByCatalogId(getExerciseIdFromRecommendation(exercise), catalog);
+    const isCardio = catalogExercise
+      ? catalogExercise.bodyPart === "cardio" || catalogExercise.category === "cardio"
+      : isCardioExerciseText(exercise);
+    const canonicalExercise = canonicalizeRecommendationExerciseLine(exercise, catalog);
+    if (!isCardio) return [normalizeStrengthExerciseLine(canonicalExercise)];
     if (cardioMinutes <= 0 || hasCardio) return [];
     hasCardio = true;
-    return [normalizeCardioLineDuration(exercise, cardioMinutes)];
+    return [normalizeCardioLineDuration(canonicalExercise, cardioMinutes)];
   });
 }
 
@@ -576,6 +612,7 @@ function normalizeProgramRecommendation(program: any, options?: {
       const normalizedMainExercises = normalizeCardioExercises(
         exercises.filter((item: string) => !isStretchExerciseText(String(item))),
         cardioMinutes,
+        options?.exerciseCatalog ?? [],
       );
       const mainExercises = fillExercisesForDuration(day, normalizedMainExercises, {
         exerciseCatalog: options?.exerciseCatalog,
@@ -792,7 +829,7 @@ function formatCatalogExercise(exercise: any) {
   const category = exercise.category === "flexibility" || exercise.bodyPart === "stretching"
     ? getDetailedStretchTarget(exercise)
     : bodyPart;
-  return `${exercise.nameKo} (${exercise.name}) | ${category} | ${equipment}`;
+  return `ID:${exercise.id} | ${exercise.nameKo} (${exercise.name}) | ${category} | ${equipment}`;
 }
 
 async function buildRecommendationExerciseCatalog(input: {
@@ -1503,11 +1540,12 @@ ${historyText}
               role: "system",
               content: `당신은 전문 퍼스널 트레이너입니다. 사용자가 오늘 바로 수행할 1회 운동만 추천하세요.
               - 아래 "사용 가능한 운동 DB 후보"에 있는 운동명만 추천하세요. 새 운동명을 지어내지 마세요.
+              - exercises의 각 항목은 반드시 사용 가능한 운동 DB 후보의 ID를 포함해 "ID:123 | 한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
               - focus는 사용자가 고른 타겟 부위만 반영하세요.
               - exercises에는 focus와 맞는 메인/보조 운동만 넣으세요. 타겟 외 부위 운동을 섞지 마세요.
               - exercises의 근력 운동은 ${targetExerciseCount}개 안팎으로 구성하세요. 너무 적게 만들지 마세요.
-              - 근력 운동은 "한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
-              - 유산소는 세트/횟수가 아니라 "러닝, 트레드밀 (Running, Treadmill) - ${input.cardioMinutes}분"처럼 시간 형식으로 작성하세요.
+              - 근력 운동은 "ID:123 | 한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
+              - 유산소는 세트/횟수가 아니라 "ID:123 | 러닝, 트레드밀 (Running, Treadmill) - ${input.cardioMinutes}분"처럼 시간 형식으로 작성하세요.
               - 유산소는 하루에 한 줄만 허용합니다.
               - 하체/둔근이 타겟인 날에는 러닝, 트레드밀, 사이클, 로잉 같은 유산소를 넣지 않거나 아주 가볍게만 넣으세요.
               - warmupStretch는 운동 전 동적 스트레칭/가동성 루틴 총 ${input.warmupStretchMinutes}분, cooldownStretch는 운동 후 정적 스트레칭 총 ${input.cooldownStretchMinutes}분으로 구성하세요.
@@ -1541,7 +1579,8 @@ ${recentHistoryText}
 사용 가능한 운동 DB 후보 (${recommendationCatalog.count}개 중 추천용 요약):
 ${recommendationCatalog.text}
 
-오늘 1회 운동을 추천해주세요. 타겟 부위(${targetFocus}) 밖의 근력 운동은 넣지 말고, 최근 기록을 고려해 볼륨과 강도를 조절해주세요.`,
+오늘 1회 운동을 추천해주세요. 타겟 부위(${targetFocus}) 밖의 근력 운동은 넣지 말고, 최근 기록을 고려해 볼륨과 강도를 조절해주세요.
+exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운동명은 사용하지 마세요.`,
             },
           ],
           response_format: {
@@ -1714,8 +1753,9 @@ ${recommendationCatalog.text}
             role: "system",
             content: `당신은 전문 퍼스널 트레이너입니다. 사용자의 목표, 운동 환경, 가용 기구, 운동 시간을 반드시 고려하여 맞춤 운동 프로그램을 추천해주세요.
             - 아래 "사용 가능한 운동 DB 후보"에 있는 운동명만 추천하세요. 새 운동명을 지어내지 마세요.
-            - exercises 배열의 각 항목은 근력 운동이면 반드시 "한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
-            - 유산소는 세트/횟수가 아니라 "러닝, 트레드밀 (Running, Treadmill) - 20분"처럼 시간 형식으로 작성하세요.
+            - exercises 배열의 각 항목은 반드시 사용 가능한 운동 DB 후보의 ID를 포함해 작성하세요.
+            - 근력 운동은 "ID:123 | 한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
+            - 유산소는 세트/횟수가 아니라 "ID:123 | 러닝, 트레드밀 (Running, Treadmill) - 20분"처럼 시간 형식으로 작성하세요.
             - 지정된 기구만 사용하는 운동으로 구성하세요.
             - weeklyPlan은 반드시 사용자가 선택한 주 운동일 수와 같은 개수로 구성하세요.
             - 루틴은 요일 기준이 아닙니다. day 값은 반드시 "1일차", "2일차", "3일차"처럼 주간 순번으로 작성하세요.
@@ -1760,6 +1800,7 @@ ${recommendationCatalog.text}
 
 위 정보를 바탕으로 이번 주 운동 프로그램을 추천해주세요.
 반드시 위 DB 후보에 있는 운동만 사용하고, 지정된 기구, 운동 시간, 제외 부위, 분할 방식, 사용자 요청 조건에 맞는 운동만 포함해주세요.
+exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운동명은 사용하지 마세요.
 최적화 규칙:
 - ${trainingOptimizationRules}
 각 운동일에는 운동 전 스트레칭 ${warmupStretchMinutes}분과 운동 후 스트레칭 ${cooldownStretchMinutes}분을 따로 분리해서 포함해주세요. 스트레칭은 exercises에 섞지 마세요.
