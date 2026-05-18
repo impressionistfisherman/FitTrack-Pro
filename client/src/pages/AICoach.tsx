@@ -138,7 +138,7 @@ function ProgramRecommendation() {
               </Select>
             </div>
             <div>
-              <div className="mb-1.5 text-xs text-muted-foreground">가능 시간</div>
+              <div className="mb-1.5 text-xs text-muted-foreground">운동 시간</div>
               <Select value={sessionDuration} onValueChange={setSessionDuration}>
                 <SelectTrigger className="bg-accent border-border text-foreground">
                   <SelectValue />
@@ -151,7 +151,7 @@ function ProgramRecommendation() {
               </Select>
             </div>
             <div>
-              <div className="mb-1.5 text-xs text-muted-foreground">주 운동일 수</div>
+              <div className="mb-1.5 text-xs text-muted-foreground">주당 운동 일 수</div>
               <Select value={daysPerWeek} onValueChange={setDaysPerWeek}>
                 <SelectTrigger className="bg-accent border-border text-foreground">
                   <SelectValue />
@@ -471,7 +471,7 @@ function DailyWorkoutRecommendation() {
               </Select>
             </div>
             <div>
-              <div className="mb-1.5 text-xs text-muted-foreground">가능 시간</div>
+              <div className="mb-1.5 text-xs text-muted-foreground">운동 시간</div>
               <Select value={sessionDuration} onValueChange={setSessionDuration}>
                 <SelectTrigger className="bg-accent border-border text-foreground">
                   <SelectValue />
