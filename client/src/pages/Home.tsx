@@ -528,33 +528,28 @@ export default function Home() {
         </Link>
       </div>
 
-      <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
-        <WeeklyGoalDashboard />
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+      <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+        <div className="min-w-0 space-y-3">
+          <WeeklyGoalDashboard />
+          {stats && (
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 xl:grid-cols-2">
+              <StatCard icon={Trophy} label="총 운동" value={`${stats.totalSessions}회`} color="bg-primary/10 text-primary" />
+              <StatCard icon={Flame} label="이번 주" value={`${stats.recentSessionCount}회`} color="bg-orange-400/10 text-orange-400" />
+              <StatCard icon={TrendingUp} label="총 볼륨" value={`${(stats.totalVolume / 1000).toFixed(1)}t`} color="bg-blue-400/10 text-blue-400" />
+              <StatCard icon={Calendar} label="운동 시간" value={`${Math.round(stats.totalDurationMinutes / 60)}h`} color="bg-purple-400/10 text-purple-400" />
+            </div>
+          )}
+          <MonthlyStatsCard />
+          <RecentWorkouts />
+        </div>
+
+        <div className="min-w-0 space-y-3">
           <QuickStartCard />
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
             <StreakCard />
             <BodyWeightSummaryCard />
           </div>
-        </div>
-      </div>
-
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        {stats && (
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard icon={Trophy} label="총 운동" value={`${stats.totalSessions}회`} color="bg-primary/10 text-primary" />
-            <StatCard icon={Flame} label="이번 주" value={`${stats.recentSessionCount}회`} color="bg-orange-400/10 text-orange-400" />
-            <StatCard icon={TrendingUp} label="총 볼륨" value={`${(stats.totalVolume / 1000).toFixed(1)}t`} color="bg-blue-400/10 text-blue-400" />
-            <StatCard icon={Calendar} label="운동 시간" value={`${Math.round(stats.totalDurationMinutes / 60)}h`} color="bg-purple-400/10 text-purple-400" />
-          </div>
-        )}
-        <MonthlyStatsCard />
-      </div>
-
-      {/* Main Grid */}
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <div className="space-y-3">
-          <RecentWorkouts />
+          <FeatureCards />
           <Link href="/ai-coach">
             <Card className="bg-gradient-to-br from-primary/10 to-blue-500/10 border-primary/20 cursor-pointer hover:border-primary/40 transition-all duration-200">
               <CardContent className="p-3">
@@ -571,9 +566,6 @@ export default function Home() {
               </CardContent>
             </Card>
           </Link>
-        </div>
-        <div className="space-y-3">
-          <FeatureCards />
         </div>
       </div>
     </div>
