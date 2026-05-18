@@ -286,6 +286,59 @@ function isLegIsolationExerciseText(value: string) {
   return /(스쿼트|핵\s*스쿼트|핵스쿼트|런지|레그|하체|둔근|글루트|힙\s*쓰러스트|카프|종아리|햄스트링|쿼드|대퇴|내전근|외전근|hack\s*squat|squat|lunge|leg|glute|hip\s*thrust|calf|hamstring|quad|adductor|abductor)/i.test(String(value));
 }
 
+const recommendationBodyParts = ["chest", "back", "shoulders", "arms", "legs", "glutes", "abs", "cardio"] as const;
+type RecommendationBodyPart = typeof recommendationBodyParts[number];
+
+function getFocusBodyParts(value: string): Set<RecommendationBodyPart> | null {
+  const text = String(value).toLowerCase();
+  if (isFullBodyFocusText(text)) return null;
+
+  const parts = new Set<RecommendationBodyPart>();
+  if (/(상체|upper)/i.test(text)) {
+    parts.add("chest");
+    parts.add("back");
+    parts.add("shoulders");
+    parts.add("arms");
+  }
+  if (/(가슴|흉근|체스트|chest|bench|벤치|push|푸시|푸쉬)/i.test(text)) parts.add("chest");
+  if (/(등|광배|승모|후면|백|back|lat|row|pulldown|pull|풀|로우)/i.test(text)) parts.add("back");
+  if (/(어깨|삼각근|숄더|이두|삼두|팔|shoulder|deltoid|bicep|tricep|arm|curl|컬)/i.test(text)) {
+    if (/(어깨|삼각근|숄더|shoulder|deltoid)/i.test(text)) parts.add("shoulders");
+    if (/(이두|삼두|팔|bicep|tricep|arm|curl|컬)/i.test(text)) parts.add("arms");
+  }
+  if (isLegFocusText(text)) parts.add("legs");
+  if (/(둔근|엉덩|글루트|glute|hip|힙)/i.test(text)) parts.add("glutes");
+  if (/(복근|코어|abs|core|크런치|싯업|플랭크|레그레이즈)/i.test(text)) parts.add("abs");
+  if (/(유산소|cardio|러닝|트레드밀|사이클|로잉)/i.test(text)) parts.add("cardio");
+
+  return parts.size ? parts : null;
+}
+
+function getExerciseBodyParts(value: string): Set<RecommendationBodyPart> {
+  const text = String(value).toLowerCase();
+  const parts = new Set<RecommendationBodyPart>();
+
+  if (isCardioExerciseText(text)) parts.add("cardio");
+  if (/(벤치|체스트|푸시업|푸쉬업|딥스|플라이|펙덱|chest|bench|push.?up|dip|fly|pec)/i.test(text)) parts.add("chest");
+  if (/(로우|풀다운|랫|광배|티바|t바|시티드\s*로우|데드리프트|풀업|친업|row|pulldown|lat|deadlift|pull.?up|chin.?up)/i.test(text)) parts.add("back");
+  if (/(숄더|어깨|레터럴|레이즈|리어\s*델트|오버헤드|밀리터리|shoulder|lateral|raise|rear\s*delt|overhead|military)/i.test(text)) parts.add("shoulders");
+  if (/(이두|삼두|바이셉|트라이셉|컬|익스텐션|프레스다운|해머|bicep|tricep|curl|extension|pressdown|hammer)/i.test(text)) parts.add("arms");
+  if (isLegIsolationExerciseText(text)) parts.add("legs");
+  if (/(둔근|글루트|힙\s*쓰러스트|힙\s*어브덕션|glute|hip\s*thrust|hip\s*abduction)/i.test(text)) parts.add("glutes");
+  if (/(복근|코어|크런치|싯업|레그\s*레이즈|행잉\s*니|플랭크|ab|abs|core|crunch|sit.?up|leg\s*raise|plank)/i.test(text)) parts.add("abs");
+
+  return parts;
+}
+
+function isExerciseAllowedForFocus(exerciseParts: Set<RecommendationBodyPart>, allowedParts: Set<RecommendationBodyPart> | null) {
+  if (!allowedParts || exerciseParts.size === 0) return true;
+  if (exerciseParts.has("cardio")) return true;
+  for (const part of exerciseParts) {
+    if (allowedParts.has(part)) return true;
+  }
+  return false;
+}
+
 function normalizeRecommendationExerciseKey(value: string) {
   return normalizeExerciseName(value)
     .replace(/\b\d+\s*(초|분)\b/g, "")
@@ -303,30 +356,42 @@ function dedupeRecommendationExercises(exercises: string[]) {
   });
 }
 
-function moveOffTargetLegExercises(weeklyPlan: any[]) {
-  const legExercisesToMove: string[] = [];
+function alignExercisesToDayFocus(weeklyPlan: any[]) {
+  const exercisesToMove = new Map<RecommendationBodyPart, string[]>();
   const normalizedDays = weeklyPlan.map((day) => {
     const focus = String(day?.focus ?? "");
-    const allowsLegs = isLegFocusText(focus) || isFullBodyFocusText(focus);
+    const allowedParts = getFocusBodyParts(focus);
     const exercises = Array.isArray(day.exercises) ? dedupeRecommendationExercises(day.exercises.map(String)) : [];
-    if (allowsLegs || !exercises.length) return day;
+    if (!allowedParts || !exercises.length) return { ...day, exercises };
 
     const kept = exercises.filter((exercise: string) => {
-      const isOffTargetLegExercise = isLegIsolationExerciseText(exercise);
-      if (isOffTargetLegExercise) legExercisesToMove.push(String(exercise));
-      return !isOffTargetLegExercise;
+      const exerciseParts = getExerciseBodyParts(exercise);
+      if (isExerciseAllowedForFocus(exerciseParts, allowedParts)) return true;
+
+      const movablePart = recommendationBodyParts.find((part) => part !== "cardio" && exerciseParts.has(part));
+      if (movablePart) {
+        exercisesToMove.set(movablePart, [...(exercisesToMove.get(movablePart) ?? []), exercise]);
+      }
+      return false;
     });
     return { ...day, exercises: kept };
   });
 
-  if (!legExercisesToMove.length) return normalizedDays;
-
-  const legTarget = normalizedDays.find((day) => isLegFocusText(String(day?.focus ?? "")) && Array.isArray(day.exercises));
-  if (!legTarget) return normalizedDays;
+  if (!exercisesToMove.size) return normalizedDays;
 
   return normalizedDays.map((day) => {
-    if (day !== legTarget) return day;
-    return { ...day, exercises: [...day.exercises, ...legExercisesToMove] };
+    const allowedParts = getFocusBodyParts(String(day?.focus ?? ""));
+    if (!allowedParts || !Array.isArray(day.exercises)) return day;
+
+    const additions: string[] = [];
+    for (const part of allowedParts) {
+      additions.push(...(exercisesToMove.get(part) ?? []));
+      exercisesToMove.delete(part);
+    }
+
+    return additions.length
+      ? { ...day, exercises: dedupeRecommendationExercises([...day.exercises, ...additions]) }
+      : day;
   });
 }
 
@@ -367,7 +432,7 @@ function moveCardioOffLegDays(weeklyPlan: any[]) {
 function normalizeProgramRecommendation(program: any, options?: { avoidCardioOnLegDay?: boolean }) {
   if (!program?.weeklyPlan || !Array.isArray(program.weeklyPlan)) return program;
 
-  const bodyPartAlignedPlan = moveOffTargetLegExercises(program.weeklyPlan);
+  const bodyPartAlignedPlan = alignExercisesToDayFocus(program.weeklyPlan);
   const sourcePlan = options?.avoidCardioOnLegDay
     ? moveCardioOffLegDays(bodyPartAlignedPlan)
     : bodyPartAlignedPlan;
@@ -1279,6 +1344,7 @@ ${historyText}
         "고강도 유산소와 고강도 하체 운동은 같은 날 배치하지 마세요.",
         "같은 근육군을 연속 운동일에 과도하게 반복하지 말고, 큰 근육군은 최소 1일 이상 회복 간격이 생기게 배치하세요.",
         "각 운동일의 focus와 맞는 운동만 넣으세요. 예를 들어 등/어깨/이두 날에는 스쿼트, 핵스쿼트, 런지, 레그프레스, 레그컬, 카프레이즈 같은 하체 운동을 넣지 말고, 하체 운동은 하체/둔근 포커스 날에만 배치하세요.",
+        "가슴 날에는 등/하체 운동을, 등 날에는 가슴/하체 운동을, 어깨/팔 날에는 하체 운동을 섞지 마세요. 복근은 includeCore가 켜진 경우에만 코어 보조로 배치하세요.",
         "유산소는 같은 운동일에 중복해서 넣지 마세요. 러닝/트레드밀은 하루에 한 줄만 허용합니다.",
         "등/이두, 가슴/삼두, 하체, 어깨/코어처럼 서로 보조 작용이 자연스러운 조합을 우선하세요.",
         "사용자가 운동일별 희망 구성을 적으면 그 구성을 우선하되 회복상 무리가 있으면 더 안전한 순서로 조정하세요.",
