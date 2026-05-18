@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Circle } from "lucide-react";
 import { ConfettiAnimation } from "./ConfettiAnimation";
@@ -73,12 +73,16 @@ export function WeeklyGoalDashboard() {
   };
 
   const { weeklyTarget, completedDays, progress, totalVolume, totalDuration, workoutsByDay } = weeklyStats;
+  const completedCount = useMemo(
+    () => Object.values(workoutsByDay ?? {}).filter(Boolean).length,
+    [workoutsByDay],
+  );
 
   return (
     <>
       <ConfettiAnimation isActive={showCelebration} />
       <AchievementBadge isVisible={showCelebration} onAnimationEnd={handleCelebrationEnd} />
-      <Card className="bg-card border-border">
+      <Card className="self-start bg-card border-border">
       <CardContent className="p-3 lg:p-4">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-2.5">
@@ -105,8 +109,11 @@ export function WeeklyGoalDashboard() {
 
         {/* 요일별 체크리스트 */}
         <div className="mb-3">
-          <p className="text-xs text-muted-foreground mb-2">요일별 운동 완료</p>
-          <div className="grid grid-cols-7 gap-1.5">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-xs text-muted-foreground">요일별 운동 완료</p>
+            <p className="text-xs text-muted-foreground">{completedCount}/7 체크</p>
+          </div>
+          <div className="grid grid-cols-7 gap-1">
             {weekdayLabels.map((label, dayOfWeek) => {
               const isCompleted = workoutsByDay[dayOfWeek];
               const isToday = new Date().getDay() === dayOfWeek;
@@ -114,7 +121,7 @@ export function WeeklyGoalDashboard() {
               return (
                 <div
                   key={dayOfWeek}
-                  className={`flex flex-col items-center gap-1 p-1.5 rounded-lg transition-all ${
+                  className={`flex min-h-10 flex-col items-center justify-center gap-0.5 rounded-lg transition-all ${
                     isToday ? "bg-primary/10 border border-primary/30" : "bg-muted/50"
                   }`}
                 >
