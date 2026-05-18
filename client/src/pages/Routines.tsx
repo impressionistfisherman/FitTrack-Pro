@@ -2,7 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { getAppPath, startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
-import { Activity, ChevronRight, Dumbbell, LogIn, Pencil, Plus, Target, Trash2 } from "lucide-react";
+import { Activity, CheckSquare, ChevronRight, Dumbbell, LogIn, Pencil, Plus, Square, Target, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
@@ -169,7 +169,19 @@ function RenameRoutineDialog({ routine, onRenamed }: { routine: any; onRenamed: 
   );
 }
 
-function RoutineCard({ routine, onDelete }: { routine: any; onDelete: () => void }) {
+function RoutineCard({
+  routine,
+  onDelete,
+  selectionMode = false,
+  selected = false,
+  onToggleSelected,
+}: {
+  routine: any;
+  onDelete: () => void;
+  selectionMode?: boolean;
+  selected?: boolean;
+  onToggleSelected?: () => void;
+}) {
   const goalConfig = goalOptions.find((g) => g.value === routine.goal) || goalOptions[5];
   const deleteRoutine = trpc.routines.delete.useMutation({
     onSuccess: () => { toast.success("루틴이 삭제되었습니다."); onDelete(); },
@@ -183,22 +195,46 @@ function RoutineCard({ routine, onDelete }: { routine: any; onDelete: () => void
   };
 
   return (
-    <Card className="bg-card border-border hover:border-primary/30 transition-all duration-200 group">
+    <Card
+      className={cn(
+        "bg-card border-border transition-all duration-200 group",
+        selectionMode ? "cursor-pointer hover:border-primary/40" : "hover:border-primary/30",
+        selected && "border-primary/60 bg-primary/5"
+      )}
+      onClick={selectionMode ? onToggleSelected : undefined}
+    >
       <CardContent className="p-5">
         <div className="flex items-start justify-between mb-3">
+          {selectionMode && (
+            <button
+              type="button"
+              className="mr-3 mt-0.5 text-primary"
+              onClick={(event) => {
+                event.stopPropagation();
+                onToggleSelected?.();
+              }}
+              aria-label={selected ? "선택 해제" : "루틴 선택"}
+            >
+              {selected ? <CheckSquare size={18} /> : <Square size={18} />}
+            </button>
+          )}
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground text-base truncate">{routine.name}</h3>
             {routine.description && (
               <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{routine.description}</p>
             )}
           </div>
-          <RenameRoutineDialog routine={routine} onRenamed={onDelete} />
-          <button
-            onClick={(e) => { e.preventDefault(); deleteRoutine.mutate({ id: routine.id }); }}
-            className="ml-2 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100"
-          >
-            <Trash2 size={14} />
-          </button>
+          {!selectionMode && (
+            <>
+              <RenameRoutineDialog routine={routine} onRenamed={onDelete} />
+              <button
+                onClick={(e) => { e.preventDefault(); deleteRoutine.mutate({ id: routine.id }); }}
+                className="ml-2 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+              >
+                <Trash2 size={14} />
+              </button>
+            </>
+          )}
         </div>
 
         <div className="flex items-center gap-2 mb-4">
@@ -216,16 +252,22 @@ function RoutineCard({ routine, onDelete }: { routine: any; onDelete: () => void
             size="sm"
             className="h-9 min-w-0 flex-1 gap-1.5 whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90 text-xs"
             onClick={handleStart}
-            disabled={startSession.isPending}
+            disabled={selectionMode || startSession.isPending}
           >
             <Activity size={12} />
             운동 시작
           </Button>
-          <Link href={`/routines/${routine.id}`}>
-            <Button size="sm" variant="outline" className="h-9 gap-1.5 whitespace-nowrap border-border text-muted-foreground hover:text-foreground text-xs">
+          {selectionMode ? (
+            <Button size="sm" variant="outline" className="h-9 gap-1.5 whitespace-nowrap border-border text-muted-foreground text-xs" disabled>
               편집 <ChevronRight size={12} />
             </Button>
-          </Link>
+          ) : (
+            <Link href={`/routines/${routine.id}`}>
+              <Button size="sm" variant="outline" className="h-9 gap-1.5 whitespace-nowrap border-border text-muted-foreground hover:text-foreground text-xs">
+                편집 <ChevronRight size={12} />
+              </Button>
+            </Link>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -236,6 +278,42 @@ export default function Routines() {
   const { isAuthenticated, loading } = useAuth();
   const utils = trpc.useUtils();
   const { data: routines, isLoading } = trpc.routines.list.useQuery(undefined, { enabled: isAuthenticated });
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const deleteRoutine = trpc.routines.delete.useMutation();
+  const selectedCount = selectedIds.length;
+  const allRoutineIds = routines?.map((routine: any) => routine.id) ?? [];
+  const allSelected = allRoutineIds.length > 0 && selectedCount === allRoutineIds.length;
+
+  const toggleSelectionMode = () => {
+    setSelectionMode((value) => {
+      if (value) setSelectedIds([]);
+      return !value;
+    });
+  };
+
+  const toggleRoutineSelection = (id: number) => {
+    setSelectedIds((ids) => ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id]);
+  };
+
+  const toggleAllSelection = () => {
+    setSelectedIds(allSelected ? [] : allRoutineIds);
+  };
+
+  const deleteRoutines = async (ids: number[]) => {
+    if (!ids.length || deleteRoutine.isPending) return;
+    const ok = window.confirm(`${ids.length}개 루틴을 삭제할까요? 삭제한 루틴은 복구할 수 없습니다.`);
+    if (!ok) return;
+    try {
+      await Promise.all(ids.map((id) => deleteRoutine.mutateAsync({ id })));
+      toast.success(`${ids.length}개 루틴을 삭제했습니다.`);
+      setSelectedIds([]);
+      setSelectionMode(false);
+      utils.routines.list.invalidate();
+    } catch {
+      toast.error("루틴 삭제에 실패했습니다.");
+    }
+  };
 
   if (loading) {
     return (
@@ -263,12 +341,23 @@ export default function Routines() {
 
   return (
     <div className="page-shell animate-fade-in">
-      <div className="page-header flex items-center justify-between gap-3">
+      <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="page-title">내 루틴</h1>
           <p className="page-description">목표별 맞춤 운동 루틴을 관리하세요</p>
         </div>
-        <CreateRoutineDialog onCreated={() => utils.routines.list.invalidate()} />
+        <div className="flex flex-wrap gap-2">
+          {routines && routines.length > 0 && (
+            <Button
+              variant={selectionMode ? "secondary" : "outline"}
+              className="border-border"
+              onClick={toggleSelectionMode}
+            >
+              {selectionMode ? "관리 완료" : "선택 관리"}
+            </Button>
+          )}
+          <CreateRoutineDialog onCreated={() => utils.routines.list.invalidate()} />
+        </div>
       </div>
 
       {isLoading ? (
@@ -276,11 +365,47 @@ export default function Routines() {
           {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-40 skeleton rounded-xl" />)}
         </div>
       ) : routines && routines.length > 0 ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {routines.map((routine) => (
-            <RoutineCard key={routine.id} routine={routine} onDelete={() => utils.routines.list.invalidate()} />
-          ))}
-        </div>
+        <>
+          {selectionMode && (
+            <div className="mb-4 flex flex-col gap-2 rounded-xl border border-border bg-card p-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-sm text-muted-foreground">
+                <span className="font-semibold text-foreground">{selectedCount}</span> / {routines.length}개 선택
+              </div>
+              <div className="grid grid-cols-3 gap-2 sm:flex">
+                <Button variant="outline" className="border-border" onClick={toggleAllSelection}>
+                  {allSelected ? "전체 해제" : "전체 선택"}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  disabled={!selectedCount || deleteRoutine.isPending}
+                  onClick={() => deleteRoutines(selectedIds)}
+                >
+                  선택 삭제
+                </Button>
+                <Button
+                  variant="destructive"
+                  disabled={deleteRoutine.isPending}
+                  onClick={() => deleteRoutines(allRoutineIds)}
+                >
+                  전체 삭제
+                </Button>
+              </div>
+            </div>
+          )}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {routines.map((routine) => (
+              <RoutineCard
+                key={routine.id}
+                routine={routine}
+                onDelete={() => utils.routines.list.invalidate()}
+                selectionMode={selectionMode}
+                selected={selectedIds.includes(routine.id)}
+                onToggleSelected={() => toggleRoutineSelection(routine.id)}
+              />
+            ))}
+          </div>
+        </>
       ) : (
         <div className="text-center py-16">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4">
