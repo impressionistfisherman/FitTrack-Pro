@@ -260,12 +260,62 @@ function normalizeStretchBlock(day: any, phase: "warmup" | "cooldown") {
   return totalIsTooSmall || hasGeneric ? buildDetailedStretchRoutine(day, phase) : items;
 }
 
-function normalizeProgramRecommendation(program: any) {
+function isCardioExerciseText(value: string) {
+  return /(유산소|러닝|런닝|트레드밀|사이클|자전거|로잉|일립티컬|계단|스텝밀|running|treadmill|cycling|bike|row|elliptical|stair)/i.test(String(value));
+}
+
+function isLegFocusedDay(day: any) {
+  const text = [
+    day?.focus,
+    ...(Array.isArray(day?.exercises) ? day.exercises : []),
+  ].join(" ");
+  return /(하체|다리|둔근|햄스트링|대퇴|종아리|leg|glute|hamstring|quad|calf|squat|스쿼트|런지|레그|데드리프트)/i.test(text);
+}
+
+function moveCardioOffLegDays(weeklyPlan: any[]) {
+  const cardioToMove: string[] = [];
+  const normalizedDays = weeklyPlan.map((day) => {
+    if (!isLegFocusedDay(day)) return day;
+    const exercises = Array.isArray(day.exercises) ? day.exercises : [];
+    const kept = exercises.filter((exercise: string) => {
+      const isCardio = isCardioExerciseText(String(exercise));
+      if (isCardio) cardioToMove.push(String(exercise));
+      return !isCardio;
+    });
+    return { ...day, exercises: kept };
+  });
+
+  if (!cardioToMove.length) return normalizedDays;
+
+  const cardioTargets = normalizedDays
+    .map((day, index) => ({ day, index }))
+    .filter(({ day }) => !isLegFocusedDay(day) && Array.isArray(day.exercises));
+
+  if (!cardioTargets.length) return normalizedDays;
+
+  const additions = new Map<number, string[]>();
+  cardioToMove.forEach((exercise, index) => {
+    const target = cardioTargets[index % cardioTargets.length];
+    additions.set(target.index, [...(additions.get(target.index) ?? []), exercise]);
+  });
+
+  return normalizedDays.map((day, index) => {
+    const extraCardio = additions.get(index);
+    if (!extraCardio?.length) return day;
+    return { ...day, exercises: [...(Array.isArray(day.exercises) ? day.exercises : []), ...extraCardio] };
+  });
+}
+
+function normalizeProgramRecommendation(program: any, options?: { avoidCardioOnLegDay?: boolean }) {
   if (!program?.weeklyPlan || !Array.isArray(program.weeklyPlan)) return program;
+
+  const sourcePlan = options?.avoidCardioOnLegDay
+    ? moveCardioOffLegDays(program.weeklyPlan)
+    : program.weeklyPlan;
 
   return {
     ...program,
-    weeklyPlan: program.weeklyPlan.map((day: any, index: number) => {
+    weeklyPlan: sourcePlan.map((day: any, index: number) => {
       const exercises = Array.isArray(day.exercises) ? day.exercises : [];
       const warmupStretch = Array.isArray(day.warmupStretch) ? day.warmupStretch : [];
       const cooldownStretch = Array.isArray(day.cooldownStretch) ? day.cooldownStretch : [];
@@ -1088,6 +1138,7 @@ ${historyText}
         splitPreference: z.string().default("auto"),
         excludedBodyParts: z.array(z.string()).default([]),
         includeCardio: z.boolean().default(true),
+        avoidCardioOnLegDay: z.boolean().default(true),
         includeCore: z.boolean().default(true),
         dayFocusNotes: z.string().max(500).optional(),
         customRequest: z.string().max(500).optional(),
@@ -1134,11 +1185,22 @@ ${historyText}
         ? `제외할 부위/운동: ${excludedBodyParts.map((item) => bodyPartLabels[item] || item).join(", ")}`
         : "제외할 부위/운동: 없음";
       const includeCardio = input?.includeCardio ?? true;
+      const avoidCardioOnLegDay = input?.avoidCardioOnLegDay ?? true;
       const includeCore = input?.includeCore ?? true;
       const accessoryText = [
         includeCardio ? "유산소를 주간 계획에 적절히 포함" : "유산소는 제외",
+        avoidCardioOnLegDay ? "하체 운동일에는 유산소를 넣지 말고 상체/휴식 부담이 낮은 날에 배치" : "하체 운동일에도 가벼운 유산소 배치 가능",
         includeCore ? "복근/코어를 주간 계획에 적절히 포함" : "복근/코어는 제외",
       ].join(", ");
+      const trainingOptimizationRules = [
+        avoidCardioOnLegDay
+          ? "하체/둔근/햄스트링/스쿼트/런지/데드리프트가 포함된 날에는 러닝, 트레드밀, 사이클, 로잉 같은 유산소를 넣지 말고 상체일 또는 별도 컨디셔닝 성격의 날에 배치하세요."
+          : "하체 운동일에 유산소를 넣는 경우 저강도 10~20분 이내로 제한하고 근력 운동 이후에 배치하세요.",
+        "고강도 유산소와 고강도 하체 운동은 같은 날 배치하지 마세요.",
+        "같은 근육군을 연속 운동일에 과도하게 반복하지 말고, 큰 근육군은 최소 1일 이상 회복 간격이 생기게 배치하세요.",
+        "등/이두, 가슴/삼두, 하체, 어깨/코어처럼 서로 보조 작용이 자연스러운 조합을 우선하세요.",
+        "사용자가 운동일별 희망 구성을 적으면 그 구성을 우선하되 회복상 무리가 있으면 더 안전한 순서로 조정하세요.",
+      ].join("\n            - ");
       const dayFocusText = input?.dayFocusNotes?.trim()
         ? `운동일별 희망 구성: ${input.dayFocusNotes.trim()}`
         : "운동일별 희망 구성: AI가 회복을 고려해 1일차부터 배치";
@@ -1173,6 +1235,7 @@ ${historyText}
             - 운동명은 한국어 운동명을 우선 사용하고, 필요하면 괄호 안에 영어명을 보조로 적으세요.
             - 사용자가 제외한 부위/운동은 넣지 마세요.
             - 유산소/복근 포함 여부와 사용자 추가 요청을 우선순위 높게 반영하세요.
+            - ${trainingOptimizationRules}
             - exercises에는 메인 운동, 보조 운동, 선택된 경우 유산소/복근만 넣으세요. 스트레칭은 exercises에 넣지 마세요.
             - 각 운동일마다 warmupStretch 배열과 cooldownStretch 배열을 반드시 작성하세요.
             - warmupStretch는 운동 전 동적 스트레칭/가동성 루틴 총 20분, cooldownStretch는 운동 후 정적 스트레칭 총 20분으로 구성하세요.
@@ -1204,6 +1267,8 @@ ${recommendationCatalog.text}
 
 위 정보를 바탕으로 이번 주 운동 프로그램을 추천해주세요.
 반드시 위 DB 후보에 있는 운동만 사용하고, 지정된 기구, 운동 시간, 제외 부위, 분할 방식, 사용자 요청 조건에 맞는 운동만 포함해주세요.
+최적화 규칙:
+- ${trainingOptimizationRules}
 각 운동일에는 운동 전 스트레칭 20분과 운동 후 스트레칭 20분을 따로 분리해서 포함해주세요. 스트레칭은 exercises에 섞지 마세요.`,
           },
         ],
@@ -1258,7 +1323,7 @@ ${recommendationCatalog.text}
       const content2 = typeof rawContent2 === 'string' ? rawContent2 : null;
       let parsed = null;
       try { parsed = content2 ? JSON.parse(content2) : null; } catch { parsed = null; }
-      parsed = normalizeProgramRecommendation(parsed);
+      parsed = normalizeProgramRecommendation(parsed, { avoidCardioOnLegDay });
 
       return {
         program: parsed,

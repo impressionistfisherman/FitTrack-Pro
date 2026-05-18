@@ -46,6 +46,7 @@ function ProgramRecommendation() {
   const [splitPreference, setSplitPreference] = useState("auto");
   const [excludedBodyParts, setExcludedBodyParts] = useState<string[]>([]);
   const [includeCardio, setIncludeCardio] = useState(true);
+  const [avoidCardioOnLegDay, setAvoidCardioOnLegDay] = useState(true);
   const [includeCore, setIncludeCore] = useState(true);
   const [dayFocusNotes, setDayFocusNotes] = useState("");
   const [customRequest, setCustomRequest] = useState("");
@@ -84,6 +85,7 @@ function ProgramRecommendation() {
       splitPreference,
       excludedBodyParts,
       includeCardio,
+      avoidCardioOnLegDay,
       includeCore,
       dayFocusNotes: dayFocusNotes.trim() || undefined,
       customRequest: customRequest.trim() || undefined,
@@ -194,6 +196,15 @@ function ProgramRecommendation() {
                 >
                   유산소 포함
                 </button>
+                {includeCardio && (
+                  <button
+                    type="button"
+                    onClick={() => setAvoidCardioOnLegDay((value) => !value)}
+                    className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${avoidCardioOnLegDay ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
+                  >
+                    하체일 유산소 분리
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setIncludeCore((value) => !value)}
