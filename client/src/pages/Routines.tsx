@@ -2,7 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { getAppPath, startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
-import { Activity, ChevronRight, Dumbbell, LogIn, Plus, Target, Trash2 } from "lucide-react";
+import { Activity, ChevronRight, Dumbbell, LogIn, Pencil, Plus, Target, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
@@ -117,6 +117,58 @@ function CreateRoutineDialog({ onCreated }: { onCreated: () => void }) {
   );
 }
 
+function RenameRoutineDialog({ routine, onRenamed }: { routine: any; onRenamed: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState(routine.name || "");
+  const updateRoutine = trpc.routines.update.useMutation({
+    onSuccess: () => {
+      toast.success("루틴 이름을 변경했습니다.");
+      setOpen(false);
+      onRenamed();
+    },
+    onError: () => toast.error("이름 변경에 실패했습니다."),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={(next) => {
+      setOpen(next);
+      if (next) setName(routine.name || "");
+    }}>
+      <DialogTrigger asChild>
+        <button
+          className="ml-2 rounded-lg p-1.5 text-muted-foreground opacity-100 transition-colors hover:bg-accent hover:text-foreground sm:opacity-0 sm:group-hover:opacity-100"
+          aria-label="루틴 이름 변경"
+        >
+          <Pencil size={14} />
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-w-sm border-border bg-card text-foreground">
+        <DialogHeader>
+          <DialogTitle className="text-foreground">루틴 이름 변경</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 pt-2">
+          <div className="space-y-1.5">
+            <Label className="text-sm text-muted-foreground">루틴 이름</Label>
+            <Input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className="border-border bg-accent text-foreground"
+              placeholder="루틴 이름"
+            />
+          </div>
+          <Button
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            disabled={!name.trim() || updateRoutine.isPending}
+            onClick={() => updateRoutine.mutate({ id: routine.id, name: name.trim() })}
+          >
+            {updateRoutine.isPending ? "저장 중..." : "이름 저장"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function RoutineCard({ routine, onDelete }: { routine: any; onDelete: () => void }) {
   const goalConfig = goalOptions.find((g) => g.value === routine.goal) || goalOptions[5];
   const deleteRoutine = trpc.routines.delete.useMutation({
@@ -140,6 +192,7 @@ function RoutineCard({ routine, onDelete }: { routine: any; onDelete: () => void
               <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{routine.description}</p>
             )}
           </div>
+          <RenameRoutineDialog routine={routine} onRenamed={onDelete} />
           <button
             onClick={(e) => { e.preventDefault(); deleteRoutine.mutate({ id: routine.id }); }}
             className="ml-2 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100"
@@ -161,7 +214,7 @@ function RoutineCard({ routine, onDelete }: { routine: any; onDelete: () => void
         <div className="flex gap-2">
           <Button
             size="sm"
-            className="flex-1 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-8"
+            className="h-9 min-w-0 flex-1 gap-1.5 whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90 text-xs"
             onClick={handleStart}
             disabled={startSession.isPending}
           >
@@ -169,7 +222,7 @@ function RoutineCard({ routine, onDelete }: { routine: any; onDelete: () => void
             운동 시작
           </Button>
           <Link href={`/routines/${routine.id}`}>
-            <Button size="sm" variant="outline" className="gap-1.5 border-border text-muted-foreground hover:text-foreground text-xs h-8">
+            <Button size="sm" variant="outline" className="h-9 gap-1.5 whitespace-nowrap border-border text-muted-foreground hover:text-foreground text-xs">
               편집 <ChevronRight size={12} />
             </Button>
           </Link>

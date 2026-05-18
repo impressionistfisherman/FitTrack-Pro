@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Dumbbell, GripVertical, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, Dumbbell, GripVertical, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "wouter";
 import { Badge } from "@/components/ui/badge";
@@ -66,9 +66,9 @@ function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: nu
   const bodyPartKo: Record<string, string> = { all: "전체", ...bodyPartLabels };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+        <Button className="min-w-[7.5rem] gap-2 whitespace-nowrap bg-primary px-4 text-primary-foreground hover:bg-primary/90">
           <Plus size={16} />운동 추가
         </Button>
       </DialogTrigger>
@@ -248,6 +248,17 @@ export default function RoutineDetail() {
   const utils = trpc.useUtils();
 
   const { data: routine, isLoading } = trpc.routines.detail.useQuery({ id: routineId });
+  const [editingName, setEditingName] = useState(false);
+  const [routineName, setRoutineName] = useState("");
+  const updateRoutine = trpc.routines.update.useMutation({
+    onSuccess: () => {
+      toast.success("루틴 이름을 변경했습니다.");
+      setEditingName(false);
+      utils.routines.detail.invalidate({ id: routineId });
+      utils.routines.list.invalidate();
+    },
+    onError: () => toast.error("이름 변경에 실패했습니다."),
+  });
   const removeExercise = trpc.routines.removeExercise.useMutation({
     onSuccess: () => { toast.success("운동이 제거되었습니다."); utils.routines.detail.invalidate({ id: routineId }); },
     onError: () => toast.error("제거에 실패했습니다."),
@@ -279,6 +290,20 @@ export default function RoutineDetail() {
     window.location.href = `/workout/${result.sessionId}`;
   };
 
+  const beginNameEdit = () => {
+    setRoutineName(routine.name || "");
+    setEditingName(true);
+  };
+
+  const saveName = () => {
+    const nextName = routineName.trim();
+    if (!nextName || nextName === routine.name) {
+      setEditingName(false);
+      return;
+    }
+    updateRoutine.mutate({ id: routine.id, name: nextName });
+  };
+
   return (
     <div className="page-shell page-shell-narrow animate-fade-in">
       <Link href="/routines">
@@ -288,22 +313,48 @@ export default function RoutineDetail() {
       </Link>
 
       <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{routine.name}</h1>
+        <div className="min-w-0 flex-1">
+          {editingName ? (
+            <div className="flex max-w-xl items-center gap-2">
+              <Input
+                value={routineName}
+                onChange={(event) => setRoutineName(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") saveName();
+                  if (event.key === "Escape") setEditingName(false);
+                }}
+                className="h-10 border-border bg-accent text-xl font-bold text-foreground"
+                autoFocus
+              />
+              <Button size="icon" className="h-10 w-10 shrink-0 bg-primary text-primary-foreground hover:bg-primary/90" onClick={saveName} disabled={updateRoutine.isPending}>
+                <Check size={16} />
+              </Button>
+              <Button size="icon" variant="outline" className="h-10 w-10 shrink-0 border-border" onClick={() => setEditingName(false)}>
+                <X size={16} />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex min-w-0 items-center gap-2">
+              <h1 className="truncate text-2xl font-bold text-foreground">{routine.name}</h1>
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground" onClick={beginNameEdit}>
+                <Pencil size={15} />
+              </Button>
+            </div>
+          )}
           {routine.description && <p className="text-sm text-muted-foreground mt-1">{routine.description}</p>}
           <div className="flex gap-2 mt-2">
             <Badge variant="outline" className="text-xs border-border text-muted-foreground">주 {routine.daysPerWeek}회</Badge>
             <Badge variant="outline" className="text-xs border-border text-muted-foreground">{routine.exercises?.length || 0}개 운동</Badge>
           </div>
         </div>
-        <div className="grid w-full grid-cols-2 gap-2 sm:w-auto">
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:justify-end">
           <AddExerciseDialog
             routineId={routineId}
             currentCount={routine.exercises?.length || 0}
             onAdded={() => utils.routines.detail.invalidate({ id: routineId })}
           />
           <Button
-            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+            className="min-w-[7.5rem] gap-2 whitespace-nowrap bg-primary px-4 text-primary-foreground hover:bg-primary/90"
             onClick={handleStart}
             disabled={startSession.isPending || !routine.exercises?.length}
           >
