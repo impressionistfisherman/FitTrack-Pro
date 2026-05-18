@@ -109,8 +109,9 @@ function preparePostgresSql(sql: string) {
 function buildQuery(sql: string, params: any[]): { text: string; values: any[] } {
   if (databaseType === "postgres") {
     let index = 0;
+    const sqlParts = preparePostgresSql(sql).split("?");
     return {
-      text: preparePostgresSql(sql).replaceAll(/\?/g, () => `$${++index}`),
+      text: sqlParts.map((part) => index < sqlParts.length - 1 ? `${part}$${++index}` : part).join(""),
       values: params,
     };
   }
@@ -443,8 +444,8 @@ function normalizeExerciseSeedKey(value: unknown): string {
   return String(value)
     .toLowerCase()
     .replaceAll(/\(multiple response\)|\(single response\)|- medium grip/g, "")
-    .replaceAll(/rope jumping/g, "jump rope")
-    .replaceAll(/triceps/g, "tricep")
+    .replaceAll("rope jumping", "jump rope")
+    .replaceAll("triceps", "tricep")
     .replaceAll(/[^a-z0-9가-힣]+/g, "");
 }
 
@@ -1145,7 +1146,7 @@ export async function getWorkoutStreak(userId: number): Promise<Row> {
 
 export async function checkPRs(userId: number, sessionId: number): Promise<any> {
   const session = await getWorkoutSessionById(sessionId);
-  if (!session || session.userId !== userId) return [];
+  if (session?.userId !== userId) return [];
   return [];
 }
 

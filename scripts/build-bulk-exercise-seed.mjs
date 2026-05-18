@@ -726,8 +726,8 @@ function normalizeKey(value) {
   return String(value)
     .toLowerCase()
     .replaceAll(/\(multiple response\)|\(single response\)|- medium grip/g, "")
-    .replaceAll(/rope jumping/g, "jump rope")
-    .replaceAll(/triceps/g, "tricep")
+    .replaceAll("rope jumping", "jump rope")
+    .replaceAll("triceps", "tricep")
     .replaceAll(/[^a-z0-9가-힣]+/g, "");
 }
 
@@ -743,8 +743,8 @@ function translateFallback(name) {
   }
   value = value
     .replaceAll(/[()]/g, " ")
-    .replaceAll(/\//g, " / ")
-    .replaceAll(/-/g, " ")
+    .replaceAll("/", " / ")
+    .replaceAll("-", " ")
     .replaceAll(/\s+/g, " ")
     .trim();
   let titled = value
@@ -806,7 +806,7 @@ function findBodyPart(text, allowAbs = true) {
     if (bodyPart === "abs" && !allowAbs) continue;
     if (pattern.test(text)) return bodyPart;
   }
-  return null;
+  return "";
 }
 
 function mapBodyPart(exercise) {

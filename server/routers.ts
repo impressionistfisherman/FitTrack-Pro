@@ -278,6 +278,45 @@ function isLegFocusedDay(day: any) {
   return /(하체|다리|둔근|햄스트링|대퇴|종아리|leg|glute|hamstring|quad|calf|squat|스쿼트|런지|레그|데드리프트)/i.test(text);
 }
 
+function isLegFocusText(value: string) {
+  return /(하체|다리|둔근|햄스트링|대퇴|종아리|leg|legs|glute|hamstring|quad|calf|스쿼트|런지|레그)/i.test(value);
+}
+
+function isFullBodyFocusText(value: string) {
+  return /(전신|풀바디|full.?body|컨디셔닝|conditioning|혼합|hybrid)/i.test(value);
+}
+
+function isLegIsolationExerciseText(value: string) {
+  return /(스쿼트|핵\s*스쿼트|핵스쿼트|런지|레그\s*(프레스|컬|익스텐션)|카프|종아리|햄스트링|쿼드|내전근|외전근|hack\s*squat|squat|lunge|leg\s*(press|curl|extension)|calf|hamstring|quad|adductor|abductor)/i.test(String(value));
+}
+
+function moveOffTargetLegExercises(weeklyPlan: any[]) {
+  const legExercisesToMove: string[] = [];
+  const normalizedDays = weeklyPlan.map((day) => {
+    const focus = String(day?.focus ?? "");
+    const allowsLegs = isLegFocusText(focus) || isFullBodyFocusText(focus);
+    const exercises = Array.isArray(day.exercises) ? day.exercises : [];
+    if (allowsLegs || !exercises.length) return day;
+
+    const kept = exercises.filter((exercise: string) => {
+      const isOffTargetLegExercise = isLegIsolationExerciseText(exercise);
+      if (isOffTargetLegExercise) legExercisesToMove.push(String(exercise));
+      return !isOffTargetLegExercise;
+    });
+    return { ...day, exercises: kept };
+  });
+
+  if (!legExercisesToMove.length) return normalizedDays;
+
+  const legTarget = normalizedDays.find((day) => isLegFocusText(String(day?.focus ?? "")) && Array.isArray(day.exercises));
+  if (!legTarget) return normalizedDays;
+
+  return normalizedDays.map((day) => {
+    if (day !== legTarget) return day;
+    return { ...day, exercises: [...day.exercises, ...legExercisesToMove] };
+  });
+}
+
 function moveCardioOffLegDays(weeklyPlan: any[]) {
   const cardioToMove: string[] = [];
   const normalizedDays = weeklyPlan.map((day) => {
@@ -315,9 +354,10 @@ function moveCardioOffLegDays(weeklyPlan: any[]) {
 function normalizeProgramRecommendation(program: any, options?: { avoidCardioOnLegDay?: boolean }) {
   if (!program?.weeklyPlan || !Array.isArray(program.weeklyPlan)) return program;
 
+  const bodyPartAlignedPlan = moveOffTargetLegExercises(program.weeklyPlan);
   const sourcePlan = options?.avoidCardioOnLegDay
-    ? moveCardioOffLegDays(program.weeklyPlan)
-    : program.weeklyPlan;
+    ? moveCardioOffLegDays(bodyPartAlignedPlan)
+    : bodyPartAlignedPlan;
 
   return {
     ...program,
@@ -1225,6 +1265,7 @@ ${historyText}
           : "하체 운동일에 유산소를 넣는 경우 저강도 10~20분 이내로 제한하고 근력 운동 이후에 배치하세요.",
         "고강도 유산소와 고강도 하체 운동은 같은 날 배치하지 마세요.",
         "같은 근육군을 연속 운동일에 과도하게 반복하지 말고, 큰 근육군은 최소 1일 이상 회복 간격이 생기게 배치하세요.",
+        "각 운동일의 focus와 맞는 운동만 넣으세요. 예를 들어 등/어깨/이두 날에는 스쿼트, 핵스쿼트, 런지, 레그프레스 같은 하체 운동을 넣지 말고, 하체 운동은 하체/둔근 포커스 날에만 배치하세요.",
         "등/이두, 가슴/삼두, 하체, 어깨/코어처럼 서로 보조 작용이 자연스러운 조합을 우선하세요.",
         "사용자가 운동일별 희망 구성을 적으면 그 구성을 우선하되 회복상 무리가 있으면 더 안전한 순서로 조정하세요.",
       ].join("\n            - ");
