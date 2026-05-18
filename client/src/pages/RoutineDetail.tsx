@@ -30,6 +30,13 @@ const bodyPartColors: Record<string, string> = {
   full_body: "text-primary bg-primary/10 border-primary/20",
 };
 
+function isTimedExercise(exercise: any) {
+  return exercise?.bodyPart === "cardio"
+    || exercise?.category === "cardio"
+    || exercise?.bodyPart === "stretching"
+    || exercise?.category === "flexibility";
+}
+
 function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: number; currentCount: number; onAdded: () => void }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -144,38 +151,42 @@ function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: nu
               <button onClick={() => setSelectedExercise(null)} className="ml-auto text-xs text-muted-foreground hover:text-foreground">변경</button>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className={cn("grid gap-3", isTimedExercise(selectedExercise) ? "grid-cols-1" : "grid-cols-3")}>
+              {!isTimedExercise(selectedExercise) && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">세트 수</Label>
+                  <Input 
+                    type="number" 
+                    value={sets} 
+                    onChange={(e) => {
+                      const newSets = parseInt(e.target.value) || 1;
+                      setSets(String(newSets));
+                      const newDetails = Array.from({length: newSets}, (_, i) => ({
+                        setNumber: i + 1,
+                        weightKg: setDetails[i]?.weightKg,
+                        reps: setDetails[i]?.reps || parseInt(reps)
+                      }));
+                      setSetDetails(newDetails);
+                    }} 
+                    className="bg-accent border-border text-foreground text-center" 
+                    min="1" 
+                  />
+                </div>
+              )}
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">세트 수</Label>
-                <Input 
-                  type="number" 
-                  value={sets} 
-                  onChange={(e) => {
-                    const newSets = parseInt(e.target.value) || 1;
-                    setSets(String(newSets));
-                    const newDetails = Array.from({length: newSets}, (_, i) => ({
-                      setNumber: i + 1,
-                      weightKg: setDetails[i]?.weightKg,
-                      reps: setDetails[i]?.reps || parseInt(reps)
-                    }));
-                    setSetDetails(newDetails);
-                  }} 
-                  className="bg-accent border-border text-foreground text-center" 
-                  min="1" 
-                />
+                <Label className="text-xs text-muted-foreground">{isTimedExercise(selectedExercise) ? "운동 시간 (분)" : "기본 반복 횟수"}</Label>
+                <Input type="number" value={reps} onChange={(e) => setReps(e.target.value)} className="bg-accent border-border text-foreground text-center" min="1" max="180" />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">기본 반복 횟수</Label>
-                <Input type="number" value={reps} onChange={(e) => setReps(e.target.value)} className="bg-accent border-border text-foreground text-center" min="1" max="100" />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">휴식 (초)</Label>
-                <Input type="number" value={rest} onChange={(e) => setRest(e.target.value)} className="bg-accent border-border text-foreground text-center" min="0" max="600" />
-              </div>
+              {!isTimedExercise(selectedExercise) && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">휴식 (초)</Label>
+                  <Input type="number" value={rest} onChange={(e) => setRest(e.target.value)} className="bg-accent border-border text-foreground text-center" min="0" max="600" />
+                </div>
+              )}
             </div>
 
             {/* 세트별 상세 설정 */}
-            <div className="space-y-2.5 max-h-64 overflow-y-auto">
+            {!isTimedExercise(selectedExercise) && <div className="space-y-2.5 max-h-64 overflow-y-auto">
               <Label className="text-xs text-muted-foreground block">세트별 무게 및 횟수</Label>
               {setDetails.map((detail, idx) => (
                 <div key={idx} className="grid grid-cols-3 gap-2 p-2.5 bg-accent/50 rounded-lg border border-border">
@@ -218,7 +229,7 @@ function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: nu
                   </div>
                 </div>
               ))}
-            </div>
+            </div>}
 
             <Button
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
@@ -226,10 +237,10 @@ function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: nu
                 routineId,
                 exerciseId: selectedExercise.id,
                 order: currentCount + 1,
-                sets: parseInt(sets),
+                sets: isTimedExercise(selectedExercise) ? 1 : parseInt(sets),
                 reps: parseInt(reps),
-                restSeconds: parseInt(rest),
-                setDetails: setDetails,
+                restSeconds: isTimedExercise(selectedExercise) ? 0 : parseInt(rest),
+                setDetails: isTimedExercise(selectedExercise) ? [] : setDetails,
               })}
               disabled={addExercise.isPending}
             >
@@ -382,13 +393,21 @@ export default function RoutineDetail() {
                         {bodyPartLabels[item.ex.bodyPart] || item.ex.bodyPart}
                       </Badge>
                     </div>
-                    <div className="flex gap-3 text-xs text-muted-foreground">
-                      <span>{item.re.sets}세트</span>
-                      <span>×</span>
-                      <span>{item.re.reps}회</span>
-                      <span>·</span>
-                      <span>휴식 {item.re.restSeconds}초</span>
-                    </div>
+                    {isTimedExercise(item.ex) ? (
+                      <div className="flex gap-3 text-xs text-muted-foreground">
+                        <span>{item.re.reps || item.re.sets || 20}분</span>
+                        <span>·</span>
+                        <span>{item.ex.bodyPart === "cardio" || item.ex.category === "cardio" ? "유산소" : "시간 기록"}</span>
+                      </div>
+                    ) : (
+                      <div className="flex gap-3 text-xs text-muted-foreground">
+                        <span>{item.re.sets}세트</span>
+                        <span>×</span>
+                        <span>{item.re.reps}회</span>
+                        <span>·</span>
+                        <span>휴식 {item.re.restSeconds}초</span>
+                      </div>
+                    )}
                   </div>
                   <button
                     onClick={() => removeExercise.mutate({ id: item.re.id })}

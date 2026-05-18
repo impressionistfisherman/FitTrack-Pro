@@ -34,6 +34,14 @@ interface ExerciseEntry {
   restSeconds: number;
   sets: SetLog[];
   expanded: boolean;
+  inputMode?: "strength" | "duration";
+}
+
+function isTimedExercise(exercise: any) {
+  return exercise?.bodyPart === "cardio"
+    || exercise?.category === "cardio"
+    || exercise?.bodyPart === "stretching"
+    || exercise?.category === "flexibility";
 }
 
 function estimateCalories(durationMinutes: number, completedSets: number) {
@@ -240,6 +248,7 @@ function ExerciseBlock({ entry, sessionId, onUpdate, onRemove, onSetComplete, ro
   };
 
   const completedCount = entry.sets.filter(s => s.completed).length;
+  const isDurationMode = entry.inputMode === "duration";
   const canChangeExercise = routineAlternatives.length > 1 && completedCount === 0;
 
   const changeExercise = (exercise: { id: number; nameKo: string; name: string; restSeconds?: number }) => {
@@ -264,10 +273,20 @@ function ExerciseBlock({ entry, sessionId, onUpdate, onRemove, onSetComplete, ro
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-foreground text-sm">{entry.nameKo}</div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>{completedCount}/{entry.sets.length} 세트</span>
-              <span>·</span>
-              <Timer size={10} />
-              <span>{entry.restSeconds}초 휴식</span>
+              <span>{isDurationMode ? (completedCount > 0 ? "기록 완료" : "시간 기록") : `${completedCount}/${entry.sets.length} 세트`}</span>
+              {isDurationMode ? (
+                <>
+                  <span>·</span>
+                  <Clock size={10} />
+                  <span>{entry.sets[0]?.reps ?? 20}분</span>
+                </>
+              ) : (
+                <>
+                  <span>·</span>
+                  <Timer size={10} />
+                  <span>{entry.restSeconds}초 휴식</span>
+                </>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -329,6 +348,38 @@ function ExerciseBlock({ entry, sessionId, onUpdate, onRemove, onSetComplete, ro
 
         {entry.expanded && (
           <div className="space-y-2">
+            {isDurationMode ? (
+              <div className="rounded-xl border border-border bg-accent/40 p-3">
+                <div className="mb-2 text-xs text-muted-foreground">운동 시간</div>
+                <div className="grid grid-cols-[1fr_auto] gap-2">
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => updateSet(0, "reps", Math.max(1, (entry.sets[0]?.reps ?? 20) - 5))}
+                      className="h-8 w-8 rounded-md bg-card flex items-center justify-center text-muted-foreground hover:text-foreground">
+                      <Minus size={12} />
+                    </button>
+                    <Input
+                      type="number"
+                      value={entry.sets[0]?.reps ?? 20}
+                      onChange={e => updateSet(0, "reps", parseInt(e.target.value) || 0)}
+                      className="h-8 text-center bg-card border-border text-foreground"
+                      min="1"
+                    />
+                    <button onClick={() => updateSet(0, "reps", (entry.sets[0]?.reps ?? 20) + 5)}
+                      className="h-8 w-8 rounded-md bg-card flex items-center justify-center text-muted-foreground hover:text-foreground">
+                      <Plus size={12} />
+                    </button>
+                    <span className="text-xs text-muted-foreground">분</span>
+                  </div>
+                  <button onClick={() => completeSet(0)}
+                    className={cn("h-8 rounded-lg px-3 text-xs font-semibold transition-all",
+                      entry.sets[0]?.completed ? "bg-primary text-primary-foreground" : "bg-accent border border-border text-muted-foreground hover:border-primary/40")}
+                    disabled={addLog.isPending}>
+                    {entry.sets[0]?.completed ? "완료됨" : "완료"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+            <>
             {/* 헤더 */}
             <div className="grid grid-cols-12 gap-1 text-[10px] text-muted-foreground px-1">
               <div className="col-span-1 text-center">세트</div>
@@ -443,6 +494,8 @@ function ExerciseBlock({ entry, sessionId, onUpdate, onRemove, onSetComplete, ro
               onClick={addSet}>
               <Plus size={12} />세트 추가
             </Button>
+            </>
+            )}
           </div>
         )}
       </CardContent>
@@ -542,6 +595,7 @@ export default function WorkoutSession() {
           nameKo: item.ex.nameKo,
           name: item.ex.name,
           restSeconds: item.re.restSeconds || 90,
+          inputMode: isTimedExercise(item.ex) ? "duration" : "strength",
           sets,
           expanded: true,
         };
@@ -571,6 +625,7 @@ export default function WorkoutSession() {
         nameKo: data.exercise.nameKo,
         name: data.exercise.name,
         restSeconds: 90,
+        inputMode: isTimedExercise(data.exercise) ? "duration" : "strength",
         sets: data.sets,
         expanded: true,
       })));
@@ -583,7 +638,8 @@ export default function WorkoutSession() {
       nameKo: ex.nameKo,
       name: ex.name,
       restSeconds: restSecs,
-      sets: [{ setNumber: 1, reps: 10, weightKg: 0, isWarmup: false, completed: false }],
+      inputMode: isTimedExercise(ex) ? "duration" : "strength",
+      sets: [{ setNumber: 1, reps: isTimedExercise(ex) ? 20 : 10, weightKg: 0, isWarmup: false, completed: false }],
       expanded: true,
     }]);
   };

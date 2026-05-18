@@ -398,6 +398,13 @@ function getMinutesFromText(value: string, fallback = 5) {
   return match ? Number(match[1]) : fallback;
 }
 
+function isTimedRoutineExercise(exercise: any) {
+  return exercise?.bodyPart === "cardio"
+    || exercise?.category === "cardio"
+    || exercise?.bodyPart === "stretching"
+    || exercise?.category === "flexibility";
+}
+
 function toArrayValue(value: unknown): string[] {
   if (Array.isArray(value)) return value.map(String);
   if (typeof value === "string") {
@@ -1128,7 +1135,8 @@ ${historyText}
             role: "system",
             content: `당신은 전문 퍼스널 트레이너입니다. 사용자의 목표, 운동 환경, 가용 기구, 운동 시간을 반드시 고려하여 맞춤 운동 프로그램을 추천해주세요.
             - 아래 "사용 가능한 운동 DB 후보"에 있는 운동명만 추천하세요. 새 운동명을 지어내지 마세요.
-            - exercises 배열의 각 항목은 반드시 "한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
+            - exercises 배열의 각 항목은 근력 운동이면 반드시 "한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
+            - 유산소는 세트/횟수가 아니라 "러닝, 트레드밀 (Running, Treadmill) - 20분"처럼 시간 형식으로 작성하세요.
             - 지정된 기구만 사용하는 운동으로 구성하세요.
             - weeklyPlan은 반드시 사용자가 선택한 주 운동일 수와 같은 개수로 구성하세요.
             - 루틴은 요일 기준이 아닙니다. day 값은 반드시 "1일차", "2일차", "3일차"처럼 주간 순번으로 작성하세요.
@@ -1283,9 +1291,9 @@ ${recommendationCatalog.text}
               routineId,
               exercise.id,
               order,
-              item.isStretch ? 1 : 3,
-              item.isStretch ? getMinutesFromText(item.text) : 10,
-              item.isStretch ? 0 : 90,
+              item.isStretch || isTimedRoutineExercise(exercise) ? 1 : 3,
+              item.isStretch || isTimedRoutineExercise(exercise) ? getMinutesFromText(item.text, 20) : 10,
+              item.isStretch || isTimedRoutineExercise(exercise) ? 0 : 90,
             );
             order += 1;
             addedCount += 1;
