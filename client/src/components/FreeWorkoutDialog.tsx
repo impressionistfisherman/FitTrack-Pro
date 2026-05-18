@@ -279,7 +279,7 @@ export default function FreeWorkoutDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
-        "flex max-h-[90dvh] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-hidden border-border bg-card p-0 text-foreground",
+        "flex max-h-[90dvh] min-h-0 w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-hidden border-border bg-card p-0 text-foreground",
         selected.length > 0 ? "sm:max-w-[min(100vw-2rem,54rem)]" : "sm:max-w-[26rem]"
       )}>
         <DialogHeader className="shrink-0 border-b border-border px-5 py-4">
@@ -287,7 +287,7 @@ export default function FreeWorkoutDialog({
         </DialogHeader>
 
         <div className={cn(
-          "grid flex-1 gap-4 overflow-y-auto px-5 py-4",
+          "grid min-h-0 flex-1 gap-4 overflow-y-auto px-5 py-4",
           selected.length > 0 && "lg:grid-cols-[300px_minmax(0,1fr)] lg:items-stretch"
         )}>
           <div className="min-w-0 space-y-3">
@@ -377,7 +377,7 @@ export default function FreeWorkoutDialog({
           </div>
 
           {selected.length > 0 && (
-            <div className="min-w-0 rounded-xl border border-border bg-accent/10 p-3 lg:min-h-[360px] lg:max-h-[calc(90dvh-11rem)] lg:overflow-y-auto">
+            <div className="min-h-0 min-w-0 rounded-xl border border-border bg-accent/10 p-3 lg:min-h-[360px] lg:max-h-[calc(90dvh-11rem)] lg:overflow-y-auto">
               <div className="space-y-3">
                 {selected.map((item) => (
                   <div key={item.exercise.id} className="min-w-0 rounded-lg border border-border bg-card/70 p-3">

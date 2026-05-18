@@ -176,7 +176,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── 메인 콘텐츠 ── */}
       <main className="app-main">
-        <div className={cn("app-main-inner", loading && "pointer-events-none")}>
+        <div className="app-main-inner" aria-busy={loading}>
           {children}
         </div>
       </main>
