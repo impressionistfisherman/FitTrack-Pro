@@ -111,6 +111,163 @@ function isStretchExerciseText(value: string) {
   return /stretch|mobility|warm.?up|cool.?down|스트레칭|모빌리티|가동성|워밍업|정리운동/.test(text);
 }
 
+function getBodyPartsFromFocus(day: any) {
+  const text = [
+    day?.focus,
+    ...(Array.isArray(day?.exercises) ? day.exercises : []),
+  ].join(" ").toLowerCase();
+  const parts: string[] = [];
+  const add = (part: string) => {
+    if (!parts.includes(part)) parts.push(part);
+  };
+
+  if (/(등|back|lat|pull|풀|로우|데드)/.test(text)) add("back");
+  if (/(어깨|shoulder|deltoid|press|프레스|레이즈)/.test(text)) add("shoulders");
+  if (/(가슴|chest|bench|벤치|fly|플라이|push)/.test(text)) add("chest");
+  if (/(이두|삼두|팔|bicep|tricep|curl|컬|extension|익스텐션)/.test(text)) add("arms");
+  if (/(하체|다리|leg|quad|hamstring|squat|스쿼트|런지|레그)/.test(text)) add("legs");
+  if (/(둔근|엉덩|glute|hip|힙)/.test(text)) add("glutes");
+  if (/(복근|코어|abs|core|크런치|플랭크)/.test(text)) add("abs");
+
+  return parts.length ? parts : ["full_body"];
+}
+
+const warmupStretchCatalog: Record<string, string[]> = {
+  back: [
+    "캣 카우 - 5분 (흉추를 천천히 말고 펴며 등 전체 가동성 확보)",
+    "스캐풀라 풀업 - 5분 (팔은 편 채 견갑만 내리고 올려 광배 활성화)",
+    "월 슬라이드 - 5분 (벽에 등과 팔을 붙이고 견갑을 위아래로 움직임)",
+    "밴드 풀 어파트 - 5분 (팔을 편 채 밴드를 벌려 후면 어깨와 등 활성화)",
+  ],
+  shoulders: [
+    "암 서클 - 5분 (작은 원에서 큰 원으로 어깨 관절을 천천히 회전)",
+    "밴드 외회전 - 5분 (팔꿈치를 옆구리에 붙이고 회전근개 활성화)",
+    "스캐풀라 푸시업 - 5분 (팔은 편 채 견갑만 밀고 모으기)",
+    "월 슬라이드 - 5분 (팔꿈치와 손등을 벽에 붙이고 위아래로 이동)",
+  ],
+  chest: [
+    "암 스윙 - 5분 (팔을 앞뒤로 교차하며 가슴과 어깨 앞쪽 예열)",
+    "스캐풀라 푸시업 - 5분 (견갑 안정화 후 푸시 동작 준비)",
+    "밴드 체스트 오프너 - 5분 (밴드를 등 뒤로 잡고 가슴을 열기)",
+    "인클라인 푸시업 워밍업 - 5분 (낮은 강도로 8~12회 반복)",
+  ],
+  arms: [
+    "손목 플렉션 익스텐션 - 5분 (손목을 앞뒤로 천천히 움직임)",
+    "엘보우 서클 - 5분 (팔꿈치를 굽힌 상태로 작은 원 회전)",
+    "밴드 컬 워밍업 - 5분 (가벼운 저항으로 이두 활성화)",
+    "밴드 프레스다운 워밍업 - 5분 (가벼운 저항으로 삼두 활성화)",
+  ],
+  legs: [
+    "레그 스윙 전후 - 5분 (고관절을 접고 펴며 햄스트링 예열)",
+    "레그 스윙 좌우 - 5분 (고관절 외전/내전 가동성 확보)",
+    "월드 그레이티스트 스트레치 - 5분 (런지 자세에서 흉추 회전)",
+    "바디웨이트 스쿼트 - 5분 (천천히 앉았다 일어나며 무릎/고관절 준비)",
+  ],
+  glutes: [
+    "글루트 브릿지 - 5분 (엉덩이를 조이며 둔근 활성화)",
+    "클램쉘 - 5분 (무릎을 벌려 중둔근 활성화)",
+    "힙 에어플레인 - 5분 (고관절 회전 조절 연습)",
+    "몬스터 워크 - 5분 (밴드가 있으면 무릎 위에 걸고 좌우 이동)",
+  ],
+  abs: [
+    "데드 버그 - 5분 (허리를 바닥에 붙이고 팔다리 교차)",
+    "버드 독 - 5분 (몸통 흔들림 없이 팔/다리 뻗기)",
+    "플랭크 숄더 탭 - 5분 (골반을 고정하고 어깨 터치)",
+    "캣 카우 - 5분 (복압 잡기 전 척추 가동성 확보)",
+  ],
+  full_body: [
+    "인치웜 - 5분 (햄스트링과 어깨를 함께 예열)",
+    "월드 그레이티스트 스트레치 - 5분 (런지와 흉추 회전)",
+    "암 서클 - 5분 (어깨 관절을 전후 방향으로 회전)",
+    "바디웨이트 스쿼트 - 5분 (하체와 코어를 함께 준비)",
+  ],
+};
+
+const cooldownStretchCatalog: Record<string, string[]> = {
+  back: [
+    "차일드 포즈 랫 스트레치 - 5분 (손을 멀리 뻗고 광배를 길게 늘림)",
+    "크로스 바디 랫 스트레치 - 5분 (한쪽 팔을 사선으로 뻗어 옆구리 늘림)",
+    "시티드 로테이션 스트레치 - 5분 (앉아서 흉추를 좌우로 천천히 회전)",
+    "폼롤러 흉추 익스텐션 - 5분 (등 위쪽을 받치고 천천히 젖힘)",
+  ],
+  shoulders: [
+    "크로스 바디 숄더 스트레치 - 5분 (팔을 가슴 앞으로 당겨 후면 어깨 이완)",
+    "도어웨이 숄더 스트레치 - 5분 (문틀에 팔을 대고 어깨 앞쪽 이완)",
+    "오버헤드 트라이셉스 스트레치 - 5분 (팔꿈치를 머리 뒤로 넘겨 삼두/어깨 이완)",
+    "슬리퍼 스트레치 - 5분 (옆으로 누워 어깨 뒤쪽을 부드럽게 늘림)",
+  ],
+  chest: [
+    "도어웨이 체스트 스트레치 - 5분 (문틀에 팔을 대고 가슴을 앞으로 열기)",
+    "벤치 체스트 오프너 - 5분 (벤치에 팔을 올리고 가슴을 아래로 낮춤)",
+    "폼롤러 체스트 오프너 - 5분 (폼롤러 위에 누워 팔을 벌림)",
+    "바이셉 도어웨이 스트레치 - 5분 (팔을 뒤로 펴 가슴/이두 앞쪽 이완)",
+  ],
+  arms: [
+    "오버헤드 트라이셉스 스트레치 - 5분 (팔꿈치를 머리 뒤로 넘겨 삼두 이완)",
+    "월 바이셉 스트레치 - 5분 (손바닥을 벽에 대고 몸통을 반대로 회전)",
+    "손목 굴곡근 스트레치 - 5분 (손바닥을 앞으로 밀어 전완 이완)",
+    "손목 신전근 스트레치 - 5분 (손등을 앞으로 밀어 전완 바깥쪽 이완)",
+  ],
+  legs: [
+    "스탠딩 햄스트링 스트레치 - 5분 (무릎을 살짝 펴고 엉덩이를 뒤로 뺌)",
+    "쿼드 스트레치 - 5분 (발목을 잡고 허벅지 앞쪽 이완)",
+    "카프 월 스트레치 - 5분 (벽을 밀며 종아리 이완)",
+    "나비 자세 내전근 스트레치 - 5분 (발바닥을 맞대고 무릎을 낮춤)",
+  ],
+  glutes: [
+    "피겨 포 스트레치 - 5분 (발목을 반대 무릎 위에 올려 둔근 이완)",
+    "피전 포즈 - 5분 (한쪽 다리를 접고 엉덩이 바깥쪽 이완)",
+    "니 투 체스트 스트레치 - 5분 (무릎을 가슴으로 당겨 둔근 이완)",
+    "90/90 힙 스트레치 - 5분 (양쪽 고관절을 번갈아 열기)",
+  ],
+  abs: [
+    "코브라 스트레치 - 5분 (복부를 길게 늘리고 허리는 과신전하지 않음)",
+    "차일드 포즈 - 5분 (복압을 풀고 허리 긴장 완화)",
+    "사이드 벤드 스트레치 - 5분 (옆구리를 길게 늘림)",
+    "누운 척추 회전 스트레치 - 5분 (무릎을 넘겨 복사근/허리 이완)",
+  ],
+  full_body: [
+    "차일드 포즈 - 5분 (등과 어깨 긴장 완화)",
+    "다운독 카프 스트레치 - 5분 (종아리와 햄스트링 이완)",
+    "누운 척추 회전 스트레치 - 5분 (허리와 흉추 이완)",
+    "도어웨이 체스트 스트레치 - 5분 (가슴과 어깨 앞쪽 이완)",
+  ],
+};
+
+function buildDetailedStretchRoutine(day: any, phase: "warmup" | "cooldown") {
+  const catalog = phase === "warmup" ? warmupStretchCatalog : cooldownStretchCatalog;
+  const parts = getBodyPartsFromFocus(day);
+  const selected: string[] = [];
+
+  for (const part of parts) {
+    for (const item of catalog[part] ?? catalog.full_body) {
+      if (!selected.includes(item)) selected.push(item);
+      if (selected.length >= 4) return selected;
+    }
+  }
+
+  for (const item of catalog.full_body) {
+    if (!selected.includes(item)) selected.push(item);
+    if (selected.length >= 4) break;
+  }
+
+  return selected;
+}
+
+function isGenericStretchLine(value: string) {
+  const text = String(value).toLowerCase();
+  return /^(등|어깨|가슴|하체|팔|복근|전신|둔근|고관절)\s*스트레칭\s*-\s*(10|20)분/.test(text)
+    || !/[()]/.test(text) && !/(포즈|밴드|월|암|레그|브릿지|로테이션|도어웨이|폼롤러|스윙|스캐풀라|스트레치|서클|카우|버그|독|플랭크|스쿼트|런지|피전|코브라|나비|카프)/.test(text);
+}
+
+function normalizeStretchBlock(day: any, phase: "warmup" | "cooldown") {
+  const key = phase === "warmup" ? "warmupStretch" : "cooldownStretch";
+  const items = Array.isArray(day?.[key]) ? day[key].map(String).filter(Boolean) : [];
+  const totalIsTooSmall = items.length < 3;
+  const hasGeneric = items.some(isGenericStretchLine);
+  return totalIsTooSmall || hasGeneric ? buildDetailedStretchRoutine(day, phase) : items;
+}
+
 function normalizeProgramRecommendation(program: any) {
   if (!program?.weeklyPlan || !Array.isArray(program.weeklyPlan)) return program;
 
@@ -125,18 +282,23 @@ function normalizeProgramRecommendation(program: any) {
 
       if (!warmupStretch.length && !cooldownStretch.length && mixedStretches.length) {
         const midpoint = Math.ceil(mixedStretches.length / 2);
-        return {
+        const nextDay = {
           ...day,
           warmupStretch: mixedStretches.slice(0, midpoint),
           cooldownStretch: mixedStretches.slice(midpoint),
           exercises: mainExercises,
         };
+        return {
+          ...nextDay,
+          warmupStretch: normalizeStretchBlock(nextDay, "warmup"),
+          cooldownStretch: normalizeStretchBlock(nextDay, "cooldown"),
+        };
       }
 
       return {
         ...day,
-        warmupStretch,
-        cooldownStretch,
+        warmupStretch: normalizeStretchBlock({ ...day, exercises: mainExercises, warmupStretch, cooldownStretch }, "warmup"),
+        cooldownStretch: normalizeStretchBlock({ ...day, exercises: mainExercises, warmupStretch, cooldownStretch }, "cooldown"),
         exercises: mainExercises,
       };
     }),
@@ -213,6 +375,29 @@ async function findExerciseForRoutine(exerciseText: string) {
     .map((exercise: any) => ({ exercise, score: scoreExerciseMatch(exerciseText, exercise) }))
     .sort((a, b) => b.score - a.score)[0];
   return best && best.score >= 35 ? best.exercise : null;
+}
+
+async function findStretchExerciseForRoutine(stretchText: string) {
+  const exact = await findExerciseForRoutine(stretchText);
+  if (exact?.id) return exact;
+
+  const target = getDetailedStretchTarget({
+    name: stretchText,
+    nameKo: stretchText,
+    bodyPart: "stretching",
+    primaryMuscles: [],
+    secondaryMuscles: [],
+  });
+  const candidates = await getExercises({ search: target });
+  const fallback = candidates.find((exercise: any) => exercise.bodyPart === "stretching" || exercise.category === "flexibility")
+    ?? (await getExercises({ bodyPart: "stretching" }))[0]
+    ?? (await getExercises({ search: "스트레칭" }))[0];
+  return fallback ?? null;
+}
+
+function getMinutesFromText(value: string, fallback = 5) {
+  const match = String(value).match(/(\d+)\s*분/);
+  return match ? Number(match[1]) : fallback;
 }
 
 function toArrayValue(value: unknown): string[] {
@@ -1057,7 +1242,9 @@ ${recommendationCatalog.text}
             day: z.string(),
             focus: z.string(),
             duration: z.string().optional(),
+            warmupStretch: z.array(z.string()).optional(),
             exercises: z.array(z.string()),
+            cooldownStretch: z.array(z.string()).optional(),
           })).min(1).max(7),
           generalAdvice: z.string().optional(),
         }),
@@ -1083,10 +1270,27 @@ ${recommendationCatalog.text}
           });
 
           let addedCount = 0;
-          for (const [index, exerciseText] of day.exercises.entries()) {
-            const exercise = await findExerciseForRoutine(exerciseText);
+          let order = 1;
+          const routineItems = [
+            ...(day.warmupStretch ?? []).map((text) => ({ text, isStretch: true })),
+            ...day.exercises.map((text) => ({ text, isStretch: false })),
+            ...(day.cooldownStretch ?? []).map((text) => ({ text, isStretch: true })),
+          ];
+
+          for (const item of routineItems) {
+            const exercise = item.isStretch
+              ? await findStretchExerciseForRoutine(item.text)
+              : await findExerciseForRoutine(item.text);
             if (!exercise?.id) continue;
-            await addExerciseToRoutine(routineId, exercise.id, index + 1, 3, 10, 90);
+            await addExerciseToRoutine(
+              routineId,
+              exercise.id,
+              order,
+              item.isStretch ? 1 : 3,
+              item.isStretch ? getMinutesFromText(item.text) : 10,
+              item.isStretch ? 0 : 90,
+            );
+            order += 1;
             addedCount += 1;
           }
 

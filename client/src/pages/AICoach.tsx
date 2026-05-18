@@ -55,7 +55,7 @@ function ProgramRecommendation() {
     onSuccess: (result) => {
       const totalExercises = result.created.reduce((sum: number, item: any) => sum + item.addedCount, 0);
       toast.success(`${result.created.length}개 루틴을 저장했습니다.`, {
-        description: totalExercises > 0 ? `${totalExercises}개 운동이 루틴에 연결되었습니다.` : "운동명 매칭이 안 된 항목은 비워둔 루틴으로 저장되었습니다.",
+        description: totalExercises > 0 ? `스트레칭 포함 ${totalExercises}개 항목이 루틴에 연결되었습니다.` : "운동명 매칭이 안 된 항목은 비워둔 루틴으로 저장되었습니다.",
       });
       utils.routines.list.invalidate();
     },
@@ -256,10 +256,10 @@ function ProgramRecommendation() {
         <div className="space-y-3">
           <Card className="bg-card border-border">
             <CardContent className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="font-semibold text-foreground">추천 루틴 저장</div>
-                <div className="text-xs text-muted-foreground">요일별 추천 운동을 루틴 목록에 저장합니다.</div>
-              </div>
+                <div>
+                  <div className="font-semibold text-foreground">추천 루틴 저장</div>
+                <div className="text-xs text-muted-foreground">운동 전/후 스트레칭까지 포함해 루틴 목록에 저장합니다.</div>
+                </div>
               <Button
                 size="sm"
                 className="gap-2 bg-primary text-primary-foreground"
@@ -290,7 +290,7 @@ function ProgramRecommendation() {
                       </div>
                       <div className="space-y-1">
                         {day.warmupStretch?.map((stretch: string, i: number) => (
-                          <div key={i} className="text-xs leading-relaxed text-muted-foreground">{stretch}</div>
+                          <div key={i} className="rounded-lg bg-background/35 px-2 py-1.5 text-xs leading-relaxed text-muted-foreground">{stretch}</div>
                         ))}
                       </div>
                     </div>
@@ -301,7 +301,7 @@ function ProgramRecommendation() {
                       </div>
                       <div className="space-y-1">
                         {day.cooldownStretch?.map((stretch: string, i: number) => (
-                          <div key={i} className="text-xs leading-relaxed text-muted-foreground">{stretch}</div>
+                          <div key={i} className="rounded-lg bg-background/35 px-2 py-1.5 text-xs leading-relaxed text-muted-foreground">{stretch}</div>
                         ))}
                       </div>
                     </div>
