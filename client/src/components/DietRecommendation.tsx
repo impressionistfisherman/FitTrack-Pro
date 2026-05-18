@@ -6,6 +6,9 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
+import { Label } from "./ui/label";
+import { Textarea } from "./ui/textarea";
+import { useState } from "react";
 
 const mealIcons: Record<string, any> = {
   아침: Sun,
@@ -141,9 +144,27 @@ function MealCard({ meal }: { meal: any }) {
 }
 
 export default function DietRecommendation() {
-  const { data, isLoading, refetch, isFetching } = trpc.ai.dietRecommendation.useQuery(undefined, {
+  const [mealCount, setMealCount] = useState("4");
+  const [mealTiming, setMealTiming] = useState("");
+  const [preferences, setPreferences] = useState("");
+  const [constraints, setConstraints] = useState("");
+  const [submittedRequest, setSubmittedRequest] = useState({
+    mealCount: 4,
+    mealTiming: "",
+    preferences: "",
+    constraints: "",
+  });
+  const { data, isLoading, refetch, isFetching } = trpc.ai.dietRecommendation.useQuery(submittedRequest, {
     staleTime: 1000 * 60 * 30, // 30분 캐시
   });
+  const applyDietRequest = () => {
+    setSubmittedRequest({
+      mealCount: Number(mealCount) || 4,
+      mealTiming: mealTiming.trim(),
+      preferences: preferences.trim(),
+      constraints: constraints.trim(),
+    });
+  };
 
   if ((isLoading || isFetching) && !data) {
     return (
@@ -178,6 +199,78 @@ export default function DietRecommendation() {
           <RefreshCw size={14} className={isFetching ? "animate-spin" : undefined} />
         </button>
       </div>
+
+      <Card className="bg-card border-border">
+        <CardContent className="p-4">
+          <div className="mb-3">
+            <div className="font-semibold text-foreground text-sm">식사 방식 커스텀</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              하루 식사 패턴, 먹을 수 있는 방식, 싫어하는 음식 등을 적으면 그 기준으로 다시 추천합니다.
+            </p>
+          </div>
+          <div className="grid gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">하루 식사 횟수</Label>
+              <div className="flex flex-wrap gap-2">
+                {["2", "3", "4", "5", "6"].map((count) => (
+                  <button
+                    key={count}
+                    type="button"
+                    onClick={() => setMealCount(count)}
+                    className={cn(
+                      "h-8 rounded-full border px-3 text-xs transition-colors",
+                      mealCount === count
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-accent text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {count}끼
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">식사 시간/현재 패턴</Label>
+                <Textarea
+                  value={mealTiming}
+                  onChange={(event) => setMealTiming(event.target.value)}
+                  placeholder="예: 아침은 못 먹고, 점심은 회사식당, 운동은 밤 9시"
+                  className="min-h-20 resize-none border-border bg-accent text-foreground"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">선호 음식/가능한 식사</Label>
+                <Textarea
+                  value={preferences}
+                  onChange={(event) => setPreferences(event.target.value)}
+                  placeholder="예: 닭가슴살 가능, 편의점 식사 많음, 한식 위주"
+                  className="min-h-20 resize-none border-border bg-accent text-foreground"
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">제외 음식/제약</Label>
+              <Textarea
+                value={constraints}
+                onChange={(event) => setConstraints(event.target.value)}
+                placeholder="예: 우유 못 먹음, 생선 싫음, 조리 시간 10분 이하"
+                className="min-h-16 resize-none border-border bg-accent text-foreground"
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button
+                className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                onClick={applyDietRequest}
+                disabled={isFetching}
+              >
+                <RefreshCw size={14} className={isFetching ? "animate-spin" : undefined} />
+                이 기준으로 추천
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 현재 데이터 요약 */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">

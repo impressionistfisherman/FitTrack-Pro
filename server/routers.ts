@@ -1332,7 +1332,14 @@ ${recommendationCatalog.text}
         return { success: true, created };
       }),
 
-    dietRecommendation: protectedProcedure.query(async ({ ctx }) => {
+    dietRecommendation: protectedProcedure
+      .input(z.object({
+        mealCount: z.number().int().min(1).max(8).optional(),
+        mealTiming: z.string().max(500).optional(),
+        preferences: z.string().max(800).optional(),
+        constraints: z.string().max(800).optional(),
+      }).optional())
+      .query(async ({ ctx, input }) => {
       const goal = await getUserGoal(ctx.user.id);
       const goals = await getUserGoals(ctx.user.id);
       const experienceLevel = await getUserPreference(ctx.user.id, "experienceLevel") ?? "beginner";
@@ -1388,6 +1395,12 @@ ${recommendationCatalog.text}
       const statsText = stats
         ? `최근 7일 ${stats.recentSessionCount}회 운동, 주간 볼륨 ${Math.round(stats.totalVolume / Math.max(stats.totalSessions, 1))}kg`
         : "운동 기록 없음";
+      const mealPreferenceText = [
+        input?.mealCount ? `희망 식사 횟수: 하루 ${input.mealCount}끼` : "희망 식사 횟수: AI가 목표에 맞춰 구성",
+        input?.mealTiming?.trim() ? `식사 시간/패턴: ${input.mealTiming.trim()}` : "식사 시간/패턴: 미입력",
+        input?.preferences?.trim() ? `선호 음식/식습관: ${input.preferences.trim()}` : "선호 음식/식습관: 미입력",
+        input?.constraints?.trim() ? `제외 음식/현실 제약: ${input.constraints.trim()}` : "제외 음식/현실 제약: 미입력",
+      ].join("\n");
 
       const response = await invokeLLM({
         messages: [
@@ -1396,7 +1409,9 @@ ${recommendationCatalog.text}
             content: `당신은 전문 스포츠 영양사입니다. 사용자의 운동 목표와 체중 데이터를 바탕으로 맞춤 하루 식단을 추천해주세요.
 다음 사항을 반드시 포함하세요:
 - 하루 권장 칼로리 및 단백질/탄수화물/지방 비율
-- 아침/점심/저녀/간식 식단 (한국식 식품 위주로)
+- 사용자가 입력한 식사 횟수, 식사 가능 시간, 선호 음식, 제외 음식, 현실 제약을 최우선으로 반영
+- 식사 배열은 사용자가 희망 식사 횟수를 입력했다면 그 횟수에 맞춰 구성
+- 아침/점심/저녁/간식 식단 (한국식 식품 위주로)
 - 각 식사별 칼로리와 단백질 함량
 - 운동 전/후 식사 타이밍 조언
 응답은 반드시 JSON 형식으로 해주세요.`,
@@ -1413,7 +1428,10 @@ ${weightText}
 ${statsText}
 운동 횟수: 총 ${stats?.totalSessions || 0}회
 
-위 정보를 바탕으로 오늘 하루 맞춤 식단을 추천해주세요. 특히 권장 칼로리(${recommendedCalories}kcal), 식단 전략(${nutritionStrategy.label}), 단백질 목표(${nutritionStrategy.proteinTarget}g)를 기준으로 식단을 설계해주세요.`,
+사용자 식사 요청:
+${mealPreferenceText}
+
+위 정보를 바탕으로 오늘 하루 맞춤 식단을 추천해주세요. 특히 권장 칼로리(${recommendedCalories}kcal), 식단 전략(${nutritionStrategy.label}), 단백질 목표(${nutritionStrategy.proteinTarget}g), 사용자 식사 요청을 기준으로 식단을 설계해주세요.`,
           },
         ],
         response_format: {
@@ -1479,6 +1497,7 @@ ${statsText}
         goalSummary,
         nutritionStrategy,
         stats,
+        dietRequest: input ?? null,
       };
     }),
 
