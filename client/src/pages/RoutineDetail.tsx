@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Check, Dumbbell, GripVertical, Pencil, Plus, Trash2, X } from "lucide-react";
+import { ArrowLeft, Check, Dumbbell, GripVertical, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "wouter";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +35,14 @@ function isTimedExercise(exercise: any) {
     || exercise?.category === "cardio"
     || exercise?.bodyPart === "stretching"
     || exercise?.category === "flexibility";
+}
+
+function makeRoutineSetDetails(count: number, reps: number, existing: Array<{setNumber: number; weightKg?: number; reps?: number}> = []) {
+  return Array.from({ length: Math.max(1, count) }, (_, index) => ({
+    setNumber: index + 1,
+    weightKg: existing[index]?.weightKg,
+    reps: existing[index]?.reps ?? reps,
+  }));
 }
 
 function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: number; currentCount: number; onAdded: () => void }) {
@@ -253,6 +261,235 @@ function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: nu
   );
 }
 
+function EditRoutineExerciseDialog({ item, onSaved }: { item: any; onSaved: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [choosingExercise, setChoosingExercise] = useState(false);
+  const [search, setSearch] = useState("");
+  const [selectedBodyPart, setSelectedBodyPart] = useState("all");
+  const [selectedExercise, setSelectedExercise] = useState<any>(item.ex);
+  const [sets, setSets] = useState(String(item.re.sets || 3));
+  const [reps, setReps] = useState(String(item.re.reps || (isTimedExercise(item.ex) ? 20 : 10)));
+  const [rest, setRest] = useState(String(item.re.restSeconds ?? (isTimedExercise(item.ex) ? 0 : 90)));
+  const [setDetails, setSetDetails] = useState<Array<{setNumber: number; weightKg?: number; reps?: number}>>(
+    makeRoutineSetDetails(item.re.sets || 3, item.re.reps || 10, Array.isArray(item.re.setDetails) ? item.re.setDetails : []),
+  );
+  const { data: exercises } = trpc.exercises.list.useQuery({
+    bodyPart: selectedBodyPart !== "all" ? selectedBodyPart : undefined,
+  }, { enabled: open && choosingExercise });
+  const updateExercise = trpc.routines.updateExercise.useMutation({
+    onSuccess: () => {
+      toast.success("루틴 운동을 수정했습니다.");
+      setOpen(false);
+      onSaved();
+    },
+    onError: () => toast.error("운동 수정에 실패했습니다."),
+  });
+
+  const bodyParts = ["all", "chest", "back", "shoulders", "arms", "legs", "abs", "glutes", "cardio", "stretching"];
+  const bodyPartKo: Record<string, string> = { all: "전체", ...bodyPartLabels };
+  const filtered = exercises?.filter((ex) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return ex.nameKo.toLowerCase().includes(q) || ex.name.toLowerCase().includes(q);
+  });
+
+  const resetFromItem = () => {
+    setChoosingExercise(false);
+    setSearch("");
+    setSelectedExercise(item.ex);
+    setSets(String(item.re.sets || 3));
+    setReps(String(item.re.reps || (isTimedExercise(item.ex) ? 20 : 10)));
+    setRest(String(item.re.restSeconds ?? (isTimedExercise(item.ex) ? 0 : 90)));
+    setSetDetails(makeRoutineSetDetails(item.re.sets || 3, item.re.reps || 10, Array.isArray(item.re.setDetails) ? item.re.setDetails : []));
+  };
+
+  const updateSetCount = (value: string) => {
+    const count = Math.max(1, Number(value) || 1);
+    setSets(String(count));
+    setSetDetails(makeRoutineSetDetails(count, Number(reps) || 10, setDetails));
+  };
+
+  const selectExercise = (exercise: any) => {
+    setSelectedExercise(exercise);
+    setChoosingExercise(false);
+    if (isTimedExercise(exercise)) {
+      setSets("1");
+      setReps("20");
+      setRest("0");
+      setSetDetails([]);
+    } else {
+      const count = Math.max(1, Number(sets) || 3);
+      setSetDetails(makeRoutineSetDetails(count, Number(reps) || 10, setDetails));
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(next) => {
+      setOpen(next);
+      if (next) resetFromItem();
+    }}>
+      <DialogTrigger asChild>
+        <button className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground" aria-label="운동 수정">
+          <Pencil size={14} />
+        </button>
+      </DialogTrigger>
+      <DialogContent className="flex max-h-[88dvh] max-w-xl flex-col border-border bg-card text-foreground">
+        <DialogHeader>
+          <DialogTitle className="text-foreground">루틴 운동 수정</DialogTitle>
+        </DialogHeader>
+
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+          <div className="rounded-xl border border-border bg-accent/40 p-3">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                <Dumbbell size={18} className="text-primary" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-semibold text-foreground">{selectedExercise.nameKo}</div>
+                <div className="truncate text-xs text-muted-foreground">{selectedExercise.name}</div>
+              </div>
+              <Button variant="outline" size="sm" className="h-8 border-border text-xs" onClick={() => setChoosingExercise((value) => !value)}>
+                운동 변경
+              </Button>
+            </div>
+
+            {choosingExercise && (
+              <div className="space-y-3">
+                <div className="relative">
+                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder="변경할 운동 검색..."
+                    className="border-border bg-card pl-9 text-foreground"
+                  />
+                </div>
+                <div className="flex gap-1.5 overflow-x-auto pb-1">
+                  {bodyParts.map((bp) => (
+                    <button
+                      key={bp}
+                      onClick={() => setSelectedBodyPart(bp)}
+                      className={cn(
+                        "whitespace-nowrap rounded-full border px-2.5 py-1 text-xs transition-all",
+                        selectedBodyPart === bp
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-card text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {bodyPartKo[bp] || bp}
+                    </button>
+                  ))}
+                </div>
+                <div className="max-h-56 space-y-1 overflow-y-auto">
+                  {filtered?.map((exercise) => (
+                    <button
+                      key={exercise.id}
+                      onClick={() => selectExercise(exercise)}
+                      className="flex w-full items-center gap-2 rounded-lg border border-transparent p-2 text-left hover:border-primary/30 hover:bg-card"
+                    >
+                      <Dumbbell size={14} className="shrink-0 text-primary" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">{exercise.nameKo}</span>
+                        <span className="block truncate text-xs text-muted-foreground">{exercise.name}</span>
+                      </span>
+                      <Badge className={cn("shrink-0 border text-[10px]", bodyPartColors[exercise.bodyPart])}>
+                        {bodyPartLabels[exercise.bodyPart] || exercise.bodyPart}
+                      </Badge>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {isTimedExercise(selectedExercise) ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">운동 시간 (분)</Label>
+                <Input type="number" min="1" max="300" value={reps} onChange={(event) => setReps(event.target.value)} className="border-border bg-accent text-center text-foreground" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">표시 순서</Label>
+                <Input value={`${item.re.order}번째`} disabled className="border-border bg-accent text-center text-muted-foreground" />
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">세트 수</Label>
+                  <Input type="number" min="1" max="100" value={sets} onChange={(event) => updateSetCount(event.target.value)} className="border-border bg-accent text-center text-foreground" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">기본 반복 횟수</Label>
+                  <Input type="number" min="1" max="999" value={reps} onChange={(event) => setReps(event.target.value)} className="border-border bg-accent text-center text-foreground" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">휴식 (초)</Label>
+                  <Input type="number" min="0" max="3600" value={rest} onChange={(event) => setRest(event.target.value)} className="border-border bg-accent text-center text-foreground" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">세트별 무게 및 횟수</Label>
+                {setDetails.map((detail, index) => (
+                  <div key={detail.setNumber} className="grid grid-cols-[56px_1fr_1fr] items-center gap-2">
+                    <div className="text-xs text-muted-foreground">{detail.setNumber}세트</div>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      placeholder="kg"
+                      value={detail.weightKg ?? ""}
+                      onChange={(event) => {
+                        const next = [...setDetails];
+                        next[index] = { ...next[index], weightKg: event.target.value ? Number(event.target.value) : undefined };
+                        setSetDetails(next);
+                      }}
+                      className="h-9 border-border bg-accent text-center text-foreground"
+                    />
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="회"
+                      value={detail.reps ?? ""}
+                      onChange={(event) => {
+                        const next = [...setDetails];
+                        next[index] = { ...next[index], reps: event.target.value ? Number(event.target.value) : undefined };
+                        setSetDetails(next);
+                      }}
+                      className="h-9 border-border bg-accent text-center text-foreground"
+                    />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="flex shrink-0 justify-end gap-2 border-t border-border pt-3">
+          <Button variant="outline" className="border-border" onClick={() => setOpen(false)} disabled={updateExercise.isPending}>
+            취소
+          </Button>
+          <Button
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            disabled={updateExercise.isPending}
+            onClick={() => updateExercise.mutate({
+              id: item.re.id,
+              exerciseId: selectedExercise.id,
+              sets: isTimedExercise(selectedExercise) ? 1 : Number(sets) || 1,
+              reps: Number(reps) || 1,
+              restSeconds: isTimedExercise(selectedExercise) ? 0 : Number(rest) || 0,
+              setDetails: isTimedExercise(selectedExercise) ? [] : setDetails,
+            })}
+          >
+            {updateExercise.isPending ? "저장 중..." : "수정 저장"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function RoutineDetail() {
   const { id } = useParams<{ id: string }>();
   const routineId = parseInt(id || "0");
@@ -411,10 +648,14 @@ export default function RoutineDetail() {
                   </div>
                   <button
                     onClick={() => removeExercise.mutate({ id: item.re.id })}
-                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                   >
                     <Trash2 size={14} />
                   </button>
+                  <EditRoutineExerciseDialog
+                    item={item}
+                    onSaved={() => utils.routines.detail.invalidate({ id: routineId })}
+                  />
                 </div>
               </CardContent>
             </Card>

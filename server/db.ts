@@ -838,6 +838,39 @@ export async function addExerciseToRoutine(
   return getInsertId(result);
 }
 
+export async function getRoutineExerciseById(id: number): Promise<Row | null> {
+  return await get(
+    `SELECT re.*, r.userId
+     FROM routine_exercises re
+     JOIN routines r ON re.routineId = r.id
+     WHERE re.id = ?
+     LIMIT 1`,
+    id,
+  );
+}
+
+export async function updateRoutineExercise(
+  id: number,
+  input: {
+    exerciseId?: number;
+    sets?: number;
+    reps?: number;
+    restSeconds?: number;
+    setDetails?: { setNumber: number; weightKg?: number; reps?: number }[];
+    notes?: string | null;
+  },
+): Promise<any> {
+  const allowed = ["exerciseId", "sets", "reps", "restSeconds", "setDetails", "notes"] as const;
+  const keys = allowed.filter((key) => key in input);
+  if (!keys.length) return;
+  const assignments = keys.map((key) => `${key} = ?`).join(", ");
+  const values = keys.map((key) => {
+    const value = input[key];
+    return key === "setDetails" ? JSON.stringify(value ?? []) : value ?? null;
+  });
+  await run(`UPDATE routine_exercises SET ${assignments} WHERE id = ?`, ...values, id);
+}
+
 export async function removeExerciseFromRoutine(id: number): Promise<any> {
   await run("DELETE FROM routine_exercises WHERE id = ?", id);
 }

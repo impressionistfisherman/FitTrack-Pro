@@ -24,6 +24,7 @@ import {
   getMonthlyStats,
   getRoutineById,
   getRoutineExercises,
+  getRoutineExerciseById,
   getRoutinesByUser,
   getSessionsInDateRange,
   getUserGoal,
@@ -41,6 +42,7 @@ import {
   setUserPreference,
   toggleFavorite,
   updateRoutine,
+  updateRoutineExercise,
   upsertUserGoal,
 } from "./db";
 
@@ -682,8 +684,33 @@ export const appRouter = router({
 
     removeExercise: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        const routineExercise = await getRoutineExerciseById(input.id);
+        if (!routineExercise || routineExercise.userId !== ctx.user.id) throw new Error("Not found");
         await removeExerciseFromRoutine(input.id);
+        return { success: true };
+      }),
+
+    updateExercise: protectedProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          exerciseId: z.number().optional(),
+          sets: z.number().min(1).max(100).optional(),
+          reps: z.number().min(1).max(999).optional(),
+          restSeconds: z.number().min(0).max(3600).optional(),
+          setDetails: z.array(z.object({
+            setNumber: z.number(),
+            weightKg: z.number().optional(),
+            reps: z.number().optional(),
+          })).optional(),
+          notes: z.string().max(500).nullable().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const routineExercise = await getRoutineExerciseById(input.id);
+        if (!routineExercise || routineExercise.userId !== ctx.user.id) throw new Error("Not found");
+        await updateRoutineExercise(input.id, input);
         return { success: true };
       }),
   }),
