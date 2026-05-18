@@ -528,7 +528,7 @@ export default function Home() {
         </Link>
       </div>
 
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
+      <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
         <WeeklyGoalDashboard />
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
           <QuickStartCard />

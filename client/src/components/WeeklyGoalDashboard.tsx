@@ -78,7 +78,7 @@ export function WeeklyGoalDashboard() {
     <>
       <ConfettiAnimation isActive={showCelebration} />
       <AchievementBadge isVisible={showCelebration} onAnimationEnd={handleCelebrationEnd} />
-      <Card className="bg-card border-border h-full">
+      <Card className="bg-card border-border">
       <CardContent className="p-3 lg:p-4">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-2.5">
