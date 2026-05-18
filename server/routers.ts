@@ -86,16 +86,6 @@ const goalLabels: Record<string, string> = {
   general: "일반 건강",
 };
 
-const weekdayOrder: Record<string, number> = {
-  월요일: 1,
-  화요일: 2,
-  수요일: 3,
-  목요일: 4,
-  금요일: 5,
-  토요일: 6,
-  일요일: 7,
-};
-
 function normalizeExerciseName(value: string) {
   return value
     .toLowerCase()
@@ -273,17 +263,19 @@ function normalizeProgramRecommendation(program: any) {
 
   return {
     ...program,
-    weeklyPlan: program.weeklyPlan.map((day: any) => {
+    weeklyPlan: program.weeklyPlan.map((day: any, index: number) => {
       const exercises = Array.isArray(day.exercises) ? day.exercises : [];
       const warmupStretch = Array.isArray(day.warmupStretch) ? day.warmupStretch : [];
       const cooldownStretch = Array.isArray(day.cooldownStretch) ? day.cooldownStretch : [];
       const mixedStretches = exercises.filter((item: string) => isStretchExerciseText(String(item)));
       const mainExercises = exercises.filter((item: string) => !isStretchExerciseText(String(item)));
+      const sequenceLabel = `${index + 1}일차`;
 
       if (!warmupStretch.length && !cooldownStretch.length && mixedStretches.length) {
         const midpoint = Math.ceil(mixedStretches.length / 2);
         const nextDay = {
           ...day,
+          day: sequenceLabel,
           warmupStretch: mixedStretches.slice(0, midpoint),
           cooldownStretch: mixedStretches.slice(midpoint),
           exercises: mainExercises,
@@ -297,12 +289,18 @@ function normalizeProgramRecommendation(program: any) {
 
       return {
         ...day,
+        day: sequenceLabel,
         warmupStretch: normalizeStretchBlock({ ...day, exercises: mainExercises, warmupStretch, cooldownStretch }, "warmup"),
         cooldownStretch: normalizeStretchBlock({ ...day, exercises: mainExercises, warmupStretch, cooldownStretch }, "cooldown"),
         exercises: mainExercises,
       };
     }),
   };
+}
+
+function getPlanDayOrder(dayLabel: string) {
+  const match = String(dayLabel).match(/(\d+)/);
+  return match ? Number(match[1]) : 99;
 }
 
 function buildNutritionStrategy(goalValues: string[], tdee: number, latestWeight?: number) {
@@ -1108,8 +1106,8 @@ ${historyText}
         includeCore ? "복근/코어를 주간 계획에 적절히 포함" : "복근/코어는 제외",
       ].join(", ");
       const dayFocusText = input?.dayFocusNotes?.trim()
-        ? `요일별 희망 구성: ${input.dayFocusNotes.trim()}`
-        : "요일별 희망 구성: AI가 회복을 고려해 배치";
+        ? `운동일별 희망 구성: ${input.dayFocusNotes.trim()}`
+        : "운동일별 희망 구성: AI가 회복을 고려해 1일차부터 배치";
       const customRequestText = input?.customRequest?.trim()
         ? `사용자 추가 요청: ${input.customRequest.trim()}`
         : "사용자 추가 요청: 없음";
@@ -1133,6 +1131,7 @@ ${historyText}
             - exercises 배열의 각 항목은 반드시 "한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
             - 지정된 기구만 사용하는 운동으로 구성하세요.
             - weeklyPlan은 반드시 사용자가 선택한 주 운동일 수와 같은 개수로 구성하세요.
+            - 루틴은 요일 기준이 아닙니다. day 값은 반드시 "1일차", "2일차", "3일차"처럼 주간 순번으로 작성하세요.
             - 각 운동일의 총 시간이 지정된 운동 가능 시간을 초과하지 않도록 하세요.
             - 홈트레이닝이면 맨몸 운동 위주로, 헬스장이면 기구 운동을 포함하세요.
             - 머신과 케이블은 서로 다른 기구입니다. 케이블이 선택되지 않았으면 케이블 운동을 넣지 말고, 머신이 선택되지 않았으면 머신 운동을 넣지 마세요.
@@ -1186,7 +1185,7 @@ ${recommendationCatalog.text}
                   items: {
                     type: "object",
                     properties: {
-                      day: { type: "string", description: "요일 (예: 월요일)" },
+                      day: { type: "string", description: "주간 운동 순번 (예: 1일차, 2일차)" },
                       focus: { type: "string", description: "운동 포커스 (예: 가슴/삼두)" },
                       warmupStretch: {
                         type: "array",
@@ -1253,15 +1252,13 @@ ${recommendationCatalog.text}
         const goal = await getUserGoal(ctx.user.id);
         const created: any[] = [];
 
-        const sortedDays = [...input.program.weeklyPlan].sort((a, b) => {
-          return (weekdayOrder[a.day] ?? 99) - (weekdayOrder[b.day] ?? 99);
-        });
+        const sortedDays = [...input.program.weeklyPlan].sort((a, b) => getPlanDayOrder(a.day) - getPlanDayOrder(b.day));
 
         for (const day of sortedDays) {
           const routineId = await createRoutine(ctx.user.id, {
             name: `AI ${day.day} ${day.focus}`.trim(),
             description: [
-              `${input.daysPerWeek}일 루틴 중 ${day.day} 운동`,
+              `주 ${input.daysPerWeek}회 루틴 중 ${day.day} 운동`,
               day.duration ? `예상 시간: ${day.duration}` : null,
               input.program.generalAdvice ? `AI 조언: ${input.program.generalAdvice}` : null,
             ].filter(Boolean).join("\n"),

@@ -223,11 +223,11 @@ function ProgramRecommendation() {
 
           <div className="grid gap-3 lg:grid-cols-2">
             <div>
-              <div className="mb-1.5 text-xs text-muted-foreground">요일별 희망 구성</div>
+              <div className="mb-1.5 text-xs text-muted-foreground">운동일별 희망 구성</div>
               <Textarea
                 value={dayFocusNotes}
                 onChange={(event) => setDayFocusNotes(event.target.value)}
-                placeholder="예: 월 가슴/삼두, 수 등/이두, 금 하체. 어깨는 가볍게만."
+                placeholder="예: 1일차 가슴/삼두, 2일차 등/이두, 3일차 하체. 어깨는 가볍게만."
                 className="min-h-24 resize-none bg-accent border-border text-foreground"
                 maxLength={500}
               />
@@ -258,7 +258,7 @@ function ProgramRecommendation() {
             <CardContent className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <div className="font-semibold text-foreground">추천 루틴 저장</div>
-                <div className="text-xs text-muted-foreground">운동 전/후 스트레칭까지 포함해 루틴 목록에 저장합니다.</div>
+                  <div className="text-xs text-muted-foreground">운동 전/후 스트레칭까지 포함해 주간 순번 루틴으로 저장합니다.</div>
                 </div>
               <Button
                 size="sm"
