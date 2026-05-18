@@ -330,6 +330,24 @@ function getExerciseBodyParts(value: string): Set<RecommendationBodyPart> {
   return parts;
 }
 
+function mapCatalogBodyPart(bodyPart: string): RecommendationBodyPart | null {
+  if (recommendationBodyParts.includes(bodyPart as RecommendationBodyPart)) return bodyPart as RecommendationBodyPart;
+  return null;
+}
+
+function getExerciseBodyPartsFromCatalog(value: string, catalog: any[] = []) {
+  const best = catalog
+    .map((exercise: any) => ({ exercise, score: scoreExerciseMatch(value, exercise) }))
+    .sort((a, b) => b.score - a.score)[0];
+  const bodyPart = best && best.score >= 70 ? mapCatalogBodyPart(String(best.exercise.bodyPart)) : null;
+  return bodyPart ? new Set<RecommendationBodyPart>([bodyPart]) : null;
+}
+
+function getRecommendationExerciseBodyParts(value: string, catalog: any[] = []) {
+  const catalogParts = getExerciseBodyPartsFromCatalog(value, catalog);
+  return catalogParts ?? getExerciseBodyParts(value);
+}
+
 function isExerciseAllowedForFocus(exerciseParts: Set<RecommendationBodyPart>, allowedParts: Set<RecommendationBodyPart> | null) {
   if (!allowedParts || exerciseParts.size === 0) return true;
   if (exerciseParts.has("cardio")) return true;
@@ -356,7 +374,7 @@ function dedupeRecommendationExercises(exercises: string[]) {
   });
 }
 
-function alignExercisesToDayFocus(weeklyPlan: any[]) {
+function alignExercisesToDayFocus(weeklyPlan: any[], catalog: any[] = []) {
   const exercisesToMove = new Map<RecommendationBodyPart, string[]>();
   const normalizedDays = weeklyPlan.map((day) => {
     const focus = String(day?.focus ?? "");
@@ -365,7 +383,7 @@ function alignExercisesToDayFocus(weeklyPlan: any[]) {
     if (!allowedParts || !exercises.length) return { ...day, exercises };
 
     const kept = exercises.filter((exercise: string) => {
-      const exerciseParts = getExerciseBodyParts(exercise);
+      const exerciseParts = getRecommendationExerciseBodyParts(exercise, catalog);
       if (isExerciseAllowedForFocus(exerciseParts, allowedParts)) return true;
 
       const movablePart = recommendationBodyParts.find((part) => part !== "cardio" && exerciseParts.has(part));
@@ -429,10 +447,10 @@ function moveCardioOffLegDays(weeklyPlan: any[]) {
   });
 }
 
-function normalizeProgramRecommendation(program: any, options?: { avoidCardioOnLegDay?: boolean }) {
+function normalizeProgramRecommendation(program: any, options?: { avoidCardioOnLegDay?: boolean; exerciseCatalog?: any[] }) {
   if (!program?.weeklyPlan || !Array.isArray(program.weeklyPlan)) return program;
 
-  const bodyPartAlignedPlan = alignExercisesToDayFocus(program.weeklyPlan);
+  const bodyPartAlignedPlan = alignExercisesToDayFocus(program.weeklyPlan, options?.exerciseCatalog ?? []);
   const sourcePlan = options?.avoidCardioOnLegDay
     ? moveCardioOffLegDays(bodyPartAlignedPlan)
     : bodyPartAlignedPlan;
@@ -677,6 +695,7 @@ async function buildRecommendationExerciseCatalog(input: {
   return {
     count: usable.length,
     text: lines.join("\n").trim(),
+    exercises: usable,
   };
 }
 
@@ -1473,7 +1492,10 @@ ${recommendationCatalog.text}
       const content2 = typeof rawContent2 === 'string' ? rawContent2 : null;
       let parsed = null;
       try { parsed = content2 ? JSON.parse(content2) : null; } catch { parsed = null; }
-      parsed = normalizeProgramRecommendation(parsed, { avoidCardioOnLegDay });
+      parsed = normalizeProgramRecommendation(parsed, {
+        avoidCardioOnLegDay,
+        exerciseCatalog: recommendationCatalog.exercises,
+      });
 
       return {
         program: parsed,
