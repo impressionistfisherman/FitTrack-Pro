@@ -122,12 +122,12 @@ function ProgramRecommendation() {
       </div>
 
       <Card className="bg-card border-border">
-        <CardContent className="p-4 space-y-3">
-          <div className="grid gap-3 sm:grid-cols-3">
+        <CardContent className="space-y-5 p-4 sm:p-5">
+          <div className="grid gap-3 rounded-2xl border border-border/70 bg-background/30 p-3 sm:grid-cols-3 sm:p-4">
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">운동 장소</div>
               <Select value={location} onValueChange={(value) => setLocation(value as any)}>
-                <SelectTrigger className="bg-accent border-border text-foreground">
+                <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
@@ -140,7 +140,7 @@ function ProgramRecommendation() {
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">운동 시간</div>
               <Select value={sessionDuration} onValueChange={setSessionDuration}>
-                <SelectTrigger className="bg-accent border-border text-foreground">
+                <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
@@ -153,7 +153,7 @@ function ProgramRecommendation() {
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">주당 운동 일 수</div>
               <Select value={daysPerWeek} onValueChange={setDaysPerWeek}>
-                <SelectTrigger className="bg-accent border-border text-foreground">
+                <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
@@ -166,7 +166,7 @@ function ProgramRecommendation() {
           </div>
 
           {location !== "outdoor" && (
-            <div>
+            <div className="rounded-2xl border border-border/70 bg-background/30 p-3 sm:p-4">
               <div className="mb-1.5 text-xs text-muted-foreground">사용 가능 기구</div>
               <div className="flex flex-wrap gap-2">
                 {equipmentOptions.map((item) => (
@@ -183,11 +183,11 @@ function ProgramRecommendation() {
             </div>
           )}
 
-          <div className="grid gap-3 lg:grid-cols-2">
+          <div className="grid gap-3 rounded-2xl border border-border/70 bg-background/30 p-3 sm:p-4 lg:grid-cols-2">
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">분할 방식</div>
               <Select value={splitPreference} onValueChange={setSplitPreference}>
-                <SelectTrigger className="bg-accent border-border text-foreground">
+                <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
@@ -227,11 +227,11 @@ function ProgramRecommendation() {
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 rounded-2xl border border-border/70 bg-background/30 p-3 sm:grid-cols-3 sm:p-4">
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">운동 전 스트레칭</div>
               <Select value={warmupStretchMinutes} onValueChange={setWarmupStretchMinutes}>
-                <SelectTrigger className="bg-accent border-border text-foreground">
+                <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
@@ -244,7 +244,7 @@ function ProgramRecommendation() {
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">운동 후 스트레칭</div>
               <Select value={cooldownStretchMinutes} onValueChange={setCooldownStretchMinutes}>
-                <SelectTrigger className="bg-accent border-border text-foreground">
+                <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
@@ -257,7 +257,7 @@ function ProgramRecommendation() {
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">유산소 시간</div>
               <Select value={cardioMinutes} onValueChange={setCardioMinutes} disabled={!includeCardio}>
-                <SelectTrigger className="bg-accent border-border text-foreground disabled:opacity-50">
+                <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground disabled:opacity-50">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
@@ -269,7 +269,7 @@ function ProgramRecommendation() {
             </div>
           </div>
 
-          <div>
+          <div className="rounded-2xl border border-border/70 bg-background/30 p-3 sm:p-4">
             <div className="mb-1.5 text-xs text-muted-foreground">추천에서 뺄 부위</div>
             <div className="flex flex-wrap gap-2">
               {bodyPartOptions.map((item) => (
@@ -285,14 +285,14 @@ function ProgramRecommendation() {
             </div>
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-2">
+          <div className="grid gap-3 rounded-2xl border border-border/70 bg-background/30 p-3 sm:p-4 lg:grid-cols-2">
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">운동일별 희망 구성</div>
               <Textarea
                 value={dayFocusNotes}
                 onChange={(event) => setDayFocusNotes(event.target.value)}
                 placeholder="예: 1일차 가슴/삼두, 2일차 등/이두, 3일차 하체. 어깨는 가볍게만."
-                className="min-h-24 resize-none bg-accent border-border text-foreground"
+                className="min-h-20 resize-none bg-accent border-border text-foreground"
                 maxLength={500}
               />
             </div>
@@ -302,7 +302,7 @@ function ProgramRecommendation() {
                 value={customRequest}
                 onChange={(event) => setCustomRequest(event.target.value)}
                 placeholder="예: 무릎 부담 적게, 벤치프레스 늘리고 싶음, 러닝은 20분 이하."
-                className="min-h-24 resize-none bg-accent border-border text-foreground"
+                className="min-h-20 resize-none bg-accent border-border text-foreground"
                 maxLength={500}
               />
             </div>
