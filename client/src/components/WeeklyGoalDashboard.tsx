@@ -79,9 +79,9 @@ export function WeeklyGoalDashboard() {
       <ConfettiAnimation isActive={showCelebration} />
       <AchievementBadge isVisible={showCelebration} onAnimationEnd={handleCelebrationEnd} />
       <Card className="bg-card border-border h-full">
-      <CardContent className="p-4 lg:p-5">
+      <CardContent className="p-3 lg:p-4">
         {/* 헤더 */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2.5">
           <div>
             <h3 className="font-semibold text-foreground">이번 주 운동 목표</h3>
             <p className="text-xs text-muted-foreground mt-1">
@@ -94,8 +94,8 @@ export function WeeklyGoalDashboard() {
         </div>
 
         {/* 프로그레스 바 */}
-        <div className="mb-4">
-          <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+        <div className="mb-3">
+          <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
             <div
               className={`h-full ${getProgressColor(progress)} transition-all duration-500 rounded-full`}
               style={{ width: `${progress}%` }}
@@ -104,7 +104,7 @@ export function WeeklyGoalDashboard() {
         </div>
 
         {/* 요일별 체크리스트 */}
-        <div className="mb-4">
+        <div className="mb-3">
           <p className="text-xs text-muted-foreground mb-2">요일별 운동 완료</p>
           <div className="grid grid-cols-7 gap-1.5">
             {weekdayLabels.map((label, dayOfWeek) => {
@@ -120,9 +120,9 @@ export function WeeklyGoalDashboard() {
                 >
                   <div className="text-xs font-medium text-muted-foreground">{label}</div>
                   {isCompleted ? (
-                    <CheckCircle2 size={17} className="text-emerald-400" />
+                    <CheckCircle2 size={15} className="text-emerald-400" />
                   ) : (
-                    <Circle size={17} className="text-muted-foreground" />
+                    <Circle size={15} className="text-muted-foreground" />
                   )}
                 </div>
               );
@@ -131,7 +131,7 @@ export function WeeklyGoalDashboard() {
         </div>
 
         {/* 통계 */}
-        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border">
+        <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-border">
           <div>
             <p className="text-xs text-muted-foreground">총 볼륨</p>
             <p className="text-base font-semibold text-foreground">

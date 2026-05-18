@@ -78,8 +78,8 @@ function QuickStartCard() {
 
   return (
     <Card className="bg-card border-border">
-      <CardContent className="p-5">
-        <div className="flex items-center justify-between mb-3">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-2.5">
           <h3 className="font-semibold text-foreground">빠른 시작</h3>
           <Link href="/routines">
             <Button variant="ghost" size="sm" className="text-xs text-muted-foreground gap-1">
@@ -88,9 +88,9 @@ function QuickStartCard() {
           </Link>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Button
-            className="w-full justify-start gap-3 bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 h-11"
+            className="w-full justify-start gap-3 bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 h-9"
             variant="outline"
             onClick={() => handleQuickStart()}
             disabled={startSession.isPending}
@@ -99,10 +99,10 @@ function QuickStartCard() {
             자유 운동 시작
           </Button>
 
-          {routines?.slice(0, 4).map((routine) => (
+          {routines?.slice(0, 3).map((routine) => (
             <Button
               key={routine.id}
-              className="w-full justify-start gap-3 bg-accent/50 border border-border text-foreground hover:bg-accent h-11"
+              className="w-full justify-start gap-3 bg-accent/50 border border-border text-foreground hover:bg-accent h-9"
               variant="outline"
               onClick={() => handleQuickStart(routine.id)}
               disabled={startSession.isPending}
@@ -119,7 +119,7 @@ function QuickStartCard() {
             <Link href="/routines">
               <Button
                 variant="outline"
-                className="w-full gap-2 border-dashed border-border text-muted-foreground hover:text-foreground h-11"
+                className="w-full gap-2 border-dashed border-border text-muted-foreground hover:text-foreground h-9"
               >
                 <Plus size={16} />
                 첫 루틴 만들기
@@ -244,7 +244,7 @@ function BodyWeightSummaryCard() {
                 </div>
               ) : (
                 <div className="rounded-xl bg-accent/35 p-2 text-xs text-muted-foreground">
-                  프로필에서 목표 체중을 설정하면 진행 상황이 함께 표시됩니다.
+                  목표 체중을 설정하면 진행 상황이 표시됩니다.
                 </div>
               )}
             </div>
@@ -270,7 +270,7 @@ function MonthlyStatsCard() {
         <CardContent className="p-4">
           <div className="animate-pulse space-y-3">
             <div className="h-4 bg-muted rounded w-24"></div>
-            <div className="h-40 bg-muted rounded"></div>
+            <div className="h-32 bg-muted rounded"></div>
           </div>
         </CardContent>
       </Card>
@@ -282,7 +282,7 @@ function MonthlyStatsCard() {
       <Card className="bg-card border-border">
         <CardContent className="p-5">
           <h3 className="font-semibold text-foreground mb-4">월별 요약</h3>
-          <div className="text-center py-5 text-muted-foreground">
+          <div className="text-center py-3 text-muted-foreground">
             <p className="text-sm">아직 운동 기록이 없습니다.</p>
             <p className="text-xs mt-2">운동을 시작하면 월별 통계가 표시됩니다.</p>
           </div>
@@ -302,7 +302,7 @@ function MonthlyStatsCard() {
     <Card className="bg-card border-border">
       <CardContent className="p-4">
         <h3 className="font-semibold text-foreground mb-3">월별 요약</h3>
-        <ResponsiveContainer width="100%" height={190}>
+        <ResponsiveContainer width="100%" height={150}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
             <XAxis dataKey="month" stroke="var(--color-muted-foreground)" style={{ fontSize: "12px" }} />
@@ -331,7 +331,7 @@ function RecentWorkouts() {
   if (!sessions || sessions.length === 0) {
     return (
       <Card className="bg-card border-border">
-        <CardContent className="p-5">
+        <CardContent className="p-4">
           <div className="text-center text-muted-foreground text-sm">최근 운동 기록이 없습니다</div>
         </CardContent>
       </Card>
@@ -340,8 +340,8 @@ function RecentWorkouts() {
 
   return (
     <Card className="bg-card border-border">
-      <CardContent className="p-5">
-        <div className="flex items-center justify-between mb-4">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-foreground">최근 운동</h3>
           <Link href="/history">
             <Button variant="ghost" size="sm" className="text-xs text-muted-foreground gap-1">
@@ -350,12 +350,12 @@ function RecentWorkouts() {
           </Link>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2">
           {sessions.map((session) => {
             const totalVolume = (session.logs || []).reduce((sum: number, log: any) => sum + ((log.log?.weightKg || 0) * (log.log?.reps || 0)), 0);
             return (
               <Link key={session.id} href={`/history/${session.id}`}>
-                <div className="p-3 rounded-lg bg-accent/30 hover:bg-accent/50 transition-colors cursor-pointer border border-border">
+                <div className="p-2.5 rounded-lg bg-accent/30 hover:bg-accent/50 transition-colors cursor-pointer border border-border">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="font-semibold text-foreground text-sm">{session.name}</div>
@@ -388,16 +388,18 @@ function FeatureCards() {
   ];
 
   return (
-    <div className="grid sm:grid-cols-3 gap-3">
+    <div className="grid gap-2 sm:grid-cols-3">
       {features.map((f) => (
         <Link key={f.href} href={f.href} className="block">
           <Card className="bg-card border-border hover:border-primary/30 transition-all duration-200 cursor-pointer group">
-            <CardContent className="p-4">
-              <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center mb-3", f.color)}>
-                <f.icon size={20} />
+            <CardContent className="flex items-center gap-3 p-3">
+              <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", f.color)}>
+                <f.icon size={18} />
               </div>
-              <div className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{f.label}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{f.desc}</div>
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{f.label}</div>
+                <div className="truncate text-xs text-muted-foreground">{f.desc}</div>
+              </div>
             </CardContent>
           </Card>
         </Link>
@@ -500,7 +502,7 @@ export default function Home() {
       : "헬린이";
 
   return (
-    <div className="page-shell page-shell-wide space-y-4 animate-fade-in">
+    <div className="page-shell page-shell-wide space-y-3 animate-fade-in">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -526,9 +528,15 @@ export default function Home() {
         </Link>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
         <WeeklyGoalDashboard />
-        <QuickStartCard />
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+          <QuickStartCard />
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+            <StreakCard />
+            <BodyWeightSummaryCard />
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -540,25 +548,19 @@ export default function Home() {
             <StatCard icon={Calendar} label="운동 시간" value={`${Math.round(stats.totalDurationMinutes / 60)}h`} color="bg-purple-400/10 text-purple-400" />
           </div>
         )}
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-            <StreakCard />
-            <BodyWeightSummaryCard />
-          </div>
-          <MonthlyStatsCard />
-        </div>
+        <MonthlyStatsCard />
       </div>
 
       {/* Main Grid */}
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <div className="space-y-4">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <div className="space-y-3">
           <RecentWorkouts />
           <Link href="/ai-coach">
             <Card className="bg-gradient-to-br from-primary/10 to-blue-500/10 border-primary/20 cursor-pointer hover:border-primary/40 transition-all duration-200">
-              <CardContent className="p-4">
+              <CardContent className="p-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                    <Bot size={20} className="text-primary" />
+                  <div className="w-9 h-9 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
+                    <Bot size={18} className="text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-foreground">AI 코치에게 물어보세요</div>
@@ -570,7 +572,7 @@ export default function Home() {
             </Card>
           </Link>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-3">
           <FeatureCards />
         </div>
       </div>
