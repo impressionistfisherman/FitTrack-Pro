@@ -28,6 +28,10 @@ export function WeeklyGoalDashboard() {
   const { data: weeklyStats, isLoading } = trpc.weeklyGoals.get.useQuery(undefined, { retry: false });
   const [showCelebration, setShowCelebration] = useState(false);
   const [hasShownToday, setHasShownToday] = useState(false);
+  const completedCount = useMemo(
+    () => Object.values(weeklyStats?.workoutsByDay ?? {}).filter(Boolean).length,
+    [weeklyStats?.workoutsByDay],
+  );
 
   // 로컬 스토리지에서 오늘 이미 표시했는지 확인
   useEffect(() => {
@@ -73,10 +77,6 @@ export function WeeklyGoalDashboard() {
   };
 
   const { weeklyTarget, completedDays, progress, totalVolume, totalDuration, workoutsByDay } = weeklyStats;
-  const completedCount = useMemo(
-    () => Object.values(workoutsByDay ?? {}).filter(Boolean).length,
-    [workoutsByDay],
-  );
 
   return (
     <>
