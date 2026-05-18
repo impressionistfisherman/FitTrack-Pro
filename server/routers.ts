@@ -38,6 +38,7 @@ import {
   getWorkoutStreak,
   isFavorite,
   removeExerciseFromRoutine,
+  reorderRoutineExercises,
   replaceUserGoals,
   setUserPreference,
   toggleFavorite,
@@ -127,21 +128,21 @@ function getBodyPartsFromFocus(day: any) {
 const warmupStretchCatalog: Record<string, string[]> = {
   back: [
     "캣 카우 - 5분 (흉추를 천천히 말고 펴며 등 전체 가동성 확보)",
-    "스캐풀라 풀업 - 5분 (팔은 편 채 견갑만 내리고 올려 광배 활성화)",
+    "흉추 로테이션 스트레치 - 5분 (옆으로 누워 팔을 열며 등 회전 가동성 확보)",
     "월 슬라이드 - 5분 (벽에 등과 팔을 붙이고 견갑을 위아래로 움직임)",
-    "밴드 풀 어파트 - 5분 (팔을 편 채 밴드를 벌려 후면 어깨와 등 활성화)",
+    "차일드 포즈 랫 리치 - 5분 (손을 사선으로 뻗어 광배와 옆구리 늘리기)",
   ],
   shoulders: [
     "암 서클 - 5분 (작은 원에서 큰 원으로 어깨 관절을 천천히 회전)",
     "밴드 외회전 - 5분 (팔꿈치를 옆구리에 붙이고 회전근개 활성화)",
-    "스캐풀라 푸시업 - 5분 (팔은 편 채 견갑만 밀고 모으기)",
+    "크로스 바디 숄더 스트레치 - 5분 (팔을 가슴 앞으로 당겨 후면 어깨 예열)",
     "월 슬라이드 - 5분 (팔꿈치와 손등을 벽에 붙이고 위아래로 이동)",
   ],
   chest: [
     "암 스윙 - 5분 (팔을 앞뒤로 교차하며 가슴과 어깨 앞쪽 예열)",
-    "스캐풀라 푸시업 - 5분 (견갑 안정화 후 푸시 동작 준비)",
+    "도어웨이 체스트 오프너 - 5분 (문틀에 팔을 대고 가슴 앞쪽 열기)",
     "밴드 체스트 오프너 - 5분 (밴드를 등 뒤로 잡고 가슴을 열기)",
-    "인클라인 푸시업 워밍업 - 5분 (낮은 강도로 8~12회 반복)",
+    "월 체스트 스트레치 - 5분 (손을 벽에 대고 몸통을 반대로 돌리기)",
   ],
   arms: [
     "손목 플렉션 익스텐션 - 5분 (손목을 앞뒤로 천천히 움직임)",
@@ -152,26 +153,26 @@ const warmupStretchCatalog: Record<string, string[]> = {
   legs: [
     "레그 스윙 전후 - 5분 (고관절을 접고 펴며 햄스트링 예열)",
     "레그 스윙 좌우 - 5분 (고관절 외전/내전 가동성 확보)",
-    "월드 그레이티스트 스트레치 - 5분 (런지 자세에서 흉추 회전)",
-    "바디웨이트 스쿼트 - 5분 (천천히 앉았다 일어나며 무릎/고관절 준비)",
+    "스탠딩 햄스트링 스윕 - 5분 (뒤꿈치를 세우고 햄스트링을 부드럽게 쓸어내림)",
+    "고관절 오프너 스트레치 - 5분 (고관절을 원형으로 천천히 열기)",
   ],
   glutes: [
-    "글루트 브릿지 - 5분 (엉덩이를 조이며 둔근 활성화)",
-    "클램쉘 - 5분 (무릎을 벌려 중둔근 활성화)",
-    "힙 에어플레인 - 5분 (고관절 회전 조절 연습)",
-    "몬스터 워크 - 5분 (밴드가 있으면 무릎 위에 걸고 좌우 이동)",
+    "피겨 포 다이내믹 스트레치 - 5분 (발목을 반대 무릎 위에 올리고 둔근을 부드럽게 늘림)",
+    "90/90 힙 플로우 - 5분 (양쪽 고관절을 번갈아 회전)",
+    "니 허그 스트레치 - 5분 (무릎을 가슴으로 당겨 둔근과 고관절 준비)",
+    "힙 플렉서 락백 - 5분 (무릎을 대고 엉덩이를 뒤로 보내 고관절 가동성 확보)",
   ],
   abs: [
-    "데드 버그 - 5분 (허리를 바닥에 붙이고 팔다리 교차)",
-    "버드 독 - 5분 (몸통 흔들림 없이 팔/다리 뻗기)",
-    "플랭크 숄더 탭 - 5분 (골반을 고정하고 어깨 터치)",
     "캣 카우 - 5분 (복압 잡기 전 척추 가동성 확보)",
+    "코브라 프렙 스트레치 - 5분 (복부 앞쪽을 부드럽게 열기)",
+    "사이드 벤드 스트레치 - 5분 (옆구리를 길게 늘리며 호흡)",
+    "누운 척추 회전 스트레치 - 5분 (무릎을 넘기며 복사근과 허리 긴장 완화)",
   ],
   full_body: [
-    "인치웜 - 5분 (햄스트링과 어깨를 함께 예열)",
-    "월드 그레이티스트 스트레치 - 5분 (런지와 흉추 회전)",
+    "전신 관절 가동성 루틴 - 5분 (목, 어깨, 고관절, 발목을 순서대로 회전)",
+    "흉추 로테이션 스트레치 - 5분 (등과 어깨 회전 가동성 확보)",
     "암 서클 - 5분 (어깨 관절을 전후 방향으로 회전)",
-    "바디웨이트 스쿼트 - 5분 (하체와 코어를 함께 준비)",
+    "햄스트링 스윕 - 5분 (뒤꿈치를 세우고 다리 뒤쪽을 부드럽게 늘림)",
   ],
 };
 
@@ -252,12 +253,17 @@ function isGenericStretchLine(value: string) {
     || !/[()]/.test(text) && !/(포즈|밴드|월|암|레그|브릿지|로테이션|도어웨이|폼롤러|스윙|스캐풀라|스트레치|서클|카우|버그|독|플랭크|스쿼트|런지|피전|코브라|나비|카프)/.test(text);
 }
 
+function isNonStretchMovementLine(value: string) {
+  return /(푸시업|푸쉬업|풀업|턱걸이|스쿼트|런지|데드\s*버그|버드\s*독|플랭크|브릿지|클램쉘|몬스터\s*워크|push\s*up|pull\s*up|squat|lunge|plank|bridge|dead\s*bug|bird\s*dog)/i.test(String(value));
+}
+
 function normalizeStretchBlock(day: any, phase: "warmup" | "cooldown") {
   const key = phase === "warmup" ? "warmupStretch" : "cooldownStretch";
   const items = Array.isArray(day?.[key]) ? day[key].map(String).filter(Boolean) : [];
   const totalIsTooSmall = items.length < 3;
   const hasGeneric = items.some(isGenericStretchLine);
-  return totalIsTooSmall || hasGeneric ? buildDetailedStretchRoutine(day, phase) : items;
+  const hasNonStretchMovement = items.some(isNonStretchMovementLine);
+  return totalIsTooSmall || hasGeneric || hasNonStretchMovement ? buildDetailedStretchRoutine(day, phase) : items;
 }
 
 function isCardioExerciseText(value: string) {
@@ -763,6 +769,27 @@ export const appRouter = router({
         await updateRoutineExercise(input.id, input);
         return { success: true };
       }),
+
+    reorderExercises: protectedProcedure
+      .input(
+        z.object({
+          routineId: z.number(),
+          items: z.array(z.object({
+            id: z.number(),
+            order: z.number().int().min(1).max(500),
+          })).min(1).max(500),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const routine = await getRoutineById(input.routineId);
+        if (!routine || routine.userId !== ctx.user.id) throw new Error("Not found");
+        const existingIds = new Set(
+          (await getRoutineExercises(input.routineId)).map((item: any) => item.routineExercise.id),
+        );
+        if (input.items.some((item) => !existingIds.has(item.id))) throw new Error("Invalid routine exercise");
+        await reorderRoutineExercises(input.routineId, input.items);
+        return { success: true };
+      }),
   }),
 
   // ============ WORKOUT ============
@@ -1240,6 +1267,7 @@ ${historyText}
             - 각 운동일마다 warmupStretch 배열과 cooldownStretch 배열을 반드시 작성하세요.
             - warmupStretch는 운동 전 동적 스트레칭/가동성 루틴 총 20분, cooldownStretch는 운동 후 정적 스트레칭 총 20분으로 구성하세요.
             - 스트레칭은 DB 후보의 부위별 스트레칭에서 골라 "등 스트레칭 - 5분", "어깨 스트레칭 - 5분"처럼 시간 단위로 적고, 세트x횟수/휴식 형식을 쓰지 마세요.
+            - warmupStretch와 cooldownStretch에는 푸시업, 풀업, 스쿼트, 런지, 플랭크, 브릿지 같은 운동/근력 동작을 넣지 마세요. 말 그대로 늘리기, 가동성, 호흡, 폼롤러 기반 스트레칭만 넣으세요.
             - warmupStretch와 cooldownStretch는 해당 운동일의 타겟 부위에 맞게 다르게 구성하세요.
             응답은 반드시 JSON 형식으로 해주세요.`,
           },
@@ -1269,7 +1297,8 @@ ${recommendationCatalog.text}
 반드시 위 DB 후보에 있는 운동만 사용하고, 지정된 기구, 운동 시간, 제외 부위, 분할 방식, 사용자 요청 조건에 맞는 운동만 포함해주세요.
 최적화 규칙:
 - ${trainingOptimizationRules}
-각 운동일에는 운동 전 스트레칭 20분과 운동 후 스트레칭 20분을 따로 분리해서 포함해주세요. 스트레칭은 exercises에 섞지 마세요.`,
+각 운동일에는 운동 전 스트레칭 20분과 운동 후 스트레칭 20분을 따로 분리해서 포함해주세요. 스트레칭은 exercises에 섞지 마세요.
+스트레칭 블록에는 푸시업, 풀업, 스쿼트, 런지, 플랭크, 브릿지 같은 운동 동작을 넣지 말고 순수 스트레칭/가동성 동작만 넣으세요.`,
           },
         ],
         response_format: {

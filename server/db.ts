@@ -871,6 +871,20 @@ export async function updateRoutineExercise(
   await run(`UPDATE routine_exercises SET ${assignments} WHERE id = ?`, ...values, id);
 }
 
+export async function reorderRoutineExercises(
+  routineId: number,
+  items: { id: number; order: number }[],
+): Promise<void> {
+  for (const item of items) {
+    await run(
+      `UPDATE routine_exercises SET "order" = ? WHERE id = ? AND routineId = ?`,
+      item.order,
+      item.id,
+      routineId,
+    );
+  }
+}
+
 export async function removeExerciseFromRoutine(id: number): Promise<any> {
   await run("DELETE FROM routine_exercises WHERE id = ?", id);
 }

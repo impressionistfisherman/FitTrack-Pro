@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Check, Dumbbell, GripVertical, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, Check, Dumbbell, GripVertical, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "wouter";
 import { Badge } from "@/components/ui/badge";
@@ -511,6 +511,13 @@ export default function RoutineDetail() {
     onSuccess: () => { toast.success("운동이 제거되었습니다."); utils.routines.detail.invalidate({ id: routineId }); },
     onError: () => toast.error("제거에 실패했습니다."),
   });
+  const reorderExercises = trpc.routines.reorderExercises.useMutation({
+    onSuccess: () => {
+      toast.success("운동 순서를 변경했습니다.");
+      utils.routines.detail.invalidate({ id: routineId });
+    },
+    onError: () => toast.error("순서 변경에 실패했습니다."),
+  });
   const startSession = trpc.workout.startSession.useMutation();
 
   if (isLoading) {
@@ -550,6 +557,17 @@ export default function RoutineDetail() {
       return;
     }
     updateRoutine.mutate({ id: routine.id, name: nextName });
+  };
+  const routineExercises = [...(routine.exercises ?? [])].sort((a: any, b: any) => (a.re.order ?? 0) - (b.re.order ?? 0));
+  const moveRoutineExercise = (fromIndex: number, direction: -1 | 1) => {
+    const toIndex = fromIndex + direction;
+    if (toIndex < 0 || toIndex >= routineExercises.length || reorderExercises.isPending) return;
+    const next = [...routineExercises];
+    [next[fromIndex], next[toIndex]] = [next[toIndex], next[fromIndex]];
+    reorderExercises.mutate({
+      routineId,
+      items: next.map((item: any, index: number) => ({ id: item.re.id, order: index + 1 })),
+    });
   };
 
   return (
@@ -592,28 +610,28 @@ export default function RoutineDetail() {
           {routine.description && <p className="text-sm text-muted-foreground mt-1">{routine.description}</p>}
           <div className="flex gap-2 mt-2">
             <Badge variant="outline" className="text-xs border-border text-muted-foreground">주 {routine.daysPerWeek}회</Badge>
-            <Badge variant="outline" className="text-xs border-border text-muted-foreground">{routine.exercises?.length || 0}개 운동</Badge>
+            <Badge variant="outline" className="text-xs border-border text-muted-foreground">{routineExercises.length}개 운동</Badge>
           </div>
         </div>
         <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:justify-end">
           <AddExerciseDialog
             routineId={routineId}
-            currentCount={routine.exercises?.length || 0}
+            currentCount={routineExercises.length}
             onAdded={() => utils.routines.detail.invalidate({ id: routineId })}
           />
           <Button
             className="min-w-[7.5rem] gap-2 whitespace-nowrap bg-primary px-4 text-primary-foreground hover:bg-primary/90"
             onClick={handleStart}
-            disabled={startSession.isPending || !routine.exercises?.length}
+            disabled={startSession.isPending || !routineExercises.length}
           >
             운동 시작
           </Button>
         </div>
       </div>
 
-      {routine.exercises && routine.exercises.length > 0 ? (
+      {routineExercises.length > 0 ? (
         <div className="space-y-3">
-          {routine.exercises.map((item: any, index: number) => (
+          {routineExercises.map((item: any, index: number) => (
             <Card key={item.re.id} className="bg-card border-border hover:border-primary/20 transition-colors group">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -645,6 +663,24 @@ export default function RoutineDetail() {
                         <span>휴식 {item.re.restSeconds}초</span>
                       </div>
                     )}
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button
+                      onClick={() => moveRoutineExercise(index, -1)}
+                      disabled={index === 0 || reorderExercises.isPending}
+                      className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+                      aria-label="위로 이동"
+                    >
+                      <ArrowUp size={14} />
+                    </button>
+                    <button
+                      onClick={() => moveRoutineExercise(index, 1)}
+                      disabled={index === routineExercises.length - 1 || reorderExercises.isPending}
+                      className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+                      aria-label="아래로 이동"
+                    >
+                      <ArrowDown size={14} />
+                    </button>
                   </div>
                   <button
                     onClick={() => removeExercise.mutate({ id: item.re.id })}
