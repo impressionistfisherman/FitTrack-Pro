@@ -539,7 +539,7 @@ function fillExercisesForDuration(day: any, exercises: string[], options: {
 
   const maxStrengthCount = Math.max(targetCount + 1, 4);
   const selectedStrength = filled.slice(0, maxStrengthCount);
-  const needsCore = options.includeCore && (allowedParts?.has("abs") || /복근|코어|abs|core/i.test(focusText));
+  const needsCore = options.includeCore;
   const hasCore = selectedStrength.some((exercise) => getRecommendationExerciseBodyParts(exercise, options.exerciseCatalog ?? []).has("abs"));
   if (needsCore && !hasCore && options.exerciseCatalog?.length) {
     const coreExercise = options.exerciseCatalog.find((exercise: any) => {
