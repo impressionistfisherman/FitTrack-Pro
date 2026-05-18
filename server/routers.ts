@@ -285,7 +285,7 @@ function normalizeStretchBlock(day: any, phase: "warmup" | "cooldown", totalMinu
 }
 
 function isCardioExerciseText(value: string) {
-  return /(유산소|러닝|런닝|트레드밀|사이클|자전거|로잉|일립티컬|계단|스텝밀|running|treadmill|cycling|bike|row|elliptical|stair)/i.test(String(value));
+  return /(유산소|러닝|런닝|트레드밀|사이클|자전거|로잉|일립티컬|계단|스텝밀|running|treadmill|cycling|bike|rowing|elliptical|stair)/i.test(String(value));
 }
 
 function isLegFocusedDay(day: any) {
@@ -399,14 +399,79 @@ function normalizeCardioLineDuration(value: string, cardioMinutes: number) {
   return `${text} - ${cardioMinutes}분`;
 }
 
+function normalizeStrengthExerciseLine(value: string) {
+  const text = String(value).trim();
+  return /\d+\s*x\s*\d+/i.test(text) ? text.replace(/\s*-\s*\d+\s*분\s*$/i, "") : text;
+}
+
 function normalizeCardioExercises(exercises: string[], cardioMinutes: number) {
   let hasCardio = false;
   return exercises.flatMap((exercise) => {
-    if (!isCardioExerciseText(exercise)) return [exercise];
+    if (!isCardioExerciseText(exercise)) return [normalizeStrengthExerciseLine(exercise)];
     if (cardioMinutes <= 0 || hasCardio) return [];
     hasCardio = true;
     return [normalizeCardioLineDuration(exercise, cardioMinutes)];
   });
+}
+
+function getTargetStrengthExerciseCount(sessionDuration: number, warmupMinutes: number, cooldownMinutes: number, cardioMinutes: number) {
+  const strengthMinutes = Math.max(20, sessionDuration - warmupMinutes - cooldownMinutes - Math.max(0, cardioMinutes));
+  if (strengthMinutes <= 30) return 3;
+  if (strengthMinutes <= 45) return 4;
+  if (strengthMinutes <= 60) return 5;
+  if (strengthMinutes <= 80) return 6;
+  return 7;
+}
+
+function formatDefaultRecommendedExercise(exercise: any) {
+  const bodyPart = String(exercise.bodyPart ?? "");
+  if (bodyPart === "abs") return `${exercise.nameKo} (${exercise.name}) - 3x15 - 60초`;
+  if (bodyPart === "arms" || bodyPart === "shoulders") return `${exercise.nameKo} (${exercise.name}) - 3x12 - 60초`;
+  if (bodyPart === "legs" || bodyPart === "glutes") return `${exercise.nameKo} (${exercise.name}) - 4x10 - 90초`;
+  return `${exercise.nameKo} (${exercise.name}) - 4x10 - 90초`;
+}
+
+function fillExercisesForDuration(day: any, exercises: string[], options: {
+  exerciseCatalog?: any[];
+  sessionDuration: number;
+  warmupStretchMinutes: number;
+  cooldownStretchMinutes: number;
+  cardioMinutes: number;
+}) {
+  const allowedParts = getFocusBodyParts(String(day?.focus ?? ""));
+  const cardioExercises = exercises.filter((exercise) => isCardioExerciseText(exercise));
+  const strengthExercises = exercises.filter((exercise) => !isCardioExerciseText(exercise));
+  const targetCount = getTargetStrengthExerciseCount(
+    options.sessionDuration,
+    options.warmupStretchMinutes,
+    options.cooldownStretchMinutes,
+    cardioExercises.length ? options.cardioMinutes : 0,
+  );
+  const seen = new Set(strengthExercises.map(normalizeRecommendationExerciseKey));
+  const filled = [...strengthExercises];
+
+  if (filled.length < targetCount && options.exerciseCatalog?.length) {
+    const candidates = options.exerciseCatalog.filter((exercise: any) => {
+      const part = mapCatalogBodyPart(String(exercise.bodyPart));
+      if (!part || part === "cardio") return false;
+      if (exercise.bodyPart === "stretching" || exercise.category === "flexibility") return false;
+      if (allowedParts && !allowedParts.has(part)) return false;
+      const key = normalizeRecommendationExerciseKey(`${exercise.nameKo} ${exercise.name}`);
+      return key && !seen.has(key);
+    });
+
+    for (const candidate of candidates) {
+      const line = formatDefaultRecommendedExercise(candidate);
+      const key = normalizeRecommendationExerciseKey(line);
+      if (seen.has(key)) continue;
+      filled.push(line);
+      seen.add(key);
+      if (filled.length >= targetCount) break;
+    }
+  }
+
+  const maxStrengthCount = Math.max(targetCount + 1, 4);
+  return [...filled.slice(0, maxStrengthCount), ...cardioExercises];
 }
 
 function alignExercisesToDayFocus(weeklyPlan: any[], catalog: any[] = []) {
@@ -488,6 +553,7 @@ function normalizeProgramRecommendation(program: any, options?: {
   warmupStretchMinutes?: number;
   cooldownStretchMinutes?: number;
   cardioMinutes?: number;
+  sessionDuration?: number;
 }) {
   if (!program?.weeklyPlan || !Array.isArray(program.weeklyPlan)) return program;
 
@@ -498,6 +564,7 @@ function normalizeProgramRecommendation(program: any, options?: {
   const warmupStretchMinutes = options?.warmupStretchMinutes ?? 20;
   const cooldownStretchMinutes = options?.cooldownStretchMinutes ?? 20;
   const cardioMinutes = options?.cardioMinutes ?? 20;
+  const sessionDuration = options?.sessionDuration ?? 60;
 
   return {
     ...program,
@@ -506,10 +573,17 @@ function normalizeProgramRecommendation(program: any, options?: {
       const warmupStretch = Array.isArray(day.warmupStretch) ? day.warmupStretch : [];
       const cooldownStretch = Array.isArray(day.cooldownStretch) ? day.cooldownStretch : [];
       const mixedStretches = exercises.filter((item: string) => isStretchExerciseText(String(item)));
-      const mainExercises = normalizeCardioExercises(
+      const normalizedMainExercises = normalizeCardioExercises(
         exercises.filter((item: string) => !isStretchExerciseText(String(item))),
         cardioMinutes,
       );
+      const mainExercises = fillExercisesForDuration(day, normalizedMainExercises, {
+        exerciseCatalog: options?.exerciseCatalog,
+        sessionDuration,
+        warmupStretchMinutes,
+        cooldownStretchMinutes,
+        cardioMinutes,
+      });
       const sequenceLabel = `${index + 1}일차`;
 
       if (!warmupStretch.length && !cooldownStretch.length && mixedStretches.length) {
@@ -517,6 +591,7 @@ function normalizeProgramRecommendation(program: any, options?: {
         const nextDay = {
           ...day,
           day: sequenceLabel,
+          duration: `${sessionDuration}분`,
           warmupStretch: mixedStretches.slice(0, midpoint),
           cooldownStretch: mixedStretches.slice(midpoint),
           exercises: mainExercises,
@@ -531,6 +606,7 @@ function normalizeProgramRecommendation(program: any, options?: {
       return {
         ...day,
         day: sequenceLabel,
+        duration: `${sessionDuration}분`,
         warmupStretch: normalizeStretchBlock({ ...day, exercises: mainExercises, warmupStretch, cooldownStretch }, "warmup", warmupStretchMinutes),
         cooldownStretch: normalizeStretchBlock({ ...day, exercises: mainExercises, warmupStretch, cooldownStretch }, "cooldown", cooldownStretchMinutes),
         exercises: mainExercises,
@@ -1408,6 +1484,12 @@ ${historyText}
         const cardioText = input.includeCardio
           ? `유산소 포함: ${input.cardioMinutes}분. 단, 하체가 주요 타겟이면 고강도 유산소는 제외하고 저강도 또는 생략.`
           : "유산소 제외";
+        const targetExerciseCount = getTargetStrengthExerciseCount(
+          input.sessionDuration,
+          input.warmupStretchMinutes,
+          input.cooldownStretchMinutes,
+          input.includeCardio ? input.cardioMinutes : 0,
+        );
         const coreText = input.includeCore ? "복근/코어 필요 시 포함" : "복근/코어 제외";
         const intensityText = {
           light: "가볍게 회복 중심",
@@ -1423,6 +1505,7 @@ ${historyText}
               - 아래 "사용 가능한 운동 DB 후보"에 있는 운동명만 추천하세요. 새 운동명을 지어내지 마세요.
               - focus는 사용자가 고른 타겟 부위만 반영하세요.
               - exercises에는 focus와 맞는 메인/보조 운동만 넣으세요. 타겟 외 부위 운동을 섞지 마세요.
+              - exercises의 근력 운동은 ${targetExerciseCount}개 안팎으로 구성하세요. 너무 적게 만들지 마세요.
               - 근력 운동은 "한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
               - 유산소는 세트/횟수가 아니라 "러닝, 트레드밀 (Running, Treadmill) - ${input.cardioMinutes}분"처럼 시간 형식으로 작성하세요.
               - 유산소는 하루에 한 줄만 허용합니다.
@@ -1444,6 +1527,7 @@ ${formatRecommendationGoal(goals, goal)}
 장소: ${locationLabels[input.location]}
 ${equipmentText}
 가능 시간: ${input.sessionDuration}분
+메인 근력 운동 개수 목표: ${targetExerciseCount}개
 강도: ${intensityText}
 ${cardioText}
 ${coreText}
@@ -1504,6 +1588,7 @@ ${recommendationCatalog.text}
           warmupStretchMinutes: input.warmupStretchMinutes,
           cooldownStretchMinutes: input.cooldownStretchMinutes,
           cardioMinutes: input.includeCardio ? input.cardioMinutes : 0,
+          sessionDuration: input.sessionDuration,
         });
 
         return {
@@ -1579,6 +1664,12 @@ ${recommendationCatalog.text}
       const warmupStretchMinutes = input?.warmupStretchMinutes ?? 20;
       const cooldownStretchMinutes = input?.cooldownStretchMinutes ?? 20;
       const cardioMinutes = input?.cardioMinutes ?? 20;
+      const targetExerciseCount = getTargetStrengthExerciseCount(
+        input?.sessionDuration ?? 60,
+        warmupStretchMinutes,
+        cooldownStretchMinutes,
+        includeCardio ? cardioMinutes : 0,
+      );
       const accessoryText = [
         includeCardio ? `유산소를 주간 계획에 적절히 포함, 유산소를 넣는 날은 ${cardioMinutes}분` : "유산소는 제외",
         avoidCardioOnLegDay ? "하체 운동일에는 유산소를 넣지 말고 상체/휴식 부담이 낮은 날에 배치" : "하체 운동일에도 가벼운 유산소 배치 가능",
@@ -1629,6 +1720,7 @@ ${recommendationCatalog.text}
             - weeklyPlan은 반드시 사용자가 선택한 주 운동일 수와 같은 개수로 구성하세요.
             - 루틴은 요일 기준이 아닙니다. day 값은 반드시 "1일차", "2일차", "3일차"처럼 주간 순번으로 작성하세요.
             - 각 운동일의 총 시간이 지정된 운동 가능 시간을 초과하지 않도록 하세요.
+            - 각 운동일의 exercises 근력 운동은 ${targetExerciseCount}개 안팎으로 구성하세요. 120분처럼 긴 운동 시간인데 3~4개만 추천하지 마세요.
             - 홈트레이닝이면 맨몸 운동 위주로, 헬스장이면 기구 운동을 포함하세요.
             - 머신과 케이블은 서로 다른 기구입니다. 케이블이 선택되지 않았으면 케이블 운동을 넣지 말고, 머신이 선택되지 않았으면 머신 운동을 넣지 마세요.
             - 운동명은 한국어 운동명을 우선 사용하고, 필요하면 괄호 안에 영어명을 보조로 적으세요.
@@ -1655,6 +1747,7 @@ ${statsText}
 ${locationText}
 ${equipmentText}
 ${durationText}
+메인 근력 운동 개수 목표: 각 운동일 ${targetExerciseCount}개
 ${weeklyFrequencyText}
 ${splitText}
 ${excludedText}
@@ -1730,6 +1823,7 @@ ${recommendationCatalog.text}
         warmupStretchMinutes,
         cooldownStretchMinutes,
         cardioMinutes: includeCardio ? cardioMinutes : 0,
+        sessionDuration: input?.sessionDuration ?? 60,
       });
 
       return {
