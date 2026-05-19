@@ -73,6 +73,7 @@ const bodyPartLabels: Record<string, string> = {
 
 const splitPreferenceLabels: Record<string, string> = {
   auto: "AI가 목표와 빈도에 맞춰 자동 구성",
+  custom_day_targets: "사용자가 일차별 운동 부위를 직접 선택",
   full_body: "전신 운동 중심",
   upper_lower: "상체/하체 분할",
   push_pull_legs: "푸시/풀/레그(PPL) 분할",

@@ -20,6 +20,7 @@ const equipmentOptions = [
 
 const splitOptions = [
   { value: "auto", label: "AI 자동" },
+  { value: "custom_day_targets", label: "사용자 선택" },
   { value: "full_body", label: "전신" },
   { value: "upper_lower", label: "상/하체" },
   { value: "push_pull_legs", label: "PPL" },
@@ -124,7 +125,7 @@ function ProgramRecommendation() {
       warmupStretchMinutes: Number(warmupStretchMinutes),
       cooldownStretchMinutes: Number(cooldownStretchMinutes),
       cardioMinutes: Number(cardioMinutes),
-      dayFocusNotes: formatDayFocusNotes(dayTargets) || undefined,
+      dayFocusNotes: splitPreference === "custom_day_targets" ? formatDayFocusNotes(dayTargets) || undefined : undefined,
       customRequest: customRequest.trim() || undefined,
     });
   };
@@ -311,38 +312,40 @@ function ProgramRecommendation() {
             </div>
           </div>
 
-          <div className="border-t border-border/60 pt-4">
-            <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <div className="text-xs text-muted-foreground">일차별 운동 부위</div>
-                <div className="text-xs text-muted-foreground/80">비워둔 일차는 AI가 목표와 회복을 보고 채웁니다.</div>
-              </div>
-              {formatDayFocusNotes(dayTargets) && (
-                <div className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs text-primary">
-                  {formatDayFocusNotes(dayTargets)}
+          {splitPreference === "custom_day_targets" && (
+            <div className="border-t border-border/60 pt-4">
+              <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <div className="text-xs text-muted-foreground">일차별 운동 부위</div>
+                  <div className="text-xs text-muted-foreground/80">비워둔 일차는 AI가 목표와 회복을 보고 채웁니다.</div>
                 </div>
-              )}
-            </div>
-            <div className="space-y-3">
-              {dayTargets.map((targets, dayIndex) => (
-                <div key={dayIndex} className="grid gap-2 rounded-lg bg-accent/35 p-3 sm:grid-cols-[72px_1fr] sm:items-center">
-                  <div className="text-xs font-semibold text-foreground">{dayIndex + 1}일차</div>
-                  <div className="flex flex-wrap gap-2">
-                    {targetBodyPartOptions.map((item) => (
-                      <button
-                        key={item.value}
-                        type="button"
-                        onClick={() => toggleDayTarget(dayIndex, item.value)}
-                        className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${targets.includes(item.value) ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-background/70 text-muted-foreground"}`}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
+                {formatDayFocusNotes(dayTargets) && (
+                  <div className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs text-primary">
+                    {formatDayFocusNotes(dayTargets)}
                   </div>
-                </div>
-              ))}
+                )}
+              </div>
+              <div className="space-y-3">
+                {dayTargets.map((targets, dayIndex) => (
+                  <div key={dayIndex} className="grid gap-2 rounded-lg bg-accent/35 p-3 sm:grid-cols-[72px_1fr] sm:items-center">
+                    <div className="text-xs font-semibold text-foreground">{dayIndex + 1}일차</div>
+                    <div className="flex flex-wrap gap-2">
+                      {targetBodyPartOptions.map((item) => (
+                        <button
+                          key={item.value}
+                          type="button"
+                          onClick={() => toggleDayTarget(dayIndex, item.value)}
+                          className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${targets.includes(item.value) ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-background/70 text-muted-foreground"}`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="border-t border-border/60 pt-4">
             <div>
