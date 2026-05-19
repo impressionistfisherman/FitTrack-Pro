@@ -63,6 +63,8 @@ const bodyPartLabels: Record<string, string> = {
   back: "등",
   shoulders: "어깨",
   arms: "팔",
+  biceps: "이두",
+  triceps: "삼두",
   legs: "하체",
   glutes: "둔근",
   abs: "복근",
@@ -327,6 +329,15 @@ function getArmExerciseFocus(value: string): ArmFocus {
   if (isBiceps) return "biceps";
   if (isTriceps) return "triceps";
   return null;
+}
+
+function getExerciseArmFocus(exercise: any): ArmFocus {
+  return getArmExerciseFocus([
+    exercise?.nameKo,
+    exercise?.name,
+    ...(Array.isArray(exercise?.primaryMuscles) ? exercise.primaryMuscles : []),
+    ...(Array.isArray(exercise?.secondaryMuscles) ? exercise.secondaryMuscles : []),
+  ].join(" "));
 }
 
 function isArmExerciseAllowedForFocus(exerciseText: string, focusText: string) {
@@ -866,10 +877,18 @@ async function buildRecommendationExerciseCatalog(input: {
   const allExercises = await getExercises();
   const allowedEquipment = getRecommendationEquipmentSet(input.location, input.equipment);
   const excluded = new Set(input.excludedBodyParts);
+  const excludedArmFocuses = new Set<Exclude<ArmFocus, null>>(
+    input.excludedBodyParts
+      .filter((part): part is Exclude<ArmFocus, null> => part === "biceps" || part === "triceps" || part === "both"),
+  );
 
   const usable = allExercises.filter((exercise: any) => {
     if (!allowedEquipment.has(exercise.equipment)) return false;
     if (excluded.has(exercise.bodyPart)) return false;
+    if (exercise.bodyPart === "arms" && excludedArmFocuses.size) {
+      const armFocus = getExerciseArmFocus(exercise);
+      if (armFocus && (excludedArmFocuses.has(armFocus) || armFocus === "both")) return false;
+    }
     if (!input.includeCardio && exercise.bodyPart === "cardio") return false;
     if (!input.includeCore && exercise.bodyPart === "abs") return false;
     return true;
@@ -1506,7 +1525,7 @@ ${historyText}
         location: z.enum(["gym", "home", "outdoor"]).default("gym"),
         equipment: z.array(z.string()).default([]),
         sessionDuration: z.number().int().min(20).max(180).default(60),
-        targetBodyParts: z.array(z.enum(["chest", "back", "shoulders", "arms", "legs", "glutes", "abs"])).min(1).max(5),
+        targetBodyParts: z.array(z.enum(["chest", "back", "shoulders", "biceps", "triceps", "arms", "legs", "glutes", "abs"])).min(1).max(5),
         includeCardio: z.boolean().default(false),
         includeCore: z.boolean().default(true),
         warmupStretchMinutes: z.number().int().min(0).max(40).default(10),
