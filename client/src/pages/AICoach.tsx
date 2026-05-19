@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import DietRecommendation from "@/components/DietRecommendation";
 import { trpc } from "@/lib/trpc";
 import { CalendarDays, Dumbbell, RefreshCw, Save, Sparkles, Utensils } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -43,6 +43,18 @@ const targetBodyPartOptions = bodyPartOptions.filter((item) => item.value !== "c
 const minuteOptions = [0, 5, 10, 15, 20, 30, 40];
 const cardioMinuteOptions = [0, 10, 15, 20, 25, 30, 40, 60];
 
+function formatDayFocusNotes(dayTargets: string[][]) {
+  return dayTargets
+    .map((targets, index) => {
+      const labels = targets
+        .map((value) => targetBodyPartOptions.find((item) => item.value === value)?.label ?? value)
+        .join("/");
+      return labels ? `${index + 1}일차 ${labels}` : null;
+    })
+    .filter(Boolean)
+    .join(", ");
+}
+
 function ProgramRecommendation() {
   const [location, setLocation] = useState<"gym" | "home" | "outdoor">("gym");
   const [sessionDuration, setSessionDuration] = useState("60");
@@ -56,7 +68,7 @@ function ProgramRecommendation() {
   const [warmupStretchMinutes, setWarmupStretchMinutes] = useState("20");
   const [cooldownStretchMinutes, setCooldownStretchMinutes] = useState("20");
   const [cardioMinutes, setCardioMinutes] = useState("20");
-  const [dayFocusNotes, setDayFocusNotes] = useState("");
+  const [dayTargets, setDayTargets] = useState<string[][]>(Array.from({ length: Number(daysPerWeek) }, () => []));
   const [customRequest, setCustomRequest] = useState("");
   const utils = trpc.useUtils();
   const programMutation = trpc.ai.programRecommendation.useMutation();
@@ -72,12 +84,26 @@ function ProgramRecommendation() {
   });
   const program = programMutation.data?.program;
 
+  useEffect(() => {
+    const count = Number(daysPerWeek);
+    setDayTargets((current) => Array.from({ length: count }, (_, index) => current[index] ?? []));
+  }, [daysPerWeek]);
+
   const toggleEquipment = (value: string) => {
     setEquipment((items) => items.includes(value) ? items.filter((item) => item !== value) : [...items, value]);
   };
 
   const toggleExcludedBodyPart = (value: string) => {
     setExcludedBodyParts((items) => items.includes(value) ? items.filter((item) => item !== value) : [...items, value]);
+  };
+
+  const toggleDayTarget = (dayIndex: number, value: string) => {
+    setDayTargets((days) => days.map((targets, index) => {
+      if (index !== dayIndex) return targets;
+      return targets.includes(value)
+        ? targets.filter((item) => item !== value)
+        : [...targets, value];
+    }));
   };
 
   const requestProgram = () => {
@@ -98,7 +124,7 @@ function ProgramRecommendation() {
       warmupStretchMinutes: Number(warmupStretchMinutes),
       cooldownStretchMinutes: Number(cooldownStretchMinutes),
       cardioMinutes: Number(cardioMinutes),
-      dayFocusNotes: dayFocusNotes.trim() || undefined,
+      dayFocusNotes: formatDayFocusNotes(dayTargets) || undefined,
       customRequest: customRequest.trim() || undefined,
     });
   };
@@ -285,17 +311,40 @@ function ProgramRecommendation() {
             </div>
           </div>
 
-          <div className="grid gap-3 rounded-2xl border border-border/70 bg-background/30 p-3 sm:p-4 lg:grid-cols-2">
-            <div>
-              <div className="mb-1.5 text-xs text-muted-foreground">운동일별 희망 구성</div>
-              <Textarea
-                value={dayFocusNotes}
-                onChange={(event) => setDayFocusNotes(event.target.value)}
-                placeholder="예: 1일차 가슴/삼두, 2일차 등/이두, 3일차 하체. 어깨는 가볍게만."
-                className="min-h-20 resize-none bg-accent border-border text-foreground"
-                maxLength={500}
-              />
+          <div className="rounded-2xl border border-border/70 bg-background/30 p-3 sm:p-4">
+            <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <div className="text-xs text-muted-foreground">일차별 운동 부위</div>
+                <div className="text-xs text-muted-foreground/80">비워둔 일차는 AI가 목표와 회복을 보고 채웁니다.</div>
+              </div>
+              {formatDayFocusNotes(dayTargets) && (
+                <div className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs text-primary">
+                  {formatDayFocusNotes(dayTargets)}
+                </div>
+              )}
             </div>
+            <div className="space-y-3">
+              {dayTargets.map((targets, dayIndex) => (
+                <div key={dayIndex} className="rounded-xl border border-border/60 bg-accent/30 p-3">
+                  <div className="mb-2 text-xs font-semibold text-foreground">{dayIndex + 1}일차</div>
+                  <div className="flex flex-wrap gap-2">
+                    {targetBodyPartOptions.map((item) => (
+                      <button
+                        key={item.value}
+                        type="button"
+                        onClick={() => toggleDayTarget(dayIndex, item.value)}
+                        className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${targets.includes(item.value) ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-background/70 text-muted-foreground"}`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-border/70 bg-background/30 p-3 sm:p-4">
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">원하는 요청사항</div>
               <Textarea
