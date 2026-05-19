@@ -70,6 +70,81 @@ const muscleLabels: Record<string, string> = {
 const formatMuscles = (muscles: string[]) =>
   muscles.map((muscle) => muscleLabels[muscle] || muscleLabels[muscle.toLowerCase()] || muscle).join(", ");
 
+const hasKorean = (value: string) => /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(value);
+
+const cleanInstruction = (value: string) => value.trim().replace(/\s+/g, " ");
+
+const instructionTranslations: Array<[RegExp, string]> = [
+  [
+    /position your body.*vertical leg raise bench/i,
+    "버티컬 레그 레이즈 벤치에 몸을 고정하고 전완을 패드에 올린 뒤 손잡이를 잡습니다.",
+  ],
+  [
+    /torso should be straight.*lower back pressed/i,
+    "상체를 곧게 세우고 허리를 패드에 밀착한 상태에서 다리를 아래로 편 자세로 시작합니다.",
+  ],
+  [
+    /breathe out.*lift your legs/i,
+    "숨을 내쉬며 반동 없이 다리를 들어 올리고, 바닥과 거의 평행해질 때 복부를 잠시 수축합니다.",
+  ],
+  [/slowly go back.*starting position/i, "숨을 들이마시며 다리를 천천히 시작 자세로 내립니다."],
+  [/repeat for the recommended amount/i, "권장 반복 횟수만큼 같은 동작을 반복합니다."],
+  [/lie on.*bench|lay on.*bench/i, "벤치에 안정적으로 누워 어깨와 허리를 고정합니다."],
+  [/stand.*feet/i, "발을 안정적으로 두고 바른 자세로 섭니다."],
+  [/hold.*dumbbell|grasp.*dumbbell/i, "덤벨을 안정적으로 잡고 손목이 꺾이지 않게 유지합니다."],
+  [/grasp.*bar|hold.*bar/i, "바를 안정적으로 잡고 손목과 팔꿈치 정렬을 맞춥니다."],
+  [/keep.*back.*straight/i, "허리를 곧게 유지하고 몸통이 흔들리지 않게 고정합니다."],
+  [/lower.*slowly|slowly lower/i, "반동 없이 천천히 내리며 타겟 부위의 긴장을 유지합니다."],
+  [/return.*start/i, "자세가 무너지지 않게 시작 위치로 천천히 돌아옵니다."],
+  [/squeeze|contract/i, "수축 지점에서 타겟 근육을 짧게 조입니다."],
+  [/breathe/i, "동작 내내 호흡을 유지하고 힘을 쓰는 구간에서 숨을 내쉽니다."],
+];
+
+function translateInstruction(value: string) {
+  const text = cleanInstruction(value);
+  if (!text) return "";
+  if (hasKorean(text)) return text;
+  return instructionTranslations.find(([pattern]) => pattern.test(text))?.[1] ?? "";
+}
+
+function buildFallbackInstructions(exercise: {
+  nameKo: string;
+  name?: string | null;
+  bodyPart: string;
+  equipment: string;
+}) {
+  const name = exercise.nameKo || exercise.name || "이 운동";
+  const bodyPart = bodyPartLabels[exercise.bodyPart] || "타겟 부위";
+  const equipment = equipmentLabels[exercise.equipment] || "";
+  const equipmentText = equipment && equipment !== "기구 없음" ? `${equipment} 위치와 ` : "";
+
+  return [
+    `${name}를 시작하기 전 ${equipmentText}자세를 안정적으로 맞춥니다.`,
+    `${bodyPart}에 자극이 들어오는 범위에서 천천히 동작을 수행합니다.`,
+    "반동을 쓰지 말고 수축과 이완을 모두 통제합니다.",
+    "통증이 생기면 가동 범위를 줄이거나 운동을 중단합니다.",
+  ];
+}
+
+function getDisplayInstructions(
+  exercise: {
+    nameKo: string;
+    name?: string | null;
+    bodyPart: string;
+    equipment: string;
+  },
+  instructionsKo: string[] | null,
+  instructionsEn: string[],
+) {
+  const koreanInstructions = instructionsKo?.map(cleanInstruction).filter(Boolean) ?? [];
+  if (koreanInstructions.some(hasKorean)) return koreanInstructions;
+
+  const translatedInstructions = instructionsEn.map(translateInstruction).filter(Boolean);
+  if (translatedInstructions.length >= 3) return translatedInstructions;
+
+  return buildFallbackInstructions(exercise);
+}
+
 // 근육 SVG 다이어그램
 function MuscleBodySVG({ bodyPart }: { bodyPart: string }) {
   const primaryColor = "oklch(0.74 0.18 160)";
@@ -308,7 +383,7 @@ export default function ExerciseDetail() {
   const instructionsKo = safeParseArray(rawInstructionsKo);
   const rawInstructions = exercise.instructions;
   const instructionsEn: string[] = safeParseArray(rawInstructions) ?? [];
-  const instructions = instructionsKo ?? instructionsEn;
+  const instructions = getDisplayInstructions(exercise, instructionsKo, instructionsEn);
   const secondaryImages = (exercise as any).secondaryImages as string[] | undefined;
 
   const handleStartWorkout = async () => {
