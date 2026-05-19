@@ -19,6 +19,30 @@ const navItems = [
   { href: "/ai-coach", icon: Bot, label: "AI 코치" },
 ];
 
+function AppContentSkeleton() {
+  return (
+    <div className="page-shell page-shell-wide space-y-4" aria-label="앱 정보를 불러오는 중">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-2">
+          <div className="h-4 w-24 skeleton rounded" />
+          <div className="h-8 w-44 skeleton rounded-lg" />
+          <div className="h-6 w-28 skeleton rounded-full" />
+        </div>
+        <div className="h-10 w-24 skeleton rounded-xl" />
+      </div>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+        <div className="h-56 skeleton rounded-2xl" />
+        <div className="h-56 skeleton rounded-2xl" />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="h-20 skeleton rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function NavItem({ href, icon: Icon, label, onClick }: {
   href: string; icon: any; label: string; onClick?: () => void;
 }) {
@@ -177,7 +201,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* ── 메인 콘텐츠 ── */}
       <main className="app-main">
         <div className="app-main-inner" aria-busy={loading}>
-          {children}
+          {loading ? <AppContentSkeleton /> : children}
         </div>
       </main>
 

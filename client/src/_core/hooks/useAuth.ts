@@ -15,6 +15,8 @@ export function useAuth(options?: UseAuthOptions) {
 
   const meQuery = trpc.auth.me.useQuery(undefined, {
     retry: false,
+    staleTime: 0,
+    refetchOnMount: "always",
     refetchOnWindowFocus: false,
   });
 
@@ -48,16 +50,21 @@ export function useAuth(options?: UseAuthOptions) {
   }, [meQuery.data]);
 
   const state = useMemo(() => {
-    const isInitialAuthCheck = meQuery.isPending && !meQuery.data;
+    const isVerifyingCachedUser =
+      meQuery.fetchStatus === "fetching" && !meQuery.isFetchedAfterMount;
+    const isInitialAuthCheck = (meQuery.isPending && !meQuery.data) || isVerifyingCachedUser;
+    const verifiedUser = isInitialAuthCheck ? null : meQuery.data ?? null;
     return {
-      user: meQuery.data ?? null,
+      user: verifiedUser,
       loading: isInitialAuthCheck || logoutMutation.isPending,
       error: meQuery.error ?? logoutMutation.error ?? null,
-      isAuthenticated: Boolean(meQuery.data),
+      isAuthenticated: Boolean(verifiedUser),
     };
   }, [
     meQuery.data,
     meQuery.error,
+    meQuery.fetchStatus,
+    meQuery.isFetchedAfterMount,
     meQuery.isPending,
     logoutMutation.error,
     logoutMutation.isPending,
