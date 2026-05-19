@@ -85,6 +85,8 @@ function ProgramRecommendation() {
     onError: () => toast.error("루틴 저장에 실패했습니다."),
   });
   const program = programMutation.data?.program;
+  const isCustomSplit = splitPreference === "custom_day_targets";
+  const selectedDayParts = dayTargets.flat();
 
   useEffect(() => {
     const count = Number(daysPerWeek);
@@ -113,15 +115,13 @@ function ProgramRecommendation() {
       toast.error("사용 가능한 기구를 하나 이상 선택하세요.");
       return;
     }
-    const isCustomSplit = splitPreference === "custom_day_targets";
-    const selectedDayParts = dayTargets.flat();
     programMutation.mutate({
       location,
       equipment: location === "gym" ? equipment : location === "home" ? equipment : ["bodyweight"],
       sessionDuration: Number(sessionDuration),
       daysPerWeek: Number(daysPerWeek),
       splitPreference,
-      excludedBodyParts,
+      excludedBodyParts: isCustomSplit ? [] : excludedBodyParts,
       includeCardio: isCustomSplit ? selectedDayParts.includes("cardio") : includeCardio,
       avoidCardioOnLegDay: isCustomSplit ? false : avoidCardioOnLegDay,
       includeCore: isCustomSplit ? selectedDayParts.includes("abs") : includeCore,
@@ -213,7 +213,7 @@ function ProgramRecommendation() {
             </div>
           )}
 
-          <div className={`grid gap-3 border-t border-border/60 pt-4 ${splitPreference === "custom_day_targets" ? "" : "lg:grid-cols-2"}`}>
+          <div className={`grid gap-3 border-t border-border/60 pt-4 ${isCustomSplit ? "" : "lg:grid-cols-2"}`}>
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">분할 방식</div>
               <Select value={splitPreference} onValueChange={setSplitPreference}>
@@ -227,7 +227,7 @@ function ProgramRecommendation() {
                 </SelectContent>
               </Select>
             </div>
-            {splitPreference !== "custom_day_targets" && (
+            {!isCustomSplit && (
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">추가 구성</div>
               <div className="flex flex-wrap gap-2">
@@ -288,7 +288,7 @@ function ProgramRecommendation() {
             </div>
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">유산소 시간</div>
-              <Select value={cardioMinutes} onValueChange={setCardioMinutes} disabled={!includeCardio}>
+              <Select value={cardioMinutes} onValueChange={setCardioMinutes} disabled={isCustomSplit ? !selectedDayParts.includes("cardio") : !includeCardio}>
                 <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground disabled:opacity-50">
                   <SelectValue />
                 </SelectTrigger>
@@ -301,23 +301,25 @@ function ProgramRecommendation() {
             </div>
           </div>
 
-          <div className="border-t border-border/60 pt-4">
-            <div className="mb-1.5 text-xs text-muted-foreground">추천에서 뺄 부위</div>
-            <div className="flex flex-wrap gap-2">
-              {bodyPartOptions.map((item) => (
-                <button
-                  key={item.value}
-                  type="button"
-                  onClick={() => toggleExcludedBodyPart(item.value)}
-                  className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${excludedBodyParts.includes(item.value) ? "border-destructive/40 bg-destructive/10 text-destructive" : "border-border bg-accent text-muted-foreground"}`}
-                >
-                  {item.label}
-                </button>
-              ))}
+          {!isCustomSplit && (
+            <div className="border-t border-border/60 pt-4">
+              <div className="mb-1.5 text-xs text-muted-foreground">추천에서 뺄 부위</div>
+              <div className="flex flex-wrap gap-2">
+                {bodyPartOptions.map((item) => (
+                  <button
+                    key={item.value}
+                    type="button"
+                    onClick={() => toggleExcludedBodyPart(item.value)}
+                    className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${excludedBodyParts.includes(item.value) ? "border-destructive/40 bg-destructive/10 text-destructive" : "border-border bg-accent text-muted-foreground"}`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {splitPreference === "custom_day_targets" && (
+          {isCustomSplit && (
             <div className="border-t border-border/60 pt-4">
               <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                 <div>
