@@ -514,12 +514,12 @@ function DailyWorkoutRecommendation() {
       </div>
 
       <Card className="bg-card border-border">
-        <CardContent className="p-4 space-y-3">
+        <CardContent className="space-y-5 p-4 sm:p-5">
           <div className="grid gap-3 sm:grid-cols-3">
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">운동 장소</div>
               <Select value={location} onValueChange={(value) => setLocation(value as any)}>
-                <SelectTrigger className="bg-accent border-border text-foreground">
+                <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
@@ -532,7 +532,7 @@ function DailyWorkoutRecommendation() {
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">운동 시간</div>
               <Select value={sessionDuration} onValueChange={setSessionDuration}>
-                <SelectTrigger className="bg-accent border-border text-foreground">
+                <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
@@ -545,7 +545,7 @@ function DailyWorkoutRecommendation() {
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">오늘 강도</div>
               <Select value={intensity} onValueChange={(value) => setIntensity(value as any)}>
-                <SelectTrigger className="bg-accent border-border text-foreground">
+                <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
@@ -557,7 +557,7 @@ function DailyWorkoutRecommendation() {
             </div>
           </div>
 
-          <div>
+          <div className="border-t border-border/60 pt-4">
             <div className="mb-1.5 text-xs text-muted-foreground">오늘 타겟 부위</div>
             <div className="flex flex-wrap gap-2">
               {targetBodyPartOptions.map((item) => (
@@ -574,7 +574,7 @@ function DailyWorkoutRecommendation() {
           </div>
 
           {location !== "outdoor" && (
-            <div>
+            <div className="border-t border-border/60 pt-4">
               <div className="mb-1.5 text-xs text-muted-foreground">사용 가능 기구</div>
               <div className="flex flex-wrap gap-2">
                 {equipmentOptions.map((item) => (
@@ -591,11 +591,11 @@ function DailyWorkoutRecommendation() {
             </div>
           )}
 
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 border-t border-border/60 pt-4 sm:grid-cols-3">
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">운동 전 스트레칭</div>
               <Select value={warmupStretchMinutes} onValueChange={setWarmupStretchMinutes}>
-                <SelectTrigger className="bg-accent border-border text-foreground">
+                <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
@@ -608,7 +608,7 @@ function DailyWorkoutRecommendation() {
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">운동 후 스트레칭</div>
               <Select value={cooldownStretchMinutes} onValueChange={setCooldownStretchMinutes}>
-                <SelectTrigger className="bg-accent border-border text-foreground">
+                <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
@@ -621,7 +621,7 @@ function DailyWorkoutRecommendation() {
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">유산소 시간</div>
               <Select value={cardioMinutes} onValueChange={setCardioMinutes} disabled={!includeCardio}>
-                <SelectTrigger className="bg-accent border-border text-foreground disabled:opacity-50">
+                <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground disabled:opacity-50">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
@@ -633,24 +633,27 @@ function DailyWorkoutRecommendation() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setIncludeCardio((value) => !value)}
-              className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${includeCardio ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
-            >
-              유산소 포함
-            </button>
-            <button
-              type="button"
-              onClick={() => setIncludeCore((value) => !value)}
-              className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${includeCore ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
-            >
-              복근 포함
-            </button>
+          <div className="border-t border-border/60 pt-4">
+            <div className="mb-1.5 text-xs text-muted-foreground">추가 구성</div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setIncludeCardio((value) => !value)}
+                className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${includeCardio ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
+              >
+                유산소 포함
+              </button>
+              <button
+                type="button"
+                onClick={() => setIncludeCore((value) => !value)}
+                className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${includeCore ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
+              >
+                복근 포함
+              </button>
+            </div>
           </div>
 
-          <div>
+          <div className="border-t border-border/60 pt-4">
             <div className="mb-1.5 text-xs text-muted-foreground">오늘 컨디션/요청사항</div>
             <Textarea
               value={customRequest}
