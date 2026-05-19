@@ -149,7 +149,7 @@ function ProgramRecommendation() {
 
       <Card className="bg-card border-border">
         <CardContent className="space-y-5 p-4 sm:p-5">
-          <div className="grid gap-3 rounded-2xl border border-border/70 bg-background/30 p-3 sm:grid-cols-3 sm:p-4">
+          <div className="grid gap-3 sm:grid-cols-3">
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">운동 장소</div>
               <Select value={location} onValueChange={(value) => setLocation(value as any)}>
@@ -192,7 +192,7 @@ function ProgramRecommendation() {
           </div>
 
           {location !== "outdoor" && (
-            <div className="rounded-2xl border border-border/70 bg-background/30 p-3 sm:p-4">
+            <div className="border-t border-border/60 pt-4">
               <div className="mb-1.5 text-xs text-muted-foreground">사용 가능 기구</div>
               <div className="flex flex-wrap gap-2">
                 {equipmentOptions.map((item) => (
@@ -209,7 +209,7 @@ function ProgramRecommendation() {
             </div>
           )}
 
-          <div className="grid gap-3 rounded-2xl border border-border/70 bg-background/30 p-3 sm:p-4 lg:grid-cols-2">
+          <div className="grid gap-3 border-t border-border/60 pt-4 lg:grid-cols-2">
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">분할 방식</div>
               <Select value={splitPreference} onValueChange={setSplitPreference}>
@@ -253,7 +253,7 @@ function ProgramRecommendation() {
             </div>
           </div>
 
-          <div className="grid gap-3 rounded-2xl border border-border/70 bg-background/30 p-3 sm:grid-cols-3 sm:p-4">
+          <div className="grid gap-3 border-t border-border/60 pt-4 sm:grid-cols-3">
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">운동 전 스트레칭</div>
               <Select value={warmupStretchMinutes} onValueChange={setWarmupStretchMinutes}>
@@ -295,7 +295,7 @@ function ProgramRecommendation() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border/70 bg-background/30 p-3 sm:p-4">
+          <div className="border-t border-border/60 pt-4">
             <div className="mb-1.5 text-xs text-muted-foreground">추천에서 뺄 부위</div>
             <div className="flex flex-wrap gap-2">
               {bodyPartOptions.map((item) => (
@@ -311,7 +311,7 @@ function ProgramRecommendation() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border/70 bg-background/30 p-3 sm:p-4">
+          <div className="border-t border-border/60 pt-4">
             <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <div className="text-xs text-muted-foreground">일차별 운동 부위</div>
@@ -325,8 +325,8 @@ function ProgramRecommendation() {
             </div>
             <div className="space-y-3">
               {dayTargets.map((targets, dayIndex) => (
-                <div key={dayIndex} className="rounded-xl border border-border/60 bg-accent/30 p-3">
-                  <div className="mb-2 text-xs font-semibold text-foreground">{dayIndex + 1}일차</div>
+                <div key={dayIndex} className="grid gap-2 rounded-lg bg-accent/35 p-3 sm:grid-cols-[72px_1fr] sm:items-center">
+                  <div className="text-xs font-semibold text-foreground">{dayIndex + 1}일차</div>
                   <div className="flex flex-wrap gap-2">
                     {targetBodyPartOptions.map((item) => (
                       <button
@@ -344,7 +344,7 @@ function ProgramRecommendation() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border/70 bg-background/30 p-3 sm:p-4">
+          <div className="border-t border-border/60 pt-4">
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">원하는 요청사항</div>
               <Textarea
