@@ -92,6 +92,30 @@ const goalLabels: Record<string, string> = {
   general: "일반 건강",
 };
 
+const customSplitPresetSchema = z.object({
+  id: z.string().min(1).max(80),
+  name: z.string().min(1).max(40),
+  daysPerWeek: z.string().regex(/^[1-7]$/),
+  dayTargets: z.array(z.array(z.string().max(40)).max(12)).min(1).max(7),
+  warmupStretchMinutes: z.string().regex(/^\d+$/),
+  cooldownStretchMinutes: z.string().regex(/^\d+$/),
+  cardioMinutes: z.string().regex(/^\d+$/),
+  updatedAt: z.string().max(40),
+});
+
+type CustomSplitPreset = z.infer<typeof customSplitPresetSchema>;
+
+function parseCustomSplitPresets(value: string | null): CustomSplitPreset[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    const result = z.array(customSplitPresetSchema).safeParse(parsed);
+    return result.success ? result.data : [];
+  } catch {
+    return [];
+  }
+}
+
 function normalizeExerciseName(value: string) {
   return value
     .toLowerCase()
@@ -1005,6 +1029,7 @@ export const appRouter = router({
     get: protectedProcedure.query(async ({ ctx }) => {
       return {
         experienceLevel: await getUserPreference(ctx.user.id, "experienceLevel") ?? "beginner",
+        customSplitPresets: parseCustomSplitPresets(await getUserPreference(ctx.user.id, "customSplitPresets")),
       };
     }),
     set: protectedProcedure
@@ -1014,6 +1039,32 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         await setUserPreference(ctx.user.id, "experienceLevel", input.experienceLevel);
         return { success: true };
+      }),
+    saveCustomSplitPreset: protectedProcedure
+      .input(customSplitPresetSchema.omit({ updatedAt: true }).extend({
+        id: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const existing = parseCustomSplitPresets(await getUserPreference(ctx.user.id, "customSplitPresets"));
+        const preset: CustomSplitPreset = {
+          ...input,
+          id: input.id || crypto.randomUUID(),
+          updatedAt: new Date().toISOString(),
+        };
+        const nextPresets = [
+          preset,
+          ...existing.filter((item) => item.id !== preset.id && item.name !== preset.name),
+        ].slice(0, 12);
+        await setUserPreference(ctx.user.id, "customSplitPresets", JSON.stringify(nextPresets));
+        return { presets: nextPresets, preset };
+      }),
+    deleteCustomSplitPreset: protectedProcedure
+      .input(z.object({ id: z.string().min(1) }))
+      .mutation(async ({ ctx, input }) => {
+        const existing = parseCustomSplitPresets(await getUserPreference(ctx.user.id, "customSplitPresets"));
+        const nextPresets = existing.filter((item) => item.id !== input.id);
+        await setUserPreference(ctx.user.id, "customSplitPresets", JSON.stringify(nextPresets));
+        return { presets: nextPresets };
       }),
   }),
 

@@ -46,33 +46,16 @@ const routineDayTargetOptions = bodyPartOptions;
 
 const minuteOptions = [0, 5, 10, 15, 20, 30, 40];
 const cardioMinuteOptions = [0, 10, 15, 20, 25, 30, 40, 60];
-const customSplitPresetStorageKey = "fittrack.customSplitPresets.v1";
 
 type CustomSplitPreset = {
-  id: string;
+  id?: string;
   name: string;
   daysPerWeek: string;
   dayTargets: string[][];
   warmupStretchMinutes: string;
   cooldownStretchMinutes: string;
   cardioMinutes: string;
-  updatedAt: string;
 };
-
-function readCustomSplitPresets(): CustomSplitPreset[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(customSplitPresetStorageKey) ?? "[]");
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeCustomSplitPresets(presets: CustomSplitPreset[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(customSplitPresetStorageKey, JSON.stringify(presets));
-}
 
 function formatDayFocusNotes(dayTargets: string[][]) {
   return dayTargets
@@ -100,12 +83,32 @@ function ProgramRecommendation() {
   const [cooldownStretchMinutes, setCooldownStretchMinutes] = useState("20");
   const [cardioMinutes, setCardioMinutes] = useState("20");
   const [dayTargets, setDayTargets] = useState<string[][]>(Array.from({ length: Number(daysPerWeek) }, () => []));
-  const [customSplitPresets, setCustomSplitPresets] = useState<CustomSplitPreset[]>([]);
   const [selectedPresetId, setSelectedPresetId] = useState("");
   const [presetName, setPresetName] = useState("");
   const [customRequest, setCustomRequest] = useState("");
   const utils = trpc.useUtils();
   const programMutation = trpc.ai.programRecommendation.useMutation();
+  const preferencesQuery = trpc.preferences.get.useQuery();
+  const customSplitPresets = preferencesQuery.data?.customSplitPresets ?? [];
+  const saveCustomSplitPresetMutation = trpc.preferences.saveCustomSplitPreset.useMutation({
+    onSuccess: (result) => {
+      setSelectedPresetId(result.preset.id);
+      utils.preferences.get.setData(undefined, (current) => current ? { ...current, customSplitPresets: result.presets } : current);
+      utils.preferences.get.invalidate();
+      toast.success("사용자 선택 프리셋을 저장했습니다.");
+    },
+    onError: () => toast.error("프리셋 저장에 실패했습니다."),
+  });
+  const deleteCustomSplitPresetMutation = trpc.preferences.deleteCustomSplitPreset.useMutation({
+    onSuccess: (result) => {
+      setSelectedPresetId("");
+      setPresetName("");
+      utils.preferences.get.setData(undefined, (current) => current ? { ...current, customSplitPresets: result.presets } : current);
+      utils.preferences.get.invalidate();
+      toast.success("프리셋을 삭제했습니다.");
+    },
+    onError: () => toast.error("프리셋 삭제에 실패했습니다."),
+  });
   const saveProgram = trpc.ai.saveProgramAsRoutines.useMutation({
     onSuccess: (result) => {
       const totalExercises = result.created.reduce((sum: number, item: any) => sum + item.addedCount, 0);
@@ -125,10 +128,6 @@ function ProgramRecommendation() {
     const count = Number(daysPerWeek);
     setDayTargets((current) => Array.from({ length: count }, (_, index) => current[index] ?? []));
   }, [daysPerWeek]);
-
-  useEffect(() => {
-    setCustomSplitPresets(readCustomSplitPresets());
-  }, []);
 
   const toggleEquipment = (value: string) => {
     setEquipment((items) => items.includes(value) ? items.filter((item) => item !== value) : [...items, value]);
@@ -157,30 +156,21 @@ function ProgramRecommendation() {
       toast.error("프리셋 이름을 입력하세요.");
       return;
     }
-    const preset: CustomSplitPreset = {
-      id: selectedPresetId || crypto.randomUUID(),
+    saveCustomSplitPresetMutation.mutate({
+      id: selectedPresetId || undefined,
       name: trimmedName,
       daysPerWeek,
       dayTargets,
       warmupStretchMinutes,
       cooldownStretchMinutes,
       cardioMinutes,
-      updatedAt: new Date().toISOString(),
-    };
-    const nextPresets = [
-      preset,
-      ...customSplitPresets.filter((item) => item.id !== preset.id && item.name !== preset.name),
-    ].slice(0, 12);
-    setCustomSplitPresets(nextPresets);
-    setSelectedPresetId(preset.id);
-    writeCustomSplitPresets(nextPresets);
-    toast.success("사용자 선택 프리셋을 저장했습니다.");
+    });
   };
 
   const applyCustomSplitPreset = (presetId: string) => {
     const preset = customSplitPresets.find((item) => item.id === presetId);
     if (!preset) return;
-    setSelectedPresetId(preset.id);
+    setSelectedPresetId(preset.id ?? "");
     setPresetName(preset.name);
     setSplitPreference("custom_day_targets");
     setDaysPerWeek(preset.daysPerWeek);
@@ -193,12 +183,7 @@ function ProgramRecommendation() {
 
   const deleteCustomSplitPreset = () => {
     if (!selectedPresetId) return;
-    const nextPresets = customSplitPresets.filter((item) => item.id !== selectedPresetId);
-    setCustomSplitPresets(nextPresets);
-    setSelectedPresetId("");
-    setPresetName("");
-    writeCustomSplitPresets(nextPresets);
-    toast.success("프리셋을 삭제했습니다.");
+    deleteCustomSplitPresetMutation.mutate({ id: selectedPresetId });
   };
 
   const requestProgram = () => {
@@ -438,7 +423,7 @@ function ProgramRecommendation() {
                 </div>
                 <div className="flex gap-2">
                   <Button type="button" size="sm" className="h-10 flex-1 bg-primary text-primary-foreground lg:flex-none" onClick={saveCustomSplitPreset}>
-                    저장
+                    {saveCustomSplitPresetMutation.isPending ? "저장 중" : "저장"}
                   </Button>
                   <Button
                     type="button"
@@ -446,9 +431,9 @@ function ProgramRecommendation() {
                     variant="outline"
                     className="h-10 flex-1 border-border bg-background/60 text-muted-foreground lg:flex-none"
                     onClick={deleteCustomSplitPreset}
-                    disabled={!selectedPresetId}
+                    disabled={!selectedPresetId || deleteCustomSplitPresetMutation.isPending}
                   >
-                    삭제
+                    {deleteCustomSplitPresetMutation.isPending ? "삭제 중" : "삭제"}
                   </Button>
                 </div>
               </div>
