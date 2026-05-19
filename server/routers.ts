@@ -493,10 +493,7 @@ function normalizeCardioExercises(exercises: string[], cardioMinutes: number, ca
 function getTargetStrengthExerciseCount(sessionDuration: number, warmupMinutes: number, cooldownMinutes: number, cardioMinutes: number) {
   const strengthMinutes = Math.max(20, sessionDuration - warmupMinutes - cooldownMinutes - Math.max(0, cardioMinutes));
   if (strengthMinutes <= 30) return 3;
-  if (strengthMinutes <= 45) return 4;
-  if (strengthMinutes <= 60) return 5;
-  if (strengthMinutes <= 80) return 6;
-  return 7;
+  return Math.min(10, Math.max(4, Math.round(strengthMinutes / 10)));
 }
 
 function formatDefaultRecommendedExercise(exercise: any) {
@@ -1564,11 +1561,14 @@ ${historyText}
         const cardioText = input.includeCardio
           ? `유산소 포함: ${input.cardioMinutes}분. 단, 하체가 주요 타겟이면 고강도 유산소는 제외하고 저강도 또는 생략.`
           : "유산소 제외";
+        const mainWorkoutMinutes = Math.max(20, input.sessionDuration - input.warmupStretchMinutes - input.cooldownStretchMinutes);
+        const plannedCardioMinutes = input.includeCardio ? Math.min(input.cardioMinutes, Math.max(0, mainWorkoutMinutes - 20)) : 0;
+        const strengthWorkoutMinutes = Math.max(20, mainWorkoutMinutes - plannedCardioMinutes);
         const targetExerciseCount = getTargetStrengthExerciseCount(
           input.sessionDuration,
           input.warmupStretchMinutes,
           input.cooldownStretchMinutes,
-          input.includeCardio ? input.cardioMinutes : 0,
+          plannedCardioMinutes,
         );
         const coreText = input.includeCore ? "복근/코어 필요 시 포함" : "복근/코어 제외";
         const intensityText = {
@@ -1588,9 +1588,12 @@ ${historyText}
               - exercises에는 focus와 맞는 메인/보조 운동만 넣으세요. 타겟 외 부위 운동을 섞지 마세요.
               - 이두를 요청한 날에는 삼두 운동을 넣지 말고, 삼두를 요청한 날에는 이두 운동을 넣지 마세요. "팔" 또는 "이두/삼두"라고 명시된 경우에만 둘 다 넣으세요.
               - 복근/코어가 focus에 있거나 복근 포함이 켜져 있으면 해당 날 exercises에 복근 운동을 반드시 1개 이상 포함하세요.
-              - exercises의 근력 운동은 ${targetExerciseCount}개 안팎으로 구성하세요. 너무 적게 만들지 마세요.
+              - 총 세션 시간은 ${input.sessionDuration}분입니다. 스트레칭 ${input.warmupStretchMinutes + input.cooldownStretchMinutes}분을 제외한 exercises 블록은 약 ${mainWorkoutMinutes}분을 채워야 합니다.
+              - 유산소를 포함하면 ${plannedCardioMinutes}분만 유산소로 쓰고, 남은 근력 운동 시간 ${strengthWorkoutMinutes}분에 맞춰 근력 운동을 구성하세요.
+              - exercises의 근력 운동은 ${targetExerciseCount}개 안팎으로 구성하세요. 긴 운동 시간인데 4~6개로 짧게 끝내지 말고, 타겟 부위에 맞는 메인/보조/고립 운동으로 시간을 채우세요.
               - 근력 운동은 "ID:123 | 한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
-              - 유산소는 세트/횟수가 아니라 "ID:123 | 러닝, 트레드밀 (Running, Treadmill) - ${input.cardioMinutes}분"처럼 시간 형식으로 작성하세요.
+              - 근력 운동 줄에는 "20분" 같은 운동 시간을 붙이지 마세요. 시간은 세트 수, 반복 수, 휴식 시간을 통해 맞추세요.
+              - 유산소는 세트/횟수가 아니라 "ID:123 | 러닝, 트레드밀 (Running, Treadmill) - ${plannedCardioMinutes}분"처럼 시간 형식으로 작성하세요.
               - 유산소는 하루에 한 줄만 허용합니다.
               - 하체/둔근이 타겟인 날에는 러닝, 트레드밀, 사이클, 로잉 같은 유산소를 넣지 않거나 아주 가볍게만 넣으세요.
               - warmupStretch는 운동 전 동적 스트레칭/가동성 루틴 총 ${input.warmupStretchMinutes}분, cooldownStretch는 운동 후 정적 스트레칭 총 ${input.cooldownStretchMinutes}분으로 구성하세요.
@@ -1609,7 +1612,9 @@ ${formatRecommendationGoal(goals, goal)}
 타겟 부위: ${targetFocus}
 장소: ${locationLabels[input.location]}
 ${equipmentText}
-가능 시간: ${input.sessionDuration}분
+총 세션 시간: ${input.sessionDuration}분
+스트레칭 제외 실제 운동 시간: ${mainWorkoutMinutes}분
+유산소 제외 근력 운동 시간: ${strengthWorkoutMinutes}분
 메인 근력 운동 개수 목표: ${targetExerciseCount}개
 강도: ${intensityText}
 ${cardioText}
@@ -1749,14 +1754,18 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
       const warmupStretchMinutes = input?.warmupStretchMinutes ?? 20;
       const cooldownStretchMinutes = input?.cooldownStretchMinutes ?? 20;
       const cardioMinutes = input?.cardioMinutes ?? 20;
+      const sessionDuration = input?.sessionDuration ?? 60;
+      const mainWorkoutMinutes = Math.max(20, sessionDuration - warmupStretchMinutes - cooldownStretchMinutes);
+      const plannedCardioMinutes = includeCardio ? Math.min(cardioMinutes, Math.max(0, mainWorkoutMinutes - 20)) : 0;
+      const strengthWorkoutMinutes = Math.max(20, mainWorkoutMinutes - plannedCardioMinutes);
       const targetExerciseCount = getTargetStrengthExerciseCount(
-        input?.sessionDuration ?? 60,
+        sessionDuration,
         warmupStretchMinutes,
         cooldownStretchMinutes,
-        includeCardio ? cardioMinutes : 0,
+        plannedCardioMinutes,
       );
       const accessoryText = [
-        includeCardio ? `유산소를 주간 계획에 적절히 포함, 유산소를 넣는 날은 ${cardioMinutes}분` : "유산소는 제외",
+        includeCardio ? `유산소를 주간 계획에 적절히 포함, 유산소를 넣는 날은 ${plannedCardioMinutes}분` : "유산소는 제외",
         avoidCardioOnLegDay ? "하체 운동일에는 유산소를 넣지 말고 상체/휴식 부담이 낮은 날에 배치" : "하체 운동일에도 가벼운 유산소 배치 가능",
         includeCore ? "복근/코어를 주간 계획에 적절히 포함" : "복근/코어는 제외",
         `운동 전 스트레칭 ${warmupStretchMinutes}분`,
@@ -1772,7 +1781,7 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
         "각 운동일의 focus와 맞는 운동만 넣으세요. 예를 들어 등/어깨/이두 날에는 스쿼트, 핵스쿼트, 런지, 레그프레스, 레그컬, 카프레이즈 같은 하체 운동을 넣지 말고, 하체 운동은 하체/둔근 포커스 날에만 배치하세요.",
         "가슴 날에는 등/하체 운동을, 등 날에는 가슴/하체 운동을, 어깨/팔 날에는 하체 운동을 섞지 마세요. 복근은 includeCore가 켜진 경우에만 코어 보조로 배치하세요.",
         includeCardio
-          ? `유산소는 같은 운동일에 중복해서 넣지 마세요. 러닝/트레드밀은 하루에 한 줄만 허용하고, 유산소 시간은 ${cardioMinutes}분으로 작성하세요.`
+          ? `유산소는 같은 운동일에 중복해서 넣지 마세요. 러닝/트레드밀은 하루에 한 줄만 허용하고, 유산소 시간은 ${plannedCardioMinutes}분으로 작성하세요.`
           : "유산소 운동은 넣지 마세요.",
         "등/이두, 가슴/삼두, 하체, 어깨/코어처럼 서로 보조 작용이 자연스러운 조합을 우선하세요.",
         "사용자가 운동일별 희망 구성을 적으면 그 구성을 기준으로 삼고, 비어 있는 날이나 애매한 표현만 AI가 보완하세요. 사용자가 적은 순번을 다른 날로 옮기지 마세요.",
@@ -1808,8 +1817,11 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
             - 루틴은 요일 기준이 아닙니다. day 값은 반드시 "1일차", "2일차", "3일차"처럼 주간 순번으로 작성하세요.
             - 사용자가 운동일별 희망 구성을 입력했다면 그 구성을 기준으로 각 일차 focus를 먼저 확정하고, 그 focus에 맞는 운동만 선택하세요. 서버가 나중에 재배치하지 않으므로 AI가 처음부터 올바르게 나눠야 합니다.
             - 사용자가 운동일별 희망 구성을 입력하지 않았다면 AI가 직접 "1일차 등/이두", "2일차 가슴/삼두"처럼 부위 구성을 설계하세요.
-            - 각 운동일의 총 시간이 지정된 운동 가능 시간을 초과하지 않도록 하세요.
+            - 각 운동일의 총 세션 시간은 ${sessionDuration}분입니다. 스트레칭 ${warmupStretchMinutes + cooldownStretchMinutes}분을 제외한 exercises 블록은 약 ${mainWorkoutMinutes}분을 채워야 합니다.
+            - 유산소가 포함된 날은 유산소 ${plannedCardioMinutes}분을 제외하고, 근력 운동 ${strengthWorkoutMinutes}분에 맞춰 메인/보조/고립 운동 볼륨을 구성하세요.
+            - 각 운동일의 총 시간이 지정된 운동 가능 시간을 초과하지 않도록 하되, 긴 운동 시간인데 운동량이 너무 적게 나오지 않게 하세요.
             - 각 운동일의 exercises 근력 운동은 ${targetExerciseCount}개 안팎으로 구성하세요. 120분처럼 긴 운동 시간인데 3~4개만 추천하지 마세요.
+            - 근력 운동 줄에는 "20분" 같은 운동 시간을 붙이지 마세요. 시간은 세트 수, 반복 수, 휴식 시간을 통해 맞추세요.
             - 홈트레이닝이면 맨몸 운동 위주로, 헬스장이면 기구 운동을 포함하세요.
             - 머신과 케이블은 서로 다른 기구입니다. 케이블이 선택되지 않았으면 케이블 운동을 넣지 말고, 머신이 선택되지 않았으면 머신 운동을 넣지 마세요.
             - 운동명은 한국어 운동명을 우선 사용하고, 필요하면 괄호 안에 영어명을 보조로 적으세요.
@@ -1838,6 +1850,8 @@ ${statsText}
 ${locationText}
 ${equipmentText}
 ${durationText}
+스트레칭 제외 실제 운동 시간: 각 운동일 ${mainWorkoutMinutes}분
+유산소 제외 근력 운동 시간: 각 운동일 ${strengthWorkoutMinutes}분
 메인 근력 운동 개수 목표: 각 운동일 ${targetExerciseCount}개
 ${weeklyFrequencyText}
 ${splitText}
