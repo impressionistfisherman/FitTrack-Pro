@@ -553,9 +553,8 @@ function fillExercisesForDuration(day: any, exercises: string[], options: {
   return [...selectedStrength, ...cardioExercises];
 }
 
-function alignExercisesToDayFocus(weeklyPlan: any[], catalog: any[] = []) {
-  const exercisesToMove = new Map<RecommendationBodyPart, string[]>();
-  const normalizedDays = weeklyPlan.map((day) => {
+function filterExercisesToDayFocus(weeklyPlan: any[], catalog: any[] = []) {
+  return weeklyPlan.map((day) => {
     const focus = String(day?.focus ?? "");
     const allowedParts = getFocusBodyParts(focus);
     const exercises = Array.isArray(day.exercises) ? dedupeRecommendationExercises(day.exercises.map(String)) : [];
@@ -565,31 +564,9 @@ function alignExercisesToDayFocus(weeklyPlan: any[], catalog: any[] = []) {
       const exerciseParts = getRecommendationExerciseBodyParts(exercise, catalog);
       if (exerciseParts.has("arms") && !isArmExerciseAllowedForFocus(exercise, focus)) return false;
       if (isExerciseAllowedForFocus(exerciseParts, allowedParts)) return true;
-
-      const movablePart = recommendationBodyParts.find((part) => part !== "cardio" && exerciseParts.has(part));
-      if (movablePart) {
-        exercisesToMove.set(movablePart, [...(exercisesToMove.get(movablePart) ?? []), exercise]);
-      }
       return false;
     });
     return { ...day, exercises: kept };
-  });
-
-  if (!exercisesToMove.size) return normalizedDays;
-
-  return normalizedDays.map((day) => {
-    const allowedParts = getFocusBodyParts(String(day?.focus ?? ""));
-    if (!allowedParts || !Array.isArray(day.exercises)) return day;
-
-    const additions: string[] = [];
-    for (const part of allowedParts) {
-      additions.push(...(exercisesToMove.get(part) ?? []));
-      exercisesToMove.delete(part);
-    }
-
-    return additions.length
-      ? { ...day, exercises: dedupeRecommendationExercises([...day.exercises, ...additions]) }
-      : day;
   });
 }
 
@@ -638,7 +615,7 @@ function normalizeProgramRecommendation(program: any, options?: {
 }) {
   if (!program?.weeklyPlan || !Array.isArray(program.weeklyPlan)) return program;
 
-  const bodyPartAlignedPlan = alignExercisesToDayFocus(program.weeklyPlan, options?.exerciseCatalog ?? []);
+  const bodyPartAlignedPlan = filterExercisesToDayFocus(program.weeklyPlan, options?.exerciseCatalog ?? []);
   const sourcePlan = options?.avoidCardioOnLegDay
     ? moveCardioOffLegDays(bodyPartAlignedPlan)
     : bodyPartAlignedPlan;
@@ -1771,17 +1748,18 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
           : "하체 운동일에 유산소를 넣는 경우 저강도 10~20분 이내로 제한하고 근력 운동 이후에 배치하세요.",
         "고강도 유산소와 고강도 하체 운동은 같은 날 배치하지 마세요.",
         "같은 근육군을 연속 운동일에 과도하게 반복하지 말고, 큰 근육군은 최소 1일 이상 회복 간격이 생기게 배치하세요.",
+        "먼저 사용자의 목표/숙련도/최근 기록/운동 가능 시간/기구를 바탕으로 각 운동일의 focus를 직접 설계한 뒤, 그 focus에 맞는 운동만 선택하세요.",
         "각 운동일의 focus와 맞는 운동만 넣으세요. 예를 들어 등/어깨/이두 날에는 스쿼트, 핵스쿼트, 런지, 레그프레스, 레그컬, 카프레이즈 같은 하체 운동을 넣지 말고, 하체 운동은 하체/둔근 포커스 날에만 배치하세요.",
         "가슴 날에는 등/하체 운동을, 등 날에는 가슴/하체 운동을, 어깨/팔 날에는 하체 운동을 섞지 마세요. 복근은 includeCore가 켜진 경우에만 코어 보조로 배치하세요.",
         includeCardio
           ? `유산소는 같은 운동일에 중복해서 넣지 마세요. 러닝/트레드밀은 하루에 한 줄만 허용하고, 유산소 시간은 ${cardioMinutes}분으로 작성하세요.`
           : "유산소 운동은 넣지 마세요.",
         "등/이두, 가슴/삼두, 하체, 어깨/코어처럼 서로 보조 작용이 자연스러운 조합을 우선하세요.",
-        "사용자가 운동일별 희망 구성을 적으면 그 구성을 우선하되 회복상 무리가 있으면 더 안전한 순서로 조정하세요.",
+        "사용자가 운동일별 희망 구성을 적으면 그 구성을 기준으로 삼고, 비어 있는 날이나 애매한 표현만 AI가 보완하세요. 사용자가 적은 순번을 다른 날로 옮기지 마세요.",
       ].join("\n            - ");
       const dayFocusText = input?.dayFocusNotes?.trim()
         ? `운동일별 희망 구성: ${input.dayFocusNotes.trim()}`
-        : "운동일별 희망 구성: AI가 회복을 고려해 1일차부터 배치";
+        : "운동일별 희망 구성: AI가 목표, 숙련도, 최근 기록, 회복을 고려해 1일차부터 직접 설계";
       const customRequestText = input?.customRequest?.trim()
         ? `사용자 추가 요청: ${input.customRequest.trim()}`
         : "사용자 추가 요청: 없음";
@@ -1808,6 +1786,8 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
             - 지정된 기구만 사용하는 운동으로 구성하세요.
             - weeklyPlan은 반드시 사용자가 선택한 주 운동일 수와 같은 개수로 구성하세요.
             - 루틴은 요일 기준이 아닙니다. day 값은 반드시 "1일차", "2일차", "3일차"처럼 주간 순번으로 작성하세요.
+            - 사용자가 운동일별 희망 구성을 입력했다면 그 구성을 기준으로 각 일차 focus를 먼저 확정하고, 그 focus에 맞는 운동만 선택하세요. 서버가 나중에 재배치하지 않으므로 AI가 처음부터 올바르게 나눠야 합니다.
+            - 사용자가 운동일별 희망 구성을 입력하지 않았다면 AI가 직접 "1일차 등/이두", "2일차 가슴/삼두"처럼 부위 구성을 설계하세요.
             - 각 운동일의 총 시간이 지정된 운동 가능 시간을 초과하지 않도록 하세요.
             - 각 운동일의 exercises 근력 운동은 ${targetExerciseCount}개 안팎으로 구성하세요. 120분처럼 긴 운동 시간인데 3~4개만 추천하지 마세요.
             - 홈트레이닝이면 맨몸 운동 위주로, 헬스장이면 기구 운동을 포함하세요.
