@@ -493,7 +493,7 @@ function normalizeCardioExercises(exercises: string[], cardioMinutes: number, ca
 function getTargetStrengthExerciseCount(sessionDuration: number, warmupMinutes: number, cooldownMinutes: number, cardioMinutes: number) {
   const strengthMinutes = Math.max(20, sessionDuration - warmupMinutes - cooldownMinutes - Math.max(0, cardioMinutes));
   if (strengthMinutes <= 30) return 3;
-  return Math.min(10, Math.max(4, Math.round(strengthMinutes / 10)));
+  return Math.min(12, Math.max(4, Math.ceil(strengthMinutes / 9)));
 }
 
 function formatDefaultRecommendedExercise(exercise: any) {
@@ -1591,6 +1591,7 @@ ${historyText}
               - 총 세션 시간은 ${input.sessionDuration}분입니다. 스트레칭 ${input.warmupStretchMinutes + input.cooldownStretchMinutes}분을 제외한 exercises 블록은 약 ${mainWorkoutMinutes}분을 채워야 합니다.
               - 유산소를 포함하면 ${plannedCardioMinutes}분만 유산소로 쓰고, 남은 근력 운동 시간 ${strengthWorkoutMinutes}분에 맞춰 근력 운동을 구성하세요.
               - exercises의 근력 운동은 ${targetExerciseCount}개 안팎으로 구성하세요. 긴 운동 시간인데 4~6개로 짧게 끝내지 말고, 타겟 부위에 맞는 메인/보조/고립 운동으로 시간을 채우세요.
+              - 근력 운동 시간 계산은 각 운동의 세트 수행 1분 + 세트 사이 휴식 + 운동 전환 1~2분으로 잡으세요. 합산이 ${strengthWorkoutMinutes}분보다 10분 이상 짧으면 운동을 추가하거나 주요 운동 세트를 늘리세요.
               - 근력 운동은 "ID:123 | 한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
               - 근력 운동 줄에는 "20분" 같은 운동 시간을 붙이지 마세요. 시간은 세트 수, 반복 수, 휴식 시간을 통해 맞추세요.
               - 유산소는 세트/횟수가 아니라 "ID:123 | 러닝, 트레드밀 (Running, Treadmill) - ${plannedCardioMinutes}분"처럼 시간 형식으로 작성하세요.
@@ -1630,6 +1631,7 @@ ${recentHistoryText}
 ${recommendationCatalog.text}
 
 오늘 1회 운동을 추천해주세요. 타겟 부위(${targetFocus}) 밖의 근력 운동은 넣지 말고, 최근 기록을 고려해 볼륨과 강도를 조절해주세요.
+스트레칭과 유산소를 제외한 근력 운동 합산 시간이 ${strengthWorkoutMinutes}분에 최대한 가깝도록 운동 수와 세트 수를 조정하세요.
 exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운동명은 사용하지 마세요.`,
             },
           ],
@@ -1821,6 +1823,7 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
             - 유산소가 포함된 날은 유산소 ${plannedCardioMinutes}분을 제외하고, 근력 운동 ${strengthWorkoutMinutes}분에 맞춰 메인/보조/고립 운동 볼륨을 구성하세요.
             - 각 운동일의 총 시간이 지정된 운동 가능 시간을 초과하지 않도록 하되, 긴 운동 시간인데 운동량이 너무 적게 나오지 않게 하세요.
             - 각 운동일의 exercises 근력 운동은 ${targetExerciseCount}개 안팎으로 구성하세요. 120분처럼 긴 운동 시간인데 3~4개만 추천하지 마세요.
+            - 근력 운동 시간 계산은 각 운동의 세트 수행 1분 + 세트 사이 휴식 + 운동 전환 1~2분으로 잡으세요. 합산이 ${strengthWorkoutMinutes}분보다 10분 이상 짧으면 운동을 추가하거나 주요 운동 세트를 늘리세요.
             - 근력 운동 줄에는 "20분" 같은 운동 시간을 붙이지 마세요. 시간은 세트 수, 반복 수, 휴식 시간을 통해 맞추세요.
             - 홈트레이닝이면 맨몸 운동 위주로, 헬스장이면 기구 운동을 포함하세요.
             - 머신과 케이블은 서로 다른 기구입니다. 케이블이 선택되지 않았으면 케이블 운동을 넣지 말고, 머신이 선택되지 않았으면 머신 운동을 넣지 마세요.
@@ -1865,6 +1868,7 @@ ${recommendationCatalog.text}
 
 위 정보를 바탕으로 이번 주 운동 프로그램을 추천해주세요.
 반드시 위 DB 후보에 있는 운동만 사용하고, 지정된 기구, 운동 시간, 제외 부위, 분할 방식, 사용자 요청 조건에 맞는 운동만 포함해주세요.
+각 운동일은 스트레칭과 유산소를 제외한 근력 운동 합산 시간이 ${strengthWorkoutMinutes}분에 최대한 가깝도록 운동 수와 세트 수를 조정하세요.
 exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운동명은 사용하지 마세요.
 최적화 규칙:
 - ${trainingOptimizationRules}
