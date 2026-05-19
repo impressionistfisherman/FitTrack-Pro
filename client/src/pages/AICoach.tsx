@@ -88,6 +88,7 @@ function ProgramRecommendation() {
   const program = programMutation.data?.program;
   const isCustomSplit = splitPreference === "custom_day_targets";
   const selectedDayParts = dayTargets.flat();
+  const configuredDayCount = dayTargets.filter((targets) => targets.length > 0).length;
 
   useEffect(() => {
     const count = Number(daysPerWeek);
@@ -327,9 +328,9 @@ function ProgramRecommendation() {
                   <div className="text-xs text-muted-foreground">일차별 운동 부위</div>
                   <div className="text-xs text-muted-foreground/80">비워둔 일차는 AI가 목표와 회복을 보고 채웁니다.</div>
                 </div>
-                {formatDayFocusNotes(dayTargets) && (
-                  <div className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs text-primary">
-                    {formatDayFocusNotes(dayTargets)}
+                {configuredDayCount > 0 && (
+                  <div className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs text-primary">
+                    {configuredDayCount}/{dayTargets.length}일 구성 선택됨
                   </div>
                 )}
               </div>
