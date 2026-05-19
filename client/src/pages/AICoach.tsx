@@ -40,6 +40,7 @@ const bodyPartOptions = [
 ];
 
 const targetBodyPartOptions = bodyPartOptions.filter((item) => item.value !== "cardio");
+const routineDayTargetOptions = bodyPartOptions;
 
 const minuteOptions = [0, 5, 10, 15, 20, 30, 40];
 const cardioMinuteOptions = [0, 10, 15, 20, 25, 30, 40, 60];
@@ -48,7 +49,7 @@ function formatDayFocusNotes(dayTargets: string[][]) {
   return dayTargets
     .map((targets, index) => {
       const labels = targets
-        .map((value) => targetBodyPartOptions.find((item) => item.value === value)?.label ?? value)
+        .map((value) => bodyPartOptions.find((item) => item.value === value)?.label ?? value)
         .join("/");
       return labels ? `${index + 1}일차 ${labels}` : null;
     })
@@ -112,6 +113,8 @@ function ProgramRecommendation() {
       toast.error("사용 가능한 기구를 하나 이상 선택하세요.");
       return;
     }
+    const isCustomSplit = splitPreference === "custom_day_targets";
+    const selectedDayParts = dayTargets.flat();
     programMutation.mutate({
       location,
       equipment: location === "gym" ? equipment : location === "home" ? equipment : ["bodyweight"],
@@ -119,13 +122,13 @@ function ProgramRecommendation() {
       daysPerWeek: Number(daysPerWeek),
       splitPreference,
       excludedBodyParts,
-      includeCardio,
-      avoidCardioOnLegDay,
-      includeCore,
+      includeCardio: isCustomSplit ? selectedDayParts.includes("cardio") : includeCardio,
+      avoidCardioOnLegDay: isCustomSplit ? false : avoidCardioOnLegDay,
+      includeCore: isCustomSplit ? selectedDayParts.includes("abs") : includeCore,
       warmupStretchMinutes: Number(warmupStretchMinutes),
       cooldownStretchMinutes: Number(cooldownStretchMinutes),
       cardioMinutes: Number(cardioMinutes),
-      dayFocusNotes: splitPreference === "custom_day_targets" ? formatDayFocusNotes(dayTargets) || undefined : undefined,
+      dayFocusNotes: isCustomSplit ? formatDayFocusNotes(dayTargets) || undefined : undefined,
       customRequest: customRequest.trim() || undefined,
     });
   };
@@ -210,7 +213,7 @@ function ProgramRecommendation() {
             </div>
           )}
 
-          <div className="grid gap-3 border-t border-border/60 pt-4 lg:grid-cols-2">
+          <div className={`grid gap-3 border-t border-border/60 pt-4 ${splitPreference === "custom_day_targets" ? "" : "lg:grid-cols-2"}`}>
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">분할 방식</div>
               <Select value={splitPreference} onValueChange={setSplitPreference}>
@@ -224,6 +227,7 @@ function ProgramRecommendation() {
                 </SelectContent>
               </Select>
             </div>
+            {splitPreference !== "custom_day_targets" && (
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">추가 구성</div>
               <div className="flex flex-wrap gap-2">
@@ -252,6 +256,7 @@ function ProgramRecommendation() {
                 </button>
               </div>
             </div>
+            )}
           </div>
 
           <div className="grid gap-3 border-t border-border/60 pt-4 sm:grid-cols-3">
@@ -330,7 +335,7 @@ function ProgramRecommendation() {
                   <div key={dayIndex} className="grid gap-2 rounded-lg bg-accent/35 p-3 sm:grid-cols-[72px_1fr] sm:items-center">
                     <div className="text-xs font-semibold text-foreground">{dayIndex + 1}일차</div>
                     <div className="flex flex-wrap gap-2">
-                      {targetBodyPartOptions.map((item) => (
+                      {routineDayTargetOptions.map((item) => (
                         <button
                           key={item.value}
                           type="button"
