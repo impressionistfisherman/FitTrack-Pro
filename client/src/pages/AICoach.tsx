@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { CalendarDays, Dumbbell, RefreshCw, Save, Sparkles, Utensils } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,6 +46,33 @@ const routineDayTargetOptions = bodyPartOptions;
 
 const minuteOptions = [0, 5, 10, 15, 20, 30, 40];
 const cardioMinuteOptions = [0, 10, 15, 20, 25, 30, 40, 60];
+const customSplitPresetStorageKey = "fittrack.customSplitPresets.v1";
+
+type CustomSplitPreset = {
+  id: string;
+  name: string;
+  daysPerWeek: string;
+  dayTargets: string[][];
+  warmupStretchMinutes: string;
+  cooldownStretchMinutes: string;
+  cardioMinutes: string;
+  updatedAt: string;
+};
+
+function readCustomSplitPresets(): CustomSplitPreset[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(customSplitPresetStorageKey) ?? "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeCustomSplitPresets(presets: CustomSplitPreset[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(customSplitPresetStorageKey, JSON.stringify(presets));
+}
 
 function formatDayFocusNotes(dayTargets: string[][]) {
   return dayTargets
@@ -72,6 +100,9 @@ function ProgramRecommendation() {
   const [cooldownStretchMinutes, setCooldownStretchMinutes] = useState("20");
   const [cardioMinutes, setCardioMinutes] = useState("20");
   const [dayTargets, setDayTargets] = useState<string[][]>(Array.from({ length: Number(daysPerWeek) }, () => []));
+  const [customSplitPresets, setCustomSplitPresets] = useState<CustomSplitPreset[]>([]);
+  const [selectedPresetId, setSelectedPresetId] = useState("");
+  const [presetName, setPresetName] = useState("");
   const [customRequest, setCustomRequest] = useState("");
   const utils = trpc.useUtils();
   const programMutation = trpc.ai.programRecommendation.useMutation();
@@ -95,6 +126,10 @@ function ProgramRecommendation() {
     setDayTargets((current) => Array.from({ length: count }, (_, index) => current[index] ?? []));
   }, [daysPerWeek]);
 
+  useEffect(() => {
+    setCustomSplitPresets(readCustomSplitPresets());
+  }, []);
+
   const toggleEquipment = (value: string) => {
     setEquipment((items) => items.includes(value) ? items.filter((item) => item !== value) : [...items, value]);
   };
@@ -110,6 +145,60 @@ function ProgramRecommendation() {
         ? targets.filter((item) => item !== value)
         : [...targets, value];
     }));
+  };
+
+  const saveCustomSplitPreset = () => {
+    if (configuredDayCount === 0) {
+      toast.error("저장할 일차별 운동 부위를 먼저 선택하세요.");
+      return;
+    }
+    const trimmedName = presetName.trim();
+    if (!trimmedName) {
+      toast.error("프리셋 이름을 입력하세요.");
+      return;
+    }
+    const preset: CustomSplitPreset = {
+      id: selectedPresetId || crypto.randomUUID(),
+      name: trimmedName,
+      daysPerWeek,
+      dayTargets,
+      warmupStretchMinutes,
+      cooldownStretchMinutes,
+      cardioMinutes,
+      updatedAt: new Date().toISOString(),
+    };
+    const nextPresets = [
+      preset,
+      ...customSplitPresets.filter((item) => item.id !== preset.id && item.name !== preset.name),
+    ].slice(0, 12);
+    setCustomSplitPresets(nextPresets);
+    setSelectedPresetId(preset.id);
+    writeCustomSplitPresets(nextPresets);
+    toast.success("사용자 선택 프리셋을 저장했습니다.");
+  };
+
+  const applyCustomSplitPreset = (presetId: string) => {
+    const preset = customSplitPresets.find((item) => item.id === presetId);
+    if (!preset) return;
+    setSelectedPresetId(preset.id);
+    setPresetName(preset.name);
+    setSplitPreference("custom_day_targets");
+    setDaysPerWeek(preset.daysPerWeek);
+    setWarmupStretchMinutes(preset.warmupStretchMinutes);
+    setCooldownStretchMinutes(preset.cooldownStretchMinutes);
+    setCardioMinutes(preset.cardioMinutes);
+    setDayTargets(preset.dayTargets);
+    toast.success(`${preset.name} 프리셋을 불러왔습니다.`);
+  };
+
+  const deleteCustomSplitPreset = () => {
+    if (!selectedPresetId) return;
+    const nextPresets = customSplitPresets.filter((item) => item.id !== selectedPresetId);
+    setCustomSplitPresets(nextPresets);
+    setSelectedPresetId("");
+    setPresetName("");
+    writeCustomSplitPresets(nextPresets);
+    toast.success("프리셋을 삭제했습니다.");
   };
 
   const requestProgram = () => {
@@ -323,6 +412,46 @@ function ProgramRecommendation() {
 
           {isCustomSplit && (
             <div className="border-t border-border/60 pt-4">
+              <div className="mb-4 grid gap-2 rounded-lg border border-border/70 bg-accent/25 p-3 lg:grid-cols-[1fr_220px_auto] lg:items-end">
+                <div>
+                  <div className="mb-1.5 text-xs text-muted-foreground">프리셋 이름</div>
+                  <Input
+                    value={presetName}
+                    onChange={(event) => setPresetName(event.target.value)}
+                    placeholder="예: 4일 등/가슴/하체/어깨"
+                    className="h-10 border-border bg-background/70 text-foreground"
+                    maxLength={40}
+                  />
+                </div>
+                <div>
+                  <div className="mb-1.5 text-xs text-muted-foreground">저장된 프리셋</div>
+                  <Select value={selectedPresetId} onValueChange={applyCustomSplitPreset} disabled={!customSplitPresets.length}>
+                    <SelectTrigger className="h-10 w-full border-border bg-background/70 text-foreground disabled:opacity-50">
+                      <SelectValue placeholder={customSplitPresets.length ? "프리셋 선택" : "저장된 프리셋 없음"} />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border">
+                      {customSplitPresets.map((preset) => (
+                        <SelectItem key={preset.id} value={preset.id}>{preset.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex gap-2">
+                  <Button type="button" size="sm" className="h-10 flex-1 bg-primary text-primary-foreground lg:flex-none" onClick={saveCustomSplitPreset}>
+                    저장
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-10 flex-1 border-border bg-background/60 text-muted-foreground lg:flex-none"
+                    onClick={deleteCustomSplitPreset}
+                    disabled={!selectedPresetId}
+                  >
+                    삭제
+                  </Button>
+                </div>
+              </div>
               <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <div className="text-xs text-muted-foreground">일차별 운동 부위</div>
