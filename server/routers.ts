@@ -139,6 +139,31 @@ function parseEquipmentPreference(value: string | null): z.infer<typeof equipmen
   }
 }
 
+function parseStringListPreference(value: string | null): string[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    const result = z.array(z.string().min(1).max(50)).safeParse(parsed);
+    return result.success ? result.data : [];
+  } catch {
+    return [];
+  }
+}
+
+function normalizeEquipmentDetails(items: string[] = []) {
+  const seen = new Set<string>();
+  const normalized: string[] = [];
+  for (const item of items) {
+    const value = item.replace(/\s+/g, " ").trim();
+    const key = value.toLowerCase();
+    if (!value || seen.has(key)) continue;
+    seen.add(key);
+    normalized.push(value);
+    if (normalized.length >= 40) break;
+  }
+  return normalized;
+}
+
 function normalizeExerciseName(value: string) {
   return value
     .toLowerCase()
@@ -1039,6 +1064,7 @@ export const appRouter = router({
           gymName: z.string().max(80).optional(),
           gymLocation: workoutLocationSchema.optional(),
           gymEquipment: z.array(equipmentSchema).max(12).optional(),
+          gymEquipmentDetails: z.array(z.string().min(1).max(50)).max(40).optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -1056,6 +1082,9 @@ export const appRouter = router({
         if (input.gymEquipment) {
           await setUserPreference(ctx.user.id, "gymEquipment", JSON.stringify(input.gymEquipment));
         }
+        if (input.gymEquipmentDetails) {
+          await setUserPreference(ctx.user.id, "gymEquipmentDetails", JSON.stringify(normalizeEquipmentDetails(input.gymEquipmentDetails)));
+        }
         return { success: true };
       }),
   }),
@@ -1067,6 +1096,7 @@ export const appRouter = router({
         gymName: await getUserPreference(ctx.user.id, "gymName") ?? "",
         gymLocation: workoutLocationSchema.safeParse(await getUserPreference(ctx.user.id, "gymLocation")).data ?? "gym",
         gymEquipment: parseEquipmentPreference(await getUserPreference(ctx.user.id, "gymEquipment")),
+        gymEquipmentDetails: parseStringListPreference(await getUserPreference(ctx.user.id, "gymEquipmentDetails")),
         customSplitPresets: parseCustomSplitPresets(await getUserPreference(ctx.user.id, "customSplitPresets")),
       };
     }),
@@ -1076,6 +1106,7 @@ export const appRouter = router({
         gymName: z.string().max(80).optional(),
         gymLocation: workoutLocationSchema.optional(),
         gymEquipment: z.array(equipmentSchema).max(12).optional(),
+        gymEquipmentDetails: z.array(z.string().min(1).max(50)).max(40).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         if (input.experienceLevel) {
@@ -1089,6 +1120,9 @@ export const appRouter = router({
         }
         if (input.gymEquipment) {
           await setUserPreference(ctx.user.id, "gymEquipment", JSON.stringify(input.gymEquipment));
+        }
+        if (input.gymEquipmentDetails) {
+          await setUserPreference(ctx.user.id, "gymEquipmentDetails", JSON.stringify(normalizeEquipmentDetails(input.gymEquipmentDetails)));
         }
         return { success: true };
       }),
@@ -1625,6 +1659,7 @@ ${historyText}
         location: z.enum(["gym", "home", "outdoor"]).default("gym"),
         gymName: z.string().max(80).optional(),
         equipment: z.array(z.string()).default([]),
+        equipmentDetails: z.array(z.string().min(1).max(50)).max(40).default([]),
         sessionDuration: z.number().int().min(20).max(180).default(60),
         targetBodyParts: z.array(z.enum(["chest", "back", "shoulders", "biceps", "triceps", "arms", "legs", "glutes", "abs"])).min(1).max(5),
         includeCardio: z.boolean().default(false),
@@ -1661,6 +1696,9 @@ ${historyText}
           : input.equipment.length
             ? `사용 가능 기구: ${input.equipment.map((item) => equipmentLabels[item] || item).join(", ")}`
             : "사용 가능 기구: 맨몸";
+        const equipmentDetailText = input.equipmentDetails.length
+          ? `등록된 실제 기구 목록: ${normalizeEquipmentDetails(input.equipmentDetails).join(", ")}`
+          : "등록된 실제 기구 목록: 미입력";
         const recentHistoryText = summarizeWorkoutHistoryForPrompt(recentSessions, logsBySession);
         const cardioText = input.includeCardio
           ? `유산소 포함: ${input.cardioMinutes}분. 단, 하체가 주요 타겟이면 고강도 유산소는 제외하고 저강도 또는 생략.`
@@ -1700,6 +1738,7 @@ ${historyText}
               - 근력 운동 줄에는 "20분" 같은 운동 시간을 붙이지 마세요. 시간은 세트 수, 반복 수, 휴식 시간을 통해 맞추세요.
               - 유산소는 세트/횟수가 아니라 "ID:123 | 러닝, 트레드밀 (Running, Treadmill) - ${plannedCardioMinutes}분"처럼 시간 형식으로 작성하세요.
               - 유산소는 하루에 한 줄만 허용합니다.
+              - 지정된 기구 종류와 등록된 실제 기구 목록을 우선 반영하세요. 실제 기구 목록에 있는 머신, 케이블, 랙, 벤치, 플랫폼 이름과 맞는 운동을 우선 추천하세요.
               - 하체/둔근이 타겟인 날에는 러닝, 트레드밀, 사이클, 로잉 같은 유산소를 넣지 않거나 아주 가볍게만 넣으세요.
               - warmupStretch는 운동 전 동적 스트레칭/가동성 루틴 총 ${input.warmupStretchMinutes}분, cooldownStretch는 운동 후 정적 스트레칭 총 ${input.cooldownStretchMinutes}분으로 구성하세요.
               - 스트레칭 블록에는 푸시업, 풀업, 스쿼트, 런지, 플랭크, 브릿지 같은 운동/근력 동작을 넣지 마세요.
@@ -1718,6 +1757,7 @@ ${formatRecommendationGoal(goals, goal)}
 장소: ${locationLabels[input.location]}
 ${input.gymName?.trim() ? `등록된 운동 장소 이름: ${input.gymName.trim()}` : "등록된 운동 장소 이름: 미입력"}
 ${equipmentText}
+${equipmentDetailText}
 총 세션 시간: ${input.sessionDuration}분
 스트레칭 제외 실제 운동 시간: ${mainWorkoutMinutes}분
 유산소 제외 근력 운동 시간: ${strengthWorkoutMinutes}분
@@ -1802,6 +1842,7 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
         location: z.enum(["gym", "home", "outdoor"]).default("gym"),
         gymName: z.string().max(80).optional(),
         equipment: z.array(z.string()).default([]),
+        equipmentDetails: z.array(z.string().min(1).max(50)).max(40).default([]),
         sessionDuration: z.number().int().min(20).max(180).default(60),
         daysPerWeek: z.number().int().min(1).max(7).default(3),
         splitPreference: z.string().default("auto"),
@@ -1847,6 +1888,9 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
         : input?.location === "home"
           ? "사용 가능한 기구: 맨몸 운동만 가능 (기구 없음)"
           : "사용 가능한 기구: 헬스장 전체 기구 (바벨, 덤벨, 머신, 케이블 등)";
+      const equipmentDetailText = input?.equipmentDetails && input.equipmentDetails.length > 0
+        ? `등록된 실제 기구 목록: ${normalizeEquipmentDetails(input.equipmentDetails).join(", ")}`
+        : "등록된 실제 기구 목록: 미입력";
 
       const durationText = input?.sessionDuration
         ? `1회 운동 가능 시간: ${input.sessionDuration}분`
@@ -1924,6 +1968,7 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
             - 근력 운동은 "ID:123 | 한국어 운동명 (영어 운동명) - 세트x횟수 - 휴식" 형식으로 작성하세요.
             - 유산소는 세트/횟수가 아니라 "ID:123 | 러닝, 트레드밀 (Running, Treadmill) - 20분"처럼 시간 형식으로 작성하세요.
             - 지정된 기구만 사용하는 운동으로 구성하세요.
+            - 지정된 기구 종류와 등록된 실제 기구 목록을 우선 반영하세요. 실제 기구 목록에 있는 머신, 케이블, 랙, 벤치, 플랫폼 이름과 맞는 운동을 우선 추천하세요.
             - weeklyPlan은 반드시 사용자가 선택한 주 운동일 수와 같은 개수로 구성하세요.
             - 루틴은 요일 기준이 아닙니다. day 값은 반드시 "1일차", "2일차", "3일차"처럼 주간 순번으로 작성하세요.
             - 사용자가 운동일별 희망 구성을 입력했다면 그 구성을 기준으로 각 일차 focus를 먼저 확정하고, 그 focus에 맞는 운동만 선택하세요. 서버가 나중에 재배치하지 않으므로 AI가 처음부터 올바르게 나눠야 합니다.
@@ -1962,6 +2007,7 @@ ${statsText}
 ${locationText}
 ${gymNameText}
 ${equipmentText}
+${equipmentDetailText}
 ${durationText}
 스트레칭 제외 실제 운동 시간: 각 운동일 ${mainWorkoutMinutes}분
 유산소 제외 근력 운동 시간: 각 운동일 ${strengthWorkoutMinutes}분

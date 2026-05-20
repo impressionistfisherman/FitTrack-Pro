@@ -93,6 +93,7 @@ function ProgramRecommendation() {
   const preferencesQuery = trpc.preferences.get.useQuery();
   const customSplitPresets = preferencesQuery.data?.customSplitPresets ?? [];
   const gymName = preferencesQuery.data?.gymName ?? "";
+  const gymEquipmentDetails = preferencesQuery.data?.gymEquipmentDetails ?? [];
   const saveCustomSplitPresetMutation = trpc.preferences.saveCustomSplitPreset.useMutation({
     onSuccess: (result) => {
       setSelectedPresetId(result.preset.id);
@@ -207,6 +208,7 @@ function ProgramRecommendation() {
       location,
       gymName: gymName || undefined,
       equipment: location === "gym" ? equipment : location === "home" ? equipment : ["bodyweight"],
+      equipmentDetails: location === "outdoor" ? [] : gymEquipmentDetails,
       sessionDuration: Number(sessionDuration),
       daysPerWeek: Number(daysPerWeek),
       splitPreference,
@@ -299,6 +301,14 @@ function ProgramRecommendation() {
                   </button>
                 ))}
               </div>
+              {gymEquipmentDetails.length > 0 && (
+                <div className="mt-3 rounded-lg border border-primary/15 bg-primary/5 p-3">
+                  <div className="mb-1 text-xs font-medium text-primary">프로필에 등록된 실제 기구</div>
+                  <div className="text-xs leading-relaxed text-muted-foreground">
+                    {gymEquipmentDetails.join(", ")}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -595,6 +605,7 @@ function DailyWorkoutRecommendation() {
   const dailyMutation = trpc.ai.dailyWorkoutRecommendation.useMutation();
   const preferencesQuery = trpc.preferences.get.useQuery();
   const gymName = preferencesQuery.data?.gymName ?? "";
+  const gymEquipmentDetails = preferencesQuery.data?.gymEquipmentDetails ?? [];
   const workout = dailyMutation.data?.workout;
 
   useEffect(() => {
@@ -630,6 +641,7 @@ function DailyWorkoutRecommendation() {
       location,
       gymName: gymName || undefined,
       equipment: location === "outdoor" ? ["bodyweight"] : equipment,
+      equipmentDetails: location === "outdoor" ? [] : gymEquipmentDetails,
       sessionDuration: Number(sessionDuration),
       targetBodyParts: targetBodyParts as any,
       includeCardio,
@@ -730,6 +742,14 @@ function DailyWorkoutRecommendation() {
                   </button>
                 ))}
               </div>
+              {gymEquipmentDetails.length > 0 && (
+                <div className="mt-3 rounded-lg border border-primary/15 bg-primary/5 p-3">
+                  <div className="mb-1 text-xs font-medium text-primary">프로필에 등록된 실제 기구</div>
+                  <div className="text-xs leading-relaxed text-muted-foreground">
+                    {gymEquipmentDetails.join(", ")}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

@@ -72,6 +72,8 @@ export default function Profile() {
   const [gymName, setGymName] = useState("");
   const [gymLocation, setGymLocation] = useState<"gym" | "home" | "outdoor">("gym");
   const [gymEquipment, setGymEquipment] = useState<EquipmentValue[]>(["dumbbell", "barbell", "machine", "cable"]);
+  const [gymEquipmentDetails, setGymEquipmentDetails] = useState<string[]>([]);
+  const [gymEquipmentInput, setGymEquipmentInput] = useState("");
 
   // goal 데이터 로드 시 폼 초기화
   const [initialized, setInitialized] = useState(false);
@@ -93,6 +95,7 @@ export default function Profile() {
       if ((preferences as any)?.gymName !== undefined) setGymName((preferences as any).gymName || "");
       if ((preferences as any)?.gymLocation) setGymLocation((preferences as any).gymLocation);
       if ((preferences as any)?.gymEquipment?.length) setGymEquipment((preferences as any).gymEquipment);
+      if ((preferences as any)?.gymEquipmentDetails?.length) setGymEquipmentDetails((preferences as any).gymEquipmentDetails);
     }
   }, [goal, goalInfo, goals, preferences, initialized]);
 
@@ -139,6 +142,18 @@ export default function Profile() {
   };
   const toggleGymEquipment = (value: EquipmentValue) => {
     setGymEquipment((items) => items.includes(value) ? items.filter((item) => item !== value) : [...items, value]);
+  };
+  const addGymEquipmentDetail = () => {
+    const value = gymEquipmentInput.replace(/\s+/g, " ").trim();
+    if (!value) return;
+    setGymEquipmentDetails((items) => {
+      if (items.some((item) => item.toLowerCase() === value.toLowerCase())) return items;
+      return [...items, value].slice(0, 40);
+    });
+    setGymEquipmentInput("");
+  };
+  const removeGymEquipmentDetail = (value: string) => {
+    setGymEquipmentDetails((items) => items.filter((item) => item !== value));
   };
 
   return (
@@ -554,7 +569,7 @@ export default function Profile() {
             </div>
             {gymLocation !== "outdoor" && (
               <div className="mt-3">
-                <Label className="text-xs text-muted-foreground mb-1.5 block">사용 가능한 기구</Label>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">기구 종류</Label>
                 <div className="flex flex-wrap gap-2">
                   {equipmentOptions.map((item) => (
                     <button
@@ -571,6 +586,52 @@ export default function Profile() {
                       {item.label}
                     </button>
                   ))}
+                </div>
+                <div className="mt-3">
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">실제 보유 기구</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="예: 스미스 머신, 레그프레스, 랫풀다운"
+                      value={gymEquipmentInput}
+                      onChange={(event) => setGymEquipmentInput(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          addGymEquipmentDetail();
+                        }
+                      }}
+                      className="bg-accent border-border text-foreground"
+                      maxLength={50}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="shrink-0 border-border bg-accent text-foreground"
+                      onClick={addGymEquipmentDetail}
+                      disabled={!gymEquipmentInput.trim() || gymEquipmentDetails.length >= 40}
+                    >
+                      추가
+                    </Button>
+                  </div>
+                  {gymEquipmentDetails.length > 0 ? (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {gymEquipmentDetails.map((item) => (
+                        <button
+                          key={item}
+                          type="button"
+                          onClick={() => removeGymEquipmentDetail(item)}
+                          className="rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs text-primary transition-colors hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
+                          title="클릭하면 삭제됩니다"
+                        >
+                          {item} ×
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      실제 기구명을 등록하면 AI가 해당 기구를 우선해서 루틴을 추천합니다.
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -665,6 +726,7 @@ export default function Profile() {
               gymName,
               gymLocation,
               gymEquipment: gymLocation === "outdoor" ? ["bodyweight"] : gymEquipment,
+              gymEquipmentDetails: gymLocation === "outdoor" ? [] : gymEquipmentDetails,
             })}
           >
             {setGoalMutation.isPending ? "저장 중..." : "목표 저장"}
