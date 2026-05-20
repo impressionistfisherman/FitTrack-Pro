@@ -105,11 +105,34 @@ const customSplitPresetSchema = z.object({
 
 type CustomSplitPreset = z.infer<typeof customSplitPresetSchema>;
 
+const workoutLocationSchema = z.enum(["gym", "home", "outdoor"]);
+const equipmentSchema = z.enum([
+  "bodyweight",
+  "dumbbell",
+  "barbell",
+  "machine",
+  "cable",
+  "resistance_band",
+  "kettlebell",
+  "none",
+]);
+
 function parseCustomSplitPresets(value: string | null): CustomSplitPreset[] {
   if (!value) return [];
   try {
     const parsed = JSON.parse(value);
     const result = z.array(customSplitPresetSchema).safeParse(parsed);
+    return result.success ? result.data : [];
+  } catch {
+    return [];
+  }
+}
+
+function parseEquipmentPreference(value: string | null): z.infer<typeof equipmentSchema>[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    const result = z.array(equipmentSchema).safeParse(parsed);
     return result.success ? result.data : [];
   } catch {
     return [];
@@ -1013,6 +1036,9 @@ export const appRouter = router({
           gender: z.enum(["male", "female"]).optional(),
           birthYear: z.number().min(1920).max(2010).optional(),
           experienceLevel: z.enum(["beginner", "intermediate", "advanced"]).optional(),
+          gymName: z.string().max(80).optional(),
+          gymLocation: workoutLocationSchema.optional(),
+          gymEquipment: z.array(equipmentSchema).max(12).optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -1020,6 +1046,15 @@ export const appRouter = router({
         await replaceUserGoals(ctx.user.id, goals, input.weeklyWorkouts, input.targetWeight, input.heightCm, input.gender, input.birthYear);
         if (input.experienceLevel) {
           await setUserPreference(ctx.user.id, "experienceLevel", input.experienceLevel);
+        }
+        if (input.gymName !== undefined) {
+          await setUserPreference(ctx.user.id, "gymName", input.gymName.trim());
+        }
+        if (input.gymLocation) {
+          await setUserPreference(ctx.user.id, "gymLocation", input.gymLocation);
+        }
+        if (input.gymEquipment) {
+          await setUserPreference(ctx.user.id, "gymEquipment", JSON.stringify(input.gymEquipment));
         }
         return { success: true };
       }),
@@ -1029,15 +1064,32 @@ export const appRouter = router({
     get: protectedProcedure.query(async ({ ctx }) => {
       return {
         experienceLevel: await getUserPreference(ctx.user.id, "experienceLevel") ?? "beginner",
+        gymName: await getUserPreference(ctx.user.id, "gymName") ?? "",
+        gymLocation: workoutLocationSchema.safeParse(await getUserPreference(ctx.user.id, "gymLocation")).data ?? "gym",
+        gymEquipment: parseEquipmentPreference(await getUserPreference(ctx.user.id, "gymEquipment")),
         customSplitPresets: parseCustomSplitPresets(await getUserPreference(ctx.user.id, "customSplitPresets")),
       };
     }),
     set: protectedProcedure
       .input(z.object({
-        experienceLevel: z.enum(["beginner", "intermediate", "advanced"]),
+        experienceLevel: z.enum(["beginner", "intermediate", "advanced"]).optional(),
+        gymName: z.string().max(80).optional(),
+        gymLocation: workoutLocationSchema.optional(),
+        gymEquipment: z.array(equipmentSchema).max(12).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        await setUserPreference(ctx.user.id, "experienceLevel", input.experienceLevel);
+        if (input.experienceLevel) {
+          await setUserPreference(ctx.user.id, "experienceLevel", input.experienceLevel);
+        }
+        if (input.gymName !== undefined) {
+          await setUserPreference(ctx.user.id, "gymName", input.gymName.trim());
+        }
+        if (input.gymLocation) {
+          await setUserPreference(ctx.user.id, "gymLocation", input.gymLocation);
+        }
+        if (input.gymEquipment) {
+          await setUserPreference(ctx.user.id, "gymEquipment", JSON.stringify(input.gymEquipment));
+        }
         return { success: true };
       }),
     saveCustomSplitPreset: protectedProcedure
@@ -1571,6 +1623,7 @@ ${historyText}
     dailyWorkoutRecommendation: protectedProcedure
       .input(z.object({
         location: z.enum(["gym", "home", "outdoor"]).default("gym"),
+        gymName: z.string().max(80).optional(),
         equipment: z.array(z.string()).default([]),
         sessionDuration: z.number().int().min(20).max(180).default(60),
         targetBodyParts: z.array(z.enum(["chest", "back", "shoulders", "biceps", "triceps", "arms", "legs", "glutes", "abs"])).min(1).max(5),
@@ -1663,6 +1716,7 @@ ${formatRecommendationGoal(goals, goal)}
 오늘 운동 조건:
 타겟 부위: ${targetFocus}
 장소: ${locationLabels[input.location]}
+${input.gymName?.trim() ? `등록된 운동 장소 이름: ${input.gymName.trim()}` : "등록된 운동 장소 이름: 미입력"}
 ${equipmentText}
 총 세션 시간: ${input.sessionDuration}분
 스트레칭 제외 실제 운동 시간: ${mainWorkoutMinutes}분
@@ -1746,6 +1800,7 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
     programRecommendation: protectedProcedure
       .input(z.object({
         location: z.enum(["gym", "home", "outdoor"]).default("gym"),
+        gymName: z.string().max(80).optional(),
         equipment: z.array(z.string()).default([]),
         sessionDuration: z.number().int().min(20).max(180).default(60),
         daysPerWeek: z.number().int().min(1).max(7).default(3),
@@ -1783,6 +1838,9 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
       const locationText = input?.location
         ? `운동 장소: ${locationLabels[input.location] || input.location}`
         : "운동 장소: 헬스장";
+      const gymNameText = input?.gymName?.trim()
+        ? `등록된 운동 장소 이름: ${input.gymName.trim()}`
+        : "등록된 운동 장소 이름: 미입력";
 
       const equipmentText = input?.equipment && input.equipment.length > 0
         ? `사용 가능한 기구: ${input.equipment.map((item) => equipmentLabels[item] || item).join(", ")}`
@@ -1902,6 +1960,7 @@ ${statsText}
 
 운동 환경 조건:
 ${locationText}
+${gymNameText}
 ${equipmentText}
 ${durationText}
 스트레칭 제외 실제 운동 시간: 각 운동일 ${mainWorkoutMinutes}분

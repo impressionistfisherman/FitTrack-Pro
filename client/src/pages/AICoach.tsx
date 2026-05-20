@@ -17,6 +17,7 @@ const equipmentOptions = [
   { value: "machine", label: "머신" },
   { value: "cable", label: "케이블" },
   { value: "resistance_band", label: "밴드" },
+  { value: "kettlebell", label: "케틀벨" },
 ];
 
 const splitOptions = [
@@ -86,10 +87,12 @@ function ProgramRecommendation() {
   const [selectedPresetId, setSelectedPresetId] = useState("");
   const [presetName, setPresetName] = useState("");
   const [customRequest, setCustomRequest] = useState("");
+  const [environmentInitialized, setEnvironmentInitialized] = useState(false);
   const utils = trpc.useUtils();
   const programMutation = trpc.ai.programRecommendation.useMutation();
   const preferencesQuery = trpc.preferences.get.useQuery();
   const customSplitPresets = preferencesQuery.data?.customSplitPresets ?? [];
+  const gymName = preferencesQuery.data?.gymName ?? "";
   const saveCustomSplitPresetMutation = trpc.preferences.saveCustomSplitPreset.useMutation({
     onSuccess: (result) => {
       setSelectedPresetId(result.preset.id);
@@ -128,6 +131,15 @@ function ProgramRecommendation() {
     const count = Number(daysPerWeek);
     setDayTargets((current) => Array.from({ length: count }, (_, index) => current[index] ?? []));
   }, [daysPerWeek]);
+
+  useEffect(() => {
+    if (!preferencesQuery.data || environmentInitialized) return;
+    setEnvironmentInitialized(true);
+    setLocation(preferencesQuery.data.gymLocation ?? "gym");
+    if (preferencesQuery.data.gymEquipment?.length) {
+      setEquipment(preferencesQuery.data.gymEquipment);
+    }
+  }, [environmentInitialized, preferencesQuery.data]);
 
   const toggleEquipment = (value: string) => {
     setEquipment((items) => items.includes(value) ? items.filter((item) => item !== value) : [...items, value]);
@@ -193,6 +205,7 @@ function ProgramRecommendation() {
     }
     programMutation.mutate({
       location,
+      gymName: gymName || undefined,
       equipment: location === "gym" ? equipment : location === "home" ? equipment : ["bodyweight"],
       sessionDuration: Number(sessionDuration),
       daysPerWeek: Number(daysPerWeek),
@@ -578,8 +591,20 @@ function DailyWorkoutRecommendation() {
   const [cardioMinutes, setCardioMinutes] = useState("20");
   const [intensity, setIntensity] = useState<"light" | "normal" | "hard">("normal");
   const [customRequest, setCustomRequest] = useState("");
+  const [environmentInitialized, setEnvironmentInitialized] = useState(false);
   const dailyMutation = trpc.ai.dailyWorkoutRecommendation.useMutation();
+  const preferencesQuery = trpc.preferences.get.useQuery();
+  const gymName = preferencesQuery.data?.gymName ?? "";
   const workout = dailyMutation.data?.workout;
+
+  useEffect(() => {
+    if (!preferencesQuery.data || environmentInitialized) return;
+    setEnvironmentInitialized(true);
+    setLocation(preferencesQuery.data.gymLocation ?? "gym");
+    if (preferencesQuery.data.gymEquipment?.length) {
+      setEquipment(preferencesQuery.data.gymEquipment);
+    }
+  }, [environmentInitialized, preferencesQuery.data]);
 
   const toggleEquipment = (value: string) => {
     setEquipment((items) => items.includes(value) ? items.filter((item) => item !== value) : [...items, value]);
@@ -603,6 +628,7 @@ function DailyWorkoutRecommendation() {
     }
     dailyMutation.mutate({
       location,
+      gymName: gymName || undefined,
       equipment: location === "outdoor" ? ["bodyweight"] : equipment,
       sessionDuration: Number(sessionDuration),
       targetBodyParts: targetBodyParts as any,

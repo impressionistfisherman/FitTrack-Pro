@@ -3,7 +3,7 @@ import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
-  Activity, Calendar, Dumbbell, Flame, LogIn, LogOut, Ruler, Scale, Settings, Target, TrendingDown, TrendingUp, Trophy, User
+  Activity, Calendar, Dumbbell, Flame, LogIn, LogOut, MapPin, Ruler, Scale, Settings, Target, TrendingDown, TrendingUp, Trophy, User
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +34,24 @@ const experienceOptions = [
   { value: "advanced", label: "헬창", desc: "고강도 훈련도 가능해요" },
 ] as const;
 
+const gymLocationOptions = [
+  { value: "gym", label: "헬스장" },
+  { value: "home", label: "집" },
+  { value: "outdoor", label: "야외" },
+] as const;
+
+const equipmentOptions = [
+  { value: "bodyweight", label: "맨몸" },
+  { value: "dumbbell", label: "덤벨" },
+  { value: "barbell", label: "바벨" },
+  { value: "machine", label: "머신" },
+  { value: "cable", label: "케이블" },
+  { value: "resistance_band", label: "밴드" },
+  { value: "kettlebell", label: "케틀벨" },
+] as const;
+
+type EquipmentValue = (typeof equipmentOptions)[number]["value"] | "none";
+
 export default function Profile() {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const utils = trpc.useUtils();
@@ -51,6 +69,9 @@ export default function Profile() {
   const [heightCm, setHeightCm] = useState("");
   const [gender, setGender] = useState<"male" | "female" | "">("male");
   const [birthYear, setBirthYear] = useState("");
+  const [gymName, setGymName] = useState("");
+  const [gymLocation, setGymLocation] = useState<"gym" | "home" | "outdoor">("gym");
+  const [gymEquipment, setGymEquipment] = useState<EquipmentValue[]>(["dumbbell", "barbell", "machine", "cable"]);
 
   // goal 데이터 로드 시 폼 초기화
   const [initialized, setInitialized] = useState(false);
@@ -69,6 +90,9 @@ export default function Profile() {
       if (goalInfo?.gender) setGender(goalInfo.gender);
       if (goalInfo?.birthYear) setBirthYear(String(goalInfo.birthYear));
       if ((preferences as any)?.experienceLevel) setExperienceLevel((preferences as any).experienceLevel);
+      if ((preferences as any)?.gymName !== undefined) setGymName((preferences as any).gymName || "");
+      if ((preferences as any)?.gymLocation) setGymLocation((preferences as any).gymLocation);
+      if ((preferences as any)?.gymEquipment?.length) setGymEquipment((preferences as any).gymEquipment);
     }
   }, [goal, goalInfo, goals, preferences, initialized]);
 
@@ -112,6 +136,9 @@ export default function Profile() {
       if (next.length > 0) setSelectedGoal(next[0]);
       return next;
     });
+  };
+  const toggleGymEquipment = (value: EquipmentValue) => {
+    setGymEquipment((items) => items.includes(value) ? items.filter((item) => item !== value) : [...items, value]);
   };
 
   return (
@@ -495,6 +522,60 @@ export default function Profile() {
             </div>
           </div>
 
+          <div className="border-t border-border pt-4 mb-4">
+            <div className="flex items-center gap-2 mb-3">
+              <MapPin size={14} className="text-primary" />
+              <span className="text-sm font-semibold text-foreground">내 운동 환경 <span className="text-xs text-muted-foreground font-normal">(AI 추천 기본값)</span></span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_160px]">
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">헬스장 / 장소 이름</Label>
+                <Input
+                  placeholder="예: 집 근처 헬스장, 회사 헬스장"
+                  value={gymName}
+                  onChange={(event) => setGymName(event.target.value)}
+                  className="bg-accent border-border text-foreground"
+                  maxLength={80}
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">기본 운동 장소</Label>
+                <Select value={gymLocation} onValueChange={(value) => setGymLocation(value as any)}>
+                  <SelectTrigger className="bg-accent border-border text-foreground w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border">
+                    {gymLocationOptions.map((item) => (
+                      <SelectItem key={item.value} value={item.value} className="text-foreground">{item.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {gymLocation !== "outdoor" && (
+              <div className="mt-3">
+                <Label className="text-xs text-muted-foreground mb-1.5 block">사용 가능한 기구</Label>
+                <div className="flex flex-wrap gap-2">
+                  {equipmentOptions.map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => toggleGymEquipment(item.value)}
+                      className={cn(
+                        "rounded-full border px-3 py-1.5 text-xs transition-colors",
+                        gymEquipment.includes(item.value)
+                          ? "border-primary/40 bg-primary/10 text-primary"
+                          : "border-border bg-accent text-muted-foreground hover:border-primary/30"
+                      )}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* 주 운동 횟수 */}
           <div className="mb-4">
             <Label className="text-xs text-muted-foreground mb-1.5 block">주 운동 횟수</Label>
@@ -581,6 +662,9 @@ export default function Profile() {
               gender: gender || undefined,
               birthYear: birthYear ? parseInt(birthYear) : undefined,
               experienceLevel,
+              gymName,
+              gymLocation,
+              gymEquipment: gymLocation === "outdoor" ? ["bodyweight"] : gymEquipment,
             })}
           >
             {setGoalMutation.isPending ? "저장 중..." : "목표 저장"}
