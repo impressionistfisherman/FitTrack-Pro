@@ -273,6 +273,14 @@ export default function FreeWorkoutDialog({
   const bodyWeightKg = weights?.[0]?.weightKg ?? 70;
   const totalCalories = selected.reduce((sum, item) => sum + estimateExerciseCalories(item, bodyWeightKg), 0);
   const totalDuration = selected.reduce((sum, item) => sum + estimateExerciseDuration(item), 0);
+  const totalStrengthSets = selected.reduce((sum, item) => {
+    if (getExerciseInputMode(item.exercise) !== "strength") return sum;
+    return sum + item.sets.filter((set) => set.reps.trim() || set.weightKg.trim()).length;
+  }, 0);
+  const totalVolume = selected.reduce((sum, item) => {
+    if (getExerciseInputMode(item.exercise) !== "strength") return sum;
+    return sum + item.sets.reduce((inner, set) => inner + (Number(set.weightKg) || 0) * (Number(set.reps) || 0), 0);
+  }, 0);
   const selectedWorkoutDate = parseDateInputValue(workoutDate);
   const canSave = selected.some(hasExerciseInput);
 
@@ -522,14 +530,22 @@ export default function FreeWorkoutDialog({
 
         <div className="grid shrink-0 gap-3 border-t border-border bg-card/95 px-5 py-4 backdrop-blur sm:flex sm:items-center sm:justify-between">
           {selected.length > 0 ? (
-            <div className="grid grid-cols-2 gap-2 text-center text-xs sm:w-72">
+            <div className="grid grid-cols-2 gap-2 text-center text-xs sm:w-[30rem] sm:grid-cols-4">
+              <div className="flex h-12 flex-col items-center justify-center rounded-lg border border-border bg-accent/40 px-3">
+                <div className="text-base font-bold text-foreground">{selected.length}</div>
+                <div className="text-muted-foreground">운동 종류</div>
+              </div>
+              <div className="flex h-12 flex-col items-center justify-center rounded-lg border border-border bg-accent/40 px-3">
+                <div className="text-base font-bold text-foreground">{totalStrengthSets}</div>
+                <div className="text-muted-foreground">근력 세트</div>
+              </div>
               <div className="flex h-12 flex-col items-center justify-center rounded-lg border border-border bg-accent/40 px-3">
                 <div className="text-base font-bold text-primary">{totalCalories}</div>
                 <div className="text-muted-foreground">예상 kcal</div>
               </div>
               <div className="flex h-12 flex-col items-center justify-center rounded-lg border border-border bg-accent/40 px-3">
-                <div className="text-base font-bold text-foreground">{totalDuration}</div>
-                <div className="text-muted-foreground">예상 분</div>
+                <div className="text-base font-bold text-foreground">{totalVolume > 0 ? `${(totalVolume / 1000).toFixed(1)}t` : `${totalDuration}분`}</div>
+                <div className="text-muted-foreground">{totalVolume > 0 ? "총 볼륨" : "예상 시간"}</div>
               </div>
             </div>
           ) : <div />}

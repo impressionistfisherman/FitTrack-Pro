@@ -218,28 +218,39 @@ function ExerciseBlock({ entry, sessionId, onUpdate, onRemove, onSetComplete, ro
 
   const completeSet = async (idx: number) => {
     const set = entry.sets[idx];
+    const durationMode = entry.inputMode === "duration";
     if (set.completed) {
       if (set.logId) { try { await deleteLog.mutateAsync({ logId: set.logId }); } catch {} }
       updateSet(idx, "completed", false);
       return;
     }
     try {
-      const result = await addLog.mutateAsync({
-        sessionId,
-        exerciseId: entry.exerciseId,
-        setNumber: set.setNumber,
-        reps: set.reps,
-        weightKg: set.weightKg,
-        isWarmup: set.isWarmup,
-        rpe: set.rpe,
-        memo: set.memo,
-      });
+      const result = await addLog.mutateAsync(durationMode
+        ? {
+            sessionId,
+            exerciseId: entry.exerciseId,
+            setNumber: 1,
+            durationSeconds: Math.max(60, Math.round((Number(set.reps) || 1) * 60)),
+            isWarmup: set.isWarmup,
+            memo: set.memo,
+            notes: set.memo,
+          }
+        : {
+            sessionId,
+            exerciseId: entry.exerciseId,
+            setNumber: set.setNumber,
+            reps: set.reps,
+            weightKg: set.weightKg,
+            isWarmup: set.isWarmup,
+            rpe: set.rpe,
+            memo: set.memo,
+          });
       const sets = [...entry.sets];
       sets[idx] = { ...set, completed: true, logId: result.logId ?? undefined };
       onUpdate({ ...entry, sets });
-      toast.success(`세트 ${set.setNumber} 완료!`);
+      toast.success(durationMode ? "시간 기록 완료!" : `세트 ${set.setNumber} 완료!`);
       // 마지막 세트가 아니면 휴식 타이머 시작
-      if (idx < entry.sets.length - 1) {
+      if (!durationMode && idx < entry.sets.length - 1) {
         onSetComplete(entry.restSeconds);
       }
     } catch {
@@ -608,14 +619,15 @@ export default function WorkoutSession() {
       const grouped: Record<number, any> = {};
       for (const item of session.logs) {
         const exId = item.log.exerciseId;
+        const timed = isTimedExercise(item.exercise);
         if (!grouped[exId]) grouped[exId] = { exercise: item.exercise, sets: [] };
         grouped[exId].sets.push({
           setNumber: item.log.setNumber,
-          reps: item.log.reps || 10,
-          weightKg: item.log.weightKg || 0,
+          reps: timed ? Math.max(1, Math.round((item.log.durationSeconds ?? 1200) / 60)) : item.log.reps || 10,
+          weightKg: timed ? 0 : item.log.weightKg || 0,
           isWarmup: item.log.isWarmup,
           rpe: item.log.rpe,
-          memo: item.log.memo,
+          memo: item.log.memo || item.log.notes,
           completed: true,
           logId: item.log.id,
         });
@@ -646,8 +658,16 @@ export default function WorkoutSession() {
 
   const totalSets = exercises.reduce((s, ex) => s + ex.sets.length, 0);
   const completedSets = exercises.reduce((s, ex) => s + ex.sets.filter(set => set.completed).length, 0);
+  const completedStrengthSets = exercises.reduce((sum, ex) =>
+    sum + (ex.inputMode === "duration" ? 0 : ex.sets.filter(set => set.completed).length), 0);
+  const completedTimedItems = exercises.reduce((sum, ex) =>
+    sum + (ex.inputMode === "duration" ? ex.sets.filter(set => set.completed).length : 0), 0);
+  const completedTimedMinutes = exercises.reduce((sum, ex) =>
+    sum + (ex.inputMode === "duration"
+      ? ex.sets.filter(set => set.completed).reduce((inner, set) => inner + (Number(set.reps) || 0), 0)
+      : 0), 0);
   const totalVolume = exercises.reduce((s, ex) =>
-    s + ex.sets.filter(set => set.completed).reduce((s2, set) => s2 + set.reps * set.weightKg, 0), 0);
+    s + (ex.inputMode === "duration" ? 0 : ex.sets.filter(set => set.completed).reduce((s2, set) => s2 + set.reps * set.weightKg, 0)), 0);
   const currentDurationMinutes = Math.max(1, Math.floor((Date.now() - startTime.current.getTime()) / 60000));
   const displayDurationMinutes = finishedDuration || currentDurationMinutes;
   const estimatedCalories = estimateCalories(displayDurationMinutes, completedSets);
@@ -737,12 +757,12 @@ export default function WorkoutSession() {
         <CardContent className="p-4">
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <div className="text-xl font-bold text-primary">{completedSets}</div>
+              <div className="text-xl font-bold text-primary">{completedStrengthSets}</div>
               <div className="text-xs text-muted-foreground">완료 세트</div>
             </div>
             <div>
-              <div className="text-xl font-bold text-foreground">{totalSets}</div>
-              <div className="text-xs text-muted-foreground">전체 세트</div>
+              <div className="text-xl font-bold text-foreground">{completedTimedMinutes}</div>
+              <div className="text-xs text-muted-foreground">시간 기록(분)</div>
             </div>
             <div>
               <div className="text-xl font-bold text-foreground">{Math.round(totalVolume).toLocaleString()}</div>
@@ -819,7 +839,7 @@ export default function WorkoutSession() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="text-center p-3 bg-primary/10 rounded-xl">
-                <div className="text-2xl font-bold text-primary">{completedSets}</div>
+                <div className="text-2xl font-bold text-primary">{completedStrengthSets}</div>
                 <div className="text-xs text-muted-foreground">총 세트 수</div>
               </div>
               <div className="text-center p-3 bg-accent rounded-xl">
@@ -834,10 +854,16 @@ export default function WorkoutSession() {
                 <div className="text-xs text-muted-foreground">예상 소모 kcal</div>
               </div>
               <div className="text-center p-3 bg-blue-400/10 rounded-xl">
-                <div className="text-2xl font-bold text-blue-400">{displayDurationMinutes}</div>
+                <div className="text-2xl font-bold text-blue-400">{Math.max(displayDurationMinutes, completedTimedMinutes)}</div>
                 <div className="text-xs text-muted-foreground">운동 시간 (분)</div>
               </div>
             </div>
+            {completedTimedItems > 0 && (
+              <div className="rounded-xl border border-border bg-accent/40 p-3 text-sm text-muted-foreground">
+                시간 기반 운동 <span className="font-semibold text-foreground">{completedTimedItems}개</span>,
+                총 <span className="font-semibold text-primary">{completedTimedMinutes}분</span>을 기록했습니다.
+              </div>
+            )}
 
             {!sessionCompleted ? (
               <div className="space-y-3">

@@ -94,6 +94,10 @@ function ProgramRecommendation() {
   const customSplitPresets = preferencesQuery.data?.customSplitPresets ?? [];
   const gymName = preferencesQuery.data?.gymName ?? "";
   const gymEquipmentDetails = preferencesQuery.data?.gymEquipmentDetails ?? [];
+  const injuryNotes = preferencesQuery.data?.injuryNotes ?? "";
+  const avoidExercises = preferencesQuery.data?.avoidExercises ?? "";
+  const preferredExercises = preferencesQuery.data?.preferredExercises ?? "";
+  const availableWorkoutTimes = preferencesQuery.data?.availableWorkoutTimes ?? "";
   const saveCustomSplitPresetMutation = trpc.preferences.saveCustomSplitPreset.useMutation({
     onSuccess: (result) => {
       setSelectedPresetId(result.preset.id);
@@ -220,6 +224,10 @@ function ProgramRecommendation() {
       cooldownStretchMinutes: Number(cooldownStretchMinutes),
       cardioMinutes: Number(cardioMinutes),
       dayFocusNotes: isCustomSplit ? formatDayFocusNotes(dayTargets) || undefined : undefined,
+      injuryNotes: injuryNotes || undefined,
+      avoidExercises: avoidExercises || undefined,
+      preferredExercises: preferredExercises || undefined,
+      availableWorkoutTimes: availableWorkoutTimes || undefined,
       customRequest: customRequest.trim() || undefined,
     });
   };
@@ -606,6 +614,10 @@ function DailyWorkoutRecommendation() {
   const preferencesQuery = trpc.preferences.get.useQuery();
   const gymName = preferencesQuery.data?.gymName ?? "";
   const gymEquipmentDetails = preferencesQuery.data?.gymEquipmentDetails ?? [];
+  const injuryNotes = preferencesQuery.data?.injuryNotes ?? "";
+  const avoidExercises = preferencesQuery.data?.avoidExercises ?? "";
+  const preferredExercises = preferencesQuery.data?.preferredExercises ?? "";
+  const availableWorkoutTimes = preferencesQuery.data?.availableWorkoutTimes ?? "";
   const workout = dailyMutation.data?.workout;
 
   useEffect(() => {
@@ -650,6 +662,10 @@ function DailyWorkoutRecommendation() {
       cooldownStretchMinutes: Number(cooldownStretchMinutes),
       cardioMinutes: Number(cardioMinutes),
       intensity,
+      injuryNotes: injuryNotes || undefined,
+      avoidExercises: avoidExercises || undefined,
+      preferredExercises: preferredExercises || undefined,
+      availableWorkoutTimes: availableWorkoutTimes || undefined,
       customRequest: customRequest.trim() || undefined,
     });
   };

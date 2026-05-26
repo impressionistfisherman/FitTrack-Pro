@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -74,6 +75,10 @@ export default function Profile() {
   const [gymEquipment, setGymEquipment] = useState<EquipmentValue[]>(["dumbbell", "barbell", "machine", "cable"]);
   const [gymEquipmentDetails, setGymEquipmentDetails] = useState<string[]>([]);
   const [gymEquipmentInput, setGymEquipmentInput] = useState("");
+  const [injuryNotes, setInjuryNotes] = useState("");
+  const [avoidExercises, setAvoidExercises] = useState("");
+  const [preferredExercises, setPreferredExercises] = useState("");
+  const [availableWorkoutTimes, setAvailableWorkoutTimes] = useState("");
 
   // goal 데이터 로드 시 폼 초기화
   const [initialized, setInitialized] = useState(false);
@@ -96,6 +101,10 @@ export default function Profile() {
       if ((preferences as any)?.gymLocation) setGymLocation((preferences as any).gymLocation);
       if ((preferences as any)?.gymEquipment?.length) setGymEquipment((preferences as any).gymEquipment);
       if ((preferences as any)?.gymEquipmentDetails?.length) setGymEquipmentDetails((preferences as any).gymEquipmentDetails);
+      if ((preferences as any)?.injuryNotes !== undefined) setInjuryNotes((preferences as any).injuryNotes || "");
+      if ((preferences as any)?.avoidExercises !== undefined) setAvoidExercises((preferences as any).avoidExercises || "");
+      if ((preferences as any)?.preferredExercises !== undefined) setPreferredExercises((preferences as any).preferredExercises || "");
+      if ((preferences as any)?.availableWorkoutTimes !== undefined) setAvailableWorkoutTimes((preferences as any).availableWorkoutTimes || "");
     }
   }, [goal, goalInfo, goals, preferences, initialized]);
 
@@ -637,6 +646,55 @@ export default function Profile() {
             )}
           </div>
 
+          <div className="border-t border-border pt-4 mb-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Settings size={14} className="text-primary" />
+              <span className="text-sm font-semibold text-foreground">AI 개인화 조건</span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">부상/통증/주의 부위</Label>
+                <Textarea
+                  value={injuryNotes}
+                  onChange={(event) => setInjuryNotes(event.target.value)}
+                  placeholder="예: 허리 부담 적게, 오른쪽 무릎 통증"
+                  className="min-h-20 resize-none bg-accent border-border text-foreground"
+                  maxLength={500}
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">피하고 싶은 운동</Label>
+                <Textarea
+                  value={avoidExercises}
+                  onChange={(event) => setAvoidExercises(event.target.value)}
+                  placeholder="예: 백스쿼트 제외, 오버헤드 프레스 부담"
+                  className="min-h-20 resize-none bg-accent border-border text-foreground"
+                  maxLength={500}
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">선호 운동</Label>
+                <Textarea
+                  value={preferredExercises}
+                  onChange={(event) => setPreferredExercises(event.target.value)}
+                  placeholder="예: 케이블 위주, 머신 선호, 덤벨 로우 좋아함"
+                  className="min-h-20 resize-none bg-accent border-border text-foreground"
+                  maxLength={500}
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">운동 가능 시간대/요일</Label>
+                <Textarea
+                  value={availableWorkoutTimes}
+                  onChange={(event) => setAvailableWorkoutTimes(event.target.value)}
+                  placeholder="예: 평일 저녁 90분, 주말 오전만 가능"
+                  className="min-h-20 resize-none bg-accent border-border text-foreground"
+                  maxLength={300}
+                />
+              </div>
+            </div>
+          </div>
+
           {/* 주 운동 횟수 */}
           <div className="mb-4">
             <Label className="text-xs text-muted-foreground mb-1.5 block">주 운동 횟수</Label>
@@ -727,6 +785,10 @@ export default function Profile() {
               gymLocation,
               gymEquipment: gymLocation === "outdoor" ? ["bodyweight"] : gymEquipment,
               gymEquipmentDetails: gymLocation === "outdoor" ? [] : gymEquipmentDetails,
+              injuryNotes,
+              avoidExercises,
+              preferredExercises,
+              availableWorkoutTimes,
             })}
           >
             {setGoalMutation.isPending ? "저장 중..." : "목표 저장"}

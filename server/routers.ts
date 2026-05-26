@@ -1065,6 +1065,10 @@ export const appRouter = router({
           gymLocation: workoutLocationSchema.optional(),
           gymEquipment: z.array(equipmentSchema).max(12).optional(),
           gymEquipmentDetails: z.array(z.string().min(1).max(50)).max(40).optional(),
+          injuryNotes: z.string().max(500).optional(),
+          avoidExercises: z.string().max(500).optional(),
+          preferredExercises: z.string().max(500).optional(),
+          availableWorkoutTimes: z.string().max(300).optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -1085,6 +1089,18 @@ export const appRouter = router({
         if (input.gymEquipmentDetails) {
           await setUserPreference(ctx.user.id, "gymEquipmentDetails", JSON.stringify(normalizeEquipmentDetails(input.gymEquipmentDetails)));
         }
+        if (input.injuryNotes !== undefined) {
+          await setUserPreference(ctx.user.id, "injuryNotes", input.injuryNotes.trim());
+        }
+        if (input.avoidExercises !== undefined) {
+          await setUserPreference(ctx.user.id, "avoidExercises", input.avoidExercises.trim());
+        }
+        if (input.preferredExercises !== undefined) {
+          await setUserPreference(ctx.user.id, "preferredExercises", input.preferredExercises.trim());
+        }
+        if (input.availableWorkoutTimes !== undefined) {
+          await setUserPreference(ctx.user.id, "availableWorkoutTimes", input.availableWorkoutTimes.trim());
+        }
         return { success: true };
       }),
   }),
@@ -1097,6 +1113,10 @@ export const appRouter = router({
         gymLocation: workoutLocationSchema.safeParse(await getUserPreference(ctx.user.id, "gymLocation")).data ?? "gym",
         gymEquipment: parseEquipmentPreference(await getUserPreference(ctx.user.id, "gymEquipment")),
         gymEquipmentDetails: parseStringListPreference(await getUserPreference(ctx.user.id, "gymEquipmentDetails")),
+        injuryNotes: await getUserPreference(ctx.user.id, "injuryNotes") ?? "",
+        avoidExercises: await getUserPreference(ctx.user.id, "avoidExercises") ?? "",
+        preferredExercises: await getUserPreference(ctx.user.id, "preferredExercises") ?? "",
+        availableWorkoutTimes: await getUserPreference(ctx.user.id, "availableWorkoutTimes") ?? "",
         customSplitPresets: parseCustomSplitPresets(await getUserPreference(ctx.user.id, "customSplitPresets")),
       };
     }),
@@ -1107,6 +1127,10 @@ export const appRouter = router({
         gymLocation: workoutLocationSchema.optional(),
         gymEquipment: z.array(equipmentSchema).max(12).optional(),
         gymEquipmentDetails: z.array(z.string().min(1).max(50)).max(40).optional(),
+        injuryNotes: z.string().max(500).optional(),
+        avoidExercises: z.string().max(500).optional(),
+        preferredExercises: z.string().max(500).optional(),
+        availableWorkoutTimes: z.string().max(300).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         if (input.experienceLevel) {
@@ -1123,6 +1147,18 @@ export const appRouter = router({
         }
         if (input.gymEquipmentDetails) {
           await setUserPreference(ctx.user.id, "gymEquipmentDetails", JSON.stringify(normalizeEquipmentDetails(input.gymEquipmentDetails)));
+        }
+        if (input.injuryNotes !== undefined) {
+          await setUserPreference(ctx.user.id, "injuryNotes", input.injuryNotes.trim());
+        }
+        if (input.avoidExercises !== undefined) {
+          await setUserPreference(ctx.user.id, "avoidExercises", input.avoidExercises.trim());
+        }
+        if (input.preferredExercises !== undefined) {
+          await setUserPreference(ctx.user.id, "preferredExercises", input.preferredExercises.trim());
+        }
+        if (input.availableWorkoutTimes !== undefined) {
+          await setUserPreference(ctx.user.id, "availableWorkoutTimes", input.availableWorkoutTimes.trim());
         }
         return { success: true };
       }),
@@ -1668,6 +1704,10 @@ ${historyText}
         cooldownStretchMinutes: z.number().int().min(0).max(40).default(10),
         cardioMinutes: z.number().int().min(0).max(90).default(20),
         intensity: z.enum(["light", "normal", "hard"]).default("normal"),
+        injuryNotes: z.string().max(500).optional(),
+        avoidExercises: z.string().max(500).optional(),
+        preferredExercises: z.string().max(500).optional(),
+        availableWorkoutTimes: z.string().max(300).optional(),
         customRequest: z.string().max(500).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
@@ -1699,6 +1739,12 @@ ${historyText}
         const equipmentDetailText = input.equipmentDetails.length
           ? `등록된 실제 기구 목록: ${normalizeEquipmentDetails(input.equipmentDetails).join(", ")}`
           : "등록된 실제 기구 목록: 미입력";
+        const personalConstraintText = [
+          input.injuryNotes?.trim() ? `부상/통증/주의 부위: ${input.injuryNotes.trim()}` : "부상/통증/주의 부위: 미입력",
+          input.avoidExercises?.trim() ? `피하고 싶은 운동/동작: ${input.avoidExercises.trim()}` : "피하고 싶은 운동/동작: 미입력",
+          input.preferredExercises?.trim() ? `선호 운동/동작: ${input.preferredExercises.trim()}` : "선호 운동/동작: 미입력",
+          input.availableWorkoutTimes?.trim() ? `운동 가능 시간대/요일: ${input.availableWorkoutTimes.trim()}` : "운동 가능 시간대/요일: 미입력",
+        ].join("\n");
         const recentHistoryText = summarizeWorkoutHistoryForPrompt(recentSessions, logsBySession);
         const cardioText = input.includeCardio
           ? `유산소 포함: ${input.cardioMinutes}분. 단, 하체가 주요 타겟이면 고강도 유산소는 제외하고 저강도 또는 생략.`
@@ -1758,6 +1804,7 @@ ${formatRecommendationGoal(goals, goal)}
 ${input.gymName?.trim() ? `등록된 운동 장소 이름: ${input.gymName.trim()}` : "등록된 운동 장소 이름: 미입력"}
 ${equipmentText}
 ${equipmentDetailText}
+${personalConstraintText}
 총 세션 시간: ${input.sessionDuration}분
 스트레칭 제외 실제 운동 시간: ${mainWorkoutMinutes}분
 유산소 제외 근력 운동 시간: ${strengthWorkoutMinutes}분
@@ -1854,6 +1901,10 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
         cooldownStretchMinutes: z.number().int().min(0).max(40).default(20),
         cardioMinutes: z.number().int().min(0).max(90).default(20),
         dayFocusNotes: z.string().max(500).optional(),
+        injuryNotes: z.string().max(500).optional(),
+        avoidExercises: z.string().max(500).optional(),
+        preferredExercises: z.string().max(500).optional(),
+        availableWorkoutTimes: z.string().max(300).optional(),
         customRequest: z.string().max(500).optional(),
       }).optional())
       .mutation(async ({ ctx, input }) => {
@@ -1891,6 +1942,12 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
       const equipmentDetailText = input?.equipmentDetails && input.equipmentDetails.length > 0
         ? `등록된 실제 기구 목록: ${normalizeEquipmentDetails(input.equipmentDetails).join(", ")}`
         : "등록된 실제 기구 목록: 미입력";
+      const personalConstraintText = [
+        input?.injuryNotes?.trim() ? `부상/통증/주의 부위: ${input.injuryNotes.trim()}` : "부상/통증/주의 부위: 미입력",
+        input?.avoidExercises?.trim() ? `피하고 싶은 운동/동작: ${input.avoidExercises.trim()}` : "피하고 싶은 운동/동작: 미입력",
+        input?.preferredExercises?.trim() ? `선호 운동/동작: ${input.preferredExercises.trim()}` : "선호 운동/동작: 미입력",
+        input?.availableWorkoutTimes?.trim() ? `운동 가능 시간대/요일: ${input.availableWorkoutTimes.trim()}` : "운동 가능 시간대/요일: 미입력",
+      ].join("\n");
 
       const durationText = input?.sessionDuration
         ? `1회 운동 가능 시간: ${input.sessionDuration}분`
@@ -2008,6 +2065,7 @@ ${locationText}
 ${gymNameText}
 ${equipmentText}
 ${equipmentDetailText}
+${personalConstraintText}
 ${durationText}
 스트레칭 제외 실제 운동 시간: 각 운동일 ${mainWorkoutMinutes}분
 유산소 제외 근력 운동 시간: 각 운동일 ${strengthWorkoutMinutes}분

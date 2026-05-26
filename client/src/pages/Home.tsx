@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { useMemo } from "react";
 
 const goalLabels: Record<string, string> = {
   hypertrophy: "근비대",
@@ -44,6 +45,20 @@ const goalColors: Record<string, string> = {
   endurance: "text-green-400 bg-green-400/10 border-green-400/20",
   flexibility: "text-purple-400 bg-purple-400/10 border-purple-400/20",
   general: "text-primary bg-primary/10 border-primary/20",
+};
+
+const bodyPartLabels: Record<string, string> = {
+  chest: "가슴",
+  back: "등",
+  shoulders: "어깨",
+  arms: "팔",
+  biceps: "이두",
+  triceps: "삼두",
+  legs: "하체",
+  glutes: "둔근",
+  abs: "복근",
+  cardio: "유산소",
+  stretching: "스트레칭",
 };
 
 function StatCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: string | number; color: string }) {
@@ -380,6 +395,61 @@ function RecentWorkouts() {
   );
 }
 
+function BodyPartBalanceCard() {
+  const { data: sessions, isLoading } = trpc.history.recentWorkouts.useQuery({ limit: 20 }, { retry: false });
+  const balance = useMemo(() => {
+    const buckets = new Map<string, { label: string; count: number; volume: number }>();
+    for (const session of sessions ?? []) {
+      for (const item of session.logs ?? []) {
+        const exercise = (item as any).exercise;
+        const log = (item as any).log;
+        const key = exercise?.bodyPart;
+        if (!key) continue;
+        const current = buckets.get(key) ?? { label: bodyPartLabels[key] ?? key, count: 0, volume: 0 };
+        current.count += 1;
+        current.volume += (Number(log?.weightKg) || 0) * (Number(log?.reps) || 0);
+        buckets.set(key, current);
+      }
+    }
+    return Array.from(buckets.values())
+      .sort((a, b) => b.count - a.count || b.volume - a.volume)
+      .slice(0, 6);
+  }, [sessions]);
+  const maxCount = Math.max(1, ...balance.map((item) => item.count));
+
+  return (
+    <Card className="bg-card border-border">
+      <CardContent className="p-4">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h3 className="font-semibold text-foreground">최근 부위 분포</h3>
+          <span className="text-xs text-muted-foreground">최근 20회</span>
+        </div>
+        {isLoading ? (
+          <div className="space-y-2">
+            {Array.from({ length: 4 }).map((_, index) => <div key={index} className="h-7 skeleton rounded-lg" />)}
+          </div>
+        ) : balance.length ? (
+          <div className="space-y-2">
+            {balance.map((item) => (
+              <div key={item.label} className="grid grid-cols-[56px_minmax(0,1fr)_36px] items-center gap-2 text-xs">
+                <span className="truncate text-muted-foreground">{item.label}</span>
+                <div className="h-2 overflow-hidden rounded-full bg-accent">
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(12, (item.count / maxCount) * 100)}%` }} />
+                </div>
+                <span className="text-right font-semibold text-foreground">{item.count}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+            운동을 기록하면 부위별 분포가 표시됩니다.
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function FeatureCards() {
   const features = [
     { href: "/exercises", icon: Dumbbell, label: "운동 탐색", desc: "구기종목 포함 운동 DB", color: "text-primary bg-primary/10" },
@@ -549,6 +619,7 @@ export default function Home() {
             <StreakCard />
             <BodyWeightSummaryCard />
           </div>
+          <BodyPartBalanceCard />
           <FeatureCards />
           <Link href="/ai-coach">
             <Card className="bg-gradient-to-br from-primary/10 to-blue-500/10 border-primary/20 cursor-pointer hover:border-primary/40 transition-all duration-200">
