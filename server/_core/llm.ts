@@ -373,11 +373,13 @@ async function invokeGemini(params: InvokeParams): Promise<InvokeResult> {
   };
   if (systemInstruction) body.systemInstruction = systemInstruction;
 
-  const configuredModel = ENV.geminiModel || "gemini-1.5-flash";
+  const configuredModel = ENV.geminiModel || "gemini-2.5-flash";
   const modelCandidates = Array.from(new Set([
     configuredModel,
-    "gemini-1.5-flash",
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
     "gemini-1.5-flash-latest",
+    "gemini-1.5-flash",
   ]));
   let usedModel = modelCandidates[0];
   let lastError = "";
@@ -387,7 +389,10 @@ async function invokeGemini(params: InvokeParams): Promise<InvokeResult> {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(ENV.geminiApiKey)}`;
     const response = await fetch(url, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        "x-goog-api-key": ENV.geminiApiKey,
+      },
       body: JSON.stringify(body),
     });
 
@@ -399,7 +404,7 @@ async function invokeGemini(params: InvokeParams): Promise<InvokeResult> {
 
     const errorText = await response.text();
     lastError = `Gemini invoke failed: ${response.status} ${response.statusText} – ${errorText}`;
-    if (response.status !== 404) break;
+    if (response.status !== 404 && response.status !== 429 && response.status < 500) break;
   }
 
   if (!data) {

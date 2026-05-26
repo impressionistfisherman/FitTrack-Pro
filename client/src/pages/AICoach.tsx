@@ -70,6 +70,16 @@ function formatDayFocusNotes(dayTargets: string[][]) {
     .join(", ");
 }
 
+function getAiErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : String((error as any)?.message ?? "");
+  if (!message) return "잠시 후 다시 시도하세요.";
+  if (message.includes("GEMINI_API_KEY")) return "서버에 GEMINI_API_KEY가 설정되어 있지 않습니다.";
+  if (message.includes("404") || message.toLowerCase().includes("not found")) return "Gemini 모델명을 찾을 수 없습니다. Vercel의 GEMINI_MODEL 값을 gemini-2.5-flash로 확인하세요.";
+  if (message.includes("429")) return "Gemini 요청 한도에 걸렸습니다. 잠시 후 다시 시도하세요.";
+  if (message.includes("400")) return "AI 응답 형식 요청이 거절되었습니다. 다시 시도해도 반복되면 배포 로그를 확인하세요.";
+  return "서버 로그에서 Gemini 호출 오류를 확인하세요.";
+}
+
 function ProgramRecommendation() {
   const [location, setLocation] = useState<"gym" | "home" | "outdoor">("gym");
   const [sessionDuration, setSessionDuration] = useState("60");
@@ -518,7 +528,9 @@ function ProgramRecommendation() {
 
       {programMutation.error && (
         <Card className="bg-destructive/10 border-destructive/20">
-          <CardContent className="p-4 text-sm text-destructive">운동 추천 생성에 실패했습니다. 잠시 후 다시 시도하세요.</CardContent>
+          <CardContent className="p-4 text-sm text-destructive">
+            운동 추천 생성에 실패했습니다. {getAiErrorMessage(programMutation.error)}
+          </CardContent>
         </Card>
       )}
 
@@ -846,7 +858,9 @@ function DailyWorkoutRecommendation() {
 
       {dailyMutation.error && (
         <Card className="bg-destructive/10 border-destructive/20">
-          <CardContent className="p-4 text-sm text-destructive">오늘 운동 추천 생성에 실패했습니다. 잠시 후 다시 시도하세요.</CardContent>
+          <CardContent className="p-4 text-sm text-destructive">
+            오늘 운동 추천 생성에 실패했습니다. {getAiErrorMessage(dailyMutation.error)}
+          </CardContent>
         </Card>
       )}
 
