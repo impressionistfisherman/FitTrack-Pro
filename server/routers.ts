@@ -44,6 +44,7 @@ import {
   toggleFavorite,
   updateRoutine,
   updateRoutineExercise,
+  updateUserProfileName,
   upsertUserGoal,
 } from "./db";
 
@@ -1192,7 +1193,19 @@ function normalizeWorkoutCaptureResult(parsed: any, exercises: any[]) {
 export const appRouter = router({
   system: systemRouter,
   auth: router({
-    me: publicProcedure.query((opts) => opts.ctx.user),
+    me: publicProcedure.query(async (opts) => {
+      if (!opts.ctx.user) return null;
+      const displayName = await getUserPreference(opts.ctx.user.id, "displayName");
+      return displayName ? { ...opts.ctx.user, name: displayName } : opts.ctx.user;
+    }),
+    updateProfile: protectedProcedure
+      .input(z.object({ name: z.string().trim().min(1).max(40) }))
+      .mutation(async ({ ctx, input }) => {
+        const name = input.name.replace(/\s+/g, " ").trim();
+        await updateUserProfileName(ctx.user.id, name);
+        await setUserPreference(ctx.user.id, "displayName", name);
+        return { success: true, name };
+      }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -1303,6 +1316,7 @@ export const appRouter = router({
     get: protectedProcedure.query(async ({ ctx }) => {
       return {
         experienceLevel: await getUserPreference(ctx.user.id, "experienceLevel") ?? "beginner",
+        displayName: await getUserPreference(ctx.user.id, "displayName") ?? ctx.user.name ?? "",
         gymName: await getUserPreference(ctx.user.id, "gymName") ?? "",
         gymLocation: workoutLocationSchema.safeParse(await getUserPreference(ctx.user.id, "gymLocation")).data ?? "gym",
         gymEquipment: parseEquipmentPreference(await getUserPreference(ctx.user.id, "gymEquipment")),

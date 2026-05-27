@@ -541,6 +541,15 @@ export async function upsertUser(input: InsertUser): Promise<any> {
   return getInsertId(result);
 }
 
+export async function updateUserProfileName(userId: number, name: string): Promise<void> {
+  await run(
+    "UPDATE users SET name = ?, updatedAt = ? WHERE id = ?",
+    name,
+    new Date().toISOString(),
+    userId,
+  );
+}
+
 export async function getExercises(filters?: {
   bodyPart?: string;
   equipment?: string;

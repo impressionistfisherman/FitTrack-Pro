@@ -79,9 +79,11 @@ export default function Profile() {
   const [avoidExercises, setAvoidExercises] = useState("");
   const [preferredExercises, setPreferredExercises] = useState("");
   const [availableWorkoutTimes, setAvailableWorkoutTimes] = useState("");
+  const [displayNameInput, setDisplayNameInput] = useState("");
 
   // goal 데이터 로드 시 폼 초기화
   const [initialized, setInitialized] = useState(false);
+  const [nameInitialized, setNameInitialized] = useState(false);
   
   useEffect(() => {
     if ((goal || goals || preferences) && !initialized) {
@@ -108,9 +110,17 @@ export default function Profile() {
     }
   }, [goal, goalInfo, goals, preferences, initialized]);
 
+  useEffect(() => {
+    if (user && !nameInitialized) {
+      const savedDisplayName = (preferences as any)?.displayName;
+      setDisplayNameInput(savedDisplayName || user.name || user.email?.split("@")[0] || "");
+      setNameInitialized(true);
+    }
+  }, [nameInitialized, preferences, user]);
+
   const setGoalMutation = trpc.goals.set.useMutation({
     onSuccess: () => {
-      toast.success("목표가 업데이트되었습니다!");
+      toast.success("프로필 설정을 저장했습니다.");
       utils.goals.get.invalidate();
       utils.goals.list.invalidate();
       utils.preferences.get.invalidate();
@@ -118,6 +128,45 @@ export default function Profile() {
     },
     onError: () => toast.error("목표 설정에 실패했습니다."),
   });
+  const updateProfileMutation = trpc.auth.updateProfile.useMutation({
+    onSuccess: () => {
+      toast.success("표시 이름을 저장했습니다.");
+      utils.auth.me.invalidate();
+      utils.preferences.get.invalidate();
+    },
+    onError: () => toast.error("이름 저장에 실패했습니다."),
+  });
+
+  const saveProfileSettings = () => {
+    const name = displayNameInput.replace(/\s+/g, " ").trim();
+    if (!name) {
+      toast.error("표시 이름을 입력해주세요.");
+      return;
+    }
+    updateProfileMutation.mutate({ name });
+    if (selectedGoals.length === 0) {
+      toast.info("운동 목표를 선택하면 신체 정보와 AI 설정도 함께 저장됩니다.");
+      return;
+    }
+    setGoalMutation.mutate({
+      goal: (selectedGoals[0] || selectedGoal) as any,
+      goals: selectedGoals as any,
+      weeklyWorkouts: parseInt(weeklyWorkouts),
+      targetWeight: targetWeight ? parseFloat(targetWeight) : undefined,
+      heightCm: heightCm ? parseFloat(heightCm) : undefined,
+      gender: gender || undefined,
+      birthYear: birthYear ? parseInt(birthYear) : undefined,
+      experienceLevel,
+      gymName,
+      gymLocation,
+      gymEquipment: gymLocation === "outdoor" ? ["bodyweight"] : gymEquipment,
+      gymEquipmentDetails: gymLocation === "outdoor" ? [] : gymEquipmentDetails,
+      injuryNotes,
+      avoidExercises,
+      preferredExercises,
+      availableWorkoutTimes,
+    });
+  };
 
   if (loading) {
     return (
@@ -141,7 +190,7 @@ export default function Profile() {
   }
 
   const currentGoalConfig = goal ? goalOptions.find((g) => g.value === goal.goal) : null;
-  const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
+  const displayName = displayNameInput.trim() || user?.name || user?.email?.split("@")[0] || "사용자";
   const toggleGoal = (value: string) => {
     setSelectedGoals((items) => {
       const next = items.includes(value) ? items.filter((item) => item !== value) : [...items, value];
@@ -175,7 +224,7 @@ export default function Profile() {
       {/* User Card */}
       <Card className="bg-gradient-to-br from-primary/10 to-card border-primary/20 mb-6">
         <CardContent className="p-6">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="w-16 h-16 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center">
               <User size={28} className="text-primary" />
             </div>
@@ -188,6 +237,16 @@ export default function Profile() {
                   {currentGoalConfig.label}
                 </Badge>
               )}
+            </div>
+            <div className="w-full sm:max-w-xs">
+              <Label className="mb-1.5 block text-xs text-muted-foreground">표시 이름</Label>
+              <Input
+                value={displayNameInput}
+                onChange={(event) => setDisplayNameInput(event.target.value)}
+                placeholder="앱에서 사용할 이름"
+                className="bg-accent border-border text-foreground"
+                maxLength={40}
+              />
             </div>
           </div>
         </CardContent>
@@ -771,27 +830,10 @@ export default function Profile() {
 
           <Button
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-            disabled={selectedGoals.length === 0 || setGoalMutation.isPending}
-            onClick={() => setGoalMutation.mutate({
-              goal: (selectedGoals[0] || selectedGoal) as any,
-              goals: selectedGoals as any,
-              weeklyWorkouts: parseInt(weeklyWorkouts),
-              targetWeight: targetWeight ? parseFloat(targetWeight) : undefined,
-              heightCm: heightCm ? parseFloat(heightCm) : undefined,
-              gender: gender || undefined,
-              birthYear: birthYear ? parseInt(birthYear) : undefined,
-              experienceLevel,
-              gymName,
-              gymLocation,
-              gymEquipment: gymLocation === "outdoor" ? ["bodyweight"] : gymEquipment,
-              gymEquipmentDetails: gymLocation === "outdoor" ? [] : gymEquipmentDetails,
-              injuryNotes,
-              avoidExercises,
-              preferredExercises,
-              availableWorkoutTimes,
-            })}
+            disabled={setGoalMutation.isPending || updateProfileMutation.isPending}
+            onClick={saveProfileSettings}
           >
-            {setGoalMutation.isPending ? "저장 중..." : "목표 저장"}
+            {setGoalMutation.isPending || updateProfileMutation.isPending ? "저장 중..." : "프로필 저장"}
           </Button>
         </CardContent>
       </Card>
