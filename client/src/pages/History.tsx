@@ -5,7 +5,7 @@ import BodyWeightTracker from "@/components/BodyWeightTracker";
 import FreeWorkoutDialog from "@/components/FreeWorkoutDialog";
 import { cn } from "@/lib/utils";
 import { Activity, Calendar, ChevronLeft, ChevronRight, Clock, Dumbbell, LogIn, TrendingUp, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -295,6 +295,7 @@ export default function History() {
   const [exerciseSearchOpen, setExerciseSearchOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(toDateKey(new Date()));
   const [freeWorkoutOpen, setFreeWorkoutOpen] = useState(false);
+  const exerciseSearchBoxRef = useRef<HTMLDivElement | null>(null);
 
   const { data: sessions } = trpc.history.calendar.useQuery({ year, month }, { enabled: isAuthenticated });
   const { data: recentWorkouts } = trpc.history.recentWorkouts.useQuery({ limit: 10 }, { enabled: isAuthenticated });
@@ -362,6 +363,12 @@ export default function History() {
     return filtered.slice(0, 12);
   }, [exercises, exerciseSearch]);
   const shouldShowExerciseOptions = exerciseSearchOpen || (!chartExerciseId && exerciseSearch.trim().length > 0);
+
+  const closeExerciseSearchIfLeaving = (nextFocus: EventTarget | null) => {
+    if (nextFocus instanceof Node && exerciseSearchBoxRef.current?.contains(nextFocus)) return;
+    setExerciseSearchOpen(false);
+    if (!chartExerciseId) setExerciseSearch("");
+  };
 
   const volumeChartData = useMemo(() => {
     const buckets = new Map<string, { date: string; sortKey: string; 볼륨: number; 세트: number }>();
@@ -541,7 +548,11 @@ export default function History() {
                 <Activity size={16} className="text-primary" />
                 <span className="font-semibold text-foreground text-sm">운동별 무게 추이</span>
               </div>
-              <div className={cn("space-y-2", (shouldShowExerciseOptions || chartExerciseId) && "mb-3")}>
+              <div
+                ref={exerciseSearchBoxRef}
+                onBlur={(event) => closeExerciseSearchIfLeaving(event.relatedTarget)}
+                className={cn("space-y-2", (shouldShowExerciseOptions || chartExerciseId) && "mb-3")}
+              >
                 <input
                   value={exerciseSearch}
                   onFocus={() => setExerciseSearchOpen(true)}
@@ -558,6 +569,7 @@ export default function History() {
                       <button
                         key={ex.id}
                         type="button"
+                        tabIndex={0}
                         onClick={() => {
                           setChartExerciseId(ex.id);
                           setExerciseSearch(ex.nameKo);
