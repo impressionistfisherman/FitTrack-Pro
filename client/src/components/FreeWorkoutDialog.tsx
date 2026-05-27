@@ -175,6 +175,10 @@ export default function FreeWorkoutDialog({
   }, [exercises, selected]);
 
   const addExercise = (exercise: any) => {
+    if (selected.some((item) => item.exercise.id === exercise.id)) {
+      toast.info("이미 추가된 운동입니다.");
+      return;
+    }
     const mode = getExerciseInputMode(exercise);
     setSelected((items) => [...items, {
       exercise,
@@ -184,6 +188,7 @@ export default function FreeWorkoutDialog({
       intensity: "moderate",
     }]);
     setSearch("");
+    toast.success(`${exercise.nameKo}을(를) 기록 목록에 추가했습니다.`);
   };
 
   const updateSetCount = (exerciseId: number, count: number) => {
@@ -225,7 +230,11 @@ export default function FreeWorkoutDialog({
   };
 
   const removeExercise = (exerciseId: number) => {
-    setSelected((items) => items.filter((item) => item.exercise.id !== exerciseId));
+    setSelected((items) => {
+      const removed = items.find((item) => item.exercise.id === exerciseId);
+      if (removed) toast.info(`${removed.exercise.nameKo}을(를) 기록 목록에서 제거했습니다.`);
+      return items.filter((item) => item.exercise.id !== exerciseId);
+    });
   };
 
   const reset = () => {

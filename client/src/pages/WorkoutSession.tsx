@@ -96,7 +96,7 @@ function RPESelector({ value, onChange }: { value?: number; onChange: (v: number
   );
 }
 
-function AddExerciseModal({ onAdd }: { onAdd: (exercise: any, restSecs: number) => void }) {
+function AddExerciseModal({ onAdd }: { onAdd: (exercise: any, restSecs: number) => boolean }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [bodyPart, setBodyPart] = useState("all");
@@ -160,7 +160,12 @@ function AddExerciseModal({ onAdd }: { onAdd: (exercise: any, restSecs: number) 
           </div>
           <div className="overflow-y-auto flex-1 space-y-1.5">
             {filtered?.map(ex => (
-              <button key={ex.id} onClick={() => { onAdd(ex, restSecs); setOpen(false); setSearch(""); }}
+              <button key={ex.id} onClick={() => {
+                if (onAdd(ex, restSecs)) {
+                  setOpen(false);
+                  setSearch("");
+                }
+              }}
                 className="w-full flex items-center gap-3 p-3 rounded-xl bg-accent/50 hover:bg-accent border border-transparent hover:border-primary/30 text-left transition-all">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Dumbbell size={14} className="text-primary" />
@@ -651,6 +656,10 @@ export default function WorkoutSession() {
   }, [session, routineExercises]);
 
   const addExercise = (ex: any, restSecs: number) => {
+    if (exercises.some((entry) => entry.exerciseId === ex.id)) {
+      toast.info("이미 세션에 추가된 운동입니다.");
+      return false;
+    }
     setExercises(prev => [...prev, {
       exerciseId: ex.id,
       nameKo: ex.nameKo,
@@ -660,6 +669,8 @@ export default function WorkoutSession() {
       sets: [{ setNumber: 1, reps: isTimedExercise(ex) ? 20 : 10, weightKg: 0, isWarmup: false, completed: false }],
       expanded: true,
     }]);
+    toast.success(`${ex.nameKo}을(를) 세션에 추가했습니다.`);
+    return true;
   };
 
   const totalSets = exercises.reduce((s, ex) => s + ex.sets.length, 0);
