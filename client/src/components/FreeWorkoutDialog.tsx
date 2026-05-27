@@ -168,10 +168,11 @@ export default function FreeWorkoutDialog({
   const [captureMessage, setCaptureMessage] = useState("");
   const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseAiFeedback | null>(null);
   const exerciseSearchRef = useRef<HTMLDivElement | null>(null);
+  const shouldShowExerciseList = exerciseSearchOpen || search.trim().length > 0;
 
   const { data: exercises, isLoading: exercisesLoading, isFetching: exercisesFetching } = trpc.exercises.list.useQuery(
     { search: search || undefined },
-    { enabled: open, staleTime: 1000 * 60 * 5 }
+    { enabled: open && shouldShowExerciseList, staleTime: 1000 * 60 * 5 }
   );
   const { data: weights } = trpc.bodyWeight.list.useQuery(
     { limit: 1 },
@@ -190,7 +191,6 @@ export default function FreeWorkoutDialog({
     const selectedIds = new Set(selected.map((item) => item.exercise.id));
     return (exercises ?? []).filter((exercise) => !selectedIds.has(exercise.id)).slice(0, 20);
   }, [exercises, selected]);
-  const shouldShowExerciseList = exerciseSearchOpen || search.trim().length > 0;
 
   const closeExerciseSearchIfLeaving = (nextFocus: EventTarget | null) => {
     if (nextFocus instanceof Node && exerciseSearchRef.current?.contains(nextFocus)) return;

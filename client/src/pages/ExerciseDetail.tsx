@@ -6,7 +6,7 @@ import {
   ImageOff, Info, Lightbulb, Play, Target, Zap, CheckCircle2,
   AlertTriangle, Wind
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useParams } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -383,17 +383,19 @@ export default function ExerciseDetail() {
   const exerciseId = parseInt(id || "0");
   const { isAuthenticated } = useAuth();
 
-  const { data: exercise, isLoading } = trpc.exercises.detail.useQuery({ id: exerciseId });
+  const { data: exercise, isLoading } = trpc.exercises.detail.useQuery(
+    { id: exerciseId },
+    { staleTime: 1000 * 60 * 10 }
+  );
   const { data: aiTips, isLoading: tipsLoading } = trpc.ai.quickTip.useQuery(
     { exerciseId },
-    { enabled: isAuthenticated && !!exercise }
+    { enabled: isAuthenticated && !!exercise, staleTime: 1000 * 60 * 30 }
   );
   const { data: weightRec, isLoading: recLoading } = trpc.ai.weightRecommendation.useQuery(
     { exerciseId },
-    { enabled: isAuthenticated && !!exercise }
+    { enabled: isAuthenticated && !!exercise, staleTime: 1000 * 60 * 10 }
   );
   const startSession = trpc.workout.startSession.useMutation();
-  const utils = trpc.useUtils();
 
   // instructionsKo 파싱 헬퍼 (훅 이후, early return 이전에 정의)
   const safeParseArray = (val: unknown): string[] | null => {
@@ -403,11 +405,6 @@ export default function ExerciseDetail() {
     }
     return null;
   };
-
-  // 캐시 무효화 - 항상 훅 순서 유지 (early return 이전)
-  useEffect(() => {
-    utils.exercises.detail.invalidate({ id: exerciseId });
-  }, [exerciseId]);
 
   if (isLoading) {
     return (
