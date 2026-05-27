@@ -684,7 +684,14 @@ export default function WorkoutSession() {
       expanded: true,
     }]);
     toast.success(`${ex.nameKo}을(를) 세션에 추가했습니다.`);
-    setExerciseFeedback(null);
+    setExerciseFeedback({
+      title: `${ex.nameKo} 추가 피드백`,
+      fit: "AI가 현재 세션 구성과 목표를 보고 피드백을 준비하고 있습니다.",
+      orderTip: "잠시만 기다리면 배치 순서 조언이 표시됩니다.",
+      volumeTip: "세트와 횟수를 기록하면 다음 피드백이 더 정확해집니다.",
+      caution: "통증이 있으면 중량보다 자세와 가동 범위를 우선하세요.",
+      source: "fallback",
+    });
     aiExerciseFeedback.mutate({
       sessionId: sid,
       exerciseId: ex.id,
@@ -824,19 +831,14 @@ export default function WorkoutSession() {
                 <Sparkles size={16} className="text-primary" />
                 <h2 className="text-sm font-semibold text-foreground">AI 운동 추가 피드백</h2>
               </div>
-              {exerciseFeedback?.source === "fallback" && (
-                <span className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
-                  기본 피드백
+              {(aiExerciseFeedback.isPending || exerciseFeedback?.source === "fallback") && (
+                <span className="flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
+                  {aiExerciseFeedback.isPending && <RefreshCw size={10} className="animate-spin" />}
+                  {aiExerciseFeedback.isPending ? "AI 분석 중" : "기본 피드백"}
                 </span>
               )}
             </div>
-            {aiExerciseFeedback.isPending ? (
-              <div className="space-y-2">
-                <div className="h-3 skeleton rounded" />
-                <div className="h-3 w-4/5 skeleton rounded" />
-                <div className="h-3 w-2/3 skeleton rounded" />
-              </div>
-            ) : exerciseFeedback ? (
+            {exerciseFeedback ? (
               <div className="grid gap-2 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
                 <div className="rounded-lg bg-background/40 p-2">
                   <div className="mb-1 font-semibold text-foreground">{exerciseFeedback.title}</div>
@@ -855,6 +857,8 @@ export default function WorkoutSession() {
                   <p>{exerciseFeedback.caution}</p>
                 </div>
               </div>
+            ) : aiExerciseFeedback.isPending ? (
+              <div className="text-xs text-muted-foreground">운동 구성 피드백을 준비하고 있습니다.</div>
             ) : null}
           </CardContent>
         </Card>

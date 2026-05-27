@@ -602,16 +602,19 @@ export default function FreeWorkoutDialog({
               <div className="space-y-3">
                 {(exerciseSelectionFeedback.isPending || exerciseFeedback) && (
                   <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-primary">
-                      <Sparkles size={14} />
-                      AI 운동 추가 피드백
+                    <div className="mb-2 flex items-center justify-between gap-2 text-xs font-semibold text-primary">
+                      <span className="flex items-center gap-2">
+                        <Sparkles size={14} />
+                        AI 운동 추가 피드백
+                      </span>
+                      {exerciseSelectionFeedback.isPending && (
+                        <span className="flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] text-primary">
+                          <Loader2 size={10} className="animate-spin" />
+                          AI 분석 중
+                        </span>
+                      )}
                     </div>
-                    {exerciseSelectionFeedback.isPending ? (
-                      <div className="space-y-2">
-                        <div className="h-3 skeleton rounded" />
-                        <div className="h-3 w-4/5 skeleton rounded" />
-                      </div>
-                    ) : exerciseFeedback ? (
+                    {exerciseFeedback ? (
                       <div className="space-y-2 text-xs leading-relaxed text-muted-foreground">
                         <p className="font-semibold text-foreground">{exerciseFeedback.title}</p>
                         <p>{exerciseFeedback.fit}</p>
@@ -619,6 +622,8 @@ export default function FreeWorkoutDialog({
                         <p><span className="font-semibold text-foreground">볼륨:</span> {exerciseFeedback.volumeTip}</p>
                         <p><span className="font-semibold text-foreground">주의:</span> {exerciseFeedback.caution}</p>
                       </div>
+                    ) : exerciseSelectionFeedback.isPending ? (
+                      <div className="text-xs text-muted-foreground">운동 구성 피드백을 준비하고 있습니다.</div>
                     ) : null}
                   </div>
                 )}
