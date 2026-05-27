@@ -231,6 +231,10 @@ function normalizeUser<T extends Row | null>(user: T): T {
   };
 }
 
+function aliasValue(row: Row, key: string) {
+  return row[key] ?? row[key.toLowerCase()];
+}
+
 export const db = pgPool ?? mysqlPool ?? sqlite;
 
 const supplementalExercises = [
@@ -801,16 +805,16 @@ export async function getRoutineExercises(routineId: number): Promise<Row[]> {
     routineId,
   )).map((row) => ({
     routineExercise: normalizeRoutineExercise({
-      id: row.re_id,
-      routineId: row.re_routineId,
-      exerciseId: row.re_exerciseId,
-      order: row.re_order,
-      sets: row.re_sets,
-      reps: row.re_reps,
-      weightKg: row.re_weightKg,
-      restSeconds: row.re_restSeconds,
-      setDetails: row.re_setDetails,
-      notes: row.re_notes,
+      id: aliasValue(row, "re_id"),
+      routineId: aliasValue(row, "re_routineId"),
+      exerciseId: aliasValue(row, "re_exerciseId"),
+      order: aliasValue(row, "re_order"),
+      sets: aliasValue(row, "re_sets"),
+      reps: aliasValue(row, "re_reps"),
+      weightKg: aliasValue(row, "re_weightKg"),
+      restSeconds: aliasValue(row, "re_restSeconds"),
+      setDetails: aliasValue(row, "re_setDetails"),
+      notes: aliasValue(row, "re_notes"),
     }),
     exercise: normalizeExercise(row),
   }));
@@ -987,19 +991,19 @@ export async function getWorkoutLogsBySession(sessionId: number): Promise<Row[]>
     sessionId,
   )).map((row) => ({
     log: {
-      id: row.wl_id,
-      sessionId: row.wl_sessionId,
-      exerciseId: row.wl_exerciseId,
-      setNumber: row.wl_setNumber,
-      reps: row.wl_reps,
-      weightKg: row.wl_weightKg,
-      durationSeconds: row.wl_durationSeconds,
-      distanceM: row.wl_distanceM,
-      isWarmup: Boolean(row.wl_isWarmup),
-      rpe: row.wl_rpe,
-      memo: row.wl_memo,
-      notes: row.wl_notes,
-      createdAt: row.wl_createdAt,
+      id: aliasValue(row, "wl_id"),
+      sessionId: aliasValue(row, "wl_sessionId"),
+      exerciseId: aliasValue(row, "wl_exerciseId"),
+      setNumber: aliasValue(row, "wl_setNumber"),
+      reps: aliasValue(row, "wl_reps"),
+      weightKg: aliasValue(row, "wl_weightKg"),
+      durationSeconds: aliasValue(row, "wl_durationSeconds"),
+      distanceM: aliasValue(row, "wl_distanceM"),
+      isWarmup: Boolean(aliasValue(row, "wl_isWarmup")),
+      rpe: aliasValue(row, "wl_rpe"),
+      memo: aliasValue(row, "wl_memo"),
+      notes: aliasValue(row, "wl_notes"),
+      createdAt: aliasValue(row, "wl_createdAt"),
     },
     exercise: normalizeExercise(row),
   }));
@@ -1212,10 +1216,10 @@ export async function getFavorites(userId: number): Promise<Row[]> {
     userId,
   )).map((row) => ({
     fav: {
-      id: row.fav_id,
-      userId: row.fav_userId,
-      exerciseId: row.fav_exerciseId,
-      createdAt: row.fav_createdAt,
+      id: aliasValue(row, "fav_id"),
+      userId: aliasValue(row, "fav_userId"),
+      exerciseId: aliasValue(row, "fav_exerciseId"),
+      createdAt: aliasValue(row, "fav_createdAt"),
     },
     ex: normalizeExercise(row),
   }));

@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import BodyWeightTracker from "@/components/BodyWeightTracker";
 import FreeWorkoutDialog from "@/components/FreeWorkoutDialog";
 import { cn } from "@/lib/utils";
-import { Activity, Calendar, ChevronLeft, ChevronRight, Clock, Dumbbell, LogIn, TrendingUp, Plus, Trash2 } from "lucide-react";
+import { Activity, Calendar, ChevronDown, ChevronLeft, ChevronRight, Clock, Dumbbell, LogIn, TrendingUp, Plus, Trash2 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -201,9 +201,21 @@ function ExerciseProgressItem({ exercise, maxWeight, maxReps, goalData }: any) {
 }
 
 function SessionCard({ session, onDelete }: { session: any; onDelete: (sessionId: number) => void }) {
-  const exerciseCount = new Set(session.logs.map((l: any) => l.log.exerciseId)).size;
-  const strengthLogs = session.logs.filter((l: any) => l.log.reps || l.log.weightKg);
-  const timedLogs = session.logs.filter((l: any) => l.log.durationSeconds);
+  const [expanded, setExpanded] = useState(false);
+  const logs = session.logs ?? [];
+  const exerciseGroups = useMemo(() => {
+    const groups = new Map<number, { exercise: any; logs: any[] }>();
+    for (const item of logs) {
+      const exerciseId = Number(item.log.exerciseId ?? item.exercise?.id);
+      if (!exerciseId) continue;
+      if (!groups.has(exerciseId)) groups.set(exerciseId, { exercise: item.exercise, logs: [] });
+      groups.get(exerciseId)!.logs.push(item);
+    }
+    return Array.from(groups.values());
+  }, [logs]);
+  const exerciseCount = exerciseGroups.length;
+  const strengthLogs = logs.filter((l: any) => l.log.reps || l.log.weightKg);
+  const timedLogs = logs.filter((l: any) => l.log.durationSeconds);
   const computedVolume = strengthLogs.reduce((sum: number, l: any) =>
     sum + (Number(l.log.reps) || 0) * (Number(l.log.weightKg) || 0), 0);
   const totalVolume = Math.max(computedVolume, Number(session.totalVolume) || 0);
@@ -212,20 +224,25 @@ function SessionCard({ session, onDelete }: { session: any; onDelete: (sessionId
   const totalMinutes = Math.round(totalDurationSeconds / 60) || session.durationMinutes || 0;
   const distanceText = totalDistanceM > 0 ? `${(totalDistanceM / 1000).toFixed(totalDistanceM >= 10000 ? 0 : 1)}km` : "-";
   const hasTimedOnly = strengthLogs.length === 0 && (timedLogs.length > 0 || totalMinutes > 0);
-  const uniqueExerciseIds = Array.from(new Set(session.logs.map((l: any) => l.log.exerciseId)));
+  const uniqueExerciseIds = exerciseGroups.map((group) => group.exercise?.id).filter(Boolean);
   // 훅 규칙 위반 방지: map() 내부에서 useQuery 호출 금지
   // goalData는 null로 처리하여 ExerciseProgressItem이 목표 없이 렌더링하도록 함
 
   return (
     <Card className="bg-card border-border hover:border-primary/20 transition-colors">
       <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div>
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <button
+            type="button"
+            className="min-w-0 flex-1 text-left"
+            onClick={() => setExpanded((value) => !value)}
+            aria-expanded={expanded}
+          >
             <div className="font-semibold text-foreground text-sm">{session.name || "운동 세션"}</div>
             <div className="text-xs text-muted-foreground mt-0.5">
-              {new Date(session.startedAt).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric", weekday: "short" })}
+              {getSessionDate(session).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric", weekday: "short" })}
             </div>
-          </div>
+          </button>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs border-border text-muted-foreground">
               <Clock size={9} className="mr-1" />
@@ -235,11 +252,25 @@ function SessionCard({ session, onDelete }: { session: any; onDelete: (sessionId
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => onDelete(session.id)}
+              onClick={(event) => {
+                event.stopPropagation();
+                onDelete(session.id);
+              }}
               title="운동 기록 삭제"
             >
               <Trash2 size={14} />
             </Button>
+            <button
+              type="button"
+              onClick={() => setExpanded((value) => !value)}
+              className="mt-1 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+              aria-label={expanded ? "운동 기록 접기" : "운동 기록 자세히 보기"}
+            >
+              <ChevronDown
+                size={16}
+                className={cn("transition-transform", expanded && "rotate-180")}
+              />
+            </button>
           </div>
         </div>
 
@@ -260,18 +291,32 @@ function SessionCard({ session, onDelete }: { session: any; onDelete: (sessionId
           </div>
         </div>
 
-        {/* Exercise list */}
-        {session.logs.length > 0 && (
+        {exerciseGroups.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {exerciseGroups.slice(0, expanded ? exerciseGroups.length : 4).map(({ exercise, logs: exerciseLogs }, index) => (
+              <Badge key={exercise?.id ?? `${exercise?.nameKo ?? "exercise"}-${index}`} variant="outline" className="border-border text-[10px] text-muted-foreground">
+                {exercise?.nameKo ?? "운동"} {exerciseLogs.length}세트
+              </Badge>
+            ))}
+            {!expanded && exerciseGroups.length > 4 && (
+              <Badge variant="outline" className="border-border text-[10px] text-muted-foreground">
+                +{exerciseGroups.length - 4}
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {/* Exercise detail list */}
+        {expanded && exerciseGroups.length > 0 && (
           <div className="mt-3 space-y-2">
-            {Array.from(new Map(session.logs.map((l: any) => [l.log.exerciseId, l.exercise])).values()).map((ex: any, idx: number) => {
-              const exerciseLogs = session.logs.filter((l: any) => l.log.exerciseId === ex.id);
+            {exerciseGroups.map(({ exercise: ex, logs: exerciseLogs }, index) => {
               const strengthExerciseLogs = exerciseLogs.filter((l: any) => l.log.reps || l.log.weightKg);
               const maxWeight = strengthExerciseLogs.length ? Math.max(...strengthExerciseLogs.map((l: any) => l.log.weightKg || 0)) : 0;
               const maxReps = strengthExerciseLogs.length ? Math.max(...strengthExerciseLogs.map((l: any) => l.log.reps || 0)) : 0;
               const fallbackDurationMinutes = uniqueExerciseIds.length === 1 && strengthExerciseLogs.length === 0 ? totalMinutes : 0;
               return (
                 <ExerciseProgressItem 
-                  key={ex.id}
+                  key={ex?.id ?? `${ex?.nameKo ?? "exercise"}-${index}`}
                   exercise={{ ...ex, logs: exerciseLogs, fallbackDurationMinutes }}
                   maxWeight={maxWeight}
                   maxReps={maxReps}
