@@ -396,7 +396,7 @@ function RecentWorkouts() {
           </Link>
         </div>
 
-        <div className="space-y-2">
+        <div className="grid gap-3">
           {sessions.map((session) => {
             const exerciseNames = Array.from(
               new Map((session.logs || []).map((item: any) => [
@@ -413,7 +413,7 @@ function RecentWorkouts() {
             const totalVolume = Math.max(computedVolume, Number(session.totalVolume) || 0);
             return (
               <Link key={session.id} href={`/history/${session.id}`}>
-                <div className="p-2.5 rounded-lg bg-accent/30 hover:bg-accent/50 transition-colors cursor-pointer border border-border">
+                <div className="min-h-[76px] rounded-xl border border-border bg-accent/30 p-3 transition-colors hover:border-primary/25 hover:bg-accent/50">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="font-semibold text-foreground text-sm">{session.name}</div>
