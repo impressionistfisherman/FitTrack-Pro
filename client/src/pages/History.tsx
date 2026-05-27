@@ -5,11 +5,10 @@ import BodyWeightTracker from "@/components/BodyWeightTracker";
 import FreeWorkoutDialog from "@/components/FreeWorkoutDialog";
 import { cn } from "@/lib/utils";
 import { Activity, Calendar, ChevronLeft, ChevronRight, Clock, Dumbbell, LogIn, TrendingUp, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar
 } from "recharts";
@@ -18,12 +17,39 @@ import { toast } from "sonner";
 const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const MONTHS = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
 
-function WorkoutCalendar({ year, month, sessions }: { year: number; month: number; sessions: any[] }) {
+function toDateKey(date: Date) {
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+}
+
+function getSessionDate(session: any) {
+  return new Date(session.workoutDate ?? session.startedAt ?? session.completedAt);
+}
+
+function getSessionDateKey(session: any) {
+  return toDateKey(getSessionDate(session));
+}
+
+function getMonthDateKey(year: number, month: number, day: number) {
+  return toDateKey(new Date(year, month - 1, day, 12, 0, 0));
+}
+
+function WorkoutCalendar({
+  year,
+  month,
+  sessions,
+  selectedDate,
+  onSelectDate,
+}: {
+  year: number;
+  month: number;
+  sessions: any[];
+  selectedDate: string;
+  onSelectDate: (dateKey: string) => void;
+}) {
   const firstDay = new Date(year, month - 1, 1).getDay();
   const daysInMonth = new Date(year, month, 0).getDate();
-  const workoutDays = new Set(
-    sessions.map((s) => new Date(s.startedAt).getDate())
-  );
+  const workoutDays = new Set(sessions.map((session) => getSessionDate(session).getDate()));
   const today = new Date();
 
   const cells = [];
@@ -47,25 +73,33 @@ function WorkoutCalendar({ year, month, sessions }: { year: number; month: numbe
       <div className="grid grid-cols-7 gap-1">
         {cells.map((day, idx) => {
           if (!day) return <div key={`empty-${idx}`} />;
+          const dateKey = getMonthDateKey(year, month, day);
           const isToday = today.getFullYear() === year && today.getMonth() + 1 === month && today.getDate() === day;
           const hasWorkout = workoutDays.has(day);
+          const isSelected = selectedDate === dateKey;
           return (
-            <div
+            <button
               key={day}
+              type="button"
+              onClick={() => onSelectDate(dateKey)}
               className={cn(
-                "aspect-square flex items-center justify-center rounded-xl text-sm font-medium transition-all relative",
+                "relative flex aspect-square items-center justify-center rounded-xl text-sm font-medium transition-all",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
                 hasWorkout
                   ? "bg-primary text-primary-foreground font-bold"
                   : isToday
                   ? "bg-accent border border-primary/30 text-foreground"
-                  : "text-muted-foreground hover:bg-accent"
+                  : "text-muted-foreground",
+                isSelected && "ring-2 ring-primary/70 ring-offset-2 ring-offset-card",
+                hasWorkout ? "hover:bg-primary/90" : "hover:bg-accent/70"
               )}
+              title={`${dateKey}${hasWorkout ? " 운동 기록 보기" : " 기록 없음"}`}
             >
               {day}
               {hasWorkout && (
                 <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary-foreground rounded-full" />
               )}
-            </div>
+            </button>
           );
         })}
       </div>
@@ -256,6 +290,8 @@ export default function History() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [chartExerciseId, setChartExerciseId] = useState<number | null>(null);
+  const [exerciseSearch, setExerciseSearch] = useState("");
+  const [selectedDate, setSelectedDate] = useState(toDateKey(new Date()));
   const [freeWorkoutOpen, setFreeWorkoutOpen] = useState(false);
 
   const { data: sessions } = trpc.history.calendar.useQuery({ year, month }, { enabled: isAuthenticated });
@@ -288,13 +324,63 @@ export default function History() {
   };
 
   const prevMonth = () => {
-    if (month === 1) { setYear(y => y - 1); setMonth(12); }
-    else setMonth(m => m - 1);
+    const nextYear = month === 1 ? year - 1 : year;
+    const nextMonthValue = month === 1 ? 12 : month - 1;
+    setYear(nextYear);
+    setMonth(nextMonthValue);
+    setSelectedDate(getMonthDateKey(nextYear, nextMonthValue, 1));
   };
   const nextMonth = () => {
-    if (month === 12) { setYear(y => y + 1); setMonth(1); }
-    else setMonth(m => m + 1);
+    const nextYear = month === 12 ? year + 1 : year;
+    const nextMonthValue = month === 12 ? 1 : month + 1;
+    setYear(nextYear);
+    setMonth(nextMonthValue);
+    setSelectedDate(getMonthDateKey(nextYear, nextMonthValue, 1));
   };
+
+  const selectedDateSessions = useMemo(() => {
+    return (sessions ?? [])
+      .filter((session: any) => getSessionDateKey(session) === selectedDate)
+      .sort((a: any, b: any) => getSessionDate(b).getTime() - getSessionDate(a).getTime());
+  }, [sessions, selectedDate]);
+
+  const selectedChartExercise = useMemo(() => {
+    return exercises?.find((exercise: any) => exercise.id === chartExerciseId) ?? null;
+  }, [exercises, chartExerciseId]);
+
+  const filteredExerciseOptions = useMemo(() => {
+    const query = exerciseSearch.trim().toLowerCase();
+    const source = exercises ?? [];
+    const filtered = query
+      ? source.filter((exercise: any) => {
+          const haystack = `${exercise.nameKo ?? ""} ${exercise.name ?? ""}`.toLowerCase();
+          return haystack.includes(query);
+        })
+      : source;
+    return filtered.slice(0, 12);
+  }, [exercises, exerciseSearch]);
+
+  const volumeChartData = useMemo(() => {
+    const buckets = new Map<string, { date: string; sortKey: string; 볼륨: number; 세트: number }>();
+    for (const session of recentWorkouts ?? []) {
+      const sortKey = getSessionDateKey(session);
+      const current = buckets.get(sortKey) ?? {
+        sortKey,
+        date: getSessionDate(session).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" }),
+        볼륨: 0,
+        세트: 0,
+      };
+      const strengthLogs = session.logs.filter((item: any) => item.log.reps || item.log.weightKg);
+      current.볼륨 += strengthLogs.reduce((sum: number, item: any) => sum + (item.log.reps ?? 0) * (item.log.weightKg ?? 0), 0);
+      current.세트 += strengthLogs.length;
+      buckets.set(sortKey, current);
+    }
+
+    return Array.from(buckets.values())
+      .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
+      .slice(-10)
+      .map((item) => ({ ...item, 볼륨: Math.round(item.볼륨) }));
+  }, [recentWorkouts]);
 
   if (loading) {
     return (
@@ -319,16 +405,6 @@ export default function History() {
       </div>
     );
   }
-
-  // Prepare chart data
-  const volumeChartData = recentWorkouts
-    ?.slice(0, 10)
-    .reverse()
-    .map((s: any) => ({
-      date: new Date(s.startedAt).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" }),
-      볼륨: Math.round(s.logs.reduce((sum: number, l: any) => sum + (l.log.reps ?? 0) * (l.log.weightKg ?? 0), 0)),
-      세트: s.logs.length,
-    }));
 
   const progressChartData = exerciseProgress
     ?.slice()
@@ -377,12 +453,42 @@ export default function History() {
                   <ChevronRight size={18} />
                 </button>
               </div>
-              <WorkoutCalendar year={year} month={month} sessions={sessions || []} />
+              <WorkoutCalendar
+                year={year}
+                month={month}
+                sessions={sessions || []}
+                selectedDate={selectedDate}
+                onSelectDate={setSelectedDate}
+              />
               <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <div className="w-3 h-3 rounded-sm bg-primary" />
                   운동한 날 ({sessions?.length || 0}회)
                 </div>
+              </div>
+              <div className="mt-4 rounded-xl border border-border bg-accent/20 p-3">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">
+                      {new Date(`${selectedDate}T12:00:00`).toLocaleDateString("ko-KR", { month: "long", day: "numeric", weekday: "short" })}
+                    </div>
+                    <div className="text-xs text-muted-foreground">선택한 날짜 운동 기록</div>
+                  </div>
+                  <Badge variant="outline" className="border-border text-muted-foreground">
+                    {selectedDateSessions.length}개
+                  </Badge>
+                </div>
+                {selectedDateSessions.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedDateSessions.map((session: any) => (
+                      <SessionCard key={session.id} session={session} onDelete={handleDeleteSession} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-dashed border-border px-3 py-5 text-center text-sm text-muted-foreground">
+                    이 날짜에는 운동 기록이 없습니다.
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -422,23 +528,39 @@ export default function History() {
             <CardContent className="p-5">
               <div className="flex items-center gap-2 mb-3">
                 <Activity size={16} className="text-primary" />
-                <span className="font-semibold text-foreground text-sm">운동별 무게 진행</span>
+                <span className="font-semibold text-foreground text-sm">운동별 무게 추이</span>
               </div>
-              <Select
-                value={chartExerciseId ? chartExerciseId.toString() : ""}
-                onValueChange={(v) => v && setChartExerciseId(parseInt(v))}
-              >
-                <SelectTrigger className="bg-accent border-border text-foreground text-sm mb-3">
-                  <SelectValue placeholder="운동 선택..." />
-                </SelectTrigger>
-                <SelectContent className="bg-card border-border max-h-60">
-                  {exercises?.map((ex) => (
-                    <SelectItem key={ex.id} value={ex.id.toString()} className="text-foreground text-sm">
-                      {ex.nameKo}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="mb-3 space-y-2">
+                <input
+                  value={exerciseSearch}
+                  onChange={(event) => setExerciseSearch(event.target.value)}
+                  placeholder={selectedChartExercise ? selectedChartExercise.nameKo : "운동 이름 검색..."}
+                  className="h-10 w-full rounded-lg border border-border bg-accent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/60"
+                />
+                <div className="max-h-44 overflow-y-auto rounded-lg border border-border bg-background/40 p-1">
+                  {filteredExerciseOptions.length > 0 ? filteredExerciseOptions.map((ex: any) => (
+                    <button
+                      key={ex.id}
+                      type="button"
+                      onClick={() => {
+                        setChartExerciseId(ex.id);
+                        setExerciseSearch(ex.nameKo);
+                      }}
+                      className={cn(
+                        "flex w-full min-w-0 items-center justify-between gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors hover:bg-accent",
+                        chartExerciseId === ex.id && "bg-primary/10 text-primary"
+                      )}
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate font-medium">{ex.nameKo}</span>
+                        <span className="block truncate text-xs text-muted-foreground">{ex.name}</span>
+                      </span>
+                    </button>
+                  )) : (
+                    <div className="px-3 py-5 text-center text-sm text-muted-foreground">검색 결과가 없습니다</div>
+                  )}
+                </div>
+              </div>
 
               {progressChartData && progressChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={160}>

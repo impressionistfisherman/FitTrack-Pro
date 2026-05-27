@@ -1780,7 +1780,13 @@ ${exerciseSummary.slice(0, 80).join("\n")}
       .query(async ({ ctx, input }) => {
         const from = new Date(input.year, input.month - 1, 1);
         const to = new Date(input.year, input.month, 0, 23, 59, 59);
-        return await getSessionsInDateRange(ctx.user.id, from, to);
+        const sessions = await getSessionsInDateRange(ctx.user.id, from, to);
+        const result: any[] = [];
+        for (const session of sessions) {
+          const logs = await getWorkoutLogsBySession(session.id);
+          result.push({ ...session, logs });
+        }
+        return result;
       }),
 
     exerciseProgress: protectedProcedure

@@ -63,16 +63,27 @@ function getMet(exercise: any) {
   return 4.5;
 }
 
+function getStrengthMet(item: SelectedExercise) {
+  const filledSets = item.sets.filter((set) => set.reps.trim() || set.weightKg.trim());
+  const volume = filledSets.reduce((sum, set) => sum + (Number(set.weightKg) || 0) * (Number(set.reps) || 0), 0);
+  if (filledSets.length >= 18 || volume >= 18000) return 4.2;
+  if (filledSets.length >= 10 || volume >= 9000) return 3.9;
+  return 3.6;
+}
+
 function estimateExerciseCalories(item: SelectedExercise, bodyWeightKg = 70) {
   const mode = getExerciseInputMode(item.exercise);
+  const minutes = estimateExerciseDuration(item);
+  if (!minutes) return 0;
+
   if (mode === "strength") {
     const filledSets = item.sets.filter((set) => set.reps.trim() || set.weightKg.trim());
     const volume = filledSets.reduce((sum, set) => sum + (Number(set.weightKg) || 0) * (Number(set.reps) || 0), 0);
-    return Math.round(filledSets.length * 7 + volume * 0.008);
+    const metCalories = (getStrengthMet(item) * 3.5 * bodyWeightKg / 200) * minutes;
+    const volumeBonus = Math.min(80, volume * 0.002);
+    return Math.round(metCalories * intensityMultiplier[item.intensity] + volumeBonus);
   }
 
-  const minutes = Number(item.durationMinutes) || 0;
-  if (!minutes) return 0;
   const met = getMet(item.exercise) * intensityMultiplier[item.intensity];
   return Math.round((met * 3.5 * bodyWeightKg / 200) * minutes);
 }
@@ -80,7 +91,7 @@ function estimateExerciseCalories(item: SelectedExercise, bodyWeightKg = 70) {
 function estimateExerciseDuration(item: SelectedExercise) {
   const mode = getExerciseInputMode(item.exercise);
   if (mode === "strength") {
-    return Math.ceil(item.sets.filter((set) => set.reps.trim() || set.weightKg.trim()).length * 2.5);
+    return Math.ceil(item.sets.filter((set) => set.reps.trim() || set.weightKg.trim()).length * 4);
   }
   return Number(item.durationMinutes) || 0;
 }

@@ -44,8 +44,11 @@ function isTimedExercise(exercise: any) {
     || exercise?.category === "flexibility";
 }
 
-function estimateCalories(durationMinutes: number, completedSets: number) {
-  return Math.max(0, Math.round(durationMinutes * 5.5 + completedSets * 2));
+function estimateWorkoutCalories(durationMinutes: number, completedSets: number, bodyWeightKg = 70) {
+  if (!durationMinutes || completedSets <= 0) return 0;
+  const met = completedSets >= 18 ? 4.2 : completedSets >= 10 ? 3.9 : 3.6;
+  const setBonus = Math.min(70, completedSets * 2);
+  return Math.max(0, Math.round((met * 3.5 * bodyWeightKg / 200) * durationMinutes + setBonus));
 }
 
 function TimerDisplay({ startTime }: { startTime: Date }) {
@@ -538,6 +541,7 @@ export default function WorkoutSession() {
 
   const { isActive: wakeLockActive, isSupported: wakeLockSupported, toggle: toggleWakeLock } = useWakeLock(true);
   const { data: session } = trpc.workout.getSession.useQuery({ sessionId: sid });
+  const { data: weights } = trpc.bodyWeight.list.useQuery({ limit: 1 });
   const aiSessionSummary = trpc.workout.aiSessionSummary.useMutation();
   const completeSession = trpc.workout.completeSession.useMutation({
     onSuccess: () => {
@@ -672,7 +676,8 @@ export default function WorkoutSession() {
     s + (ex.inputMode === "duration" ? 0 : ex.sets.filter(set => set.completed).reduce((s2, set) => s2 + set.reps * set.weightKg, 0)), 0);
   const currentDurationMinutes = Math.max(1, Math.floor((Date.now() - startTime.current.getTime()) / 60000));
   const displayDurationMinutes = finishedDuration || currentDurationMinutes;
-  const estimatedCalories = estimateCalories(displayDurationMinutes, completedSets);
+  const bodyWeightKg = weights?.[0]?.weightKg ?? 70;
+  const estimatedCalories = estimateWorkoutCalories(displayDurationMinutes, completedSets, bodyWeightKg);
   const routineAlternatives = routineExercises?.exercises?.map((item: any) => ({
     id: item.ex.id,
     nameKo: item.ex.nameKo,
@@ -691,7 +696,7 @@ export default function WorkoutSession() {
       await saveSessionAsRoutine.mutateAsync({
         sessionId: sid,
         name: newRoutineName.trim() || `${new Date().toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" })} 진행 루틴`,
-        description: `${completedSets}세트 · ${Math.round(totalVolume).toLocaleString()}kg · 예상 ${estimateCalories(durationMinutes, completedSets)}kcal`,
+        description: `${completedSets}세트 · ${Math.round(totalVolume).toLocaleString()}kg · 예상 ${estimateWorkoutCalories(durationMinutes, completedSets, bodyWeightKg)}kcal`,
       });
     }
     completeSession.mutate({ sessionId: sid, durationMinutes, notes });
