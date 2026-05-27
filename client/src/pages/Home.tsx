@@ -398,6 +398,15 @@ function RecentWorkouts() {
 
         <div className="space-y-2">
           {sessions.map((session) => {
+            const exerciseNames = Array.from(
+              new Map((session.logs || []).map((item: any) => [
+                item.log?.exerciseId ?? item.exercise?.id ?? item.exercise?.nameKo,
+                item.exercise?.nameKo ?? item.exercise?.name,
+              ])).values()
+            ).filter(Boolean) as string[];
+            const exerciseSummary = exerciseNames.length
+              ? `${exerciseNames.slice(0, 2).join(", ")}${exerciseNames.length > 2 ? ` 외 ${exerciseNames.length - 2}개` : ""}`
+              : "운동 상세 없음";
             const computedVolume = (session.logs || []).reduce((sum: number, log: any) => (
               sum + ((Number(log.log?.weightKg) || 0) * (Number(log.log?.reps) || 0))
             ), 0);
@@ -408,8 +417,11 @@ function RecentWorkouts() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="font-semibold text-foreground text-sm">{session.name}</div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {new Date(session.startedAt).toLocaleDateString("ko-KR", { month: "short", day: "numeric", weekday: "short" })}
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {new Date(session.workoutDate ?? session.startedAt).toLocaleDateString("ko-KR", { month: "short", day: "numeric", weekday: "short" })}
+                      </div>
+                      <div className="mt-1 max-w-[15rem] truncate text-xs text-muted-foreground/80">
+                        {exerciseSummary}
                       </div>
                     </div>
                     {totalVolume > 0 && (
