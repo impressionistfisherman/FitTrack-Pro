@@ -520,18 +520,26 @@ export default function FreeWorkoutDialog({
               </p>
             </div>
 
-            <div className={cn(
-              "rounded-lg border p-3 transition-colors",
-              captureMessage
-                ? "border-primary/25 bg-primary/5"
-                : "border-dashed border-border bg-accent/20"
-            )}>
+            <label
+              htmlFor={captureInputId}
+              className={cn(
+                "block rounded-lg border p-3 transition-colors",
+                isSaving || isParsingCapture
+                  ? "cursor-not-allowed opacity-70"
+                  : "cursor-pointer hover:border-primary/40 hover:bg-primary/5",
+                captureMessage
+                  ? "border-primary/25 bg-primary/5"
+                  : "border-dashed border-border bg-accent/20"
+              )}
+            >
               <div className="flex items-start gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   {isParsingCapture ? <Loader2 size={17} className="animate-spin" /> : <ImagePlus size={17} />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-foreground">이미지로 추가</div>
+                  <div className="text-sm font-semibold text-foreground">
+                    {isParsingCapture ? "이미지 분석 중" : captureMessage ? "이미지 다시 추가" : "이미지로 추가"}
+                  </div>
                   <div className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
                     운동 기록 화면을 올리면 AI가 운동, 세트, 무게, 횟수를 채워줍니다.
                   </div>
@@ -546,23 +554,14 @@ export default function FreeWorkoutDialog({
                   type="file"
                   accept="image/*"
                   className="hidden"
+                  disabled={isSaving || isParsingCapture}
                   onChange={(event) => {
                     void handleCaptureUpload(event.target.files?.[0]);
                     event.target.value = "";
                   }}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={isSaving || isParsingCapture}
-                  className="shrink-0 border-border"
-                  onClick={() => document.getElementById(captureInputId)?.click()}
-                >
-                  {isParsingCapture ? "분석 중" : captureMessage ? "다시 추가" : "이미지로 추가"}
-                </Button>
               </div>
-            </div>
+            </label>
 
             <div
               ref={exerciseSearchRef}
