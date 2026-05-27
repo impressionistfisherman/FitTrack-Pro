@@ -340,10 +340,14 @@ export default function FreeWorkoutDialog({
         });
       }
 
-      const unmatchedText = result.unmatched.length ? ` · 미매칭 ${result.unmatched.length}개` : "";
-      const confidenceText = result.confidence ? `정확도 ${Math.round(result.confidence * 100)}%` : "분석 완료";
-      setCaptureMessage(`${confidenceText}${unmatchedText}${result.notes ? ` · ${result.notes}` : ""}`);
-      toast.success(`캡처에서 운동 ${parsedItems.length}개를 불러왔습니다.`);
+      const addedCount = parsedItems.filter((item: SelectedExercise) => item.exercise?.id).length;
+      const reviewNotes = [
+        result.confidence ? `정확도 ${Math.round(result.confidence * 100)}%` : "분석 완료",
+        result.unmatched.length ? `미매칭 ${result.unmatched.length}개` : null,
+        "저장 전 무게/횟수 확인",
+      ].filter(Boolean).join(" · ");
+      setCaptureMessage(`${addedCount}개 운동 추가됨 · ${reviewNotes}`);
+      toast.success(`이미지에서 운동 ${addedCount}개를 추가했습니다.`);
     } catch (error) {
       console.error(error);
       toast.error("캡처 분석에 실패했습니다. 더 선명한 이미지로 다시 시도해주세요.");
@@ -506,18 +510,25 @@ export default function FreeWorkoutDialog({
               </p>
             </div>
 
-            <div className="rounded-lg border border-dashed border-border bg-accent/20 p-3">
+            <div className={cn(
+              "rounded-lg border p-3 transition-colors",
+              captureMessage
+                ? "border-primary/25 bg-primary/5"
+                : "border-dashed border-border bg-accent/20"
+            )}>
               <div className="flex items-start gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   {isParsingCapture ? <Loader2 size={17} className="animate-spin" /> : <ImagePlus size={17} />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-foreground">캡처로 자동 입력</div>
+                  <div className="text-sm font-semibold text-foreground">이미지로 추가</div>
                   <div className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
                     운동 기록 화면을 올리면 AI가 운동, 세트, 무게, 횟수를 채워줍니다.
                   </div>
                   {captureMessage && (
-                    <div className="mt-2 line-clamp-2 text-xs text-primary">{captureMessage}</div>
+                    <div className="mt-2 rounded-md bg-background/40 px-2 py-1.5 text-xs leading-relaxed text-primary">
+                      {captureMessage}
+                    </div>
                   )}
                 </div>
                 <input
@@ -538,7 +549,7 @@ export default function FreeWorkoutDialog({
                   className="shrink-0 border-border"
                   onClick={() => document.getElementById(captureInputId)?.click()}
                 >
-                  {isParsingCapture ? "분석 중" : "이미지 선택"}
+                  {isParsingCapture ? "분석 중" : captureMessage ? "다시 추가" : "이미지로 추가"}
                 </Button>
               </div>
             </div>
