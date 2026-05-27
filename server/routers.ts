@@ -995,6 +995,200 @@ async function buildRecommendationExerciseCatalog(input: {
   };
 }
 
+function buildWorkoutCaptureCatalog(exercises: any[]) {
+  return exercises
+    .filter((exercise) => exercise?.id && exercise?.nameKo)
+    .slice(0, 1400)
+    .map((exercise) => {
+      const bodyPart = bodyPartLabels[exercise.bodyPart] ?? exercise.bodyPart ?? "미분류";
+      const equipment = equipmentLabels[exercise.equipment] ?? exercise.equipment ?? "미분류";
+      return `ID:${exercise.id} | ${exercise.nameKo} (${exercise.name ?? ""}) | ${bodyPart} | ${equipment}`;
+    })
+    .join("\n");
+}
+
+function normalizeCaptureName(value: unknown) {
+  return normalizeExerciseName(String(value ?? ""))
+    .replace(/\b(bb|db|ez)\b/g, (token) => ({ bb: "barbell", db: "dumbbell", ez: "ezbar" })[token] ?? token)
+    .replace(/\b(lat|lats)\b/g, "lat")
+    .replace(/\b(pull\s*down|pulldown)\b/g, "pulldown")
+    .replace(/\b(push\s*down|pushdown)\b/g, "pushdown")
+    .replace(/\b(rowing)\b/g, "row")
+    .replace(/랫|렛/g, "랫")
+    .replace(/풀\s*다운|풀다운/g, "풀다운")
+    .replace(/푸쉬/g, "푸시")
+    .replace(/트라이셉스|트라이셉/g, "삼두")
+    .replace(/바이셉스|바이셉/g, "이두")
+    .replace(/덤벨/g, "덤벨")
+    .replace(/바벨/g, "바벨")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function compactCaptureName(value: string) {
+  return value.replace(/\s+/g, "");
+}
+
+function captureTokens(value: string) {
+  return value.split(" ").filter((word) => word.length > 1);
+}
+
+function levenshteinDistance(a: string, b: string) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+
+  const previous = Array.from({ length: b.length + 1 }, (_, index) => index);
+  const current = new Array<number>(b.length + 1);
+
+  for (let i = 1; i <= a.length; i += 1) {
+    current[0] = i;
+    for (let j = 1; j <= b.length; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      current[j] = Math.min(
+        current[j - 1] + 1,
+        previous[j] + 1,
+        previous[j - 1] + cost,
+      );
+    }
+    previous.splice(0, previous.length, ...current);
+  }
+
+  return previous[b.length];
+}
+
+function stringSimilarity(a: string, b: string) {
+  const left = compactCaptureName(a);
+  const right = compactCaptureName(b);
+  if (!left || !right) return 0;
+  const maxLength = Math.max(left.length, right.length);
+  if (maxLength === 0) return 0;
+  return 1 - levenshteinDistance(left, right) / maxLength;
+}
+
+function scoreCaptureExerciseName(query: string, candidate: string) {
+  if (!query || !candidate) return 0;
+  const compactQuery = compactCaptureName(query);
+  const compactCandidate = compactCaptureName(candidate);
+
+  if (query === candidate || compactQuery === compactCandidate) return 120;
+  if (compactQuery.includes(compactCandidate) || compactCandidate.includes(compactQuery)) return 96;
+  if (query.includes(candidate) || candidate.includes(query)) return 90;
+
+  const queryTokens = new Set(captureTokens(query));
+  const candidateTokens = captureTokens(candidate);
+  const overlap = candidateTokens.filter((word) => queryTokens.has(word)).length;
+  const tokenScore = candidateTokens.length ? (overlap / candidateTokens.length) * 70 : 0;
+  const similarityScore = stringSimilarity(query, candidate) * 82;
+  return Math.max(tokenScore, similarityScore);
+}
+
+function getCaptureExerciseAliases(exercise: any) {
+  const names = [
+    exercise.nameKo,
+    exercise.name,
+    `${exercise.nameKo ?? ""} ${exercise.name ?? ""}`,
+  ].filter(Boolean).map(normalizeCaptureName);
+  const aliases = new Set(names);
+
+  for (const name of names) {
+    aliases.add(name.replace(/\b(dumbbell|barbell|machine|cable|bodyweight)\b/g, "").replace(/\s+/g, " ").trim());
+    aliases.add(name.replace(/덤벨|바벨|머신|케이블|맨몸/g, "").replace(/\s+/g, " ").trim());
+    aliases.add(name.replace(/\b(v|t|ez)\s*bar\b/g, "$1bar"));
+    aliases.add(name.replace(/v\s*바|t\s*바|ez\s*바/g, (match) => match.replace(/\s+/g, "")));
+  }
+
+  return [...aliases].filter(Boolean);
+}
+
+function findExerciseForCapture(item: any, exercises: any[]) {
+  const directId = Number(item?.exerciseId);
+  if (Number.isFinite(directId) && directId > 0) {
+    const direct = exercises.find((exercise) => exercise.id === directId);
+    if (direct) return direct;
+  }
+
+  const query = normalizeCaptureName(`${item?.nameKo ?? ""} ${item?.name ?? ""}`);
+  if (!query) return null;
+
+  let best: { exercise: any; score: number } | null = null;
+  let secondBestScore = 0;
+  for (const exercise of exercises) {
+    const score = Math.max(...getCaptureExerciseAliases(exercise).map((alias) => scoreCaptureExerciseName(query, alias)));
+    if (!best || score > best.score) {
+      secondBestScore = best?.score ?? 0;
+      best = { exercise, score };
+    } else if (score > secondBestScore) {
+      secondBestScore = score;
+    }
+  }
+
+  if (!best) return null;
+  if (best.score >= 88) return best.exercise;
+  if (best.score >= 58 && best.score - secondBestScore >= 8) return best.exercise;
+  if (best.score >= 48 && secondBestScore < 35) return best.exercise;
+  return null;
+}
+
+function normalizeCaptureMode(mode: unknown, exercise: any): "strength" | "cardio" | "duration" {
+  const rawMode = String(mode ?? "").toLowerCase();
+  if (rawMode === "cardio" || exercise?.category === "cardio" || exercise?.bodyPart === "cardio") return "cardio";
+  if (rawMode === "duration" || exercise?.category === "flexibility" || exercise?.bodyPart === "stretching") return "duration";
+  return "strength";
+}
+
+function normalizeCaptureNumber(value: unknown) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : 0;
+}
+
+function normalizeWorkoutCaptureResult(parsed: any, exercises: any[]) {
+  const parsedExercises = Array.isArray(parsed?.exercises) ? parsed.exercises.slice(0, 30) : [];
+  const matched: any[] = [];
+  const unmatched: string[] = [];
+  const seen = new Set<number>();
+
+  for (const item of parsedExercises) {
+    const exercise = findExerciseForCapture(item, exercises);
+    if (!exercise) {
+      const label = String(item?.nameKo ?? item?.name ?? "").trim();
+      if (label) unmatched.push(label);
+      continue;
+    }
+    if (seen.has(exercise.id)) continue;
+    seen.add(exercise.id);
+
+    const mode = normalizeCaptureMode(item?.mode, exercise);
+    const rawSets = Array.isArray(item?.sets) ? item.sets.slice(0, 30) : [];
+    const sets = rawSets
+      .map((set: any, index: number) => ({
+        setNumber: Number(set?.setNumber) > 0 ? Number(set.setNumber) : index + 1,
+        weightKg: normalizeCaptureNumber(set?.weightKg),
+        reps: normalizeCaptureNumber(set?.reps),
+        durationMinutes: normalizeCaptureNumber(set?.durationMinutes),
+        distanceKm: normalizeCaptureNumber(set?.distanceKm),
+      }))
+      .filter((set: any) => set.weightKg || set.reps || set.durationMinutes || set.distanceKm);
+
+    matched.push({
+      exercise,
+      mode,
+      sets,
+      durationMinutes: normalizeCaptureNumber(item?.durationMinutes) || sets[0]?.durationMinutes || 0,
+      distanceKm: normalizeCaptureNumber(item?.distanceKm) || sets[0]?.distanceKm || 0,
+      intensity: ["low", "moderate", "high"].includes(String(item?.intensity)) ? String(item.intensity) : "moderate",
+    });
+  }
+
+  return {
+    workoutDate: /^\d{4}-\d{2}-\d{2}$/.test(String(parsed?.workoutDate ?? "")) ? String(parsed.workoutDate) : "",
+    confidence: Math.max(0, Math.min(1, Number(parsed?.confidence) || 0)),
+    notes: String(parsed?.notes ?? "").slice(0, 500),
+    exercises: matched,
+    unmatched: unmatched.slice(0, 12),
+  };
+}
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -1717,6 +1911,113 @@ ${exerciseSummary.slice(0, 80).join("\n")}
 
   // ============ AI RECOMMENDATIONS ============
   ai: router({
+    parseWorkoutCapture: protectedProcedure
+      .input(z.object({
+        imageDataUrl: z.string().min(100).max(5_800_000),
+      }))
+      .mutation(async ({ input }) => {
+        if (!input.imageDataUrl.startsWith("data:image/")) {
+          throw new Error("이미지 파일만 분석할 수 있습니다.");
+        }
+
+        const exercises = await getExercises();
+        const catalogText = buildWorkoutCaptureCatalog(exercises);
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: `당신은 운동 기록 스크린샷을 읽어 구조화하는 OCR/운동 기록 정리 도우미입니다.
+이미지에 보이는 실제 운동 기록만 추출하세요. 보이지 않는 운동, 세트, 무게, 횟수는 추측하지 마세요.
+운동명은 아래 운동 DB 후보에서 가장 가까운 ID로 매칭하세요. 확실하지 않으면 exerciseId를 0으로 두세요.
+근력 운동은 세트별 weightKg/reps를 채우고, 유산소/시간형 운동은 durationMinutes/distanceKm를 채우세요.
+날짜가 이미지에 명확히 보이면 YYYY-MM-DD로 반환하고, 없으면 빈 문자열로 반환하세요.
+응답은 반드시 JSON만 반환하세요.`,
+            },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: `운동 DB 후보:
+${catalogText}
+
+반환 규칙:
+- mode는 strength, cardio, duration 중 하나
+- 숫자를 모르면 0
+- 세트 번호는 1부터
+- confidence는 0~1 사이`,
+                },
+                {
+                  type: "image_url",
+                  image_url: { url: input.imageDataUrl },
+                },
+              ],
+            },
+          ],
+          maxTokens: 4096,
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "workout_capture_parse",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  workoutDate: { type: "string" },
+                  confidence: { type: "number" },
+                  notes: { type: "string" },
+                  exercises: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        exerciseId: { type: "number" },
+                        nameKo: { type: "string" },
+                        name: { type: "string" },
+                        mode: { type: "string" },
+                        durationMinutes: { type: "number" },
+                        distanceKm: { type: "number" },
+                        intensity: { type: "string" },
+                        sets: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              setNumber: { type: "number" },
+                              weightKg: { type: "number" },
+                              reps: { type: "number" },
+                              durationMinutes: { type: "number" },
+                              distanceKm: { type: "number" },
+                            },
+                            required: ["setNumber", "weightKg", "reps", "durationMinutes", "distanceKm"],
+                            additionalProperties: false,
+                          },
+                        },
+                      },
+                      required: ["exerciseId", "nameKo", "name", "mode", "durationMinutes", "distanceKm", "intensity", "sets"],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+                required: ["workoutDate", "confidence", "notes", "exercises"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        const rawContent = response.choices[0]?.message?.content;
+        const content = typeof rawContent === "string" ? rawContent : "";
+        let parsed: any = null;
+        try {
+          parsed = content ? JSON.parse(content) : null;
+        } catch {
+          throw new Error("캡처 분석 결과를 읽지 못했습니다. 다른 이미지로 다시 시도해주세요.");
+        }
+
+        return normalizeWorkoutCaptureResult(parsed, exercises);
+      }),
+
     weightRecommendation: protectedProcedure
       .input(z.object({ exerciseId: z.number() }))
       .query(async ({ ctx, input }) => {

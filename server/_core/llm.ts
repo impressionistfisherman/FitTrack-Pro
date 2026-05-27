@@ -122,6 +122,8 @@ type GeminiGenerateContentResponse = {
   };
 };
 
+type GeminiPart = { text: string } | { inlineData: { mimeType: string; data: string } };
+
 const ensureArray = (
   value: MessageContent | MessageContent[]
 ): MessageContent[] => (Array.isArray(value) ? value : [value]);
@@ -290,6 +292,44 @@ function getTextFromMessageContent(content: MessageContent | MessageContent[]) {
     .join("\n");
 }
 
+function getGeminiPartsFromMessageContent(content: MessageContent | MessageContent[]) {
+  const parts: GeminiPart[] = [];
+
+  for (const part of ensureArray(content)) {
+    if (typeof part === "string") {
+      if (part.trim()) parts.push({ text: part });
+      continue;
+    }
+
+    if (part.type === "text") {
+      if (part.text.trim()) parts.push({ text: part.text });
+      continue;
+    }
+
+    if (part.type === "image_url") {
+      const imageUrl = part.image_url.url;
+      const dataUrlMatch = imageUrl.match(/^data:([^;,]+);base64,(.+)$/);
+      if (dataUrlMatch) {
+        parts.push({
+          inlineData: {
+            mimeType: dataUrlMatch[1],
+            data: dataUrlMatch[2],
+          },
+        });
+      } else {
+        parts.push({ text: `[image url: ${imageUrl}]` });
+      }
+      continue;
+    }
+
+    if (part.type === "file_url") {
+      parts.push({ text: `[file url: ${part.file_url.url}]` });
+    }
+  }
+
+  return parts;
+}
+
 function toGeminiSchema(schema: Record<string, unknown>): Record<string, unknown> {
   if (Array.isArray(schema)) return schema.map((item) => typeof item === "object" && item ? toGeminiSchema(item as Record<string, unknown>) : item) as unknown as Record<string, unknown>;
 
@@ -319,20 +359,22 @@ function toGeminiSchema(schema: Record<string, unknown>): Record<string, unknown
 
 function toGeminiContents(messages: Message[]) {
   const systemInstructionParts: Array<{ text: string }> = [];
-  const contents: Array<{ role: "user" | "model"; parts: Array<{ text: string }> }> = [];
+  const contents: Array<{ role: "user" | "model"; parts: GeminiPart[] }> = [];
 
   for (const message of messages) {
-    const text = getTextFromMessageContent(message.content);
-    if (!text) continue;
-
     if (message.role === "system") {
+      const text = getTextFromMessageContent(message.content);
+      if (!text) continue;
       systemInstructionParts.push({ text });
       continue;
     }
 
+    const parts = getGeminiPartsFromMessageContent(message.content);
+    if (!parts.length) continue;
+
     contents.push({
       role: message.role === "assistant" ? "model" : "user",
-      parts: [{ text }],
+      parts,
     });
   }
 

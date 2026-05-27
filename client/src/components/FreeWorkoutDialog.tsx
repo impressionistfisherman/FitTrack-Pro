@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { CalendarDays, ChevronDown, Dumbbell, Loader2, Minus, Plus, Search, Trash2 } from "lucide-react";
+import { CalendarDays, ChevronDown, Dumbbell, ImagePlus, Loader2, Minus, Plus, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -37,6 +37,8 @@ const intensityMultiplier = {
   moderate: 1,
   high: 1.2,
 };
+
+const captureInputId = "free-workout-capture-input";
 
 const sportsNames = new Set(["농구", "축구", "배드민턴", "테니스", "탁구", "배구"]);
 
@@ -120,6 +122,15 @@ function makeSets(count: number, existing: SetEntry[] = []) {
   }));
 }
 
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result ?? ""));
+    reader.onerror = () => reject(reader.error ?? new Error("이미지를 읽지 못했습니다."));
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function FreeWorkoutDialog({
   open,
   onOpenChange,
@@ -132,6 +143,7 @@ export default function FreeWorkoutDialog({
   const [workoutDate, setWorkoutDate] = useState(todayInputValue());
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<SelectedExercise[]>([]);
+  const [captureMessage, setCaptureMessage] = useState("");
 
   const { data: exercises, isLoading: exercisesLoading, isFetching: exercisesFetching } = trpc.exercises.list.useQuery(
     { search: search || undefined },
@@ -144,6 +156,7 @@ export default function FreeWorkoutDialog({
   const startSession = trpc.workout.startSession.useMutation();
   const addLog = trpc.workout.addLog.useMutation();
   const completeSession = trpc.workout.completeSession.useMutation();
+  const parseWorkoutCapture = trpc.ai.parseWorkoutCapture.useMutation();
 
   const filteredExercises = useMemo(() => {
     const selectedIds = new Set(selected.map((item) => item.exercise.id));
@@ -208,6 +221,60 @@ export default function FreeWorkoutDialog({
     setWorkoutDate(todayInputValue());
     setSearch("");
     setSelected([]);
+    setCaptureMessage("");
+  };
+
+  const handleCaptureUpload = async (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("운동 기록 캡처 이미지만 업로드해주세요.");
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      toast.error("이미지는 4MB 이하로 올려주세요.");
+      return;
+    }
+
+    try {
+      const imageDataUrl = await readFileAsDataUrl(file);
+      const result = await parseWorkoutCapture.mutateAsync({ imageDataUrl });
+      const parsedItems: SelectedExercise[] = result.exercises.map((item: any) => {
+        const mode = getExerciseInputMode(item.exercise);
+        const parsedSets = Array.isArray(item.sets) && item.sets.length
+          ? item.sets
+          : [{ setNumber: 1, weightKg: 0, reps: 0 }];
+
+        return {
+          exercise: item.exercise,
+          sets: mode === "strength"
+            ? makeSets(parsedSets.length).map((set, index) => ({
+                ...set,
+                weightKg: parsedSets[index]?.weightKg ? String(parsedSets[index].weightKg) : "",
+                reps: parsedSets[index]?.reps ? String(parsedSets[index].reps) : "",
+              }))
+            : makeSets(1),
+          durationMinutes: mode === "strength"
+            ? ""
+            : String(item.durationMinutes || parsedSets[0]?.durationMinutes || 30),
+          distanceKm: item.distanceKm ? String(item.distanceKm) : "",
+          intensity: item.intensity ?? "moderate",
+        };
+      });
+
+      if (result.workoutDate) setWorkoutDate(result.workoutDate);
+      setSelected((items) => {
+        const existingIds = new Set(items.map((item) => item.exercise.id));
+        return [...items, ...parsedItems.filter((item) => !existingIds.has(item.exercise.id))];
+      });
+
+      const unmatchedText = result.unmatched.length ? ` · 미매칭 ${result.unmatched.length}개` : "";
+      const confidenceText = result.confidence ? `정확도 ${Math.round(result.confidence * 100)}%` : "분석 완료";
+      setCaptureMessage(`${confidenceText}${unmatchedText}${result.notes ? ` · ${result.notes}` : ""}`);
+      toast.success(`캡처에서 운동 ${parsedItems.length}개를 불러왔습니다.`);
+    } catch (error) {
+      console.error(error);
+      toast.error("캡처 분석에 실패했습니다. 더 선명한 이미지로 다시 시도해주세요.");
+    }
   };
 
   const handleComplete = async () => {
@@ -270,6 +337,7 @@ export default function FreeWorkoutDialog({
   };
 
   const isSaving = startSession.isPending || addLog.isPending || completeSession.isPending;
+  const isParsingCapture = parseWorkoutCapture.isPending;
   const bodyWeightKg = weights?.[0]?.weightKg ?? 70;
   const totalCalories = selected.reduce((sum, item) => sum + estimateExerciseCalories(item, bodyWeightKg), 0);
   const totalDuration = selected.reduce((sum, item) => sum + estimateExerciseDuration(item), 0);
@@ -328,6 +396,43 @@ export default function FreeWorkoutDialog({
                   />
                 </PopoverContent>
               </Popover>
+            </div>
+
+            <div className="rounded-lg border border-dashed border-border bg-accent/20 p-3">
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  {isParsingCapture ? <Loader2 size={17} className="animate-spin" /> : <ImagePlus size={17} />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold text-foreground">캡처로 자동 입력</div>
+                  <div className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                    운동 기록 화면을 올리면 AI가 운동, 세트, 무게, 횟수를 채워줍니다.
+                  </div>
+                  {captureMessage && (
+                    <div className="mt-2 line-clamp-2 text-xs text-primary">{captureMessage}</div>
+                  )}
+                </div>
+                <input
+                  id={captureInputId}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(event) => {
+                    void handleCaptureUpload(event.target.files?.[0]);
+                    event.target.value = "";
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isSaving || isParsingCapture}
+                  className="shrink-0 border-border"
+                  onClick={() => document.getElementById(captureInputId)?.click()}
+                >
+                  {isParsingCapture ? "분석 중" : "이미지 선택"}
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-1.5">
@@ -550,10 +655,10 @@ export default function FreeWorkoutDialog({
             </div>
           ) : <div />}
           <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving} className="h-10 min-w-0">
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving || isParsingCapture} className="h-10 min-w-0">
               취소
             </Button>
-            <Button onClick={handleComplete} disabled={isSaving || !canSave} className="h-10 min-w-0">
+            <Button onClick={handleComplete} disabled={isSaving || isParsingCapture || !canSave} className="h-10 min-w-0">
               {isSaving ? "저장 중..." : "운동 기록 저장"}
             </Button>
           </div>
