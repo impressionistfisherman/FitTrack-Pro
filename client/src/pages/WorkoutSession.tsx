@@ -37,6 +37,15 @@ interface ExerciseEntry {
   inputMode?: "strength" | "duration";
 }
 
+interface ExerciseAiFeedback {
+  title: string;
+  fit: string;
+  orderTip: string;
+  volumeTip: string;
+  caution: string;
+  source?: "ai" | "fallback";
+}
+
 function isTimedExercise(exercise: any) {
   return exercise?.bodyPart === "cardio"
     || exercise?.category === "cardio"
@@ -542,12 +551,17 @@ export default function WorkoutSession() {
   const [saveAsRoutine, setSaveAsRoutine] = useState(false);
   const [newRoutineName, setNewRoutineName] = useState("");
   const [finishedDuration, setFinishedDuration] = useState(0);
+  const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseAiFeedback | null>(null);
   const { data: prCheckResult } = trpc.pr.check.useQuery({ sessionId: sid }, { enabled: checkPREnabled, retry: false });
 
   const { isActive: wakeLockActive, isSupported: wakeLockSupported, toggle: toggleWakeLock } = useWakeLock(true);
   const { data: session } = trpc.workout.getSession.useQuery({ sessionId: sid });
   const { data: weights } = trpc.bodyWeight.list.useQuery({ limit: 1 });
   const aiSessionSummary = trpc.workout.aiSessionSummary.useMutation();
+  const aiExerciseFeedback = trpc.workout.aiExerciseFeedback.useMutation({
+    onSuccess: (data) => setExerciseFeedback(data as ExerciseAiFeedback),
+    onError: () => toast.error("AI 운동 피드백을 불러오지 못했습니다."),
+  });
   const completeSession = trpc.workout.completeSession.useMutation({
     onSuccess: () => {
       // PR 확인을 위해 쉼리 스스템 단계로 전환
@@ -670,6 +684,12 @@ export default function WorkoutSession() {
       expanded: true,
     }]);
     toast.success(`${ex.nameKo}을(를) 세션에 추가했습니다.`);
+    setExerciseFeedback(null);
+    aiExerciseFeedback.mutate({
+      sessionId: sid,
+      exerciseId: ex.id,
+      currentExerciseIds: [...exercises.map((entry) => entry.exerciseId), ex.id],
+    });
     return true;
   };
 
@@ -795,6 +815,50 @@ export default function WorkoutSession() {
           )}
         </CardContent>
       </Card>
+
+      {(aiExerciseFeedback.isPending || exerciseFeedback) && (
+        <Card className="bg-primary/5 border-primary/20 mb-4">
+          <CardContent className="p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Sparkles size={16} className="text-primary" />
+                <h2 className="text-sm font-semibold text-foreground">AI 운동 추가 피드백</h2>
+              </div>
+              {exerciseFeedback?.source === "fallback" && (
+                <span className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
+                  기본 피드백
+                </span>
+              )}
+            </div>
+            {aiExerciseFeedback.isPending ? (
+              <div className="space-y-2">
+                <div className="h-3 skeleton rounded" />
+                <div className="h-3 w-4/5 skeleton rounded" />
+                <div className="h-3 w-2/3 skeleton rounded" />
+              </div>
+            ) : exerciseFeedback ? (
+              <div className="grid gap-2 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
+                <div className="rounded-lg bg-background/40 p-2">
+                  <div className="mb-1 font-semibold text-foreground">{exerciseFeedback.title}</div>
+                  <p>{exerciseFeedback.fit}</p>
+                </div>
+                <div className="rounded-lg bg-background/40 p-2">
+                  <div className="mb-1 font-semibold text-foreground">순서</div>
+                  <p>{exerciseFeedback.orderTip}</p>
+                </div>
+                <div className="rounded-lg bg-background/40 p-2">
+                  <div className="mb-1 font-semibold text-foreground">볼륨</div>
+                  <p>{exerciseFeedback.volumeTip}</p>
+                </div>
+                <div className="rounded-lg bg-background/40 p-2">
+                  <div className="mb-1 font-semibold text-foreground">주의</div>
+                  <p>{exerciseFeedback.caution}</p>
+                </div>
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+      )}
 
       {/* 운동 블록 */}
       <div className="space-y-3 mb-4">

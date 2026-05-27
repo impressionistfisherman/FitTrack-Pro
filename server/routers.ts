@@ -1660,6 +1660,95 @@ ${exerciseSummary.slice(0, 80).join("\n")}
         }
       }),
 
+    aiExerciseFeedback: protectedProcedure
+      .input(z.object({
+        sessionId: z.number(),
+        exerciseId: z.number(),
+        currentExerciseIds: z.array(z.number()).max(30).default([]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const session = await getWorkoutSessionById(input.sessionId);
+        if (!session || session.userId !== ctx.user.id) throw new Error("Not found");
+
+        const exercise = await getExerciseById(input.exerciseId);
+        if (!exercise) throw new Error("Exercise not found");
+
+        const currentExercises = (
+          await Promise.all(input.currentExerciseIds.map((id) => getExerciseById(id)))
+        ).filter(Boolean) as any[];
+        const goals = await getUserGoals(ctx.user.id);
+        const goal = await getUserGoal(ctx.user.id);
+        const experienceLevel = await getUserPreference(ctx.user.id, "experienceLevel") ?? "beginner";
+
+        const targetLabel = bodyPartLabels[String(exercise.bodyPart)] ?? String(exercise.bodyPart ?? "기타");
+        const fallback = {
+          title: `${exercise.nameKo} 추가 피드백`,
+          fit: `${targetLabel} 운동으로 현재 세션에 추가할 수 있습니다.`,
+          orderTip: "복합 운동이면 앞쪽에, 보조/고립 운동이면 메인 운동 뒤에 배치하세요.",
+          volumeTip: "처음 추가하는 운동이면 2~3세트부터 시작하고 컨디션에 따라 늘리세요.",
+          caution: "통증이 있으면 중량보다 자세와 가동 범위를 우선하세요.",
+          source: "fallback" as const,
+        };
+
+        try {
+          const response = await invokeLLM({
+            messages: [
+              {
+                role: "system",
+                content: `당신은 운동 세션 중 새로 추가한 운동에 대해 즉시 피드백하는 퍼스널 트레이너입니다.
+                한국어로 짧고 실용적으로 답하세요.
+                사용자가 방금 추가한 운동이 현재 세션 구성에 맞는지, 어느 순서가 좋은지, 볼륨은 어떻게 시작할지, 주의점만 말하세요.
+                새 운동을 지어내지 말고, 과장하지 마세요.
+                응답은 반드시 JSON 형식으로 해주세요.`,
+              },
+              {
+                role: "user",
+                content: `사용자 목표: ${formatRecommendationGoal(goals, goal)}
+숙련도: ${experienceLevel}
+현재 세션 이름: ${session.name ?? "운동 세션"}
+현재 세션 운동 목록: ${currentExercises.map((item) => `${item.nameKo}(${bodyPartLabels[String(item.bodyPart)] ?? item.bodyPart ?? "기타"})`).join(", ") || "없음"}
+방금 추가한 운동: ${exercise.nameKo} / ${exercise.name}
+방금 추가한 운동 부위: ${targetLabel}
+운동 방식: ${equipmentLabels[String(exercise.equipment)] ?? exercise.equipment ?? "미분류"}
+
+이 운동을 추가한 것에 대한 즉시 피드백을 작성해주세요.`,
+              },
+            ],
+            response_format: {
+              type: "json_schema",
+              json_schema: {
+                name: "exercise_add_feedback",
+                strict: true,
+                schema: {
+                  type: "object",
+                  properties: {
+                    title: { type: "string" },
+                    fit: { type: "string" },
+                    orderTip: { type: "string" },
+                    volumeTip: { type: "string" },
+                    caution: { type: "string" },
+                  },
+                  required: ["title", "fit", "orderTip", "volumeTip", "caution"],
+                  additionalProperties: false,
+                },
+              },
+            },
+          });
+          const rawContent = response.choices[0]?.message?.content;
+          const parsed = typeof rawContent === "string" ? JSON.parse(rawContent) : null;
+          return {
+            title: String(parsed?.title ?? fallback.title),
+            fit: String(parsed?.fit ?? fallback.fit),
+            orderTip: String(parsed?.orderTip ?? fallback.orderTip),
+            volumeTip: String(parsed?.volumeTip ?? fallback.volumeTip),
+            caution: String(parsed?.caution ?? fallback.caution),
+            source: "ai" as const,
+          };
+        } catch {
+          return fallback;
+        }
+      }),
+
     deleteSession: protectedProcedure
       .input(z.object({ sessionId: z.number() }))
       .mutation(async ({ ctx, input }) => {
@@ -2022,6 +2111,84 @@ ${catalogText}
         }
 
         return normalizeWorkoutCaptureResult(parsed, exercises);
+      }),
+
+    exerciseSelectionFeedback: protectedProcedure
+      .input(z.object({
+        exerciseId: z.number(),
+        selectedExerciseIds: z.array(z.number()).max(30).default([]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const exercise = await getExerciseById(input.exerciseId);
+        if (!exercise) throw new Error("Exercise not found");
+        const selectedExercises = (
+          await Promise.all(input.selectedExerciseIds.map((id) => getExerciseById(id)))
+        ).filter(Boolean) as any[];
+        const goals = await getUserGoals(ctx.user.id);
+        const goal = await getUserGoal(ctx.user.id);
+        const experienceLevel = await getUserPreference(ctx.user.id, "experienceLevel") ?? "beginner";
+        const targetLabel = bodyPartLabels[String(exercise.bodyPart)] ?? String(exercise.bodyPart ?? "기타");
+        const fallback = {
+          title: `${exercise.nameKo} 추가 피드백`,
+          fit: `${targetLabel} 운동으로 기록에 추가했습니다. 오늘 같은 부위를 많이 넣었다면 세트 수를 낮춰 시작하세요.`,
+          orderTip: "복합 운동은 앞쪽, 보조/고립 운동은 뒤쪽에 기록하는 흐름이 좋습니다.",
+          volumeTip: "처음 기록하는 운동이면 2~3세트부터 시작하고, 다음 기록에서 점진적으로 늘리세요.",
+          caution: "통증이 있으면 중량보다 자세와 가동 범위를 우선하세요.",
+          source: "fallback" as const,
+        };
+
+        try {
+          const response = await invokeLLM({
+            messages: [
+              {
+                role: "system",
+                content: `당신은 자유 운동 기록에 운동을 추가할 때 즉시 피드백하는 퍼스널 트레이너입니다.
+                한국어로 짧게 답하세요. 지금 추가한 운동이 현재 선택 목록과 목표에 맞는지, 순서, 세트 시작점, 주의점을 알려주세요.
+                응답은 반드시 JSON 형식으로 해주세요.`,
+              },
+              {
+                role: "user",
+                content: `사용자 목표: ${formatRecommendationGoal(goals, goal)}
+숙련도: ${experienceLevel}
+현재 선택된 운동: ${selectedExercises.map((item) => `${item.nameKo}(${bodyPartLabels[String(item.bodyPart)] ?? item.bodyPart ?? "기타"})`).join(", ") || "없음"}
+방금 추가한 운동: ${exercise.nameKo} / ${exercise.name}
+방금 추가한 운동 부위: ${targetLabel}
+운동 방식: ${equipmentLabels[String(exercise.equipment)] ?? exercise.equipment ?? "미분류"}`,
+              },
+            ],
+            response_format: {
+              type: "json_schema",
+              json_schema: {
+                name: "exercise_selection_feedback",
+                strict: true,
+                schema: {
+                  type: "object",
+                  properties: {
+                    title: { type: "string" },
+                    fit: { type: "string" },
+                    orderTip: { type: "string" },
+                    volumeTip: { type: "string" },
+                    caution: { type: "string" },
+                  },
+                  required: ["title", "fit", "orderTip", "volumeTip", "caution"],
+                  additionalProperties: false,
+                },
+              },
+            },
+          });
+          const rawContent = response.choices[0]?.message?.content;
+          const parsed = typeof rawContent === "string" ? JSON.parse(rawContent) : null;
+          return {
+            title: String(parsed?.title ?? fallback.title),
+            fit: String(parsed?.fit ?? fallback.fit),
+            orderTip: String(parsed?.orderTip ?? fallback.orderTip),
+            volumeTip: String(parsed?.volumeTip ?? fallback.volumeTip),
+            caution: String(parsed?.caution ?? fallback.caution),
+            source: "ai" as const,
+          };
+        } catch {
+          return fallback;
+        }
       }),
 
     weightRecommendation: protectedProcedure

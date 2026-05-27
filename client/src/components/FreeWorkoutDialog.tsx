@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { CalendarDays, ChevronDown, Dumbbell, ImagePlus, Loader2, Minus, Plus, Search, Trash2 } from "lucide-react";
+import { CalendarDays, ChevronDown, Dumbbell, ImagePlus, Loader2, Minus, Plus, Search, Sparkles, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -24,6 +24,15 @@ type SelectedExercise = {
   durationMinutes: string;
   distanceKm: string;
   intensity: "low" | "moderate" | "high";
+};
+
+type ExerciseAiFeedback = {
+  title: string;
+  fit: string;
+  orderTip: string;
+  volumeTip: string;
+  caution: string;
+  source?: "ai" | "fallback";
 };
 
 const intensityLabels = {
@@ -155,6 +164,7 @@ export default function FreeWorkoutDialog({
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<SelectedExercise[]>([]);
   const [captureMessage, setCaptureMessage] = useState("");
+  const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseAiFeedback | null>(null);
 
   const { data: exercises, isLoading: exercisesLoading, isFetching: exercisesFetching } = trpc.exercises.list.useQuery(
     { search: search || undefined },
@@ -168,6 +178,10 @@ export default function FreeWorkoutDialog({
   const addLog = trpc.workout.addLog.useMutation();
   const completeSession = trpc.workout.completeSession.useMutation();
   const parseWorkoutCapture = trpc.ai.parseWorkoutCapture.useMutation();
+  const exerciseSelectionFeedback = trpc.ai.exerciseSelectionFeedback.useMutation({
+    onSuccess: (data) => setExerciseFeedback(data as ExerciseAiFeedback),
+    onError: () => toast.error("AI 운동 피드백을 불러오지 못했습니다."),
+  });
 
   const filteredExercises = useMemo(() => {
     const selectedIds = new Set(selected.map((item) => item.exercise.id));
@@ -189,6 +203,11 @@ export default function FreeWorkoutDialog({
     }]);
     setSearch("");
     toast.success(`${exercise.nameKo}을(를) 기록 목록에 추가했습니다.`);
+    setExerciseFeedback(null);
+    exerciseSelectionFeedback.mutate({
+      exerciseId: exercise.id,
+      selectedExerciseIds: [...selected.map((item) => item.exercise.id), exercise.id],
+    });
   };
 
   const updateSetCount = (exerciseId: number, count: number) => {
@@ -233,6 +252,7 @@ export default function FreeWorkoutDialog({
     setSelected((items) => {
       const removed = items.find((item) => item.exercise.id === exerciseId);
       if (removed) toast.info(`${removed.exercise.nameKo}을(를) 기록 목록에서 제거했습니다.`);
+      if (removed && exerciseFeedback?.title?.includes(removed.exercise.nameKo)) setExerciseFeedback(null);
       return items.filter((item) => item.exercise.id !== exerciseId);
     });
   };
@@ -242,6 +262,7 @@ export default function FreeWorkoutDialog({
     setSearch("");
     setSelected([]);
     setCaptureMessage("");
+    setExerciseFeedback(null);
   };
 
   const handleCaptureUpload = async (file?: File) => {
@@ -512,6 +533,28 @@ export default function FreeWorkoutDialog({
           {selected.length > 0 && (
             <div className="min-h-0 min-w-0 rounded-xl border border-border bg-accent/10 p-3 lg:min-h-[360px] lg:max-h-[calc(90dvh-11rem)] lg:overflow-y-auto">
               <div className="space-y-3">
+                {(exerciseSelectionFeedback.isPending || exerciseFeedback) && (
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-primary">
+                      <Sparkles size={14} />
+                      AI 운동 추가 피드백
+                    </div>
+                    {exerciseSelectionFeedback.isPending ? (
+                      <div className="space-y-2">
+                        <div className="h-3 skeleton rounded" />
+                        <div className="h-3 w-4/5 skeleton rounded" />
+                      </div>
+                    ) : exerciseFeedback ? (
+                      <div className="space-y-2 text-xs leading-relaxed text-muted-foreground">
+                        <p className="font-semibold text-foreground">{exerciseFeedback.title}</p>
+                        <p>{exerciseFeedback.fit}</p>
+                        <p><span className="font-semibold text-foreground">순서:</span> {exerciseFeedback.orderTip}</p>
+                        <p><span className="font-semibold text-foreground">볼륨:</span> {exerciseFeedback.volumeTip}</p>
+                        <p><span className="font-semibold text-foreground">주의:</span> {exerciseFeedback.caution}</p>
+                      </div>
+                    ) : null}
+                  </div>
+                )}
                 {selected.map((item) => (
                   <div key={item.exercise.id} className="min-w-0 rounded-lg border border-border bg-card/70 p-3">
                     <div className="mb-3 flex items-start gap-2">
