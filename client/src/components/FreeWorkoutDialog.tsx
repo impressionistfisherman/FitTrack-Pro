@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { CalendarDays, ChevronDown, Dumbbell, ImagePlus, Loader2, Minus, Plus, Search, Sparkles, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type SetEntry = {
@@ -163,9 +163,11 @@ export default function FreeWorkoutDialog({
   const [workoutDate, setWorkoutDate] = useState(todayInputValue());
   const [workoutDurationMinutes, setWorkoutDurationMinutes] = useState("");
   const [search, setSearch] = useState("");
+  const [exerciseSearchOpen, setExerciseSearchOpen] = useState(false);
   const [selected, setSelected] = useState<SelectedExercise[]>([]);
   const [captureMessage, setCaptureMessage] = useState("");
   const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseAiFeedback | null>(null);
+  const exerciseSearchRef = useRef<HTMLDivElement | null>(null);
 
   const { data: exercises, isLoading: exercisesLoading, isFetching: exercisesFetching } = trpc.exercises.list.useQuery(
     { search: search || undefined },
@@ -188,6 +190,12 @@ export default function FreeWorkoutDialog({
     const selectedIds = new Set(selected.map((item) => item.exercise.id));
     return (exercises ?? []).filter((exercise) => !selectedIds.has(exercise.id)).slice(0, 20);
   }, [exercises, selected]);
+  const shouldShowExerciseList = exerciseSearchOpen || search.trim().length > 0;
+
+  const closeExerciseSearchIfLeaving = (nextFocus: EventTarget | null) => {
+    if (nextFocus instanceof Node && exerciseSearchRef.current?.contains(nextFocus)) return;
+    setExerciseSearchOpen(false);
+  };
 
   const addExercise = (exercise: any) => {
     if (selected.some((item) => item.exercise.id === exercise.id)) {
@@ -203,6 +211,7 @@ export default function FreeWorkoutDialog({
       intensity: "moderate",
     }]);
     setSearch("");
+    setExerciseSearchOpen(true);
     toast.success(`${exercise.nameKo}을(를) 기록 목록에 추가했습니다.`);
     setExerciseFeedback({
       title: `${exercise.nameKo} 추가 피드백`,
@@ -269,6 +278,7 @@ export default function FreeWorkoutDialog({
     setWorkoutDate(todayInputValue());
     setWorkoutDurationMinutes("");
     setSearch("");
+    setExerciseSearchOpen(false);
     setSelected([]);
     setCaptureMessage("");
     setExerciseFeedback(null);
@@ -554,53 +564,63 @@ export default function FreeWorkoutDialog({
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div
+              ref={exerciseSearchRef}
+              onBlur={(event) => closeExerciseSearchIfLeaving(event.relatedTarget)}
+              className="space-y-1.5"
+            >
               <Label className="text-xs text-muted-foreground">운동 검색</Label>
               <div className="relative">
                 <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={search}
-                  onChange={(event) => setSearch(event.target.value)}
+                  onFocus={() => setExerciseSearchOpen(true)}
+                  onChange={(event) => {
+                    setSearch(event.target.value);
+                    setExerciseSearchOpen(true);
+                  }}
                   placeholder="벤치, 스쿼트..."
                   className="bg-accent border-border text-foreground pl-9"
                 />
               </div>
-            </div>
 
-            <ScrollArea className="h-56 rounded-lg border border-border lg:h-[224px]">
-              <div className="p-2 space-y-1">
-                {exercisesLoading ? (
-                  Array.from({ length: 5 }).map((_, index) => (
-                    <div key={index} className="flex items-center gap-2 rounded-md p-2">
-                      <div className="h-4 w-4 skeleton rounded" />
-                      <div className="min-w-0 flex-1 space-y-1.5">
-                        <div className="h-3.5 w-2/3 skeleton rounded" />
-                        <div className="h-3 w-1/2 skeleton rounded" />
+              {shouldShowExerciseList && (
+                <ScrollArea className="h-56 rounded-lg border border-border lg:h-[224px]">
+                  <div className="p-2 space-y-1">
+                    {exercisesLoading ? (
+                      Array.from({ length: 5 }).map((_, index) => (
+                        <div key={index} className="flex items-center gap-2 rounded-md p-2">
+                          <div className="h-4 w-4 skeleton rounded" />
+                          <div className="min-w-0 flex-1 space-y-1.5">
+                            <div className="h-3.5 w-2/3 skeleton rounded" />
+                            <div className="h-3 w-1/2 skeleton rounded" />
+                          </div>
+                        </div>
+                      ))
+                    ) : filteredExercises.length > 0 ? filteredExercises.map((exercise) => (
+                      <button
+                        key={exercise.id}
+                        type="button"
+                        onClick={() => addExercise(exercise)}
+                        className="w-full flex items-center gap-2 rounded-md p-2 text-left hover:bg-accent"
+                      >
+                        <Dumbbell size={15} className="text-primary shrink-0" />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-medium truncate">{exercise.nameKo}</span>
+                          <span className="block text-xs text-muted-foreground truncate">{exercise.name}</span>
+                        </span>
+                        <Plus size={14} className="ml-auto text-muted-foreground shrink-0" />
+                      </button>
+                    )) : (
+                      <div className="flex h-28 items-center justify-center rounded-md text-center text-sm text-muted-foreground">
+                        검색 결과가 없습니다
                       </div>
-                    </div>
-                  ))
-                ) : filteredExercises.length > 0 ? filteredExercises.map((exercise) => (
-                  <button
-                    key={exercise.id}
-                    type="button"
-                    onClick={() => addExercise(exercise)}
-                    className="w-full flex items-center gap-2 rounded-md p-2 text-left hover:bg-accent"
-                  >
-                    <Dumbbell size={15} className="text-primary shrink-0" />
-                    <span className="min-w-0">
-                      <span className="block text-sm font-medium truncate">{exercise.nameKo}</span>
-                      <span className="block text-xs text-muted-foreground truncate">{exercise.name}</span>
-                    </span>
-                    <Plus size={14} className="ml-auto text-muted-foreground shrink-0" />
-                  </button>
-                )) : (
-                  <div className="flex h-28 items-center justify-center rounded-md text-center text-sm text-muted-foreground">
-                    검색 결과가 없습니다
+                    )}
                   </div>
-                )}
-              </div>
-            </ScrollArea>
-            {exercisesFetching && !exercisesLoading && (
+                </ScrollArea>
+              )}
+            </div>
+            {shouldShowExerciseList && exercisesFetching && !exercisesLoading && (
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Loader2 size={12} className="animate-spin" />
                 목록 업데이트 중
