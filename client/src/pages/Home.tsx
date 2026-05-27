@@ -59,6 +59,7 @@ const bodyPartLabels: Record<string, string> = {
   abs: "복근",
   cardio: "유산소",
   stretching: "스트레칭",
+  full_body: "전신",
 };
 
 function StatCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: string | number; color: string }) {
