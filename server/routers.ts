@@ -1356,6 +1356,116 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    aiSessionSummary: protectedProcedure
+      .input(z.object({ sessionId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const session = await getWorkoutSessionById(input.sessionId);
+        if (!session || session.userId !== ctx.user.id) throw new Error("Not found");
+        const logs = await getWorkoutLogsBySession(input.sessionId);
+        const goals = await getUserGoals(ctx.user.id);
+        const goal = await getUserGoal(ctx.user.id);
+        const experienceLevel = await getUserPreference(ctx.user.id, "experienceLevel") ?? "beginner";
+
+        const exerciseSummary = logs.map((item: any) => {
+          const exercise = item.exercise;
+          const log = item.log;
+          const label = exercise?.nameKo ?? exercise?.name ?? "운동";
+          if (log.durationSeconds) {
+            const minutes = Math.round(log.durationSeconds / 60);
+            const distance = log.distanceM ? `, ${(log.distanceM / 1000).toFixed(1)}km` : "";
+            return `${label}: ${minutes}분${distance}`;
+          }
+          const weight = Number(log.weightKg) || 0;
+          const reps = Number(log.reps) || 0;
+          return `${label}: ${weight ? `${weight}kg x ` : ""}${reps}회`;
+        });
+        const uniqueExercises = Array.from(new Set(logs.map((item: any) => item.exercise?.nameKo ?? item.exercise?.name).filter(Boolean)));
+        const totalStrengthSets = logs.filter((item: any) => !item.log.durationSeconds).length;
+        const totalVolume = logs.reduce((sum: number, item: any) => sum + (Number(item.log.weightKg) || 0) * (Number(item.log.reps) || 0), 0);
+        const timedMinutes = logs.reduce((sum: number, item: any) => sum + Math.round((Number(item.log.durationSeconds) || 0) / 60), 0);
+
+        const fallback = {
+          summary: `${uniqueExercises.length}개 운동을 기록했습니다. 근력 ${totalStrengthSets}세트${timedMinutes ? `, 시간 운동 ${timedMinutes}분` : ""}${totalVolume ? `, 총 볼륨 ${Math.round(totalVolume).toLocaleString()}kg` : ""}입니다.`,
+          highlights: [
+            totalStrengthSets ? `근력 운동 ${totalStrengthSets}세트 완료` : "시간 기반 운동 완료",
+            totalVolume ? `총 볼륨 ${Math.round(totalVolume).toLocaleString()}kg` : `${timedMinutes}분 기록`,
+          ].filter(Boolean).slice(0, 3),
+          advice: "오늘 기록을 기준으로 다음 운동에서는 컨디션이 좋으면 같은 무게에서 1~2회 반복을 먼저 늘려보세요.",
+          nextFocus: "같은 부위는 충분히 회복한 뒤 진행하고, 내일은 피로가 큰 부위를 피해서 구성하세요.",
+          caution: "통증이 있으면 중량보다 자세와 가동 범위를 우선하세요.",
+          source: "fallback" as const,
+        };
+
+        if (!logs.length) return fallback;
+
+        try {
+          const response = await invokeLLM({
+            messages: [
+              {
+                role: "system",
+                content: `당신은 운동 기록을 읽고 짧고 실용적인 피드백을 주는 퍼스널 트레이너입니다.
+                사용자의 당일 운동 기록만 보고 한국어로 답하세요.
+                과장하지 말고, 칭찬 1개, 기록 요약, 다음 운동 팁, 주의점을 짧게 제공합니다.
+                의료 진단처럼 말하지 말고 통증이 있으면 휴식/전문가 상담을 권하세요.
+                응답은 반드시 JSON 형식으로 해주세요.`,
+              },
+              {
+                role: "user",
+                content: `사용자 목표:
+${formatRecommendationGoal(goals, goal)}
+숙련도: ${experienceLevel}
+
+오늘 운동 세션:
+이름: ${session.name ?? "운동 세션"}
+시간: ${session.durationMinutes ?? "미기록"}분
+총 운동 종류: ${uniqueExercises.length}개
+근력 세트: ${totalStrengthSets}세트
+총 볼륨: ${Math.round(totalVolume)}kg
+시간 기반 운동: ${timedMinutes}분
+사용자 메모: ${session.notes ?? "없음"}
+
+운동 상세:
+${exerciseSummary.slice(0, 80).join("\n")}
+
+오늘 운동에 대한 짧은 요약과 다음 운동 조언을 작성해주세요.`,
+              },
+            ],
+            response_format: {
+              type: "json_schema",
+              json_schema: {
+                name: "workout_session_summary",
+                strict: true,
+                schema: {
+                  type: "object",
+                  properties: {
+                    summary: { type: "string", description: "오늘 운동 전체 요약 한두 문장" },
+                    highlights: { type: "array", items: { type: "string" }, description: "잘한 점 또는 핵심 기록 2~3개" },
+                    advice: { type: "string", description: "다음 운동에 적용할 조언" },
+                    nextFocus: { type: "string", description: "다음 운동 추천 방향" },
+                    caution: { type: "string", description: "주의할 점" },
+                  },
+                  required: ["summary", "highlights", "advice", "nextFocus", "caution"],
+                  additionalProperties: false,
+                },
+              },
+            },
+          });
+          const rawContent = response.choices[0]?.message?.content;
+          const content = typeof rawContent === "string" ? rawContent : null;
+          const parsed = content ? JSON.parse(content) : null;
+          return {
+            summary: String(parsed?.summary ?? fallback.summary),
+            highlights: Array.isArray(parsed?.highlights) ? parsed.highlights.slice(0, 4).map(String) : fallback.highlights,
+            advice: String(parsed?.advice ?? fallback.advice),
+            nextFocus: String(parsed?.nextFocus ?? fallback.nextFocus),
+            caution: String(parsed?.caution ?? fallback.caution),
+            source: "ai" as const,
+          };
+        } catch {
+          return fallback;
+        }
+      }),
+
     deleteSession: protectedProcedure
       .input(z.object({ sessionId: z.number() }))
       .mutation(async ({ ctx, input }) => {

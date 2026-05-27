@@ -2,7 +2,7 @@ import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
   Calculator, ChevronDown, ChevronUp, Clock, Dumbbell, MessageSquare,
-  Flame, Minus, MonitorOff, MonitorUp, Plus, RefreshCw, Save, X, CheckCircle, Timer, Trophy
+  Flame, Minus, MonitorOff, MonitorUp, Plus, RefreshCw, Save, Sparkles, X, CheckCircle, Timer, Trophy
 } from "lucide-react";
 import OneRMCalculator from "@/components/OneRMCalculator";
 import WorkoutShareCard from "@/components/WorkoutShareCard";
@@ -538,11 +538,13 @@ export default function WorkoutSession() {
 
   const { isActive: wakeLockActive, isSupported: wakeLockSupported, toggle: toggleWakeLock } = useWakeLock(true);
   const { data: session } = trpc.workout.getSession.useQuery({ sessionId: sid });
+  const aiSessionSummary = trpc.workout.aiSessionSummary.useMutation();
   const completeSession = trpc.workout.completeSession.useMutation({
     onSuccess: () => {
       // PR 확인을 위해 쉼리 스스템 단계로 전환
       setSessionCompleted(true);
       setCheckPREnabled(true);
+      aiSessionSummary.mutate({ sessionId: sid });
       toast.success("운동이 완료되었습니다! 🎉");
     },
     onError: () => toast.error("완료 처리에 실패했습니다."),
@@ -924,7 +926,37 @@ export default function WorkoutSession() {
                 </Button>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-primary">
+                    <Sparkles size={15} />
+                    AI 오늘 운동 피드백
+                  </div>
+                  {aiSessionSummary.isPending ? (
+                    <div className="space-y-2">
+                      <div className="h-3 skeleton rounded" />
+                      <div className="h-3 w-3/4 skeleton rounded" />
+                    </div>
+                  ) : aiSessionSummary.data ? (
+                    <div className="space-y-2 text-xs leading-relaxed text-muted-foreground">
+                      <p className="text-sm text-foreground">{(aiSessionSummary.data as any).summary}</p>
+                      {Array.isArray((aiSessionSummary.data as any).highlights) && (aiSessionSummary.data as any).highlights.length > 0 && (
+                        <ul className="space-y-1">
+                          {(aiSessionSummary.data as any).highlights.map((item: string, index: number) => (
+                            <li key={index} className="rounded-lg bg-background/35 px-2 py-1">• {item}</li>
+                          ))}
+                        </ul>
+                      )}
+                      <p><span className="font-semibold text-foreground">다음 팁:</span> {(aiSessionSummary.data as any).advice}</p>
+                      <p><span className="font-semibold text-foreground">다음 방향:</span> {(aiSessionSummary.data as any).nextFocus}</p>
+                      <p><span className="font-semibold text-foreground">주의:</span> {(aiSessionSummary.data as any).caution}</p>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-muted-foreground">
+                      운동 기록 저장 후 AI 피드백을 준비하고 있습니다.
+                    </div>
+                  )}
+                </div>
                 <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => { window.location.href = "/history"; }}>
                   기록 보러가기
                 </Button>
