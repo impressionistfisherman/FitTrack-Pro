@@ -292,6 +292,7 @@ export default function History() {
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [chartExerciseId, setChartExerciseId] = useState<number | null>(null);
   const [exerciseSearch, setExerciseSearch] = useState("");
+  const [exerciseSearchOpen, setExerciseSearchOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(toDateKey(new Date()));
   const [freeWorkoutOpen, setFreeWorkoutOpen] = useState(false);
 
@@ -360,6 +361,7 @@ export default function History() {
       : source;
     return filtered.slice(0, 12);
   }, [exercises, exerciseSearch]);
+  const shouldShowExerciseOptions = exerciseSearchOpen || (!chartExerciseId && exerciseSearch.trim().length > 0);
 
   const volumeChartData = useMemo(() => {
     const buckets = new Map<string, { date: string; sortKey: string; 볼륨: number; 세트: number }>();
@@ -529,44 +531,56 @@ export default function History() {
         <div className="space-y-4">
           {/* Exercise Progress Chart */}
           <Card className="bg-card border-border">
-            <CardContent className="p-5">
+            <CardContent className={cn(
+              "p-5 transition-all duration-300",
+              !shouldShowExerciseOptions && !chartExerciseId && "min-h-0",
+              shouldShowExerciseOptions && !chartExerciseId && "min-h-[18rem]",
+              chartExerciseId && "min-h-[24rem]"
+            )}>
               <div className="flex items-center gap-2 mb-3">
                 <Activity size={16} className="text-primary" />
                 <span className="font-semibold text-foreground text-sm">운동별 무게 추이</span>
               </div>
-              <div className="mb-3 space-y-2">
+              <div className={cn("space-y-2", (shouldShowExerciseOptions || chartExerciseId) && "mb-3")}>
                 <input
                   value={exerciseSearch}
-                  onChange={(event) => setExerciseSearch(event.target.value)}
+                  onFocus={() => setExerciseSearchOpen(true)}
+                  onChange={(event) => {
+                    setExerciseSearch(event.target.value);
+                    setExerciseSearchOpen(true);
+                  }}
                   placeholder={selectedChartExercise ? selectedChartExercise.nameKo : "운동 이름 검색..."}
                   className="h-10 w-full rounded-lg border border-border bg-accent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/60"
                 />
-                <div className="max-h-44 overflow-y-auto rounded-lg border border-border bg-background/40 p-1">
-                  {filteredExerciseOptions.length > 0 ? filteredExerciseOptions.map((ex: any) => (
-                    <button
-                      key={ex.id}
-                      type="button"
-                      onClick={() => {
-                        setChartExerciseId(ex.id);
-                        setExerciseSearch(ex.nameKo);
-                      }}
-                      className={cn(
-                        "flex w-full min-w-0 items-center justify-between gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors hover:bg-accent",
-                        chartExerciseId === ex.id && "bg-primary/10 text-primary"
-                      )}
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate font-medium">{ex.nameKo}</span>
-                        <span className="block truncate text-xs text-muted-foreground">{ex.name}</span>
-                      </span>
-                    </button>
-                  )) : (
-                    <div className="px-3 py-5 text-center text-sm text-muted-foreground">검색 결과가 없습니다</div>
-                  )}
-                </div>
+                {shouldShowExerciseOptions && (
+                  <div className="max-h-44 overflow-y-auto rounded-lg border border-border bg-background/40 p-1">
+                    {filteredExerciseOptions.length > 0 ? filteredExerciseOptions.map((ex: any) => (
+                      <button
+                        key={ex.id}
+                        type="button"
+                        onClick={() => {
+                          setChartExerciseId(ex.id);
+                          setExerciseSearch(ex.nameKo);
+                          setExerciseSearchOpen(false);
+                        }}
+                        className={cn(
+                          "flex w-full min-w-0 items-center justify-between gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors hover:bg-accent",
+                          chartExerciseId === ex.id && "bg-primary/10 text-primary"
+                        )}
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate font-medium">{ex.nameKo}</span>
+                          <span className="block truncate text-xs text-muted-foreground">{ex.name}</span>
+                        </span>
+                      </button>
+                    )) : (
+                      <div className="px-3 py-5 text-center text-sm text-muted-foreground">검색 결과가 없습니다</div>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {progressChartData && progressChartData.length > 0 ? (
+              {chartExerciseId && progressChartData && progressChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={160}>
                   <BarChart data={progressChartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.22 0.01 260)" />
@@ -576,11 +590,11 @@ export default function History() {
                     <Bar dataKey="최대무게" fill="oklch(0.72 0.18 160)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
-              ) : (
+              ) : chartExerciseId ? (
                 <div className="h-40 flex items-center justify-center text-muted-foreground text-sm">
-                  {chartExerciseId ? "기록이 없습니다" : "운동을 선택하세요"}
+                  기록이 없습니다
                 </div>
-              )}
+              ) : null}
             </CardContent>
           </Card>
 
