@@ -80,7 +80,10 @@ function StatCard({ icon: Icon, label, value, color }: { icon: any; label: strin
 }
 
 function QuickStartCard() {
-  const { data: routines } = trpc.routines.list.useQuery(undefined, { retry: false });
+  const { data: routines, isLoading } = trpc.routines.list.useQuery(undefined, {
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+  });
   const startSession = trpc.workout.startSession.useMutation();
 
   const handleQuickStart = async (routineId?: number) => {
@@ -114,7 +117,13 @@ function QuickStartCard() {
             자유 운동 시작
           </Button>
 
-          {routines?.slice(0, 3).map((routine) => (
+          {isLoading ? (
+            <div className="space-y-1.5">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="h-9 skeleton rounded-lg" />
+              ))}
+            </div>
+          ) : routines?.slice(0, 3).map((routine) => (
             <Button
               key={routine.id}
               className="w-full justify-start gap-3 bg-accent/50 border border-border text-foreground hover:bg-accent h-9"
@@ -130,7 +139,7 @@ function QuickStartCard() {
             </Button>
           ))}
 
-          {(!routines || routines.length === 0) && (
+          {!isLoading && (!routines || routines.length === 0) && (
             <Link href="/routines">
               <Button
                 variant="outline"
@@ -341,7 +350,28 @@ function MonthlyStatsCard() {
 }
 
 function RecentWorkouts() {
-  const { data: sessions } = trpc.history.recentWorkouts.useQuery({ limit: 3 }, { retry: false });
+  const { data: sessions, isLoading } = trpc.history.recentWorkouts.useQuery(
+    { limit: 3 },
+    { retry: false, staleTime: 1000 * 60 * 2 }
+  );
+
+  if (isLoading) {
+    return (
+      <Card className="bg-card border-border">
+        <CardContent className="p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="h-4 w-20 skeleton rounded" />
+            <div className="h-7 w-16 skeleton rounded-md" />
+          </div>
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="h-14 skeleton rounded-lg" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!sessions || sessions.length === 0) {
     return (
@@ -483,10 +513,26 @@ function FeatureCards() {
 
 export default function Home() {
   const { user, isAuthenticated, loading } = useAuth();
-  const { data: stats } = trpc.history.stats.useQuery(undefined, { enabled: isAuthenticated, retry: false });
-  const { data: goal } = trpc.goals.get.useQuery(undefined, { enabled: isAuthenticated, retry: false });
-  const { data: goals } = trpc.goals.list.useQuery(undefined, { enabled: isAuthenticated, retry: false });
-  const { data: preferences } = trpc.preferences.get.useQuery(undefined, { enabled: isAuthenticated, retry: false });
+  const { data: stats, isLoading: statsLoading } = trpc.history.stats.useQuery(undefined, {
+    enabled: isAuthenticated,
+    retry: false,
+    staleTime: 1000 * 60 * 2,
+  });
+  const { data: goal, isLoading: goalLoading } = trpc.goals.get.useQuery(undefined, {
+    enabled: isAuthenticated,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+  });
+  const { data: goals, isLoading: goalsLoading } = trpc.goals.list.useQuery(undefined, {
+    enabled: isAuthenticated,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+  });
+  const { data: preferences, isLoading: preferencesLoading } = trpc.preferences.get.useQuery(undefined, {
+    enabled: isAuthenticated,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+  });
 
   if (loading) {
     return (
@@ -568,6 +614,7 @@ export default function Home() {
   };
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
   const activeGoals = goals?.length ? goals : goal ? [goal] : [];
+  const profileLoading = preferencesLoading || goalLoading || goalsLoading;
   const experienceLabel = preferences?.experienceLevel === "advanced"
     ? "헬창"
     : preferences?.experienceLevel === "intermediate"
@@ -582,15 +629,24 @@ export default function Home() {
           <p className="text-xs text-muted-foreground">{greeting()},</p>
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">{displayName} 님 👋</h1>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            <Badge className="text-xs border border-primary/20 bg-primary/10 text-primary">
-              {experienceLabel}
-            </Badge>
-            {activeGoals.map((item: any) => (
-              <Badge key={item.id ?? item.goal} className={cn("text-xs border", goalColors[item.goal] || goalColors.general)}>
-                <Target size={10} className="mr-1" />
-                {goalLabels[item.goal] || item.goal}
-              </Badge>
-            ))}
+            {profileLoading ? (
+              <>
+                <div className="h-6 w-14 skeleton rounded-full" />
+                <div className="h-6 w-20 skeleton rounded-full" />
+              </>
+            ) : (
+              <>
+                <Badge className="text-xs border border-primary/20 bg-primary/10 text-primary">
+                  {experienceLabel}
+                </Badge>
+                {activeGoals.map((item: any) => (
+                  <Badge key={item.id ?? item.goal} className={cn("text-xs border", goalColors[item.goal] || goalColors.general)}>
+                    <Target size={10} className="mr-1" />
+                    {goalLabels[item.goal] || item.goal}
+                  </Badge>
+                ))}
+              </>
+            )}
           </div>
         </div>
         <Link href="/ai-coach">
@@ -604,7 +660,11 @@ export default function Home() {
       <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
         <div className="min-w-0 space-y-3">
           <WeeklyGoalDashboard />
-          {stats && (
+          {statsLoading ? (
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 xl:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, index) => <div key={index} className="h-[70px] skeleton rounded-xl" />)}
+            </div>
+          ) : stats && (
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 xl:grid-cols-2">
               <StatCard icon={Trophy} label="총 운동" value={`${stats.totalSessions}회`} color="bg-primary/10 text-primary" />
               <StatCard icon={Flame} label="이번 주" value={`${stats.recentSessionCount}회`} color="bg-orange-400/10 text-orange-400" />
