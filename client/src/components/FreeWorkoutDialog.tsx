@@ -80,9 +80,9 @@ function getStrengthMet(item: SelectedExercise) {
   return 3.6;
 }
 
-function estimateExerciseCalories(item: SelectedExercise, bodyWeightKg = 70) {
+function estimateExerciseCalories(item: SelectedExercise, bodyWeightKg = 70, durationOverride?: number) {
   const mode = getExerciseInputMode(item.exercise);
-  const minutes = estimateExerciseDuration(item);
+  const minutes = durationOverride ?? estimateExerciseDuration(item);
   if (!minutes) return 0;
 
   if (mode === "strength") {
@@ -161,6 +161,7 @@ export default function FreeWorkoutDialog({
   onComplete?: () => void;
 }) {
   const [workoutDate, setWorkoutDate] = useState(todayInputValue());
+  const [workoutDurationMinutes, setWorkoutDurationMinutes] = useState("");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<SelectedExercise[]>([]);
   const [captureMessage, setCaptureMessage] = useState("");
@@ -203,7 +204,14 @@ export default function FreeWorkoutDialog({
     }]);
     setSearch("");
     toast.success(`${exercise.nameKo}을(를) 기록 목록에 추가했습니다.`);
-    setExerciseFeedback(null);
+    setExerciseFeedback({
+      title: `${exercise.nameKo} 추가 피드백`,
+      fit: "AI가 현재 운동 구성과 목표를 보고 피드백을 준비하고 있습니다.",
+      orderTip: "잠시만 기다리면 배치 순서 조언이 표시됩니다.",
+      volumeTip: "세트와 횟수를 입력하면 볼륨 판단이 더 정확해집니다.",
+      caution: "통증이 있으면 중량보다 자세를 우선하세요.",
+      source: "fallback",
+    });
     exerciseSelectionFeedback.mutate({
       exerciseId: exercise.id,
       selectedExerciseIds: [...selected.map((item) => item.exercise.id), exercise.id],
@@ -259,6 +267,7 @@ export default function FreeWorkoutDialog({
 
   const reset = () => {
     setWorkoutDate(todayInputValue());
+    setWorkoutDurationMinutes("");
     setSearch("");
     setSelected([]);
     setCaptureMessage("");
@@ -307,6 +316,29 @@ export default function FreeWorkoutDialog({
         const existingIds = new Set(items.map((item) => item.exercise.id));
         return [...items, ...parsedItems.filter((item) => !existingIds.has(item.exercise.id))];
       });
+      const parsedDuration = parsedItems.reduce((sum, item) => sum + estimateExerciseDuration(item), 0);
+      if (parsedDuration > 0 && !workoutDurationMinutes.trim()) {
+        setWorkoutDurationMinutes(String(parsedDuration));
+      }
+
+      const feedbackTarget = parsedItems.find((item) => item.exercise?.id);
+      if (feedbackTarget) {
+        setExerciseFeedback({
+          title: `${feedbackTarget.exercise.nameKo} 추가 피드백`,
+          fit: "캡처로 불러온 운동 구성을 AI가 확인하고 있습니다.",
+          orderTip: "잠시만 기다리면 순서와 구성 조언이 표시됩니다.",
+          volumeTip: "운동 시간을 실제 진행 시간으로 수정하면 칼로리 판단이 더 정확해집니다.",
+          caution: "캡처 인식값은 저장 전에 무게와 횟수를 한 번 확인하세요.",
+          source: "fallback",
+        });
+        exerciseSelectionFeedback.mutate({
+          exerciseId: feedbackTarget.exercise.id,
+          selectedExerciseIds: [
+            ...selected.map((item) => item.exercise.id),
+            ...parsedItems.map((item) => item.exercise.id),
+          ],
+        });
+      }
 
       const unmatchedText = result.unmatched.length ? ` · 미매칭 ${result.unmatched.length}개` : "";
       const confidenceText = result.confidence ? `정확도 ${Math.round(result.confidence * 100)}%` : "분석 완료";
@@ -363,8 +395,8 @@ export default function FreeWorkoutDialog({
 
       await completeSession.mutateAsync({
         sessionId: session.sessionId,
-        durationMinutes: Math.max(0, selected.reduce((sum, item) => sum + estimateExerciseDuration(item), 0)),
-        notes: `예상 소모 칼로리: ${selected.reduce((sum, item) => sum + estimateExerciseCalories(item, weights?.[0]?.weightKg ?? 70), 0)}kcal`,
+        durationMinutes: Math.max(0, enteredWorkoutDuration || selected.reduce((sum, item) => sum + estimateExerciseDuration(item), 0)),
+        notes: `예상 소모 칼로리: ${totalCalories}kcal`,
       });
 
       toast.success("운동 기록을 저장했습니다.");
@@ -380,8 +412,24 @@ export default function FreeWorkoutDialog({
   const isSaving = startSession.isPending || addLog.isPending || completeSession.isPending;
   const isParsingCapture = parseWorkoutCapture.isPending;
   const bodyWeightKg = weights?.[0]?.weightKg ?? 70;
-  const totalCalories = selected.reduce((sum, item) => sum + estimateExerciseCalories(item, bodyWeightKg), 0);
-  const totalDuration = selected.reduce((sum, item) => sum + estimateExerciseDuration(item), 0);
+  const enteredWorkoutDuration = Math.max(0, Number(workoutDurationMinutes) || 0);
+  const estimatedDuration = selected.reduce((sum, item) => sum + estimateExerciseDuration(item), 0);
+  const totalDuration = enteredWorkoutDuration || estimatedDuration;
+  const timedDuration = selected.reduce((sum, item) => (
+    getExerciseInputMode(item.exercise) === "strength" ? sum : sum + estimateExerciseDuration(item)
+  ), 0);
+  const estimatedStrengthDuration = selected.reduce((sum, item) => (
+    getExerciseInputMode(item.exercise) === "strength" ? sum + estimateExerciseDuration(item) : sum
+  ), 0);
+  const actualStrengthDuration = enteredWorkoutDuration
+    ? Math.max(0, enteredWorkoutDuration - timedDuration)
+    : estimatedStrengthDuration;
+  const getAllocatedDuration = (item: SelectedExercise) => {
+    if (getExerciseInputMode(item.exercise) !== "strength") return estimateExerciseDuration(item);
+    if (!actualStrengthDuration || !estimatedStrengthDuration) return estimateExerciseDuration(item);
+    return Math.max(1, Math.round(actualStrengthDuration * (estimateExerciseDuration(item) / estimatedStrengthDuration)));
+  };
+  const totalCalories = selected.reduce((sum, item) => sum + estimateExerciseCalories(item, bodyWeightKg, getAllocatedDuration(item)), 0);
   const totalStrengthSets = selected.reduce((sum, item) => {
     if (getExerciseInputMode(item.exercise) !== "strength") return sum;
     return sum + item.sets.filter((set) => set.reps.trim() || set.weightKg.trim()).length;
@@ -437,6 +485,25 @@ export default function FreeWorkoutDialog({
                   />
                 </PopoverContent>
               </Popover>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">실제 운동 시간</Label>
+              <div className="relative">
+                <Input
+                  inputMode="numeric"
+                  value={workoutDurationMinutes}
+                  onChange={(event) => setWorkoutDurationMinutes(event.target.value.replace(/[^0-9]/g, ""))}
+                  placeholder={estimatedDuration > 0 ? `${estimatedDuration}` : "예: 90"}
+                  className="bg-accent border-border pr-12 text-foreground"
+                />
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                  분
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                입력하면 칼로리와 저장 시간이 이 값 기준으로 계산됩니다.
+              </p>
             </div>
 
             <div className="rounded-lg border border-dashed border-border bg-accent/20 p-3">
@@ -685,9 +752,9 @@ export default function FreeWorkoutDialog({
                     )}
 
                     <div className="mt-3 rounded-lg bg-card/70 px-3 py-2 text-xs text-muted-foreground">
-                      예상 소모: <span className="font-semibold text-primary">{estimateExerciseCalories(item, bodyWeightKg)} kcal</span>
+                      예상 소모: <span className="font-semibold text-primary">{estimateExerciseCalories(item, bodyWeightKg, getAllocatedDuration(item))} kcal</span>
                       <span className="mx-2">·</span>
-                      예상 시간: <span className="font-semibold text-foreground">{estimateExerciseDuration(item)}분</span>
+                      계산 시간: <span className="font-semibold text-foreground">{getAllocatedDuration(item)}분</span>
                     </div>
                   </div>
                 ))}
