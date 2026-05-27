@@ -337,7 +337,7 @@ export default function FreeWorkoutDialog({
         notes: `예상 소모 칼로리: ${selected.reduce((sum, item) => sum + estimateExerciseCalories(item, weights?.[0]?.weightKg ?? 70), 0)}kcal`,
       });
 
-      toast.success("자유 운동 기록을 저장했습니다.");
+      toast.success("운동 기록을 저장했습니다.");
       onComplete?.();
       reset();
       onOpenChange(false);
@@ -370,7 +370,7 @@ export default function FreeWorkoutDialog({
         selected.length > 0 ? "sm:max-w-[min(100vw-2rem,54rem)]" : "sm:max-w-[26rem]"
       )}>
         <DialogHeader className="shrink-0 border-b border-border px-5 py-4">
-          <DialogTitle className="text-foreground">자유 운동 기록</DialogTitle>
+          <DialogTitle className="text-foreground">운동 기록 추가</DialogTitle>
         </DialogHeader>
 
         <div className={cn(

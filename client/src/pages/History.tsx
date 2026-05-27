@@ -204,8 +204,9 @@ function SessionCard({ session, onDelete }: { session: any; onDelete: (sessionId
   const exerciseCount = new Set(session.logs.map((l: any) => l.log.exerciseId)).size;
   const strengthLogs = session.logs.filter((l: any) => l.log.reps || l.log.weightKg);
   const timedLogs = session.logs.filter((l: any) => l.log.durationSeconds);
-  const totalVolume = strengthLogs.reduce((sum: number, l: any) =>
-    sum + (l.log.reps ?? 0) * (l.log.weightKg ?? 0), 0);
+  const computedVolume = strengthLogs.reduce((sum: number, l: any) =>
+    sum + (Number(l.log.reps) || 0) * (Number(l.log.weightKg) || 0), 0);
+  const totalVolume = Math.max(computedVolume, Number(session.totalVolume) || 0);
   const totalDurationSeconds = timedLogs.reduce((sum: number, l: any) => sum + (l.log.durationSeconds ?? 0), 0);
   const totalDistanceM = timedLogs.reduce((sum: number, l: any) => sum + (l.log.distanceM ?? 0), 0);
   const totalMinutes = Math.round(totalDurationSeconds / 60) || session.durationMinutes || 0;
@@ -371,7 +372,10 @@ export default function History() {
         세트: 0,
       };
       const strengthLogs = session.logs.filter((item: any) => item.log.reps || item.log.weightKg);
-      current.볼륨 += strengthLogs.reduce((sum: number, item: any) => sum + (item.log.reps ?? 0) * (item.log.weightKg ?? 0), 0);
+      const computedVolume = strengthLogs.reduce((sum: number, item: any) => (
+        sum + (Number(item.log.reps) || 0) * (Number(item.log.weightKg) || 0)
+      ), 0);
+      current.볼륨 += Math.max(computedVolume, Number(session.totalVolume) || 0);
       current.세트 += strengthLogs.length;
       buckets.set(sortKey, current);
     }
@@ -434,7 +438,7 @@ export default function History() {
             className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
           >
             <Plus size={16} />
-            자유 운동 기록
+            운동 기록 추가
           </Button>
         </div>
       </div>

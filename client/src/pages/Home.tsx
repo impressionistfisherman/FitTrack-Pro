@@ -367,7 +367,10 @@ function RecentWorkouts() {
 
         <div className="space-y-2">
           {sessions.map((session) => {
-            const totalVolume = (session.logs || []).reduce((sum: number, log: any) => sum + ((log.log?.weightKg || 0) * (log.log?.reps || 0)), 0);
+            const computedVolume = (session.logs || []).reduce((sum: number, log: any) => (
+              sum + ((Number(log.log?.weightKg) || 0) * (Number(log.log?.reps) || 0))
+            ), 0);
+            const totalVolume = Math.max(computedVolume, Number(session.totalVolume) || 0);
             return (
               <Link key={session.id} href={`/history/${session.id}`}>
                 <div className="p-2.5 rounded-lg bg-accent/30 hover:bg-accent/50 transition-colors cursor-pointer border border-border">

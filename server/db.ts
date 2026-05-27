@@ -914,9 +914,19 @@ export async function getWorkoutSessionById(id: number): Promise<Row | null> {
   return await get("SELECT * FROM workout_sessions WHERE id = ? LIMIT 1", id);
 }
 
-export async function completeWorkoutSession(sessionId: number, durationMinutes: number, notes?: string): Promise<any> {
+async function recalculateWorkoutSessionVolume(sessionId: number): Promise<number> {
   const logs = await all("SELECT reps, weightKg FROM workout_logs WHERE sessionId = ?", sessionId);
-  const totalVolume = logs.reduce((sum, log) => sum + (log.reps ?? 0) * (log.weightKg ?? 0), 0);
+  const totalVolume = logs.reduce((sum, log) => {
+    const reps = Number(log.reps) || 0;
+    const weightKg = Number(log.weightKg) || 0;
+    return sum + reps * weightKg;
+  }, 0);
+  await run("UPDATE workout_sessions SET totalVolume = ? WHERE id = ?", totalVolume, sessionId);
+  return totalVolume;
+}
+
+export async function completeWorkoutSession(sessionId: number, durationMinutes: number, notes?: string): Promise<any> {
+  const totalVolume = await recalculateWorkoutSessionVolume(sessionId);
   await run(
     `UPDATE workout_sessions
      SET completedAt = ?, durationMinutes = ?, notes = ?, totalVolume = ?
@@ -952,11 +962,14 @@ export async function addWorkoutLog(input: Row): Promise<any> {
     input.notes ?? null,
     new Date().toISOString(),
   );
+  await recalculateWorkoutSessionVolume(input.sessionId);
   return getInsertId(result);
 }
 
 export async function deleteWorkoutLog(logId: number): Promise<any> {
+  const log = await get("SELECT sessionId FROM workout_logs WHERE id = ? LIMIT 1", logId);
   await run("DELETE FROM workout_logs WHERE id = ?", logId);
+  if (log?.sessionId) await recalculateWorkoutSessionVolume(log.sessionId);
 }
 
 export async function getWorkoutLogsBySession(sessionId: number): Promise<Row[]> {
@@ -1014,6 +1027,27 @@ export async function getSessionsInDateRange(userId: number, from: Date, to: Dat
   );
 }
 
+async function getWorkoutVolumeInDateRange(userId: number, from?: Date, to?: Date): Promise<number> {
+  const where = ["ws.userId = ?"];
+  const params: any[] = [userId];
+  if (from) {
+    where.push("COALESCE(ws.workoutDate, ws.startedAt) >= ?");
+    params.push(from.toISOString());
+  }
+  if (to) {
+    where.push("COALESCE(ws.workoutDate, ws.startedAt) <= ?");
+    params.push(to.toISOString());
+  }
+  const row = await get(
+    `SELECT COALESCE(SUM(COALESCE(wl.reps, 0) * COALESCE(wl.weightKg, 0)), 0) AS totalVolume
+     FROM workout_sessions ws
+     LEFT JOIN workout_logs wl ON wl.sessionId = ws.id
+     WHERE ${where.join(" AND ")}`,
+    ...params,
+  );
+  return Number(row?.totalVolume) || 0;
+}
+
 export async function getUserStats(userId: number): Promise<Row> {
   const sessions = await getWorkoutSessionsByUser(userId, 1000);
   const weekStart = getWeekStart(new Date());
@@ -1026,7 +1060,7 @@ export async function getUserStats(userId: number): Promise<Row> {
   return {
     totalSessions: sessions.length,
     recentSessionCount,
-    totalVolume: sessions.reduce((sum, session) => sum + (session.totalVolume ?? 0), 0),
+    totalVolume: await getWorkoutVolumeInDateRange(userId),
     totalDurationMinutes: sessions.reduce((sum, session) => sum + (session.durationMinutes ?? 0), 0),
   };
 }
@@ -1054,7 +1088,7 @@ export async function getWeeklyStats(userId: number): Promise<Row> {
     weeklyTarget,
     completedDays,
     progress: Math.min(100, Math.round((completedDays / weeklyTarget) * 100)),
-    totalVolume: sessions.reduce((sum, session) => sum + (session.totalVolume ?? 0), 0),
+    totalVolume: await getWorkoutVolumeInDateRange(userId, from, to),
     totalDuration: sessions.reduce((sum, session) => sum + (session.durationMinutes ?? 0), 0),
     workoutsByDay,
   };
@@ -1103,8 +1137,24 @@ export async function getMonthlyStats(userId: number, months = 6): Promise<Row[]
     const bucket = buckets.get(key);
     if (bucket) {
       bucket.count += 1;
-      bucket.totalVolume += session.totalVolume ?? 0;
     }
+  }
+
+  const rows = await all(
+    `SELECT
+       COALESCE(ws.workoutDate, ws.startedAt) AS sessionDate,
+       COALESCE(SUM(COALESCE(wl.reps, 0) * COALESCE(wl.weightKg, 0)), 0) AS totalVolume
+     FROM workout_sessions ws
+     LEFT JOIN workout_logs wl ON wl.sessionId = ws.id
+     WHERE ws.userId = ?
+     GROUP BY ws.id, COALESCE(ws.workoutDate, ws.startedAt)`,
+    userId,
+  );
+  for (const row of rows) {
+    const date = new Date(row.sessionDate);
+    const key = `${date.getFullYear()}-${date.getMonth()}`;
+    const bucket = buckets.get(key);
+    if (bucket) bucket.totalVolume += Number(row.totalVolume) || 0;
   }
 
   return Array.from(buckets.values());
