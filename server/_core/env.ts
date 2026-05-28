@@ -17,6 +17,10 @@ export const ENV = {
   appRedirectUrl: process.env.APP_REDIRECT_URL ?? "",
   localAutoLogin: process.env.LOCAL_AUTO_LOGIN === "true",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
+  adminEmails: (process.env.ADMIN_EMAILS ?? "gusdlfboy@gamil.com,gusdlfboy@gmail.com")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean),
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",

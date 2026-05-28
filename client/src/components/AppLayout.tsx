@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
+import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
   Activity, Bot, Calendar, Dumbbell, Home,
@@ -45,8 +46,8 @@ function AppContentSkeleton() {
   );
 }
 
-function NavItem({ href, icon: Icon, label, onClick }: {
-  href: string; icon: any; label: string; onClick?: () => void;
+function NavItem({ href, icon: Icon, label, badge, onClick }: {
+  href: string; icon: any; label: string; badge?: number; onClick?: () => void;
 }) {
   const [location] = useLocation();
   const isActive = href === "/" ? location === "/" : location.startsWith(href);
@@ -60,14 +61,19 @@ function NavItem({ href, icon: Icon, label, onClick }: {
       )}>
         <Icon size={20} className="flex-shrink-0" />
         <span className="font-medium text-sm">{label}</span>
-        {isActive && <span className="ml-auto text-primary text-xs">›</span>}
+        {badge ? (
+          <span className="ml-auto rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
+            {badge > 99 ? "99+" : badge}
+          </span>
+        ) : null}
+        {isActive && <span className={cn("text-primary text-xs", !badge && "ml-auto")}>›</span>}
       </div>
     </Link>
   );
 }
 
-function MobileNavItem({ href, icon: Icon, label }: {
-  href: string; icon: any; label: string;
+function MobileNavItem({ href, icon: Icon, label, badge }: {
+  href: string; icon: any; label: string; badge?: number;
 }) {
   const [location] = useLocation();
   const isActive = href === "/" ? location === "/" : location.startsWith(href);
@@ -77,8 +83,13 @@ function MobileNavItem({ href, icon: Icon, label }: {
         "flex flex-col items-center gap-1 px-3 py-2 rounded-xl",
         isActive ? "text-primary" : "text-muted-foreground"
       )}>
-        <div className={cn("p-1.5 rounded-lg", isActive ? "bg-primary/20" : "")}>
+        <div className={cn("relative p-1.5 rounded-lg", isActive ? "bg-primary/20" : "")}>
           <Icon size={20} />
+          {badge ? (
+            <span className="absolute -right-1 -top-1 min-w-4 rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">
+              {badge > 9 ? "9+" : badge}
+            </span>
+          ) : null}
         </div>
         <span className="text-[10px] font-medium">{label}</span>
       </div>
@@ -89,8 +100,15 @@ function MobileNavItem({ href, icon: Icon, label }: {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { data: pendingApplications } = trpc.admin.trainerApplications.useQuery(
+    { status: "pending" },
+    { enabled: user?.role === "admin" }
+  );
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
-  const visibleNavItems = user?.role === "admin" ? [...navItems, adminNavItem] : navItems;
+  const adminBadge = pendingApplications?.length ?? 0;
+  const visibleNavItems = user?.role === "admin"
+    ? [...navItems, { ...adminNavItem, badge: adminBadge }]
+    : navItems;
 
   return (
     <div className="app-layout-root">

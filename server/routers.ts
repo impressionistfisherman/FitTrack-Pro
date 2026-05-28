@@ -23,6 +23,7 @@ import {
   getExercises,
   getFavorites,
   getClientTrainers,
+  getPendingClientTrainerLinks,
   getLinkedClientWorkoutSessions,
   getMonthlyStats,
   getRoutineById,
@@ -33,9 +34,11 @@ import {
   getUserGoal,
   getUserGoals,
   getTrainerClients,
+  getTrainerClientRequests,
   getTrainerCode,
   getTrainerApplication,
   getTrainerFeedbackForClient,
+  getTrainerFeedbackForPair,
   getUserPreference,
   getUserStats,
   getUserAppRole,
@@ -47,8 +50,10 @@ import {
   ensureTrainerCode,
   isFavorite,
   listTrainerApplications,
+  listApprovedTrainers,
   linkTrainerByCode,
   reviewTrainerApplication,
+  reviewTrainerClientLink,
   removeExerciseFromRoutine,
   submitTrainerApplication,
   unlinkTrainer,
@@ -1417,7 +1422,9 @@ export const appRouter = router({
         code,
         application: await getTrainerApplication(ctx.user.id),
         clients: await getTrainerClients(ctx.user.id),
+        clientRequests: await getTrainerClientRequests(ctx.user.id),
         trainers: await getClientTrainers(ctx.user.id),
+        pendingTrainers: await getPendingClientTrainerLinks(ctx.user.id),
         feedback: await getTrainerFeedbackForClient(ctx.user.id, 10),
       };
     }),
@@ -1451,8 +1458,19 @@ export const appRouter = router({
         await linkTrainerByCode(ctx.user.id, input.code);
         return {
           success: true,
+          status: "pending" as const,
           trainers: await getClientTrainers(ctx.user.id),
         };
+      }),
+    reviewClientRequest: protectedProcedure
+      .input(z.object({ linkId: z.number(), status: z.enum(["active", "removed"]) }))
+      .mutation(async ({ ctx, input }) => {
+        const appRole = await getUserAppRole(ctx.user.id);
+        if (appRole !== "trainer" && ctx.user.role !== "admin") {
+          throw new Error("트레이너만 회원 연결 요청을 처리할 수 있습니다.");
+        }
+        await reviewTrainerClientLink(ctx.user.id, input.linkId, input.status);
+        return { success: true };
       }),
     removeTrainer: protectedProcedure
       .input(z.object({ trainerUserId: z.number() }))
@@ -1464,6 +1482,19 @@ export const appRouter = router({
       .input(z.object({ clientUserId: z.number(), limit: z.number().min(1).max(30).default(10) }))
       .query(async ({ ctx, input }) => {
         return await getLinkedClientWorkoutSessions(ctx.user.id, input.clientUserId, input.limit);
+      }),
+    clientDetail: protectedProcedure
+      .input(z.object({ clientUserId: z.number(), limit: z.number().min(1).max(30).default(10) }))
+      .query(async ({ ctx, input }) => {
+        const sessions = await getLinkedClientWorkoutSessions(ctx.user.id, input.clientUserId, input.limit);
+        const detailedSessions = await Promise.all(sessions.map(async (session: any) => ({
+          ...session,
+          logs: await getWorkoutLogsBySession(session.id),
+        })));
+        return {
+          sessions: detailedSessions,
+          feedback: await getTrainerFeedbackForPair(ctx.user.id, input.clientUserId, 30),
+        };
       }),
     addFeedback: protectedProcedure
       .input(z.object({
@@ -1486,6 +1517,9 @@ export const appRouter = router({
         const status = input?.status && input.status !== "all" ? input.status : undefined;
         return await listTrainerApplications(status);
       }),
+    approvedTrainers: adminProcedure.query(async () => {
+      return await listApprovedTrainers();
+    }),
     reviewTrainerApplication: adminProcedure
       .input(z.object({
         applicationId: z.number(),

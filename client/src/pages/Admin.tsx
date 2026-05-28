@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ShieldCheck, UserCheck, UserX } from "lucide-react";
+import { ShieldCheck, UserCheck, Users, UserX } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -25,10 +25,15 @@ export default function Admin() {
     { status },
     { enabled: user?.role === "admin" }
   );
+  const { data: approvedTrainers, isLoading: approvedTrainersLoading } = trpc.admin.approvedTrainers.useQuery(
+    undefined,
+    { enabled: user?.role === "admin" }
+  );
   const reviewMutation = trpc.admin.reviewTrainerApplication.useMutation({
     onSuccess: (_data, variables) => {
       toast.success(variables.status === "approved" ? "트레이너 신청을 승인했습니다." : "트레이너 신청을 거절했습니다.");
       utils.admin.trainerApplications.invalidate();
+      utils.admin.approvedTrainers.invalidate();
     },
     onError: (error) => toast.error(error.message || "처리에 실패했습니다."),
   });
@@ -61,6 +66,27 @@ export default function Admin() {
       <div className="page-header">
         <h1 className="page-title">관리자</h1>
         <p className="page-description">트레이너 신청과 승인 상태를 관리하세요</p>
+      </div>
+
+      <div className="mb-4 grid gap-3 sm:grid-cols-3">
+        <Card className="border-border bg-card">
+          <CardContent className="p-4">
+            <div className="text-xs text-muted-foreground">현재 필터 신청</div>
+            <div className="mt-1 text-2xl font-bold text-foreground">{applications?.length ?? 0}</div>
+          </CardContent>
+        </Card>
+        <Card className="border-border bg-card">
+          <CardContent className="p-4">
+            <div className="text-xs text-muted-foreground">승인된 트레이너</div>
+            <div className="mt-1 text-2xl font-bold text-primary">{approvedTrainers?.length ?? 0}</div>
+          </CardContent>
+        </Card>
+        <Card className="border-border bg-card">
+          <CardContent className="p-4">
+            <div className="text-xs text-muted-foreground">관리 기준</div>
+            <div className="mt-1 text-sm font-semibold text-foreground">신청 검토 후 코드 발급</div>
+          </CardContent>
+        </Card>
       </div>
 
       <Card className="border-border bg-card">
@@ -180,6 +206,45 @@ export default function Admin() {
                   </div>
                 );
               })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="mt-4 border-border bg-card">
+        <CardContent className="p-5">
+          <div className="mb-4 flex items-center gap-2">
+            <Users size={17} className="text-primary" />
+            <span className="font-semibold text-foreground">승인된 트레이너</span>
+          </div>
+          {approvedTrainersLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 2 }).map((_, index) => (
+                <div key={index} className="h-20 skeleton rounded-xl" />
+              ))}
+            </div>
+          ) : !approvedTrainers?.length ? (
+            <div className="rounded-xl border border-dashed border-border bg-accent/20 p-8 text-center text-sm text-muted-foreground">
+              아직 승인된 트레이너가 없습니다.
+            </div>
+          ) : (
+            <div className="grid gap-3 lg:grid-cols-2">
+              {approvedTrainers.map((trainer: any) => (
+                <div key={trainer.user?.id ?? trainer.applicationId} className="rounded-xl border border-border bg-accent/25 p-4">
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate font-semibold text-foreground">{trainer.displayName || trainer.user?.name}</div>
+                      <div className="truncate text-xs text-muted-foreground">{trainer.user?.email}</div>
+                    </div>
+                    <Badge className="border border-primary/30 bg-primary/10 text-primary">
+                      회원 {trainer.clientCount ?? 0}명
+                    </Badge>
+                  </div>
+                  <div className="rounded-lg bg-background/40 px-3 py-2 font-mono text-sm text-foreground">
+                    {trainer.code ?? "코드 없음"}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </CardContent>

@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { Link } from "wouter";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, LineChart, Line, Legend
@@ -182,11 +183,18 @@ export default function Profile() {
   });
   const registerTrainerMutation = trpc.trainer.registerTrainer.useMutation({
     onSuccess: () => {
-      toast.success("트레이너를 등록했습니다.");
+      toast.success("트레이너에게 연결 요청을 보냈습니다.");
       setTrainerCodeInput("");
       utils.trainer.status.invalidate();
     },
     onError: (error) => toast.error(error.message || "트레이너 등록에 실패했습니다."),
+  });
+  const reviewClientRequestMutation = trpc.trainer.reviewClientRequest.useMutation({
+    onSuccess: (_data, variables) => {
+      toast.success(variables.status === "active" ? "회원 연결을 승인했습니다." : "회원 요청을 거절했습니다.");
+      utils.trainer.status.invalidate();
+    },
+    onError: (error) => toast.error(error.message || "요청 처리에 실패했습니다."),
   });
   const removeTrainerMutation = trpc.trainer.removeTrainer.useMutation({
     onSuccess: () => {
@@ -282,6 +290,8 @@ export default function Profile() {
   };
   const trainerClients = (trainerStatus as any)?.clients ?? [];
   const linkedTrainers = (trainerStatus as any)?.trainers ?? [];
+  const pendingTrainers = (trainerStatus as any)?.pendingTrainers ?? [];
+  const clientRequests = (trainerStatus as any)?.clientRequests ?? [];
   const trainerFeedback = (trainerStatus as any)?.feedback ?? [];
   const appRole = (trainerStatus as any)?.appRole ?? (user as any)?.appRole ?? "user";
   const activeTrainerCode = (trainerStatus as any)?.code ?? "";
@@ -543,6 +553,21 @@ export default function Profile() {
                   ))}
                 </div>
               )}
+
+              {pendingTrainers.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-xs font-semibold text-muted-foreground">승인 대기 중인 트레이너 요청</div>
+                  {pendingTrainers.map((item: any) => (
+                    <div key={item.linkId} className="rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-3">
+                      <div className="truncate text-sm font-semibold text-foreground">{item.trainer?.name}</div>
+                      <div className="truncate text-xs text-muted-foreground">{item.trainer?.email}</div>
+                      <p className="mt-2 text-xs text-yellow-200">
+                        트레이너가 승인하면 운동 기록과 피드백이 공유됩니다.
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -550,6 +575,43 @@ export default function Profile() {
                 <Users size={15} className="text-primary" />
                 담당 회원
               </div>
+              {clientRequests.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-xs font-semibold text-muted-foreground">회원 연결 요청</div>
+                  {clientRequests.map((request: any) => (
+                    <div key={request.linkId} className="rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-3">
+                      <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-semibold text-foreground">{request.user?.name}</div>
+                          <div className="truncate text-xs text-muted-foreground">{request.user?.email}</div>
+                        </div>
+                        <Badge className="w-fit border border-yellow-400/30 bg-yellow-400/10 text-yellow-200">
+                          승인 대기
+                        </Badge>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="border-border bg-background text-muted-foreground"
+                          disabled={reviewClientRequestMutation.isPending}
+                          onClick={() => reviewClientRequestMutation.mutate({ linkId: Number(request.linkId), status: "removed" })}
+                        >
+                          거절
+                        </Button>
+                        <Button
+                          type="button"
+                          className="bg-primary text-primary-foreground"
+                          disabled={reviewClientRequestMutation.isPending}
+                          onClick={() => reviewClientRequestMutation.mutate({ linkId: Number(request.linkId), status: "active" })}
+                        >
+                          승인
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
               {trainerClients.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-border bg-accent/20 p-4 text-sm text-muted-foreground">
                   아직 연결된 회원이 없습니다. 트레이너 코드를 공유하면 이곳에서 회원 기록과 피드백을 관리할 수 있습니다.
@@ -577,7 +639,15 @@ export default function Profile() {
                         className="min-h-20 resize-none bg-background border-border text-foreground"
                         maxLength={1200}
                       />
-                      <div className="mt-2 flex justify-end">
+                      <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:justify-end">
+                        <Button
+                          type="button"
+                          asChild
+                          variant="outline"
+                          className="border-border bg-background text-foreground"
+                        >
+                          <Link href={`/trainer/clients/${clientId}`}>기록 보기</Link>
+                        </Button>
                         <Button
                           type="button"
                           className="bg-primary text-primary-foreground"
