@@ -20,8 +20,6 @@ const navItems = [
   { href: "/ai-coach", icon: Bot, label: "AI 코치" },
 ];
 
-const adminNavItem = { href: "/admin", icon: ShieldCheck, label: "관리자" };
-
 function AppContentSkeleton() {
   return (
     <div className="page-shell page-shell-wide space-y-4" aria-label="앱 정보를 불러오는 중">
@@ -97,6 +95,54 @@ function MobileNavItem({ href, icon: Icon, label, badge }: {
   );
 }
 
+function AdminModeSwitch({ badge }: { badge: number }) {
+  const [location] = useLocation();
+  const isAdminView = location.startsWith("/admin");
+
+  return (
+    <div className="fixed right-3 top-16 z-50 md:right-5 md:top-4">
+      <div className="flex items-center gap-1 rounded-xl border border-border bg-card/95 p-1 shadow-lg shadow-background/20 backdrop-blur-md">
+        <Link href="/">
+          <Button
+            size="sm"
+            variant={isAdminView ? "ghost" : "default"}
+            className={cn(
+              "h-8 gap-1.5 px-3 text-xs",
+              !isAdminView && "bg-primary text-primary-foreground hover:bg-primary/90",
+              isAdminView && "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Home size={14} />
+            사용자
+          </Button>
+        </Link>
+        <Link href="/admin">
+          <Button
+            size="sm"
+            variant={isAdminView ? "default" : "ghost"}
+            className={cn(
+              "h-8 gap-1.5 px-3 text-xs",
+              isAdminView && "bg-primary text-primary-foreground hover:bg-primary/90",
+              !isAdminView && "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <ShieldCheck size={14} />
+            관리자
+            {badge > 0 && (
+              <span className={cn(
+                "ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold",
+                isAdminView ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary text-primary-foreground"
+              )}>
+                {badge > 99 ? "99+" : badge}
+              </span>
+            )}
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -106,9 +152,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   );
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
   const adminBadge = pendingApplications?.length ?? 0;
-  const visibleNavItems = user?.role === "admin"
-    ? [...navItems, { ...adminNavItem, badge: adminBadge }]
-    : navItems;
+  const visibleNavItems = navItems;
 
   return (
     <div className="app-layout-root">
@@ -221,7 +265,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── 메인 콘텐츠 ── */}
       <main className="app-main">
-        <div className="app-main-inner" aria-busy={loading}>
+        {user?.role === "admin" && !loading ? <AdminModeSwitch badge={adminBadge} /> : null}
+        <div className={cn("app-main-inner", user?.role === "admin" && !loading && "pt-14 md:pt-12")} aria-busy={loading}>
           {loading ? <AppContentSkeleton /> : children}
         </div>
       </main>
