@@ -70,12 +70,18 @@ export default function Admin() {
             <h1 className="page-title">관리자</h1>
             <p className="page-description">트레이너 신청과 승인 상태를 관리하세요</p>
           </div>
-          <Button asChild variant="outline" className="w-fit border-border bg-card text-foreground">
-            <Link href="/">
-              <Home size={14} />
-              사용자 화면으로
-            </Link>
-          </Button>
+          <div className="flex w-fit rounded-xl border border-border bg-card p-1">
+            <Button asChild size="sm" variant="ghost" className="h-8 text-muted-foreground hover:text-foreground">
+              <Link href="/">
+                <Home size={14} />
+                사용자
+              </Link>
+            </Button>
+            <Button size="sm" className="h-8 bg-primary text-primary-foreground hover:bg-primary/90">
+              <ShieldCheck size={14} />
+              관리자
+            </Button>
+          </div>
         </div>
       </div>
 

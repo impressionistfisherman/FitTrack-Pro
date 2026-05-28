@@ -12,10 +12,12 @@ import {
   Dumbbell,
   Flame,
   Github,
+  Home as HomeIcon,
   LogIn,
   Play,
   Plus,
   Scale,
+  ShieldCheck,
   Target,
   TrendingDown,
   TrendingUp,
@@ -662,12 +664,30 @@ export default function Home() {
             )}
           </div>
         </div>
-        <Link href="/ai-coach">
-          <Button className="gap-2 bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20" variant="outline">
-            <Zap size={16} />
-            <span className="hidden sm:inline">AI 추천</span>
-          </Button>
-        </Link>
+        <div className="flex flex-wrap justify-end gap-2">
+          {user?.role === "admin" && (
+            <div className="flex rounded-xl border border-border bg-card p-1">
+              <Link href="/">
+                <Button size="sm" className="h-8 bg-primary text-primary-foreground hover:bg-primary/90">
+                  <HomeIcon size={14} />
+                  <span className="hidden sm:inline">사용자</span>
+                </Button>
+              </Link>
+              <Link href="/admin">
+                <Button size="sm" variant="ghost" className="h-8 text-muted-foreground hover:text-foreground">
+                  <ShieldCheck size={14} />
+                  <span className="hidden sm:inline">관리자</span>
+                </Button>
+              </Link>
+            </div>
+          )}
+          <Link href="/ai-coach">
+            <Button className="gap-2 bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20" variant="outline">
+              <Zap size={16} />
+              <span className="hidden sm:inline">AI 추천</span>
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
