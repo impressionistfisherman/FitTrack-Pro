@@ -1,6 +1,6 @@
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import type { User } from "../../drizzle/schema";
-import { getFirstUser } from "../db";
+import { getFirstUser, updateUserRole } from "../db";
 import { ENV } from "./env";
 import { sdk } from "./sdk";
 
@@ -24,6 +24,11 @@ export async function createContext(
 
   if (!user && ENV.localAutoLogin && !ENV.isProduction) {
     user = await getFirstUser();
+  }
+
+  if (user?.email && ENV.adminEmails.includes(user.email.toLowerCase()) && user.role !== "admin") {
+    await updateUserRole(user.id, "admin");
+    user = { ...user, role: "admin" };
   }
 
   return {

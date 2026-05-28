@@ -516,7 +516,11 @@ export async function getFirstUser(): Promise<any> {
 
 export async function upsertUser(input: InsertUser): Promise<any> {
   const existing = await getUserByOpenId(input.openId);
-  const email = typeof input.email === "string" ? input.email.toLowerCase() : "";
+  const email = typeof input.email === "string"
+    ? input.email.toLowerCase()
+    : typeof existing?.email === "string"
+      ? existing.email.toLowerCase()
+      : "";
   const role = ENV.adminEmails.includes(email) ? "admin" : input.role ?? "user";
   if (existing) {
     await run(
@@ -553,6 +557,15 @@ export async function updateUserProfileName(userId: number, name: string): Promi
   await run(
     "UPDATE users SET name = ?, updatedAt = ? WHERE id = ?",
     name,
+    new Date().toISOString(),
+    userId,
+  );
+}
+
+export async function updateUserRole(userId: number, role: "user" | "admin"): Promise<void> {
+  await run(
+    "UPDATE users SET role = ?, updatedAt = ? WHERE id = ?",
+    role,
     new Date().toISOString(),
     userId,
   );
