@@ -151,6 +151,33 @@ function readFileAsDataUrl(file: File) {
   });
 }
 
+function loadImage(dataUrl: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("이미지를 불러오지 못했습니다."));
+    image.src = dataUrl;
+  });
+}
+
+async function prepareCaptureImageDataUrl(file: File) {
+  const dataUrl = await readFileAsDataUrl(file);
+  const image = await loadImage(dataUrl);
+  const maxSide = 1600;
+  const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+  const width = Math.max(1, Math.round(image.width * scale));
+  const height = Math.max(1, Math.round(image.height * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) return dataUrl;
+
+  context.drawImage(image, 0, 0, width, height);
+  return canvas.toDataURL("image/jpeg", 0.84);
+}
+
 export default function FreeWorkoutDialog({
   open,
   onOpenChange,
@@ -290,13 +317,14 @@ export default function FreeWorkoutDialog({
       toast.error("운동 기록 캡처 이미지만 업로드해주세요.");
       return;
     }
-    if (file.size > 4 * 1024 * 1024) {
-      toast.error("이미지는 4MB 이하로 올려주세요.");
+    if (file.size > 12 * 1024 * 1024) {
+      toast.error("이미지는 12MB 이하로 올려주세요.");
       return;
     }
 
     try {
-      const imageDataUrl = await readFileAsDataUrl(file);
+      setCaptureMessage("이미지를 정리해서 분석 중입니다.");
+      const imageDataUrl = await prepareCaptureImageDataUrl(file);
       const result = await parseWorkoutCapture.mutateAsync({ imageDataUrl });
       const parsedItems: SelectedExercise[] = result.exercises.map((item: any) => {
         const mode = getExerciseInputMode(item.exercise);
@@ -357,10 +385,18 @@ export default function FreeWorkoutDialog({
         "저장 전 무게/횟수 확인",
       ].filter(Boolean).join(" · ");
       setCaptureMessage(`${addedCount}개 운동 추가됨 · ${reviewNotes}`);
-      toast.success(`이미지에서 운동 ${addedCount}개를 추가했습니다.`);
+      if (addedCount > 0) {
+        toast.success(`이미지에서 운동 ${addedCount}개를 추가했습니다.`);
+      } else {
+        toast.warning("운동명을 찾지 못했습니다. 더 선명한 캡처나 다른 화면으로 다시 시도해주세요.");
+      }
     } catch (error) {
       console.error(error);
-      toast.error("캡처 분석에 실패했습니다. 더 선명한 이미지로 다시 시도해주세요.");
+      const message = error instanceof Error && error.message
+        ? error.message
+        : "캡처 분석에 실패했습니다. 더 선명한 이미지로 다시 시도해주세요.";
+      setCaptureMessage("분석 실패 · 글자가 선명한 화면으로 다시 시도해주세요.");
+      toast.error(message);
     }
   };
 

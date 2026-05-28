@@ -996,20 +996,9 @@ async function buildRecommendationExerciseCatalog(input: {
   };
 }
 
-function buildWorkoutCaptureCatalog(exercises: any[]) {
-  return exercises
-    .filter((exercise) => exercise?.id && exercise?.nameKo)
-    .slice(0, 1400)
-    .map((exercise) => {
-      const bodyPart = bodyPartLabels[exercise.bodyPart] ?? exercise.bodyPart ?? "미분류";
-      const equipment = equipmentLabels[exercise.equipment] ?? exercise.equipment ?? "미분류";
-      return `ID:${exercise.id} | ${exercise.nameKo} (${exercise.name ?? ""}) | ${bodyPart} | ${equipment}`;
-    })
-    .join("\n");
-}
-
 function normalizeCaptureName(value: unknown) {
   return normalizeExerciseName(String(value ?? ""))
+    .replace(/\b(o)\s*(kg|회|rep|reps)\b/g, "0 $2")
     .replace(/\b(bb|db|ez)\b/g, (token) => ({ bb: "barbell", db: "dumbbell", ez: "ezbar" })[token] ?? token)
     .replace(/\b(lat|lats)\b/g, "lat")
     .replace(/\b(pull\s*down|pulldown)\b/g, "pulldown")
@@ -1020,6 +1009,7 @@ function normalizeCaptureName(value: unknown) {
     .replace(/푸쉬/g, "푸시")
     .replace(/트라이셉스|트라이셉/g, "삼두")
     .replace(/바이셉스|바이셉/g, "이두")
+    .replace(/풀오버/g, "풀 오버")
     .replace(/덤벨/g, "덤벨")
     .replace(/바벨/g, "바벨")
     .replace(/\s+/g, " ")
@@ -1097,6 +1087,10 @@ function getCaptureExerciseAliases(exercise: any) {
     aliases.add(name.replace(/덤벨|바벨|머신|케이블|맨몸/g, "").replace(/\s+/g, " ").trim());
     aliases.add(name.replace(/\b(v|t|ez)\s*bar\b/g, "$1bar"));
     aliases.add(name.replace(/v\s*바|t\s*바|ez\s*바/g, (match) => match.replace(/\s+/g, "")));
+    aliases.add(name.replace(/\b(one|single)\s*arm\b/g, "single arm"));
+    aliases.add(name.replace(/싱글\s*암|원\s*암/g, "싱글 암"));
+    aliases.add(name.replace(/\bhigh\s*pulley\b/g, "cable"));
+    aliases.add(name.replace(/하이\s*풀리/g, "케이블"));
   }
 
   return [...aliases].filter(Boolean);
@@ -2030,15 +2024,16 @@ ${exerciseSummary.slice(0, 80).join("\n")}
         }
 
         const exercises = await getExercises();
-        const catalogText = buildWorkoutCaptureCatalog(exercises);
         const response = await invokeLLM({
           messages: [
             {
               role: "system",
               content: `당신은 운동 기록 스크린샷을 읽어 구조화하는 OCR/운동 기록 정리 도우미입니다.
 이미지에 보이는 실제 운동 기록만 추출하세요. 보이지 않는 운동, 세트, 무게, 횟수는 추측하지 마세요.
-운동명은 아래 운동 DB 후보에서 가장 가까운 ID로 매칭하세요. 확실하지 않으면 exerciseId를 0으로 두세요.
+운동명은 화면에 보이는 이름을 그대로 적고, 한국어/영어가 함께 보이면 둘 다 적으세요.
+exerciseId는 항상 0으로 반환하세요. 서버가 운동 DB와 별도로 매칭합니다.
 근력 운동은 세트별 weightKg/reps를 채우고, 유산소/시간형 운동은 durationMinutes/distanceKm를 채우세요.
+운동 시간이 전체 세션 시간만 보이면 각 운동에 억지로 나누지 말고 notes에 남기세요.
 날짜가 이미지에 명확히 보이면 YYYY-MM-DD로 반환하고, 없으면 빈 문자열로 반환하세요.
 응답은 반드시 JSON만 반환하세요.`,
             },
@@ -2047,14 +2042,12 @@ ${exerciseSummary.slice(0, 80).join("\n")}
               content: [
                 {
                   type: "text",
-                  text: `운동 DB 후보:
-${catalogText}
-
-반환 규칙:
+                  text: `반환 규칙:
 - mode는 strength, cardio, duration 중 하나
 - 숫자를 모르면 0
 - 세트 번호는 1부터
-- confidence는 0~1 사이`,
+- confidence는 0~1 사이
+- 운동명은 추론하지 말고 이미지에 보이는 텍스트 기반으로만 작성`,
                 },
                 {
                   type: "image_url",
@@ -2121,7 +2114,7 @@ ${catalogText}
         try {
           parsed = content ? JSON.parse(content) : null;
         } catch {
-          throw new Error("캡처 분석 결과를 읽지 못했습니다. 다른 이미지로 다시 시도해주세요.");
+          throw new Error("캡처 분석 결과를 읽지 못했습니다. 글자가 선명한 캡처로 다시 시도해주세요.");
         }
 
         return normalizeWorkoutCaptureResult(parsed, exercises);
