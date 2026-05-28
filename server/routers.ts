@@ -1455,6 +1455,10 @@ export const appRouter = router({
     registerTrainer: protectedProcedure
       .input(z.object({ code: z.string().min(4).max(32) }))
       .mutation(async ({ ctx, input }) => {
+        const appRole = await getUserAppRole(ctx.user.id);
+        if (appRole === "trainer") {
+          throw new Error("트레이너 계정은 다른 트레이너를 등록할 수 없습니다.");
+        }
         await linkTrainerByCode(ctx.user.id, input.code);
         return {
           success: true,
