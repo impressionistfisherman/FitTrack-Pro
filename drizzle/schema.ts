@@ -174,7 +174,7 @@ export const trainerClientLinks = mysqlTable("trainer_client_links", {
   id: int("id").autoincrement().primaryKey(),
   trainerUserId: int("trainer_user_id").notNull(),
   clientUserId: int("client_user_id").notNull(),
-  status: mysqlEnum("status", ["active", "removed"]).default("active").notNull(),
+  status: mysqlEnum("status", ["pending", "active", "removed"]).default("pending").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });

@@ -813,7 +813,7 @@ async function ensureTrainerTables() {
       id ${autoId},
       trainer_user_id integer NOT NULL,
       client_user_id integer NOT NULL,
-      status varchar(24) NOT NULL DEFAULT 'active',
+      status varchar(24) NOT NULL DEFAULT 'pending',
       created_at timestamp,
       updated_at timestamp
     )`,

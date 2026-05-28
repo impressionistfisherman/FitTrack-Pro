@@ -508,7 +508,7 @@ export default function Profile() {
               )}
 
               <div className="rounded-xl border border-border bg-accent/30 p-3">
-                <Label className="mb-1.5 block text-xs text-muted-foreground">내 트레이너 등록</Label>
+                <Label className="mb-1.5 block text-xs text-muted-foreground">내 코치 / 트레이너 등록</Label>
                 <div className="flex gap-2">
                   <Input
                     value={trainerCodeInput}
@@ -527,7 +527,7 @@ export default function Profile() {
                   </Button>
                 </div>
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                  등록한 트레이너는 내 운동 기록과 진행 추이를 확인하고 피드백을 남길 수 있습니다.
+                  트레이너 계정도 다른 트레이너를 내 코치로 등록할 수 있습니다. 요청을 보내면 상대 트레이너가 승인한 뒤 내 운동 기록과 피드백이 공유됩니다.
                 </p>
               </div>
 
