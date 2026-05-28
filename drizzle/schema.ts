@@ -16,7 +16,7 @@ export const users = mysqlTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: mysqlEnum("role", ["user", "trainer", "admin"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -161,6 +161,36 @@ export const bodyWeights = mysqlTable("body_weights", {
 });
 
 export type BodyWeight = typeof bodyWeights.$inferSelect;
+
+export const trainerCodes = mysqlTable("trainer_codes", {
+  code: varchar("code", { length: 24 }).primaryKey(),
+  trainerUserId: int("trainer_user_id").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export const trainerClientLinks = mysqlTable("trainer_client_links", {
+  id: int("id").autoincrement().primaryKey(),
+  trainerUserId: int("trainer_user_id").notNull(),
+  clientUserId: int("client_user_id").notNull(),
+  status: mysqlEnum("status", ["active", "removed"]).default("active").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export const trainerFeedback = mysqlTable("trainer_feedback", {
+  id: int("id").autoincrement().primaryKey(),
+  trainerUserId: int("trainer_user_id").notNull(),
+  clientUserId: int("client_user_id").notNull(),
+  sessionId: int("session_id"),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type TrainerCode = typeof trainerCodes.$inferSelect;
+export type TrainerClientLink = typeof trainerClientLinks.$inferSelect;
+export type TrainerFeedback = typeof trainerFeedback.$inferSelect;
 
 // 운동별 목표 테이블
 export const exerciseGoals = mysqlTable("exercise_goals", {

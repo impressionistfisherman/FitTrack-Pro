@@ -100,7 +100,11 @@ function quotePostgresIdentifiers(sql: string) {
 
 function preparePostgresSql(sql: string) {
   let text = quotePostgresIdentifiers(sql.trim());
-  if (/^insert\s+/i.test(text) && !/\buser_preferences\b/i.test(text) && !/\breturning\b/i.test(text)) {
+  if (
+    /^insert\s+/i.test(text) &&
+    !/\b(user_preferences|trainer_codes)\b/i.test(text) &&
+    !/\breturning\b/i.test(text)
+  ) {
     text = `${text} RETURNING id`;
   }
   return text;
@@ -748,6 +752,275 @@ export async function setUserPreference(userId: number, key: string, value: stri
     value,
     now,
   );
+}
+
+let trainerTablesReady = false;
+
+async function ensureTrainerTables() {
+  if (trainerTablesReady) return;
+  const autoId = databaseType === "postgres"
+    ? "SERIAL PRIMARY KEY"
+    : databaseType === "mysql"
+      ? "integer PRIMARY KEY AUTO_INCREMENT"
+      : "integer PRIMARY KEY AUTOINCREMENT";
+  const activeType = databaseType === "postgres" ? "boolean" : "integer";
+  const activeDefault = databaseType === "postgres" ? "true" : "1";
+  await run(
+    `CREATE TABLE IF NOT EXISTS trainer_codes (
+      code varchar(24) PRIMARY KEY,
+      trainer_user_id integer NOT NULL,
+      is_active ${activeType} NOT NULL DEFAULT ${activeDefault},
+      created_at timestamp,
+      updated_at timestamp
+    )`,
+  );
+  await run(
+    `CREATE TABLE IF NOT EXISTS trainer_client_links (
+      id ${autoId},
+      trainer_user_id integer NOT NULL,
+      client_user_id integer NOT NULL,
+      status varchar(24) NOT NULL DEFAULT 'active',
+      created_at timestamp,
+      updated_at timestamp
+    )`,
+  );
+  await run(
+    `CREATE TABLE IF NOT EXISTS trainer_feedback (
+      id ${autoId},
+      trainer_user_id integer NOT NULL,
+      client_user_id integer NOT NULL,
+      session_id integer,
+      message text NOT NULL,
+      created_at timestamp
+    )`,
+  );
+  trainerTablesReady = true;
+}
+
+function trainerCode() {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "FT-";
+  for (let index = 0; index < 8; index += 1) {
+    code += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return code;
+}
+
+export async function getUserAppRole(userId: number): Promise<"user" | "trainer"> {
+  const role = await getUserPreference(userId, "appRole");
+  return role === "trainer" ? "trainer" : "user";
+}
+
+export async function ensureTrainerCode(userId: number): Promise<string> {
+  await ensureTrainerTables();
+  await setUserPreference(userId, "appRole", "trainer");
+  const existing = await get(
+    "SELECT code FROM trainer_codes WHERE trainer_user_id = ? AND is_active = ? ORDER BY created_at DESC LIMIT 1",
+    userId,
+    true,
+  );
+  if (typeof existing?.code === "string" && existing.code) return existing.code;
+
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const code = trainerCode();
+    const now = new Date().toISOString();
+    const duplicate = await get("SELECT code FROM trainer_codes WHERE code = ? LIMIT 1", code);
+    if (duplicate) continue;
+    await run(
+      "INSERT INTO trainer_codes (code, trainer_user_id, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+      code,
+      userId,
+      true,
+      now,
+      now,
+    );
+    return code;
+  }
+
+  throw new Error("트레이너 코드를 발급하지 못했습니다.");
+}
+
+export async function getTrainerCode(userId: number): Promise<string | null> {
+  await ensureTrainerTables();
+  const row = await get(
+    "SELECT code FROM trainer_codes WHERE trainer_user_id = ? AND is_active = ? ORDER BY created_at DESC LIMIT 1",
+    userId,
+    true,
+  );
+  return typeof row?.code === "string" ? row.code : null;
+}
+
+export async function linkTrainerByCode(clientUserId: number, code: string): Promise<Row> {
+  await ensureTrainerTables();
+  const normalizedCode = code.replace(/\s+/g, "").toUpperCase();
+  const trainerCodeRow = await get(
+    "SELECT trainer_user_id FROM trainer_codes WHERE code = ? AND is_active = ? LIMIT 1",
+    normalizedCode,
+    true,
+  );
+  const trainerUserId = Number(trainerCodeRow?.trainer_user_id ?? 0);
+  if (!trainerUserId) throw new Error("유효하지 않은 트레이너 코드입니다.");
+  if (trainerUserId === clientUserId) throw new Error("본인의 트레이너 코드는 등록할 수 없습니다.");
+
+  const now = new Date().toISOString();
+  const existing = await get(
+    "SELECT id, status FROM trainer_client_links WHERE trainer_user_id = ? AND client_user_id = ? LIMIT 1",
+    trainerUserId,
+    clientUserId,
+  );
+  if (existing) {
+    await run(
+      "UPDATE trainer_client_links SET status = ?, updated_at = ? WHERE id = ?",
+      "active",
+      now,
+      existing.id,
+    );
+    return existing;
+  }
+
+  const result = await run(
+    "INSERT INTO trainer_client_links (trainer_user_id, client_user_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+    trainerUserId,
+    clientUserId,
+    "active",
+    now,
+    now,
+  );
+  return { id: getInsertId(result), trainerUserId };
+}
+
+export async function unlinkTrainer(clientUserId: number, trainerUserId: number): Promise<void> {
+  await ensureTrainerTables();
+  await run(
+    "UPDATE trainer_client_links SET status = ?, updated_at = ? WHERE trainer_user_id = ? AND client_user_id = ?",
+    "removed",
+    new Date().toISOString(),
+    trainerUserId,
+    clientUserId,
+  );
+}
+
+export async function isTrainerLinkedToClient(trainerUserId: number, clientUserId: number): Promise<boolean> {
+  await ensureTrainerTables();
+  const row = await get(
+    "SELECT id FROM trainer_client_links WHERE trainer_user_id = ? AND client_user_id = ? AND status = 'active' LIMIT 1",
+    trainerUserId,
+    clientUserId,
+  );
+  return Boolean(row);
+}
+
+export async function getTrainerClients(trainerUserId: number): Promise<Row[]> {
+  await ensureTrainerTables();
+  const rows = await all(
+    `SELECT
+       l.id AS link_id,
+       l.created_at AS connected_at,
+       u.id AS user_id,
+       u.name AS user_name,
+       u.email AS user_email,
+       MAX(COALESCE(ws.workoutDate, ws.startedAt)) AS last_workout_at,
+       COUNT(ws.id) AS session_count
+     FROM trainer_client_links l
+     JOIN users u ON u.id = l.client_user_id
+     LEFT JOIN workout_sessions ws ON ws.userId = l.client_user_id
+     WHERE l.trainer_user_id = ? AND l.status = 'active'
+     GROUP BY l.id, l.created_at, u.id, u.name, u.email
+     ORDER BY connected_at DESC`,
+    trainerUserId,
+  );
+  return rows.map((row) => ({
+    linkId: Number(aliasValue(row, "link_id")),
+    connectedAt: aliasValue(row, "connected_at"),
+    user: normalizeUser({
+      id: Number(aliasValue(row, "user_id")),
+      name: aliasValue(row, "user_name"),
+      email: aliasValue(row, "user_email"),
+    }),
+    lastWorkoutAt: aliasValue(row, "last_workout_at"),
+    sessionCount: Number(aliasValue(row, "session_count")) || 0,
+  }));
+}
+
+export async function getClientTrainers(clientUserId: number): Promise<Row[]> {
+  await ensureTrainerTables();
+  const rows = await all(
+    `SELECT
+       l.id AS link_id,
+       l.created_at AS connected_at,
+       u.id AS user_id,
+       u.name AS user_name,
+       u.email AS user_email
+     FROM trainer_client_links l
+     JOIN users u ON u.id = l.trainer_user_id
+     WHERE l.client_user_id = ? AND l.status = 'active'
+     ORDER BY connected_at DESC`,
+    clientUserId,
+  );
+  return rows.map((row) => ({
+    linkId: Number(aliasValue(row, "link_id")),
+    connectedAt: aliasValue(row, "connected_at"),
+    trainer: normalizeUser({
+      id: Number(aliasValue(row, "user_id")),
+      name: aliasValue(row, "user_name"),
+      email: aliasValue(row, "user_email"),
+    }),
+  }));
+}
+
+export async function addTrainerFeedback(trainerUserId: number, clientUserId: number, message: string, sessionId?: number): Promise<number> {
+  await ensureTrainerTables();
+  if (!(await isTrainerLinkedToClient(trainerUserId, clientUserId))) {
+    throw new Error("연결된 회원에게만 피드백할 수 있습니다.");
+  }
+  const result = await run(
+    "INSERT INTO trainer_feedback (trainer_user_id, client_user_id, session_id, message, created_at) VALUES (?, ?, ?, ?, ?)",
+    trainerUserId,
+    clientUserId,
+    sessionId ?? null,
+    message.trim(),
+    new Date().toISOString(),
+  );
+  return getInsertId(result);
+}
+
+export async function getTrainerFeedbackForClient(clientUserId: number, limit = 20): Promise<Row[]> {
+  await ensureTrainerTables();
+  const rows = await all(
+    `SELECT
+       f.id,
+       f.session_id,
+       f.message,
+       f.created_at,
+       u.id AS trainer_id,
+       u.name AS trainer_name,
+       u.email AS trainer_email
+     FROM trainer_feedback f
+     JOIN users u ON u.id = f.trainer_user_id
+     WHERE f.client_user_id = ?
+     ORDER BY f.created_at DESC
+     LIMIT ?`,
+    clientUserId,
+    limit,
+  );
+  return rows.map((row) => ({
+    id: Number(row.id),
+    sessionId: row.session_id ? Number(row.session_id) : null,
+    message: row.message,
+    createdAt: row.created_at,
+    trainer: normalizeUser({
+      id: Number(aliasValue(row, "trainer_id")),
+      name: aliasValue(row, "trainer_name"),
+      email: aliasValue(row, "trainer_email"),
+    }),
+  }));
+}
+
+export async function getLinkedClientWorkoutSessions(trainerUserId: number, clientUserId: number, limit = 10): Promise<Row[]> {
+  if (!(await isTrainerLinkedToClient(trainerUserId, clientUserId))) {
+    throw new Error("연결된 회원의 기록만 확인할 수 있습니다.");
+  }
+  return getWorkoutSessionsByUser(clientUserId, limit);
 }
 
 export async function getRoutinesByUser(userId: number): Promise<Row[]> {

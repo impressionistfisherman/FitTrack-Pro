@@ -7,6 +7,7 @@ import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   addBodyWeight,
   addExerciseToRoutine,
+  addTrainerFeedback,
   addWorkoutLog,
   checkPRs,
   completeWorkoutSession,
@@ -21,6 +22,8 @@ import {
   getExerciseHistory,
   getExercises,
   getFavorites,
+  getClientTrainers,
+  getLinkedClientWorkoutSessions,
   getMonthlyStats,
   getRoutineById,
   getRoutineExercises,
@@ -29,15 +32,22 @@ import {
   getSessionsInDateRange,
   getUserGoal,
   getUserGoals,
+  getTrainerClients,
+  getTrainerCode,
+  getTrainerFeedbackForClient,
   getUserPreference,
   getUserStats,
+  getUserAppRole,
   getWeeklyStats,
   getWorkoutLogsBySession,
   getWorkoutSessionById,
   getWorkoutSessionsByUser,
   getWorkoutStreak,
+  ensureTrainerCode,
   isFavorite,
+  linkTrainerByCode,
   removeExerciseFromRoutine,
+  unlinkTrainer,
   reorderRoutineExercises,
   replaceUserGoals,
   setUserPreference,
@@ -1190,7 +1200,9 @@ export const appRouter = router({
     me: publicProcedure.query(async (opts) => {
       if (!opts.ctx.user) return null;
       const displayName = await getUserPreference(opts.ctx.user.id, "displayName");
-      return displayName ? { ...opts.ctx.user, name: displayName } : opts.ctx.user;
+      const appRole = await getUserAppRole(opts.ctx.user.id);
+      const user = displayName ? { ...opts.ctx.user, name: displayName } : opts.ctx.user;
+      return { ...user, appRole };
     }),
     updateProfile: protectedProcedure
       .input(z.object({ name: z.string().trim().min(1).max(40) }))
@@ -1389,6 +1401,58 @@ export const appRouter = router({
         const nextPresets = existing.filter((item) => item.id !== input.id);
         await setUserPreference(ctx.user.id, "customSplitPresets", JSON.stringify(nextPresets));
         return { presets: nextPresets };
+      }),
+  }),
+
+  trainer: router({
+    status: protectedProcedure.query(async ({ ctx }) => {
+      const appRole = await getUserAppRole(ctx.user.id);
+      const code = appRole === "trainer" ? await getTrainerCode(ctx.user.id) : null;
+      return {
+        appRole,
+        code,
+        clients: await getTrainerClients(ctx.user.id),
+        trainers: await getClientTrainers(ctx.user.id),
+        feedback: await getTrainerFeedbackForClient(ctx.user.id, 10),
+      };
+    }),
+    issueCode: protectedProcedure.mutation(async ({ ctx }) => {
+      const code = await ensureTrainerCode(ctx.user.id);
+      return {
+        success: true,
+        appRole: "trainer" as const,
+        code,
+      };
+    }),
+    registerTrainer: protectedProcedure
+      .input(z.object({ code: z.string().min(4).max(32) }))
+      .mutation(async ({ ctx, input }) => {
+        await linkTrainerByCode(ctx.user.id, input.code);
+        return {
+          success: true,
+          trainers: await getClientTrainers(ctx.user.id),
+        };
+      }),
+    removeTrainer: protectedProcedure
+      .input(z.object({ trainerUserId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await unlinkTrainer(ctx.user.id, input.trainerUserId);
+        return { success: true };
+      }),
+    clientSessions: protectedProcedure
+      .input(z.object({ clientUserId: z.number(), limit: z.number().min(1).max(30).default(10) }))
+      .query(async ({ ctx, input }) => {
+        return await getLinkedClientWorkoutSessions(ctx.user.id, input.clientUserId, input.limit);
+      }),
+    addFeedback: protectedProcedure
+      .input(z.object({
+        clientUserId: z.number(),
+        sessionId: z.number().optional(),
+        message: z.string().trim().min(2).max(1200),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const id = await addTrainerFeedback(ctx.user.id, input.clientUserId, input.message, input.sessionId);
+        return { success: true, id };
       }),
   }),
 

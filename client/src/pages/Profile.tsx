@@ -3,7 +3,7 @@ import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
-  Activity, Calendar, Dumbbell, Flame, LogIn, LogOut, MapPin, Ruler, Scale, Settings, Target, TrendingDown, TrendingUp, Trophy, User
+  Activity, Calendar, Copy, Dumbbell, Flame, LogIn, LogOut, MapPin, MessageSquare, Ruler, Scale, Settings, ShieldCheck, Target, TrendingDown, TrendingUp, Trophy, User, Users
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -60,6 +60,7 @@ export default function Profile() {
   const { data: goal } = trpc.goals.get.useQuery(undefined, { enabled: isAuthenticated });
   const { data: goals } = trpc.goals.list.useQuery(undefined, { enabled: isAuthenticated });
   const { data: preferences } = trpc.preferences.get.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: trainerStatus } = trpc.trainer.status.useQuery(undefined, { enabled: isAuthenticated });
   const { data: weights } = trpc.bodyWeight.list.useQuery({ limit: 30 }, { enabled: isAuthenticated });
   const goalInfo = goal as any | null | undefined;
   const [selectedGoal, setSelectedGoal] = useState<string>("");
@@ -80,6 +81,8 @@ export default function Profile() {
   const [preferredExercises, setPreferredExercises] = useState("");
   const [availableWorkoutTimes, setAvailableWorkoutTimes] = useState("");
   const [displayNameInput, setDisplayNameInput] = useState("");
+  const [trainerCodeInput, setTrainerCodeInput] = useState("");
+  const [trainerFeedbackDrafts, setTrainerFeedbackDrafts] = useState<Record<number, string>>({});
 
   // goal 데이터 로드 시 폼 초기화
   const [initialized, setInitialized] = useState(false);
@@ -135,6 +138,37 @@ export default function Profile() {
       utils.preferences.get.invalidate();
     },
     onError: () => toast.error("이름 저장에 실패했습니다."),
+  });
+  const issueTrainerCodeMutation = trpc.trainer.issueCode.useMutation({
+    onSuccess: () => {
+      toast.success("트레이너 코드가 발급되었습니다.");
+      utils.trainer.status.invalidate();
+      utils.auth.me.invalidate();
+    },
+    onError: (error) => toast.error(error.message || "트레이너 코드 발급에 실패했습니다."),
+  });
+  const registerTrainerMutation = trpc.trainer.registerTrainer.useMutation({
+    onSuccess: () => {
+      toast.success("트레이너를 등록했습니다.");
+      setTrainerCodeInput("");
+      utils.trainer.status.invalidate();
+    },
+    onError: (error) => toast.error(error.message || "트레이너 등록에 실패했습니다."),
+  });
+  const removeTrainerMutation = trpc.trainer.removeTrainer.useMutation({
+    onSuccess: () => {
+      toast.success("트레이너 연결을 해제했습니다.");
+      utils.trainer.status.invalidate();
+    },
+    onError: () => toast.error("트레이너 연결 해제에 실패했습니다."),
+  });
+  const addTrainerFeedbackMutation = trpc.trainer.addFeedback.useMutation({
+    onSuccess: (_data, variables) => {
+      toast.success("회원에게 피드백을 남겼습니다.");
+      setTrainerFeedbackDrafts((drafts) => ({ ...drafts, [variables.clientUserId]: "" }));
+      utils.trainer.status.invalidate();
+    },
+    onError: (error) => toast.error(error.message || "피드백 저장에 실패했습니다."),
   });
 
   const saveProfileSettings = () => {
@@ -213,6 +247,11 @@ export default function Profile() {
   const removeGymEquipmentDetail = (value: string) => {
     setGymEquipmentDetails((items) => items.filter((item) => item !== value));
   };
+  const trainerClients = (trainerStatus as any)?.clients ?? [];
+  const linkedTrainers = (trainerStatus as any)?.trainers ?? [];
+  const trainerFeedback = (trainerStatus as any)?.feedback ?? [];
+  const appRole = (trainerStatus as any)?.appRole ?? (user as any)?.appRole ?? "user";
+  const activeTrainerCode = (trainerStatus as any)?.code ?? "";
 
   return (
     <div className="page-shell page-shell-narrow animate-fade-in">
@@ -247,6 +286,175 @@ export default function Profile() {
                 className="bg-accent border-border text-foreground"
                 maxLength={40}
               />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-card border-border mb-6">
+        <CardContent className="p-5">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <ShieldCheck size={16} className="text-primary" />
+              <span className="font-semibold text-foreground">트레이너 연결</span>
+              <Badge className={cn(
+                "border text-xs",
+                appRole === "trainer"
+                  ? "border-primary/30 bg-primary/10 text-primary"
+                  : "border-border bg-accent text-muted-foreground"
+              )}>
+                {appRole === "trainer" ? "트레이너" : "사용자"}
+              </Badge>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="border-primary/25 bg-primary/10 text-primary hover:bg-primary/15"
+              disabled={issueTrainerCodeMutation.isPending}
+              onClick={() => issueTrainerCodeMutation.mutate()}
+            >
+              <ShieldCheck size={14} />
+              {activeTrainerCode ? "트레이너 코드 확인" : "트레이너 코드 발급"}
+            </Button>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+            <div className="space-y-3">
+              {activeTrainerCode && (
+                <div className="rounded-xl border border-primary/25 bg-primary/10 p-3">
+                  <div className="mb-1 text-xs text-primary">내 트레이너 코드</div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 rounded-lg bg-background/50 px-3 py-2 font-mono text-lg font-bold text-foreground">
+                      {activeTrainerCode}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="shrink-0 border-border bg-card"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(activeTrainerCode);
+                        toast.success("코드를 복사했습니다.");
+                      }}
+                    >
+                      <Copy size={14} />
+                    </Button>
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    회원이 이 코드를 등록하면 회원의 운동 기록을 확인하고 피드백을 남길 수 있습니다.
+                  </p>
+                </div>
+              )}
+
+              <div className="rounded-xl border border-border bg-accent/30 p-3">
+                <Label className="mb-1.5 block text-xs text-muted-foreground">내 트레이너 등록</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={trainerCodeInput}
+                    onChange={(event) => setTrainerCodeInput(event.target.value.toUpperCase())}
+                    placeholder="예: FT-ABCDEFGH"
+                    className="bg-background border-border text-foreground"
+                    maxLength={32}
+                  />
+                  <Button
+                    type="button"
+                    className="shrink-0 bg-primary text-primary-foreground"
+                    disabled={!trainerCodeInput.trim() || registerTrainerMutation.isPending}
+                    onClick={() => registerTrainerMutation.mutate({ code: trainerCodeInput })}
+                  >
+                    등록
+                  </Button>
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  등록한 트레이너는 내 운동 기록과 진행 추이를 확인하고 피드백을 남길 수 있습니다.
+                </p>
+              </div>
+
+              {linkedTrainers.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-xs font-semibold text-muted-foreground">등록한 트레이너</div>
+                  {linkedTrainers.map((item: any) => (
+                    <div key={item.linkId} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-accent/30 p-3">
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-foreground">{item.trainer?.name}</div>
+                        <div className="truncate text-xs text-muted-foreground">{item.trainer?.email}</div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="shrink-0 text-muted-foreground hover:text-destructive"
+                        disabled={removeTrainerMutation.isPending}
+                        onClick={() => removeTrainerMutation.mutate({ trainerUserId: Number(item.trainer?.id) })}
+                      >
+                        해제
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Users size={15} className="text-primary" />
+                담당 회원
+              </div>
+              {trainerClients.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-border bg-accent/20 p-4 text-sm text-muted-foreground">
+                  아직 연결된 회원이 없습니다. 트레이너 코드를 공유하면 이곳에서 회원 기록과 피드백을 관리할 수 있습니다.
+                </div>
+              ) : (
+                trainerClients.map((client: any) => {
+                  const clientId = Number(client.user?.id);
+                  const draft = trainerFeedbackDrafts[clientId] ?? "";
+                  return (
+                    <div key={client.linkId} className="rounded-xl border border-border bg-accent/30 p-3">
+                      <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-semibold text-foreground">{client.user?.name}</div>
+                          <div className="truncate text-xs text-muted-foreground">{client.user?.email}</div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          총 {client.sessionCount ?? 0}회
+                          {client.lastWorkoutAt ? ` · 최근 ${new Date(client.lastWorkoutAt).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" })}` : ""}
+                        </div>
+                      </div>
+                      <Textarea
+                        value={draft}
+                        onChange={(event) => setTrainerFeedbackDrafts((drafts) => ({ ...drafts, [clientId]: event.target.value }))}
+                        placeholder="오늘 기록에 대한 피드백, 다음 운동 조언, 주의할 점을 남겨주세요."
+                        className="min-h-20 resize-none bg-background border-border text-foreground"
+                        maxLength={1200}
+                      />
+                      <div className="mt-2 flex justify-end">
+                        <Button
+                          type="button"
+                          className="bg-primary text-primary-foreground"
+                          disabled={!draft.trim() || addTrainerFeedbackMutation.isPending}
+                          onClick={() => addTrainerFeedbackMutation.mutate({ clientUserId: clientId, message: draft })}
+                        >
+                          <MessageSquare size={14} />
+                          피드백 남기기
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+
+              {trainerFeedback.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-xs font-semibold text-muted-foreground">받은 피드백</div>
+                  {trainerFeedback.slice(0, 3).map((item: any) => (
+                    <div key={item.id} className="rounded-xl border border-border bg-accent/30 p-3">
+                      <div className="mb-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                        <span>{item.trainer?.name}</span>
+                        <span>{new Date(item.createdAt).toLocaleDateString("ko-KR")}</span>
+                      </div>
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{item.message}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
