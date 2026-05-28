@@ -519,16 +519,21 @@ export default function Profile() {
               </Badge>
             </div>
             {appRole === "trainer" && (
-              <Button
-                type="button"
-                variant="outline"
-                className="border-primary/25 bg-primary/10 text-primary hover:bg-primary/15"
-                disabled={issueTrainerCodeMutation.isPending}
-                onClick={() => issueTrainerCodeMutation.mutate()}
-              >
-                <ShieldCheck size={14} />
-                트레이너 코드 확인
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-primary/25 bg-primary/10 text-primary hover:bg-primary/15"
+                  disabled={issueTrainerCodeMutation.isPending}
+                  onClick={() => issueTrainerCodeMutation.mutate()}
+                >
+                  <ShieldCheck size={14} />
+                  트레이너 코드 확인
+                </Button>
+                <Button asChild type="button" className="bg-primary text-primary-foreground">
+                  <Link href="/trainer">전용 페이지 열기</Link>
+                </Button>
+              </div>
             )}
           </div>
 

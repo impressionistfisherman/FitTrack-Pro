@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
   Activity, Bot, Calendar, Dumbbell, Home,
-  LogIn, LogOut, Menu, Scale, ShieldCheck, X,
+  LogIn, LogOut, Menu, Scale, ShieldCheck, Users, X,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -176,7 +176,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   );
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
   const adminBadge = pendingApplications?.length ?? 0;
-  const visibleNavItems = navItems;
+  const isTrainer = (user as any)?.appRole === "trainer";
+  const visibleNavItems = isTrainer
+    ? [...navItems, { href: "/trainer", icon: Users, label: "트레이너" }]
+    : navItems;
 
   return (
     <div className="app-layout-root">
