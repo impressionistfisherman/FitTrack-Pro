@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { invokeLLM } from "./_core/llm";
 import { systemRouter } from "./_core/systemRouter";
-import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   addBodyWeight,
   addExerciseToRoutine,
@@ -34,6 +34,7 @@ import {
   getUserGoals,
   getTrainerClients,
   getTrainerCode,
+  getTrainerApplication,
   getTrainerFeedbackForClient,
   getUserPreference,
   getUserStats,
@@ -45,8 +46,11 @@ import {
   getWorkoutStreak,
   ensureTrainerCode,
   isFavorite,
+  listTrainerApplications,
   linkTrainerByCode,
+  reviewTrainerApplication,
   removeExerciseFromRoutine,
+  submitTrainerApplication,
   unlinkTrainer,
   reorderRoutineExercises,
   replaceUserGoals,
@@ -1411,12 +1415,17 @@ export const appRouter = router({
       return {
         appRole,
         code,
+        application: await getTrainerApplication(ctx.user.id),
         clients: await getTrainerClients(ctx.user.id),
         trainers: await getClientTrainers(ctx.user.id),
         feedback: await getTrainerFeedbackForClient(ctx.user.id, 10),
       };
     }),
     issueCode: protectedProcedure.mutation(async ({ ctx }) => {
+      const appRole = await getUserAppRole(ctx.user.id);
+      if (appRole !== "trainer" && ctx.user.role !== "admin") {
+        throw new Error("관리자 승인 후 트레이너 코드를 확인할 수 있습니다.");
+      }
       const code = await ensureTrainerCode(ctx.user.id);
       return {
         success: true,
@@ -1424,6 +1433,18 @@ export const appRouter = router({
         code,
       };
     }),
+    applyForTrainer: protectedProcedure
+      .input(z.object({
+        displayName: z.string().trim().min(1).max(80),
+        bio: z.string().trim().min(10).max(800),
+        experience: z.string().trim().min(5).max(800),
+        specialties: z.array(z.string().trim().min(1).max(40)).min(1).max(12),
+        contact: z.string().trim().max(200).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const application = await submitTrainerApplication(ctx.user.id, input);
+        return { success: true, application };
+      }),
     registerTrainer: protectedProcedure
       .input(z.object({ code: z.string().min(4).max(32) }))
       .mutation(async ({ ctx, input }) => {
@@ -1453,6 +1474,32 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const id = await addTrainerFeedback(ctx.user.id, input.clientUserId, input.message, input.sessionId);
         return { success: true, id };
+      }),
+  }),
+
+  admin: router({
+    trainerApplications: adminProcedure
+      .input(z.object({
+        status: z.enum(["pending", "approved", "rejected", "all"]).default("pending"),
+      }).optional())
+      .query(async ({ input }) => {
+        const status = input?.status && input.status !== "all" ? input.status : undefined;
+        return await listTrainerApplications(status);
+      }),
+    reviewTrainerApplication: adminProcedure
+      .input(z.object({
+        applicationId: z.number(),
+        status: z.enum(["approved", "rejected"]),
+        reviewNote: z.string().max(500).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const application = await reviewTrainerApplication(
+          ctx.user.id,
+          input.applicationId,
+          input.status,
+          input.reviewNote ?? "",
+        );
+        return { success: true, application };
       }),
   }),
 

@@ -3,7 +3,7 @@ import { startLogin } from "@/const";
 import { cn } from "@/lib/utils";
 import {
   Activity, Bot, Calendar, Dumbbell, Home,
-  LogIn, LogOut, Menu, Scale, User, X,
+  LogIn, LogOut, Menu, Scale, ShieldCheck, User, X,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -18,6 +18,8 @@ const navItems = [
   { href: "/body-weight", icon: Scale, label: "체중" },
   { href: "/ai-coach", icon: Bot, label: "AI 코치" },
 ];
+
+const adminNavItem = { href: "/admin", icon: ShieldCheck, label: "관리자" };
 
 function AppContentSkeleton() {
   return (
@@ -88,6 +90,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
+  const visibleNavItems = user?.role === "admin" ? [...navItems, adminNavItem] : navItems;
 
   return (
     <div className="app-layout-root">
@@ -108,7 +111,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => <NavItem key={item.href} {...item} />)}
+          {visibleNavItems.map((item) => <NavItem key={item.href} {...item} />)}
         </nav>
         <div className="px-4 pb-2">
           <ThemePicker sidebar />
@@ -184,7 +187,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
         {mobileMenuOpen && (
           <div className="bg-card border-b border-border p-4 space-y-1 animate-slide-up">
-            {navItems.map((item) => (
+            {visibleNavItems.map((item) => (
               <NavItem key={item.href} {...item} onClick={() => setMobileMenuOpen(false)} />
             ))}
             {isAuthenticated && (
@@ -208,7 +211,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* ── 모바일 하단 네비게이션 ── */}
       <nav className="app-mobile-nav bg-card/95 backdrop-blur-md border-t border-border">
         <div className="flex items-center justify-around px-2 py-1">
-          {navItems.map((item) => <MobileNavItem key={item.href} {...item} />)}
+          {visibleNavItems.map((item) => <MobileNavItem key={item.href} {...item} />)}
         </div>
       </nav>
 

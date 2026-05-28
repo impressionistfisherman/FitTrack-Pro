@@ -766,6 +766,23 @@ async function ensureTrainerTables() {
   const activeType = databaseType === "postgres" ? "boolean" : "integer";
   const activeDefault = databaseType === "postgres" ? "true" : "1";
   await run(
+    `CREATE TABLE IF NOT EXISTS trainer_applications (
+      id ${autoId},
+      user_id integer NOT NULL,
+      status varchar(24) NOT NULL DEFAULT 'pending',
+      display_name varchar(80),
+      bio text,
+      experience text,
+      specialties text,
+      contact text,
+      review_note text,
+      reviewed_by integer,
+      reviewed_at timestamp,
+      created_at timestamp,
+      updated_at timestamp
+    )`,
+  );
+  await run(
     `CREATE TABLE IF NOT EXISTS trainer_codes (
       code varchar(24) PRIMARY KEY,
       trainer_user_id integer NOT NULL,
@@ -795,6 +812,25 @@ async function ensureTrainerTables() {
     )`,
   );
   trainerTablesReady = true;
+}
+
+function normalizeTrainerApplication(row: Row | null): Row | null {
+  if (!row) return null;
+  return {
+    id: Number(row.id),
+    userId: Number(aliasValue(row, "user_id")),
+    status: row.status,
+    displayName: row.display_name ?? "",
+    bio: row.bio ?? "",
+    experience: row.experience ?? "",
+    specialties: parseJson(row.specialties, []),
+    contact: row.contact ?? "",
+    reviewNote: row.review_note ?? "",
+    reviewedBy: row.reviewed_by ? Number(row.reviewed_by) : null,
+    reviewedAt: row.reviewed_at ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
 }
 
 function trainerCode() {
@@ -848,6 +884,118 @@ export async function getTrainerCode(userId: number): Promise<string | null> {
     true,
   );
   return typeof row?.code === "string" ? row.code : null;
+}
+
+export async function getTrainerApplication(userId: number): Promise<Row | null> {
+  await ensureTrainerTables();
+  const row = await get(
+    "SELECT * FROM trainer_applications WHERE user_id = ? ORDER BY created_at DESC LIMIT 1",
+    userId,
+  );
+  return normalizeTrainerApplication(row);
+}
+
+export async function submitTrainerApplication(userId: number, input: {
+  displayName: string;
+  bio: string;
+  experience: string;
+  specialties: string[];
+  contact?: string;
+}): Promise<Row> {
+  await ensureTrainerTables();
+  const now = new Date().toISOString();
+  const existing = await getTrainerApplication(userId);
+  if (existing && ["pending", "approved"].includes(existing.status)) {
+    return existing;
+  }
+
+  const result = await run(
+    `INSERT INTO trainer_applications
+     (user_id, status, display_name, bio, experience, specialties, contact, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    userId,
+    "pending",
+    input.displayName.trim(),
+    input.bio.trim(),
+    input.experience.trim(),
+    JSON.stringify(input.specialties),
+    input.contact?.trim() ?? "",
+    now,
+    now,
+  );
+  return {
+    id: getInsertId(result),
+    userId,
+    status: "pending",
+    ...input,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+export async function listTrainerApplications(status?: string): Promise<Row[]> {
+  await ensureTrainerTables();
+  const where = status ? "WHERE a.status = ?" : "";
+  const rows = await all(
+    `SELECT
+       a.*,
+       u.name AS user_name,
+       u.email AS user_email
+     FROM trainer_applications a
+     JOIN users u ON u.id = a.user_id
+     ${where}
+     ORDER BY a.created_at DESC`,
+    ...(status ? [status] : []),
+  );
+  return rows.map((row) => ({
+    ...normalizeTrainerApplication(row),
+    user: normalizeUser({
+      id: Number(aliasValue(row, "user_id")),
+      name: aliasValue(row, "user_name"),
+      email: aliasValue(row, "user_email"),
+    }),
+  }));
+}
+
+export async function reviewTrainerApplication(adminUserId: number, applicationId: number, status: "approved" | "rejected", reviewNote = ""): Promise<Row> {
+  await ensureTrainerTables();
+  const application = normalizeTrainerApplication(await get(
+    "SELECT * FROM trainer_applications WHERE id = ? LIMIT 1",
+    applicationId,
+  ));
+  if (!application) throw new Error("트레이너 신청을 찾을 수 없습니다.");
+  if (application.status === "approved" && status === "approved") {
+    return application;
+  }
+
+  const now = new Date().toISOString();
+  await run(
+    `UPDATE trainer_applications
+     SET status = ?, review_note = ?, reviewed_by = ?, reviewed_at = ?, updated_at = ?
+     WHERE id = ?`,
+    status,
+    reviewNote.trim(),
+    adminUserId,
+    now,
+    now,
+    applicationId,
+  );
+
+  if (status === "approved") {
+    await setUserPreference(application.userId, "appRole", "trainer");
+    const displayName = application.displayName || "";
+    if (displayName.trim()) await setUserPreference(application.userId, "displayName", displayName.trim());
+    await ensureTrainerCode(application.userId);
+  }
+
+  return {
+    ...application,
+    status,
+    reviewNote,
+    reviewedBy: adminUserId,
+    reviewedAt: now,
+    updatedAt: now,
+  };
 }
 
 export async function linkTrainerByCode(clientUserId: number, code: string): Promise<Row> {

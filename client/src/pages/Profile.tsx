@@ -51,6 +51,17 @@ const equipmentOptions = [
   { value: "kettlebell", label: "케틀벨" },
 ] as const;
 
+const trainerSpecialtyOptions = [
+  "초보자",
+  "근비대",
+  "다이어트",
+  "근력",
+  "체형교정",
+  "재활/통증관리",
+  "보디빌딩",
+  "여성 트레이닝",
+] as const;
+
 type EquipmentValue = (typeof equipmentOptions)[number]["value"] | "none";
 
 export default function Profile() {
@@ -83,10 +94,15 @@ export default function Profile() {
   const [displayNameInput, setDisplayNameInput] = useState("");
   const [trainerCodeInput, setTrainerCodeInput] = useState("");
   const [trainerFeedbackDrafts, setTrainerFeedbackDrafts] = useState<Record<number, string>>({});
+  const [trainerApplyBio, setTrainerApplyBio] = useState("");
+  const [trainerApplyExperience, setTrainerApplyExperience] = useState("");
+  const [trainerApplyContact, setTrainerApplyContact] = useState("");
+  const [trainerApplySpecialties, setTrainerApplySpecialties] = useState<string[]>(["초보자"]);
 
   // goal 데이터 로드 시 폼 초기화
   const [initialized, setInitialized] = useState(false);
   const [nameInitialized, setNameInitialized] = useState(false);
+  const trainerApplication = (trainerStatus as any)?.application;
   
   useEffect(() => {
     if ((goal || goals || preferences) && !initialized) {
@@ -121,6 +137,16 @@ export default function Profile() {
     }
   }, [nameInitialized, preferences, user]);
 
+  useEffect(() => {
+    if (!trainerApplication) return;
+    setTrainerApplyBio(trainerApplication.bio || "");
+    setTrainerApplyExperience(trainerApplication.experience || "");
+    setTrainerApplyContact(trainerApplication.contact || "");
+    if (Array.isArray(trainerApplication.specialties) && trainerApplication.specialties.length) {
+      setTrainerApplySpecialties(trainerApplication.specialties);
+    }
+  }, [trainerApplication]);
+
   const setGoalMutation = trpc.goals.set.useMutation({
     onSuccess: () => {
       toast.success("프로필 설정을 저장했습니다.");
@@ -146,6 +172,13 @@ export default function Profile() {
       utils.auth.me.invalidate();
     },
     onError: (error) => toast.error(error.message || "트레이너 코드 발급에 실패했습니다."),
+  });
+  const applyTrainerMutation = trpc.trainer.applyForTrainer.useMutation({
+    onSuccess: () => {
+      toast.success("트레이너 신청을 보냈습니다. 관리자 승인 후 코드가 발급됩니다.");
+      utils.trainer.status.invalidate();
+    },
+    onError: (error) => toast.error(error.message || "트레이너 신청에 실패했습니다."),
   });
   const registerTrainerMutation = trpc.trainer.registerTrainer.useMutation({
     onSuccess: () => {
@@ -252,6 +285,22 @@ export default function Profile() {
   const trainerFeedback = (trainerStatus as any)?.feedback ?? [];
   const appRole = (trainerStatus as any)?.appRole ?? (user as any)?.appRole ?? "user";
   const activeTrainerCode = (trainerStatus as any)?.code ?? "";
+  const applicationStatus = trainerApplication?.status ?? "";
+  const toggleTrainerSpecialty = (value: string) => {
+    setTrainerApplySpecialties((items) => {
+      const next = items.includes(value) ? items.filter((item) => item !== value) : [...items, value];
+      return next.length ? next : items;
+    });
+  };
+  const submitTrainerApply = () => {
+    applyTrainerMutation.mutate({
+      displayName: displayName,
+      bio: trainerApplyBio,
+      experience: trainerApplyExperience,
+      specialties: trainerApplySpecialties,
+      contact: trainerApplyContact,
+    });
+  };
 
   return (
     <div className="page-shell page-shell-narrow animate-fade-in">
@@ -306,16 +355,18 @@ export default function Profile() {
                 {appRole === "trainer" ? "트레이너" : "사용자"}
               </Badge>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              className="border-primary/25 bg-primary/10 text-primary hover:bg-primary/15"
-              disabled={issueTrainerCodeMutation.isPending}
-              onClick={() => issueTrainerCodeMutation.mutate()}
-            >
-              <ShieldCheck size={14} />
-              {activeTrainerCode ? "트레이너 코드 확인" : "트레이너 코드 발급"}
-            </Button>
+            {appRole === "trainer" && (
+              <Button
+                type="button"
+                variant="outline"
+                className="border-primary/25 bg-primary/10 text-primary hover:bg-primary/15"
+                disabled={issueTrainerCodeMutation.isPending}
+                onClick={() => issueTrainerCodeMutation.mutate()}
+              >
+                <ShieldCheck size={14} />
+                트레이너 코드 확인
+              </Button>
+            )}
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
@@ -342,6 +393,107 @@ export default function Profile() {
                   <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                     회원이 이 코드를 등록하면 회원의 운동 기록을 확인하고 피드백을 남길 수 있습니다.
                   </p>
+                </div>
+              )}
+
+              {appRole !== "trainer" && (
+                <div className="rounded-xl border border-border bg-accent/30 p-3">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <div>
+                      <div className="text-sm font-semibold text-foreground">트레이너 신청</div>
+                      <div className="text-xs text-muted-foreground">
+                        관리자 승인 후 트레이너 코드가 발급됩니다.
+                      </div>
+                    </div>
+                    {applicationStatus && (
+                      <Badge className={cn(
+                        "border text-xs",
+                        applicationStatus === "pending"
+                          ? "border-yellow-400/30 bg-yellow-400/10 text-yellow-300"
+                          : applicationStatus === "rejected"
+                            ? "border-destructive/30 bg-destructive/10 text-destructive"
+                            : "border-primary/30 bg-primary/10 text-primary"
+                      )}>
+                        {applicationStatus === "pending" ? "검토 중" : applicationStatus === "rejected" ? "거절됨" : "승인됨"}
+                      </Badge>
+                    )}
+                  </div>
+
+                  {applicationStatus === "pending" ? (
+                    <p className="rounded-lg border border-yellow-400/20 bg-yellow-400/10 p-3 text-xs leading-relaxed text-yellow-200">
+                      트레이너 신청이 관리자 검토 중입니다. 승인되면 이 화면에 코드가 표시됩니다.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {applicationStatus === "rejected" && trainerApplication?.reviewNote && (
+                        <p className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs leading-relaxed text-destructive">
+                          거절 사유: {trainerApplication.reviewNote}
+                        </p>
+                      )}
+                      <div>
+                        <Label className="mb-1.5 block text-xs text-muted-foreground">소개</Label>
+                        <Textarea
+                          value={trainerApplyBio}
+                          onChange={(event) => setTrainerApplyBio(event.target.value)}
+                          placeholder="어떤 회원을 어떻게 도울 수 있는지 적어주세요."
+                          className="min-h-20 resize-none bg-background border-border text-foreground"
+                          maxLength={800}
+                        />
+                      </div>
+                      <div>
+                        <Label className="mb-1.5 block text-xs text-muted-foreground">경력 / 자격 / 운영 방식</Label>
+                        <Textarea
+                          value={trainerApplyExperience}
+                          onChange={(event) => setTrainerApplyExperience(event.target.value)}
+                          placeholder="운동 경력, 자격, 피드백 방식, 가능한 관리 범위를 적어주세요."
+                          className="min-h-20 resize-none bg-background border-border text-foreground"
+                          maxLength={800}
+                        />
+                      </div>
+                      <div>
+                        <Label className="mb-1.5 block text-xs text-muted-foreground">전문 분야</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {trainerSpecialtyOptions.map((item) => (
+                            <button
+                              key={item}
+                              type="button"
+                              onClick={() => toggleTrainerSpecialty(item)}
+                              className={cn(
+                                "rounded-full border px-3 py-1.5 text-xs transition-colors",
+                                trainerApplySpecialties.includes(item)
+                                  ? "border-primary/40 bg-primary/10 text-primary"
+                                  : "border-border bg-background text-muted-foreground hover:border-primary/30"
+                              )}
+                            >
+                              {item}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="mb-1.5 block text-xs text-muted-foreground">연락처 / 참고 링크 선택</Label>
+                        <Input
+                          value={trainerApplyContact}
+                          onChange={(event) => setTrainerApplyContact(event.target.value)}
+                          placeholder="예: 인스타그램, 포트폴리오, 연락 가능 채널"
+                          className="bg-background border-border text-foreground"
+                          maxLength={200}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        className="w-full bg-primary text-primary-foreground"
+                        disabled={
+                          applyTrainerMutation.isPending ||
+                          trainerApplyBio.trim().length < 10 ||
+                          trainerApplyExperience.trim().length < 5
+                        }
+                        onClick={submitTrainerApply}
+                      >
+                        트레이너 신청하기
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
 

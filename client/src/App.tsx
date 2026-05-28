@@ -15,6 +15,7 @@ import History from "./pages/History";
 import AICoach from "./pages/AICoach";
 import Profile from "@/pages/Profile";
 import BodyWeight from "@/pages/BodyWeight";
+import Admin from "@/pages/Admin";
 
 const routerBase =
   import.meta.env.BASE_URL && import.meta.env.BASE_URL !== "/"
@@ -34,6 +35,7 @@ function Routes() {
       <Route path="/ai-coach" component={AICoach} />
       <Route path="/profile" component={Profile} />
       <Route path="/body-weight" component={BodyWeight} />
+      <Route path="/admin" component={Admin} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
