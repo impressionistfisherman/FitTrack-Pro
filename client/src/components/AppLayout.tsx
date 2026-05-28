@@ -96,54 +96,74 @@ function MobileNavItem({ href, icon: Icon, label, badge }: {
   );
 }
 
-function AdminModeSwitch({ badge }: { badge: number }) {
+function RoleModeSwitch({ badge, showTrainer, showAdmin }: { badge: number; showTrainer: boolean; showAdmin: boolean }) {
   const [location] = useLocation();
   const isAdminView = location.startsWith("/admin");
+  const isTrainerView = location.startsWith("/trainer");
+  const isUserView = !isAdminView && !isTrainerView;
 
   return (
     <div className="mt-14 border-b border-border/70 bg-background/80 px-4 py-2 backdrop-blur-sm sm:px-6 xl:mt-0 xl:px-8">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
-          <ShieldCheck size={14} className="text-primary" />
-          <span>관리자 권한</span>
+          {isAdminView ? <ShieldCheck size={14} className="text-primary" /> : <Users size={14} className="text-primary" />}
+          <span>{showAdmin ? "권한 화면 전환" : "트레이너 권한"}</span>
         </div>
         <div className="ml-auto flex items-center gap-1 rounded-full border border-border bg-card/80 p-1">
           <Link href="/">
             <Button
               size="sm"
-              variant={isAdminView ? "ghost" : "default"}
+              variant={isUserView ? "default" : "ghost"}
               className={cn(
                 "h-8 rounded-full px-3 text-xs",
-                !isAdminView && "bg-primary text-primary-foreground hover:bg-primary/90",
-                isAdminView && "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
+                isUserView && "bg-primary text-primary-foreground hover:bg-primary/90",
+                !isUserView && "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
               )}
             >
               <Home size={14} />
               사용자 화면
             </Button>
           </Link>
-          <Link href="/admin">
-            <Button
-              size="sm"
-              variant={isAdminView ? "default" : "ghost"}
-              className={cn(
-                "h-8 rounded-full px-3 text-xs",
-                isAdminView && "bg-primary text-primary-foreground hover:bg-primary/90",
-                !isAdminView && "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
-              )}
-            >
-              <ShieldCheck size={14} />
-              관리자 화면
-              {badge > 0 && (
-                <span className={cn(
-                  "ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                  isAdminView ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary text-primary-foreground"
-                )}>
-                  {badge > 99 ? "99+" : badge}
-                </span>
-              )}
-            </Button>
-          </Link>
+          {showTrainer ? (
+            <Link href="/trainer">
+              <Button
+                size="sm"
+                variant={isTrainerView ? "default" : "ghost"}
+                className={cn(
+                  "h-8 rounded-full px-3 text-xs",
+                  isTrainerView && "bg-primary text-primary-foreground hover:bg-primary/90",
+                  !isTrainerView && "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
+                )}
+              >
+                <Users size={14} />
+                트레이너 화면
+              </Button>
+            </Link>
+          ) : null}
+          {showAdmin ? (
+            <Link href="/admin">
+              <Button
+                size="sm"
+                variant={isAdminView ? "default" : "ghost"}
+                className={cn(
+                  "h-8 rounded-full px-3 text-xs",
+                  isAdminView && "bg-primary text-primary-foreground hover:bg-primary/90",
+                  !isAdminView && "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
+                )}
+              >
+                <ShieldCheck size={14} />
+                관리자 화면
+                {badge > 0 && (
+                  <span className={cn(
+                    "ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold",
+                    isAdminView ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary text-primary-foreground"
+                  )}>
+                    {badge > 99 ? "99+" : badge}
+                  </span>
+                )}
+              </Button>
+            </Link>
+          ) : null}
         </div>
       </div>
     </div>
@@ -177,9 +197,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
   const adminBadge = pendingApplications?.length ?? 0;
   const isTrainer = (user as any)?.appRole === "trainer";
-  const visibleNavItems = isTrainer
-    ? [...navItems, { href: "/trainer", icon: Users, label: "트레이너" }]
-    : navItems;
+  const isAdmin = user?.role === "admin";
+  const showRoleSwitch = !loading && (isTrainer || isAdmin);
+  const visibleNavItems = navItems;
 
   return (
     <div className="app-layout-root">
@@ -288,8 +308,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── 메인 콘텐츠 ── */}
       <main className="app-main">
-        {user?.role === "admin" && !loading ? <AdminModeSwitch badge={adminBadge} /> : null}
-        <div className={cn("app-main-inner", user?.role === "admin" && !loading && "pt-0")} aria-busy={loading}>
+        {showRoleSwitch ? (
+          <RoleModeSwitch badge={adminBadge} showTrainer={isTrainer} showAdmin={isAdmin} />
+        ) : null}
+        <div className={cn("app-main-inner", showRoleSwitch && "pt-0")} aria-busy={loading}>
           {loading ? <AppContentSkeleton /> : children}
         </div>
       </main>
