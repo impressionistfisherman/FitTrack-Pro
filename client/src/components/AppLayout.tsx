@@ -100,8 +100,8 @@ function AdminModeSwitch({ badge }: { badge: number }) {
   const isAdminView = location.startsWith("/admin");
 
   return (
-    <div className="fixed right-3 top-16 z-50 md:right-5 md:top-4">
-      <div className="flex items-center gap-1 rounded-xl border border-border bg-card/95 p-1 shadow-lg shadow-background/20 backdrop-blur-md">
+    <div className="mb-3 flex justify-end">
+      <div className="flex items-center gap-1 rounded-xl border border-border bg-card p-1 shadow-sm">
         <Link href="/">
           <Button
             size="sm"
@@ -265,8 +265,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── 메인 콘텐츠 ── */}
       <main className="app-main">
-        {user?.role === "admin" && !loading ? <AdminModeSwitch badge={adminBadge} /> : null}
-        <div className={cn("app-main-inner", user?.role === "admin" && !loading && "pt-14 md:pt-12")} aria-busy={loading}>
+        <div className="app-main-inner" aria-busy={loading}>
+          {user?.role === "admin" && !loading ? <AdminModeSwitch badge={adminBadge} /> : null}
           {loading ? <AppContentSkeleton /> : children}
         </div>
       </main>
