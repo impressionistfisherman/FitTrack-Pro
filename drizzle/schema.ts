@@ -193,6 +193,18 @@ export type TrainerCode = typeof trainerCodes.$inferSelect;
 export type TrainerClientLink = typeof trainerClientLinks.$inferSelect;
 export type TrainerFeedback = typeof trainerFeedback.$inferSelect;
 
+export const trainerPtSessions = mysqlTable("trainer_pt_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  trainerUserId: int("trainer_user_id").notNull(),
+  clientUserId: int("client_user_id").notNull(),
+  sessionId: int("session_id").notNull(),
+  title: varchar("title", { length: 200 }),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type TrainerPtSession = typeof trainerPtSessions.$inferSelect;
+
 // 운동별 목표 테이블
 export const exerciseGoals = mysqlTable("exercise_goals", {
   id: int("id").autoincrement().primaryKey(),

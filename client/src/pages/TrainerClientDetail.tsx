@@ -2,9 +2,11 @@ import { trpc } from "@/lib/trpc";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, MessageSquare, User } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, CalendarDays, ChevronDown, ImagePlus, Loader2, MessageSquare, Plus, Search, Trash2, User } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Link, useRoute } from "wouter";
 
@@ -12,15 +14,118 @@ function clientInitial(client?: any) {
   return (client?.name || client?.email || "회원").trim().slice(0, 1).toUpperCase();
 }
 
+type PtSet = {
+  setNumber: number;
+  weightKg: string;
+  reps: string;
+};
+
+type PtExercise = {
+  exercise: any;
+  sets: PtSet[];
+  durationMinutes: string;
+  distanceKm: string;
+};
+
+type PtLogInput = {
+  exerciseId: number;
+  setNumber: number;
+  reps?: number;
+  weightKg?: number;
+  durationSeconds?: number;
+  distanceM?: number;
+};
+
+function todayValue() {
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000;
+  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+}
+
+function makeSets(count: number, existing: PtSet[] = []) {
+  return Array.from({ length: count }, (_, index) => ({
+    setNumber: index + 1,
+    weightKg: existing[index]?.weightKg ?? "",
+    reps: existing[index]?.reps ?? "",
+  }));
+}
+
+function inputMode(exercise: any) {
+  if (exercise?.category === "cardio" || exercise?.bodyPart === "cardio") return "cardio";
+  if (exercise?.category === "flexibility" || exercise?.bodyPart === "stretching") return "duration";
+  return "strength";
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result ?? ""));
+    reader.onerror = () => reject(reader.error ?? new Error("이미지를 읽지 못했습니다."));
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImage(dataUrl: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("이미지를 불러오지 못했습니다."));
+    image.src = dataUrl;
+  });
+}
+
+async function prepareImageDataUrl(file: File) {
+  const dataUrl = await readFileAsDataUrl(file);
+  const image = await loadImage(dataUrl);
+  const maxSide = 1600;
+  const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+  const width = Math.max(1, Math.round(image.width * scale));
+  const height = Math.max(1, Math.round(image.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) return dataUrl;
+  context.drawImage(image, 0, 0, width, height);
+  return canvas.toDataURL("image/jpeg", 0.84);
+}
+
 export default function TrainerClientDetail() {
   const [, params] = useRoute("/trainer/clients/:id");
   const clientUserId = Number(params?.id ?? 0);
   const utils = trpc.useUtils();
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [ptOpen, setPtOpen] = useState(false);
+  const [ptTitle, setPtTitle] = useState("PT 운동 기록");
+  const [ptDate, setPtDate] = useState(todayValue());
+  const [ptDuration, setPtDuration] = useState("60");
+  const [ptNotes, setPtNotes] = useState("");
+  const [ptFeedback, setPtFeedback] = useState("");
+  const [exerciseSearch, setExerciseSearch] = useState("");
+  const [selectedExercises, setSelectedExercises] = useState<PtExercise[]>([]);
+  const [captureMessage, setCaptureMessage] = useState("");
   const { data, isLoading } = trpc.trainer.clientDetail.useQuery(
     { clientUserId, limit: 20 },
     { enabled: Number.isFinite(clientUserId) && clientUserId > 0 }
   );
+  const { data: exercises, isFetching: exercisesFetching } = trpc.exercises.list.useQuery(
+    { search: exerciseSearch || undefined },
+    { enabled: ptOpen, staleTime: 1000 * 60 * 5 }
+  );
+  const parseWorkoutCapture = trpc.ai.parseWorkoutCapture.useMutation();
+  const createPtRecord = trpc.trainer.createPtRecord.useMutation({
+    onSuccess: () => {
+      toast.success("회원 PT 기록을 저장했습니다.");
+      setPtOpen(false);
+      setSelectedExercises([]);
+      setPtNotes("");
+      setPtFeedback("");
+      setCaptureMessage("");
+      utils.trainer.clientDetail.invalidate({ clientUserId, limit: 20 });
+      utils.trainer.status.invalidate();
+    },
+    onError: (error) => toast.error(error.message || "PT 기록 저장에 실패했습니다."),
+  });
   const feedbackMutation = trpc.trainer.addFeedback.useMutation({
     onSuccess: (_data, variables) => {
       toast.success("피드백을 남겼습니다.");
@@ -34,6 +139,122 @@ export default function TrainerClientDetail() {
     const message = drafts[key]?.trim();
     if (!message) return;
     feedbackMutation.mutate({ clientUserId, sessionId, message });
+  };
+
+  const availableExercises = useMemo(() => {
+    const selectedIds = new Set(selectedExercises.map((item) => item.exercise.id));
+    return (exercises ?? []).filter((exercise: any) => !selectedIds.has(exercise.id)).slice(0, 12);
+  }, [exercises, selectedExercises]);
+
+  const addPtExercise = (exercise: any, seed?: Partial<PtExercise>) => {
+    setSelectedExercises((items) => {
+      if (items.some((item) => item.exercise.id === exercise.id)) return items;
+      const mode = inputMode(exercise);
+      return [
+        ...items,
+        {
+          exercise,
+          sets: seed?.sets?.length ? seed.sets : mode === "strength" ? makeSets(3) : makeSets(1),
+          durationMinutes: seed?.durationMinutes ?? (mode === "strength" ? "" : "20"),
+          distanceKm: seed?.distanceKm ?? "",
+        },
+      ];
+    });
+    setExerciseSearch("");
+  };
+
+  const updatePtSet = (exerciseId: number, setNumber: number, field: "weightKg" | "reps", value: string) => {
+    setSelectedExercises((items) => items.map((item) => item.exercise.id === exerciseId
+      ? { ...item, sets: item.sets.map((set) => set.setNumber === setNumber ? { ...set, [field]: value } : set) }
+      : item));
+  };
+
+  const updatePtSetCount = (exerciseId: number, count: number) => {
+    if (count < 1) return;
+    setSelectedExercises((items) => items.map((item) => item.exercise.id === exerciseId
+      ? { ...item, sets: makeSets(count, item.sets) }
+      : item));
+  };
+
+  const removePtExercise = (exerciseId: number) => {
+    setSelectedExercises((items) => items.filter((item) => item.exercise.id !== exerciseId));
+  };
+
+  const handleCaptureUpload = async (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("이미지 파일만 업로드해주세요.");
+      return;
+    }
+    try {
+      setCaptureMessage("이미지를 분석 중입니다.");
+      const imageDataUrl = await prepareImageDataUrl(file);
+      const result = await parseWorkoutCapture.mutateAsync({ imageDataUrl });
+      if (result.workoutDate) setPtDate(result.workoutDate);
+      const parsedItems = result.exercises.map((item: any) => {
+        const mode = inputMode(item.exercise);
+        const sets = Array.isArray(item.sets) && item.sets.length ? item.sets : [{ setNumber: 1 }];
+        return {
+          exercise: item.exercise,
+          sets: mode === "strength"
+            ? makeSets(sets.length).map((set, index) => ({
+                ...set,
+                weightKg: sets[index]?.weightKg ? String(sets[index].weightKg) : "",
+                reps: sets[index]?.reps ? String(sets[index].reps) : "",
+              }))
+            : makeSets(1),
+          durationMinutes: mode === "strength" ? "" : String(item.durationMinutes || sets[0]?.durationMinutes || 20),
+          distanceKm: item.distanceKm ? String(item.distanceKm) : "",
+        };
+      });
+      setSelectedExercises((items) => {
+        const existingIds = new Set(items.map((item) => item.exercise.id));
+        return [...items, ...parsedItems.filter((item: PtExercise) => !existingIds.has(item.exercise.id))];
+      });
+      const added = parsedItems.length;
+      setCaptureMessage(`이미지에서 ${added}개 운동을 불러왔습니다. 저장 전 값만 확인해주세요.`);
+      toast.success(`이미지에서 ${added}개 운동을 추가했습니다.`);
+    } catch (error: any) {
+      setCaptureMessage("이미지 분석에 실패했습니다. 더 선명한 캡처로 다시 시도해주세요.");
+      toast.error(error?.message || "이미지 분석에 실패했습니다.");
+    }
+  };
+
+  const savePtRecord = () => {
+    const logs: PtLogInput[] = selectedExercises.flatMap((item): PtLogInput[] => {
+      const mode = inputMode(item.exercise);
+      if (mode === "strength") {
+        return item.sets
+          .filter((set) => set.weightKg.trim() || set.reps.trim())
+          .map((set) => ({
+            exerciseId: Number(item.exercise.id),
+            setNumber: set.setNumber,
+            weightKg: set.weightKg.trim() ? Number(set.weightKg) : undefined,
+            reps: set.reps.trim() ? Number(set.reps) : undefined,
+          }));
+      }
+      const minutes = Number(item.durationMinutes) || 0;
+      if (!minutes) return [];
+      return [{
+        exerciseId: Number(item.exercise.id),
+        setNumber: 1,
+        durationSeconds: Math.round(minutes * 60),
+        distanceM: item.distanceKm.trim() ? Number(item.distanceKm) * 1000 : undefined,
+      }];
+    });
+    if (!logs.length) {
+      toast.error("저장할 운동 기록을 입력해주세요.");
+      return;
+    }
+    createPtRecord.mutate({
+      clientUserId,
+      title: ptTitle.trim() || "PT 운동 기록",
+      workoutDate: new Date(`${ptDate}T12:00:00`),
+      durationMinutes: Math.max(0, Number(ptDuration) || 0),
+      notes: ptNotes,
+      feedbackMessage: ptFeedback,
+      logs,
+    });
   };
 
   return (
@@ -71,8 +292,238 @@ export default function TrainerClientDetail() {
                   </div>
                   <p className="truncate text-sm text-muted-foreground">{data?.client?.email ?? ""}</p>
                 </div>
+                <Button
+                  className="ml-auto shrink-0 bg-primary text-primary-foreground"
+                  onClick={() => setPtOpen((open) => !open)}
+                >
+                  <Plus size={14} />
+                  PT 기록 추가
+                  <ChevronDown size={14} className={ptOpen ? "rotate-180 transition-transform" : "transition-transform"} />
+                </Button>
               </CardContent>
             </Card>
+
+            {ptOpen && (
+              <Card className="border-primary/20 bg-card">
+                <CardContent className="space-y-4 p-4">
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">PT 제목</Label>
+                      <Input
+                        value={ptTitle}
+                        onChange={(event) => setPtTitle(event.target.value)}
+                        className="border-border bg-accent text-foreground"
+                        maxLength={200}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">진행 날짜</Label>
+                      <div className="relative">
+                        <CalendarDays size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          type="date"
+                          value={ptDate}
+                          onChange={(event) => setPtDate(event.target.value)}
+                          className="border-border bg-accent pl-9 text-foreground"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">진행 시간</Label>
+                      <Input
+                        type="number"
+                        value={ptDuration}
+                        onChange={(event) => setPtDuration(event.target.value)}
+                        className="border-border bg-accent text-foreground"
+                        min={0}
+                        max={1440}
+                      />
+                    </div>
+                  </div>
+
+                  <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-dashed border-border bg-accent/30 p-4 transition-colors hover:border-primary/50 hover:bg-primary/5">
+                    <div className="rounded-xl bg-primary/10 p-2 text-primary">
+                      {parseWorkoutCapture.isPending ? <Loader2 size={18} className="animate-spin" /> : <ImagePlus size={18} />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-foreground">이미지로 운동 기록 불러오기</div>
+                      <p className="text-sm leading-relaxed text-muted-foreground">
+                        회원이 보낸 운동 기록 캡처나 PT 중 기록한 화면을 올리면 운동, 세트, 무게, 횟수를 채웁니다.
+                      </p>
+                      {captureMessage ? <p className="mt-2 text-sm text-primary">{captureMessage}</p> : null}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={parseWorkoutCapture.isPending}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        event.target.value = "";
+                        handleCaptureUpload(file);
+                      }}
+                    />
+                  </label>
+
+                  <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">운동 검색</Label>
+                      <div className="relative">
+                        <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          value={exerciseSearch}
+                          onChange={(event) => setExerciseSearch(event.target.value)}
+                          placeholder="운동 이름 검색..."
+                          className="border-border bg-accent pl-9 text-foreground"
+                        />
+                      </div>
+                      <div className="max-h-72 overflow-y-auto rounded-xl border border-border bg-background">
+                        {exercisesFetching ? (
+                          <div className="p-4 text-sm text-muted-foreground">운동을 불러오는 중...</div>
+                        ) : availableExercises.length ? (
+                          availableExercises.map((exercise: any) => (
+                            <button
+                              key={exercise.id}
+                              type="button"
+                              className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-accent"
+                              onClick={() => addPtExercise(exercise)}
+                            >
+                              <span className="min-w-0">
+                                <span className="block truncate text-sm font-semibold text-foreground">{exercise.nameKo}</span>
+                                <span className="block truncate text-xs text-muted-foreground">{exercise.name}</span>
+                              </span>
+                              <Plus size={15} className="shrink-0 text-primary" />
+                            </button>
+                          ))
+                        ) : (
+                          <div className="p-4 text-sm text-muted-foreground">검색 결과가 없습니다.</div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      {selectedExercises.length ? selectedExercises.map((item) => {
+                        const mode = inputMode(item.exercise);
+                        return (
+                          <div key={item.exercise.id} className="rounded-xl border border-border bg-accent/25 p-3">
+                            <div className="mb-3 flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <div className="truncate font-semibold text-foreground">{item.exercise.nameKo}</div>
+                                <div className="truncate text-xs text-muted-foreground">{item.exercise.name}</div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                                onClick={() => removePtExercise(item.exercise.id)}
+                              >
+                                <Trash2 size={15} />
+                              </Button>
+                            </div>
+                            {mode === "strength" ? (
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <Label className="text-xs text-muted-foreground">세트 수</Label>
+                                  <Button type="button" size="sm" variant="outline" className="h-8 border-border bg-background" onClick={() => updatePtSetCount(item.exercise.id, item.sets.length - 1)}>-</Button>
+                                  <span className="w-10 text-center text-sm font-semibold">{item.sets.length}</span>
+                                  <Button type="button" size="sm" variant="outline" className="h-8 border-border bg-background text-primary" onClick={() => updatePtSetCount(item.exercise.id, item.sets.length + 1)}>+</Button>
+                                </div>
+                                {item.sets.map((set) => (
+                                  <div key={set.setNumber} className="grid grid-cols-[42px_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2">
+                                    <span className="text-xs text-muted-foreground">{set.setNumber}세트</span>
+                                    <Input
+                                      inputMode="decimal"
+                                      value={set.weightKg}
+                                      onChange={(event) => updatePtSet(item.exercise.id, set.setNumber, "weightKg", event.target.value)}
+                                      placeholder="kg"
+                                      className="h-9 border-border bg-background text-center text-foreground"
+                                    />
+                                    <Input
+                                      inputMode="numeric"
+                                      value={set.reps}
+                                      onChange={(event) => updatePtSet(item.exercise.id, set.setNumber, "reps", event.target.value)}
+                                      placeholder="회"
+                                      className="h-9 border-border bg-background text-center text-foreground"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                <div className="space-y-1">
+                                  <Label className="text-xs text-muted-foreground">시간</Label>
+                                  <Input
+                                    inputMode="numeric"
+                                    value={item.durationMinutes}
+                                    onChange={(event) => setSelectedExercises((items) => items.map((entry) => entry.exercise.id === item.exercise.id ? { ...entry, durationMinutes: event.target.value } : entry))}
+                                    placeholder="분"
+                                    className="border-border bg-background text-foreground"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-xs text-muted-foreground">거리 선택</Label>
+                                  <Input
+                                    inputMode="decimal"
+                                    value={item.distanceKm}
+                                    onChange={(event) => setSelectedExercises((items) => items.map((entry) => entry.exercise.id === item.exercise.id ? { ...entry, distanceKm: event.target.value } : entry))}
+                                    placeholder="km"
+                                    className="border-border bg-background text-foreground"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }) : (
+                        <div className="flex min-h-44 items-center justify-center rounded-xl border border-dashed border-border bg-accent/20 p-6 text-center text-sm text-muted-foreground">
+                          이미지로 불러오거나 왼쪽에서 운동을 추가하세요.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">PT 메모</Label>
+                      <Textarea
+                        value={ptNotes}
+                        onChange={(event) => setPtNotes(event.target.value)}
+                        placeholder="진행한 PT 내용, 컨디션, 다음 회차 참고사항"
+                        className="min-h-24 resize-none border-border bg-accent text-foreground"
+                        maxLength={800}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">회원에게 남길 피드백</Label>
+                      <Textarea
+                        value={ptFeedback}
+                        onChange={(event) => setPtFeedback(event.target.value)}
+                        placeholder="회원에게 보일 피드백을 함께 남길 수 있습니다."
+                        className="min-h-24 resize-none border-border bg-accent text-foreground"
+                        maxLength={1200}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2">
+                    <Button type="button" variant="outline" className="border-border bg-background" onClick={() => setPtOpen(false)}>
+                      취소
+                    </Button>
+                    <Button
+                      type="button"
+                      className="bg-primary text-primary-foreground"
+                      disabled={createPtRecord.isPending || parseWorkoutCapture.isPending}
+                      onClick={savePtRecord}
+                    >
+                      {createPtRecord.isPending ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                      회원 PT 기록 저장
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {!data?.sessions?.length ? (
               <Card className="border-border bg-card">
                 <CardContent className="p-6 text-center text-sm text-muted-foreground">
@@ -129,6 +580,32 @@ export default function TrainerClientDetail() {
 
           <Card className="h-fit border-border bg-card">
             <CardContent className="p-4">
+              <h2 className="mb-3 font-semibold text-foreground">PT 진행 기록</h2>
+              {data?.ptSessions?.length ? (
+                <div className="mb-5 space-y-2">
+                  {data.ptSessions.map((item: any) => (
+                    <div key={item.id} className="rounded-lg border border-border bg-accent/30 p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-semibold text-foreground">{item.title || item.sessionName}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(item.workoutDate ?? item.createdAt).toLocaleDateString("ko-KR")}
+                            {item.durationMinutes ? ` · ${item.durationMinutes}분` : ""}
+                          </div>
+                        </div>
+                        <div className="shrink-0 text-right text-xs text-primary">
+                          {Math.round(item.totalVolume ?? 0).toLocaleString()}kg
+                        </div>
+                      </div>
+                      {item.notes ? <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{item.notes}</p> : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mb-5 rounded-lg border border-dashed border-border bg-accent/20 p-3 text-sm text-muted-foreground">
+                  아직 트레이너가 남긴 PT 기록이 없습니다.
+                </p>
+              )}
               <h2 className="mb-3 font-semibold text-foreground">피드백 기록</h2>
               {data?.feedback?.length ? (
                 <div className="space-y-2">

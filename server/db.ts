@@ -872,6 +872,17 @@ async function ensureTrainerTables() {
       created_at timestamp
     )`,
   );
+  await run(
+    `CREATE TABLE IF NOT EXISTS trainer_pt_sessions (
+      id ${autoId},
+      trainer_user_id integer NOT NULL,
+      client_user_id integer NOT NULL,
+      session_id integer NOT NULL,
+      title varchar(200),
+      notes text,
+      created_at timestamp
+    )`,
+  );
   trainerTablesReady = true;
 }
 
@@ -1327,6 +1338,69 @@ export async function getTrainerFeedbackForPair(trainerUserId: number, clientUse
     sessionId: row.session_id ? Number(row.session_id) : null,
     message: row.message,
     createdAt: row.created_at,
+  }));
+}
+
+export async function addTrainerPtSession(
+  trainerUserId: number,
+  clientUserId: number,
+  sessionId: number,
+  title: string,
+  notes?: string,
+): Promise<number> {
+  await ensureTrainerTables();
+  if (!(await isTrainerLinkedToClient(trainerUserId, clientUserId))) {
+    throw new Error("연결된 회원에게만 PT 기록을 남길 수 있습니다.");
+  }
+  const result = await run(
+    `INSERT INTO trainer_pt_sessions
+     (trainer_user_id, client_user_id, session_id, title, notes, created_at)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    trainerUserId,
+    clientUserId,
+    sessionId,
+    title.trim() || "PT 운동 기록",
+    notes?.trim() || null,
+    new Date().toISOString(),
+  );
+  return getInsertId(result);
+}
+
+export async function getTrainerPtSessionsForPair(trainerUserId: number, clientUserId: number, limit = 20): Promise<Row[]> {
+  await ensureTrainerTables();
+  if (!(await isTrainerLinkedToClient(trainerUserId, clientUserId))) {
+    throw new Error("연결된 회원의 PT 기록만 확인할 수 있습니다.");
+  }
+  const rows = await all(
+    `SELECT
+       p.id AS pt_id,
+       p.session_id,
+       p.title,
+       p.notes AS pt_notes,
+       p.created_at AS pt_created_at,
+       ws.name AS session_name,
+       ws.workoutDate AS workout_date,
+       ws.durationMinutes AS duration_minutes,
+       ws.totalVolume AS total_volume
+     FROM trainer_pt_sessions p
+     JOIN workout_sessions ws ON ws.id = p.session_id
+     WHERE p.trainer_user_id = ? AND p.client_user_id = ?
+     ORDER BY p.created_at DESC
+     LIMIT ?`,
+    trainerUserId,
+    clientUserId,
+    limit,
+  );
+  return rows.map((row) => ({
+    id: Number(aliasValue(row, "pt_id")),
+    sessionId: Number(aliasValue(row, "session_id")),
+    title: aliasValue(row, "title"),
+    notes: aliasValue(row, "pt_notes"),
+    createdAt: aliasValue(row, "pt_created_at"),
+    sessionName: aliasValue(row, "session_name"),
+    workoutDate: aliasValue(row, "workout_date"),
+    durationMinutes: Number(aliasValue(row, "duration_minutes")) || 0,
+    totalVolume: Number(aliasValue(row, "total_volume")) || 0,
   }));
 }
 

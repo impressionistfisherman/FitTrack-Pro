@@ -8,6 +8,7 @@ import {
   addBodyWeight,
   addExerciseToRoutine,
   addTrainerFeedback,
+  addTrainerPtSession,
   addWorkoutLog,
   checkPRs,
   completeWorkoutSession,
@@ -40,6 +41,7 @@ import {
   getTrainerApplication,
   getTrainerFeedbackForClient,
   getTrainerFeedbackForPair,
+  getTrainerPtSessionsForPair,
   getUserPreference,
   getUserStats,
   getUserAppRole,
@@ -49,6 +51,7 @@ import {
   getWorkoutSessionsByUser,
   getWorkoutStreak,
   ensureTrainerCode,
+  isTrainerLinkedToClient,
   isFavorite,
   listTrainerApplications,
   listApprovedTrainers,
@@ -138,6 +141,16 @@ const equipmentSchema = z.enum([
   "kettlebell",
   "none",
 ]);
+
+const trainerWorkoutLogSchema = z.object({
+  exerciseId: z.number(),
+  setNumber: z.number().int().min(1).max(200),
+  reps: z.number().min(0).max(1000).optional(),
+  weightKg: z.number().min(0).max(1000).optional(),
+  durationSeconds: z.number().min(0).max(24 * 60 * 60).optional(),
+  distanceM: z.number().min(0).max(1_000_000).optional(),
+  notes: z.string().max(200).optional(),
+});
 
 function parseCustomSplitPresets(value: string | null): CustomSplitPreset[] {
   if (!value) return [];
@@ -1514,7 +1527,49 @@ export const appRouter = router({
           client,
           sessions: detailedSessions,
           feedback: await getTrainerFeedbackForPair(ctx.user.id, input.clientUserId, 30),
+          ptSessions: await getTrainerPtSessionsForPair(ctx.user.id, input.clientUserId, 20),
         };
+      }),
+    createPtRecord: protectedProcedure
+      .input(z.object({
+        clientUserId: z.number(),
+        title: z.string().trim().min(1).max(200),
+        workoutDate: z.date(),
+        durationMinutes: z.number().min(0).max(24 * 60),
+        notes: z.string().max(800).optional(),
+        feedbackMessage: z.string().max(1200).optional(),
+        logs: z.array(trainerWorkoutLogSchema).min(1).max(300),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const appRole = await getUserAppRole(ctx.user.id);
+        if (appRole !== "trainer" && ctx.user.role !== "admin") {
+          throw new Error("트레이너만 회원 PT 기록을 남길 수 있습니다.");
+        }
+        if (!(await isTrainerLinkedToClient(ctx.user.id, input.clientUserId))) {
+          throw new Error("연결된 회원에게만 PT 기록을 남길 수 있습니다.");
+        }
+        const sessionId = await createWorkoutSession(input.clientUserId, {
+          name: input.title,
+          workoutDate: input.workoutDate,
+        });
+        for (const log of input.logs) {
+          await addWorkoutLog({
+            sessionId,
+            exerciseId: log.exerciseId,
+            setNumber: log.setNumber,
+            reps: log.reps,
+            weightKg: log.weightKg,
+            durationSeconds: log.durationSeconds,
+            distanceM: log.distanceM,
+            notes: log.notes,
+          });
+        }
+        await completeWorkoutSession(sessionId, input.durationMinutes, input.notes);
+        const ptId = await addTrainerPtSession(ctx.user.id, input.clientUserId, sessionId, input.title, input.notes);
+        if (input.feedbackMessage?.trim()) {
+          await addTrainerFeedback(ctx.user.id, input.clientUserId, input.feedbackMessage.trim(), sessionId);
+        }
+        return { success: true, sessionId, ptId };
       }),
     addFeedback: protectedProcedure
       .input(z.object({
