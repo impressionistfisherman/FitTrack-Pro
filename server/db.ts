@@ -54,6 +54,7 @@ const pgQuotedIdentifiers = [
   "createdAt",
   "updatedAt",
   "lastSignedIn",
+  "profileImageUrl",
   "nameKo",
   "bodyPart",
   "descriptionKo",
@@ -91,6 +92,29 @@ const pgQuotedIdentifiers = [
   "userId",
   "gifUrl",
 ] as const;
+
+let userProfileImageColumnReady = false;
+
+async function ensureUserProfileImageColumn() {
+  if (userProfileImageColumnReady) return;
+
+  if (databaseType === "postgres") {
+    await run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "profileImageUrl" text`);
+  } else if (databaseType === "mysql") {
+    try {
+      await run("ALTER TABLE users ADD COLUMN profileImageUrl TEXT");
+    } catch (error: any) {
+      if (error?.code !== "ER_DUP_FIELDNAME" && error?.errno !== 1060) throw error;
+    }
+  } else {
+    const columns = await all<{ name: string }>("PRAGMA table_info(users)");
+    if (!columns.some((column) => column.name === "profileImageUrl")) {
+      await run("ALTER TABLE users ADD COLUMN profileImageUrl TEXT");
+    }
+  }
+
+  userProfileImageColumnReady = true;
+}
 
 function quotePostgresIdentifiers(sql: string) {
   return pgQuotedIdentifiers.reduce((current, identifier) => {
@@ -507,14 +531,22 @@ async function ensureSupplementalExercises() {
 }
 
 export async function getUserByOpenId(openId: string): Promise<any> {
+  await ensureUserProfileImageColumn();
   return normalizeUser(await get("SELECT * FROM users WHERE openId = ? LIMIT 1", openId));
 }
 
+export async function getUserById(userId: number): Promise<any> {
+  await ensureUserProfileImageColumn();
+  return normalizeUser(await get("SELECT * FROM users WHERE id = ? LIMIT 1", userId));
+}
+
 export async function getFirstUser(): Promise<any> {
+  await ensureUserProfileImageColumn();
   return normalizeUser(await get("SELECT * FROM users ORDER BY id LIMIT 1"));
 }
 
 export async function upsertUser(input: InsertUser): Promise<any> {
+  await ensureUserProfileImageColumn();
   const existing = await getUserByOpenId(input.openId);
   const email = typeof input.email === "string"
     ? input.email.toLowerCase()
@@ -554,6 +586,7 @@ export async function upsertUser(input: InsertUser): Promise<any> {
 }
 
 export async function updateUserProfileName(userId: number, name: string): Promise<void> {
+  await ensureUserProfileImageColumn();
   await run(
     "UPDATE users SET name = ?, updatedAt = ? WHERE id = ?",
     name,
@@ -562,7 +595,18 @@ export async function updateUserProfileName(userId: number, name: string): Promi
   );
 }
 
+export async function updateUserProfileImage(userId: number, profileImageUrl: string | null): Promise<void> {
+  await ensureUserProfileImageColumn();
+  await run(
+    "UPDATE users SET profileImageUrl = ?, updatedAt = ? WHERE id = ?",
+    profileImageUrl,
+    new Date().toISOString(),
+    userId,
+  );
+}
+
 export async function updateUserRole(userId: number, role: "user" | "admin"): Promise<void> {
+  await ensureUserProfileImageColumn();
   await run(
     "UPDATE users SET role = ?, updatedAt = ? WHERE id = ?",
     role,
@@ -1088,6 +1132,7 @@ export async function isTrainerLinkedToClient(trainerUserId: number, clientUserI
 
 export async function getTrainerClients(trainerUserId: number): Promise<Row[]> {
   await ensureTrainerTables();
+  await ensureUserProfileImageColumn();
   const rows = await all(
     `SELECT
        l.id AS link_id,
@@ -1095,13 +1140,14 @@ export async function getTrainerClients(trainerUserId: number): Promise<Row[]> {
        u.id AS user_id,
        u.name AS user_name,
        u.email AS user_email,
+       u.profileImageUrl AS user_profile_image_url,
        MAX(COALESCE(ws.workoutDate, ws.startedAt)) AS last_workout_at,
        COUNT(ws.id) AS session_count
      FROM trainer_client_links l
      JOIN users u ON u.id = l.client_user_id
      LEFT JOIN workout_sessions ws ON ws.userId = l.client_user_id
      WHERE l.trainer_user_id = ? AND l.status = 'active'
-     GROUP BY l.id, l.created_at, u.id, u.name, u.email
+     GROUP BY l.id, l.created_at, u.id, u.name, u.email, u.profileImageUrl
      ORDER BY connected_at DESC`,
     trainerUserId,
   );
@@ -1112,6 +1158,7 @@ export async function getTrainerClients(trainerUserId: number): Promise<Row[]> {
       id: Number(aliasValue(row, "user_id")),
       name: aliasValue(row, "user_name"),
       email: aliasValue(row, "user_email"),
+      profileImageUrl: aliasValue(row, "user_profile_image_url"),
     }),
     lastWorkoutAt: aliasValue(row, "last_workout_at"),
     sessionCount: Number(aliasValue(row, "session_count")) || 0,
@@ -1120,13 +1167,15 @@ export async function getTrainerClients(trainerUserId: number): Promise<Row[]> {
 
 export async function getTrainerClientRequests(trainerUserId: number): Promise<Row[]> {
   await ensureTrainerTables();
+  await ensureUserProfileImageColumn();
   const rows = await all(
     `SELECT
        l.id AS link_id,
        l.created_at AS connected_at,
        u.id AS user_id,
        u.name AS user_name,
-       u.email AS user_email
+       u.email AS user_email,
+       u.profileImageUrl AS user_profile_image_url
      FROM trainer_client_links l
      JOIN users u ON u.id = l.client_user_id
      WHERE l.trainer_user_id = ? AND l.status = 'pending'
@@ -1140,19 +1189,22 @@ export async function getTrainerClientRequests(trainerUserId: number): Promise<R
       id: Number(aliasValue(row, "user_id")),
       name: aliasValue(row, "user_name"),
       email: aliasValue(row, "user_email"),
+      profileImageUrl: aliasValue(row, "user_profile_image_url"),
     }),
   }));
 }
 
 export async function getClientTrainers(clientUserId: number): Promise<Row[]> {
   await ensureTrainerTables();
+  await ensureUserProfileImageColumn();
   const rows = await all(
     `SELECT
        l.id AS link_id,
        l.created_at AS connected_at,
        u.id AS user_id,
        u.name AS user_name,
-       u.email AS user_email
+       u.email AS user_email,
+       u.profileImageUrl AS user_profile_image_url
      FROM trainer_client_links l
      JOIN users u ON u.id = l.trainer_user_id
      WHERE l.client_user_id = ? AND l.status = 'active'
@@ -1166,19 +1218,22 @@ export async function getClientTrainers(clientUserId: number): Promise<Row[]> {
       id: Number(aliasValue(row, "user_id")),
       name: aliasValue(row, "user_name"),
       email: aliasValue(row, "user_email"),
+      profileImageUrl: aliasValue(row, "user_profile_image_url"),
     }),
   }));
 }
 
 export async function getPendingClientTrainerLinks(clientUserId: number): Promise<Row[]> {
   await ensureTrainerTables();
+  await ensureUserProfileImageColumn();
   const rows = await all(
     `SELECT
        l.id AS link_id,
        l.created_at AS connected_at,
        u.id AS user_id,
        u.name AS user_name,
-       u.email AS user_email
+       u.email AS user_email,
+       u.profileImageUrl AS user_profile_image_url
      FROM trainer_client_links l
      JOIN users u ON u.id = l.trainer_user_id
      WHERE l.client_user_id = ? AND l.status = 'pending'
@@ -1192,6 +1247,7 @@ export async function getPendingClientTrainerLinks(clientUserId: number): Promis
       id: Number(aliasValue(row, "user_id")),
       name: aliasValue(row, "user_name"),
       email: aliasValue(row, "user_email"),
+      profileImageUrl: aliasValue(row, "user_profile_image_url"),
     }),
   }));
 }
@@ -1214,6 +1270,7 @@ export async function addTrainerFeedback(trainerUserId: number, clientUserId: nu
 
 export async function getTrainerFeedbackForClient(clientUserId: number, limit = 20): Promise<Row[]> {
   await ensureTrainerTables();
+  await ensureUserProfileImageColumn();
   const rows = await all(
     `SELECT
        f.id,
@@ -1222,7 +1279,8 @@ export async function getTrainerFeedbackForClient(clientUserId: number, limit = 
        f.created_at,
        u.id AS trainer_id,
        u.name AS trainer_name,
-       u.email AS trainer_email
+       u.email AS trainer_email,
+       u.profileImageUrl AS trainer_profile_image_url
      FROM trainer_feedback f
      JOIN users u ON u.id = f.trainer_user_id
      WHERE f.client_user_id = ?
@@ -1240,6 +1298,7 @@ export async function getTrainerFeedbackForClient(clientUserId: number, limit = 
       id: Number(aliasValue(row, "trainer_id")),
       name: aliasValue(row, "trainer_name"),
       email: aliasValue(row, "trainer_email"),
+      profileImageUrl: aliasValue(row, "trainer_profile_image_url"),
     }),
   }));
 }
@@ -1280,6 +1339,7 @@ export async function getLinkedClientWorkoutSessions(trainerUserId: number, clie
 
 export async function listApprovedTrainers(): Promise<Row[]> {
   await ensureTrainerTables();
+  await ensureUserProfileImageColumn();
   const rows = await all(
     `SELECT
        a.id AS application_id,
@@ -1288,6 +1348,7 @@ export async function listApprovedTrainers(): Promise<Row[]> {
        u.id AS user_id,
        u.name AS user_name,
        u.email AS user_email,
+       u.profileImageUrl AS user_profile_image_url,
        tc.code AS trainer_code,
        COUNT(l.id) AS client_count
      FROM trainer_applications a
@@ -1295,7 +1356,7 @@ export async function listApprovedTrainers(): Promise<Row[]> {
      LEFT JOIN trainer_codes tc ON tc.trainer_user_id = a.user_id AND tc.is_active = ?
      LEFT JOIN trainer_client_links l ON l.trainer_user_id = a.user_id AND l.status = 'active'
      WHERE a.status = 'approved'
-     GROUP BY a.id, a.display_name, a.specialties, u.id, u.name, u.email, tc.code
+     GROUP BY a.id, a.display_name, a.specialties, u.id, u.name, u.email, u.profileImageUrl, tc.code
      ORDER BY a.updated_at DESC`,
     true,
   );
@@ -1309,6 +1370,7 @@ export async function listApprovedTrainers(): Promise<Row[]> {
       id: Number(aliasValue(row, "user_id")),
       name: aliasValue(row, "user_name"),
       email: aliasValue(row, "user_email"),
+      profileImageUrl: aliasValue(row, "user_profile_image_url"),
     }),
   }));
 }

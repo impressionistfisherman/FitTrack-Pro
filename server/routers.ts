@@ -33,6 +33,7 @@ import {
   getSessionsInDateRange,
   getUserGoal,
   getUserGoals,
+  getUserById,
   getTrainerClients,
   getTrainerClientRequests,
   getTrainerCode,
@@ -63,6 +64,7 @@ import {
   toggleFavorite,
   updateRoutine,
   updateRoutineExercise,
+  updateUserProfileImage,
   updateUserProfileName,
   upsertUserGoal,
 } from "./db";
@@ -1221,6 +1223,18 @@ export const appRouter = router({
         await setUserPreference(ctx.user.id, "displayName", name);
         return { success: true, name };
       }),
+    updateProfileImage: protectedProcedure
+      .input(z.object({
+        profileImageUrl: z
+          .string()
+          .max(900_000)
+          .regex(/^data:image\/(png|jpe?g|webp);base64,/)
+          .nullable(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await updateUserProfileImage(ctx.user.id, input.profileImageUrl);
+        return { success: true, profileImageUrl: input.profileImageUrl };
+      }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -1491,11 +1505,13 @@ export const appRouter = router({
       .input(z.object({ clientUserId: z.number(), limit: z.number().min(1).max(30).default(10) }))
       .query(async ({ ctx, input }) => {
         const sessions = await getLinkedClientWorkoutSessions(ctx.user.id, input.clientUserId, input.limit);
+        const client = await getUserById(input.clientUserId);
         const detailedSessions = await Promise.all(sessions.map(async (session: any) => ({
           ...session,
           logs: await getWorkoutLogsBySession(session.id),
         })));
         return {
+          client,
           sessions: detailedSessions,
           feedback: await getTrainerFeedbackForPair(ctx.user.id, input.clientUserId, 30),
         };

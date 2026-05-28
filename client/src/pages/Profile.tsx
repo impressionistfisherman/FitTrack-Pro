@@ -3,9 +3,10 @@ import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
-  Activity, Calendar, Copy, Dumbbell, Flame, LogIn, LogOut, MapPin, MessageSquare, Ruler, Scale, Settings, ShieldCheck, Target, TrendingDown, TrendingUp, Trophy, User, Users
+  Activity, Calendar, Camera, Copy, Dumbbell, Flame, LogIn, LogOut, MapPin, MessageSquare, Ruler, Scale, Settings, ShieldCheck, Target, Trash2, TrendingDown, TrendingUp, Trophy, User, Users
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -65,9 +66,63 @@ const trainerSpecialtyOptions = [
 
 type EquipmentValue = (typeof equipmentOptions)[number]["value"] | "none";
 
+const MAX_PROFILE_IMAGE_BYTES = 850_000;
+
+function getUserInitial(name?: string | null, email?: string | null) {
+  const source = (name || email || "사용자").trim();
+  return source.slice(0, 1).toUpperCase();
+}
+
+function PersonAvatar({ person, className = "h-10 w-10" }: { person?: any; className?: string }) {
+  return (
+    <Avatar className={cn("shrink-0 border border-primary/25 bg-primary/10", className)}>
+      {person?.profileImageUrl ? (
+        <AvatarImage src={person.profileImageUrl} alt={`${person?.name ?? "사용자"} 프로필`} className="object-cover" />
+      ) : null}
+      <AvatarFallback className="bg-primary/10 text-sm font-bold text-primary">
+        {getUserInitial(person?.name, person?.email)}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+
+async function resizeProfileImage(file: File): Promise<string> {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("이미지 파일만 등록할 수 있습니다.");
+  }
+
+  const imageUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("이미지를 읽을 수 없습니다."));
+      img.src = imageUrl;
+    });
+    const maxSize = 512;
+    const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+    const width = Math.max(1, Math.round(image.width * scale));
+    const height = Math.max(1, Math.round(image.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("이미지를 처리할 수 없습니다.");
+    context.drawImage(image, 0, 0, width, height);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+    if (dataUrl.length > MAX_PROFILE_IMAGE_BYTES) {
+      throw new Error("이미지 용량이 큽니다. 더 작은 이미지를 선택해주세요.");
+    }
+    return dataUrl;
+  } finally {
+    URL.revokeObjectURL(imageUrl);
+  }
+}
+
 export default function Profile() {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const utils = trpc.useUtils();
+  const profileImageInputRef = useRef<HTMLInputElement>(null);
   const { data: stats } = trpc.history.stats.useQuery(undefined, { enabled: isAuthenticated });
   const { data: goal } = trpc.goals.get.useQuery(undefined, { enabled: isAuthenticated });
   const { data: goals } = trpc.goals.list.useQuery(undefined, { enabled: isAuthenticated });
@@ -93,6 +148,7 @@ export default function Profile() {
   const [preferredExercises, setPreferredExercises] = useState("");
   const [availableWorkoutTimes, setAvailableWorkoutTimes] = useState("");
   const [displayNameInput, setDisplayNameInput] = useState("");
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
   const [trainerCodeInput, setTrainerCodeInput] = useState("");
   const [trainerFeedbackDrafts, setTrainerFeedbackDrafts] = useState<Record<number, string>>({});
   const [trainerApplyBio, setTrainerApplyBio] = useState("");
@@ -139,6 +195,12 @@ export default function Profile() {
   }, [nameInitialized, preferences, user]);
 
   useEffect(() => {
+    if (user) {
+      setProfileImagePreview((user as any).profileImageUrl ?? null);
+    }
+  }, [user]);
+
+  useEffect(() => {
     if (!trainerApplication) return;
     setTrainerApplyBio(trainerApplication.bio || "");
     setTrainerApplyExperience(trainerApplication.experience || "");
@@ -165,6 +227,14 @@ export default function Profile() {
       utils.preferences.get.invalidate();
     },
     onError: () => toast.error("이름 저장에 실패했습니다."),
+  });
+  const updateProfileImageMutation = trpc.auth.updateProfileImage.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.profileImageUrl ? "프로필 이미지를 저장했습니다." : "프로필 이미지를 삭제했습니다.");
+      utils.auth.me.invalidate();
+      utils.trainer.status.invalidate();
+    },
+    onError: (error) => toast.error(error.message || "프로필 이미지 저장에 실패했습니다."),
   });
   const issueTrainerCodeMutation = trpc.trainer.issueCode.useMutation({
     onSuccess: () => {
@@ -241,6 +311,24 @@ export default function Profile() {
       preferredExercises,
       availableWorkoutTimes,
     });
+  };
+
+  const handleProfileImageFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      const dataUrl = await resizeProfileImage(file);
+      setProfileImagePreview(dataUrl);
+      updateProfileImageMutation.mutate({ profileImageUrl: dataUrl });
+    } catch (error: any) {
+      toast.error(error?.message || "프로필 이미지를 처리하지 못했습니다.");
+    }
+  };
+
+  const removeProfileImage = () => {
+    setProfileImagePreview(null);
+    updateProfileImageMutation.mutate({ profileImageUrl: null });
   };
 
   if (loading) {
@@ -323,8 +411,47 @@ export default function Profile() {
       <Card className="bg-gradient-to-br from-primary/10 to-card border-primary/20 mb-6">
         <CardContent className="p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="w-16 h-16 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center">
-              <User size={28} className="text-primary" />
+            <input
+              ref={profileImageInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="hidden"
+              onChange={handleProfileImageFile}
+            />
+            <div className="flex items-center gap-3">
+              <Avatar className="h-16 w-16 rounded-2xl border border-primary/30 bg-primary/10">
+                {profileImagePreview ? (
+                  <AvatarImage src={profileImagePreview} alt="내 프로필 이미지" className="rounded-2xl object-cover" />
+                ) : null}
+                <AvatarFallback className="rounded-2xl bg-primary/10 text-xl font-bold text-primary">
+                  {getUserInitial(displayName, user?.email)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col gap-2 sm:hidden">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-8 border-border bg-background text-foreground"
+                  disabled={updateProfileImageMutation.isPending}
+                  onClick={() => profileImageInputRef.current?.click()}
+                >
+                  <Camera size={14} />
+                  변경
+                </Button>
+                {profileImagePreview ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 text-muted-foreground hover:text-destructive"
+                    disabled={updateProfileImageMutation.isPending}
+                    onClick={removeProfileImage}
+                  >
+                    삭제
+                  </Button>
+                ) : null}
+              </div>
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-bold text-foreground">{displayName}</h2>
@@ -345,6 +472,32 @@ export default function Profile() {
                 className="bg-accent border-border text-foreground"
                 maxLength={40}
               />
+              <div className="mt-2 hidden gap-2 sm:flex">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-8 border-border bg-background text-foreground"
+                  disabled={updateProfileImageMutation.isPending}
+                  onClick={() => profileImageInputRef.current?.click()}
+                >
+                  <Camera size={14} />
+                  프로필 이미지 변경
+                </Button>
+                {profileImagePreview ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-muted-foreground hover:text-destructive"
+                    disabled={updateProfileImageMutation.isPending}
+                    onClick={removeProfileImage}
+                    aria-label="프로필 이미지 삭제"
+                  >
+                    <Trash2 size={14} />
+                  </Button>
+                ) : null}
+              </div>
             </div>
           </div>
         </CardContent>
@@ -538,9 +691,12 @@ export default function Profile() {
                   <div className="text-xs font-semibold text-muted-foreground">등록한 트레이너</div>
                   {linkedTrainers.map((item: any) => (
                     <div key={item.linkId} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-accent/30 p-3">
-                      <div className="min-w-0">
-                        <div className="truncate text-sm font-semibold text-foreground">{item.trainer?.name}</div>
-                        <div className="truncate text-xs text-muted-foreground">{item.trainer?.email}</div>
+                      <div className="flex min-w-0 items-center gap-3">
+                        <PersonAvatar person={item.trainer} />
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-semibold text-foreground">{item.trainer?.name}</div>
+                          <div className="truncate text-xs text-muted-foreground">{item.trainer?.email}</div>
+                        </div>
                       </div>
                       <Button
                         type="button"
@@ -561,8 +717,13 @@ export default function Profile() {
                   <div className="text-xs font-semibold text-muted-foreground">승인 대기 중인 트레이너 요청</div>
                   {pendingTrainers.map((item: any) => (
                     <div key={item.linkId} className="rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-3">
-                      <div className="truncate text-sm font-semibold text-foreground">{item.trainer?.name}</div>
-                      <div className="truncate text-xs text-muted-foreground">{item.trainer?.email}</div>
+                      <div className="flex min-w-0 items-center gap-3">
+                        <PersonAvatar person={item.trainer} />
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-semibold text-foreground">{item.trainer?.name}</div>
+                          <div className="truncate text-xs text-muted-foreground">{item.trainer?.email}</div>
+                        </div>
+                      </div>
                       <p className="mt-2 text-xs text-yellow-200">
                         트레이너가 승인하면 운동 기록과 피드백이 공유됩니다.
                       </p>
@@ -583,9 +744,12 @@ export default function Profile() {
                   {clientRequests.map((request: any) => (
                     <div key={request.linkId} className="rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-3">
                       <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="min-w-0">
-                          <div className="truncate text-sm font-semibold text-foreground">{request.user?.name}</div>
-                          <div className="truncate text-xs text-muted-foreground">{request.user?.email}</div>
+                        <div className="flex min-w-0 items-center gap-3">
+                          <PersonAvatar person={request.user} />
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-semibold text-foreground">{request.user?.name}</div>
+                            <div className="truncate text-xs text-muted-foreground">{request.user?.email}</div>
+                          </div>
                         </div>
                         <Badge className="w-fit border border-yellow-400/30 bg-yellow-400/10 text-yellow-200">
                           승인 대기
@@ -625,9 +789,12 @@ export default function Profile() {
                   return (
                     <div key={client.linkId} className="rounded-xl border border-border bg-accent/30 p-3">
                       <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0">
-                          <div className="truncate text-sm font-semibold text-foreground">{client.user?.name}</div>
-                          <div className="truncate text-xs text-muted-foreground">{client.user?.email}</div>
+                        <div className="flex min-w-0 items-center gap-3">
+                          <PersonAvatar person={client.user} />
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-semibold text-foreground">{client.user?.name}</div>
+                            <div className="truncate text-xs text-muted-foreground">{client.user?.email}</div>
+                          </div>
                         </div>
                         <div className="text-xs text-muted-foreground">
                           총 {client.sessionCount ?? 0}회
@@ -670,9 +837,12 @@ export default function Profile() {
                   <div className="text-xs font-semibold text-muted-foreground">받은 피드백</div>
                   {trainerFeedback.slice(0, 3).map((item: any) => (
                     <div key={item.id} className="rounded-xl border border-border bg-accent/30 p-3">
-                      <div className="mb-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                        <span>{item.trainer?.name}</span>
-                        <span>{new Date(item.createdAt).toLocaleDateString("ko-KR")}</span>
+                      <div className="mb-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <PersonAvatar person={item.trainer} className="h-8 w-8" />
+                          <span className="truncate">{item.trainer?.name}</span>
+                        </div>
+                        <span className="shrink-0">{new Date(item.createdAt).toLocaleDateString("ko-KR")}</span>
                       </div>
                       <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{item.message}</p>
                     </div>

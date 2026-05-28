@@ -1,11 +1,16 @@
 import { trpc } from "@/lib/trpc";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, MessageSquare } from "lucide-react";
+import { ArrowLeft, MessageSquare, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Link, useRoute } from "wouter";
+
+function clientInitial(client?: any) {
+  return (client?.name || client?.email || "회원").trim().slice(0, 1).toUpperCase();
+}
 
 export default function TrainerClientDetail() {
   const [, params] = useRoute("/trainer/clients/:id");
@@ -49,6 +54,25 @@ export default function TrainerClientDetail() {
       ) : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-3">
+            <Card className="border-primary/20 bg-primary/5">
+              <CardContent className="flex items-center gap-3 p-4">
+                <Avatar className="h-14 w-14 border border-primary/30 bg-primary/10">
+                  {data?.client?.profileImageUrl ? (
+                    <AvatarImage src={data.client.profileImageUrl} alt={`${data.client.name ?? "회원"} 프로필`} className="object-cover" />
+                  ) : null}
+                  <AvatarFallback className="bg-primary/10 text-lg font-bold text-primary">
+                    {clientInitial(data?.client)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <User size={15} className="text-primary" />
+                    <h2 className="truncate text-lg font-bold text-foreground">{data?.client?.name ?? "회원"}</h2>
+                  </div>
+                  <p className="truncate text-sm text-muted-foreground">{data?.client?.email ?? ""}</p>
+                </div>
+              </CardContent>
+            </Card>
             {!data?.sessions?.length ? (
               <Card className="border-border bg-card">
                 <CardContent className="p-6 text-center text-sm text-muted-foreground">

@@ -4,11 +4,12 @@ import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
   Activity, Bot, Calendar, Dumbbell, Home,
-  LogIn, LogOut, Menu, Scale, ShieldCheck, User, X,
+  LogIn, LogOut, Menu, Scale, ShieldCheck, X,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "./ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import ThemePicker from "./ThemePicker";
 
 const navItems = [
@@ -149,6 +150,23 @@ function AdminModeSwitch({ badge }: { badge: number }) {
   );
 }
 
+function userInitial(name?: string | null, email?: string | null) {
+  return (name || email || "사용자").trim().slice(0, 1).toUpperCase();
+}
+
+function UserAvatar({ user, className = "h-8 w-8" }: { user?: any; className?: string }) {
+  return (
+    <Avatar className={cn("shrink-0 border border-primary/30 bg-primary/10", className)}>
+      {user?.profileImageUrl ? (
+        <AvatarImage src={user.profileImageUrl} alt={`${user?.name ?? "사용자"} 프로필`} className="object-cover" />
+      ) : null}
+      <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">
+        {userInitial(user?.name, user?.email)}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -197,9 +215,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="space-y-3">
               <Link href="/profile" className="block">
                 <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-accent cursor-pointer">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                    <User size={14} className="text-primary" />
-                  </div>
+                  <UserAvatar user={user} />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-foreground truncate">{displayName}</div>
                     <div className="text-xs text-muted-foreground truncate">{user.email || ""}</div>
@@ -237,9 +253,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <div className="h-8 w-8 skeleton rounded-full" />
             ) : isAuthenticated ? (
               <Link href="/profile" className="block">
-                <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center cursor-pointer">
-                  <User size={14} className="text-primary" />
-                </div>
+                <UserAvatar user={user} className="h-8 w-8 cursor-pointer" />
               </Link>
             ) : (
               <Button size="sm" className="gap-1.5 bg-primary text-primary-foreground text-xs"
