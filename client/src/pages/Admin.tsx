@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ShieldCheck, UserCheck, Users, UserX } from "lucide-react";
+import { Home, ShieldCheck, UserCheck, Users, UserX } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Link } from "wouter";
 
 const statusLabels: Record<string, string> = {
   pending: "대기",
@@ -64,8 +65,18 @@ export default function Admin() {
   return (
     <div className="page-shell page-shell-narrow animate-fade-in">
       <div className="page-header">
-        <h1 className="page-title">관리자</h1>
-        <p className="page-description">트레이너 신청과 승인 상태를 관리하세요</p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="page-title">관리자</h1>
+            <p className="page-description">트레이너 신청과 승인 상태를 관리하세요</p>
+          </div>
+          <Button asChild variant="outline" className="w-fit border-border bg-card text-foreground">
+            <Link href="/">
+              <Home size={14} />
+              사용자 화면으로
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="mb-4 grid gap-3 sm:grid-cols-3">

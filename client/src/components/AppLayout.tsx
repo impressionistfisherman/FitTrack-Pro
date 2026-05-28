@@ -97,6 +97,46 @@ function MobileNavItem({ href, icon: Icon, label, badge }: {
   );
 }
 
+function AdminModeSwitch({ badge, onNavigate }: { badge: number; onNavigate?: () => void }) {
+  const [location] = useLocation();
+  const isAdminView = location.startsWith("/admin");
+
+  return (
+    <div className="rounded-xl border border-primary/20 bg-primary/5 p-2">
+      <div className="mb-2 flex items-center justify-between px-1">
+        <span className="text-xs font-semibold text-primary">관리자 권한</span>
+        {badge > 0 && (
+          <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
+            대기 {badge}
+          </span>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-1">
+        <Link href="/" onClick={onNavigate} className="block">
+          <div className={cn(
+            "rounded-lg px-2 py-2 text-center text-xs font-semibold transition-colors",
+            !isAdminView
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground"
+          )}>
+            사용자 화면
+          </div>
+        </Link>
+        <Link href="/admin" onClick={onNavigate} className="block">
+          <div className={cn(
+            "rounded-lg px-2 py-2 text-center text-xs font-semibold transition-colors",
+            isAdminView
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground"
+          )}>
+            관리자
+          </div>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -131,6 +171,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {visibleNavItems.map((item) => <NavItem key={item.href} {...item} />)}
         </nav>
+        {user?.role === "admin" && (
+          <div className="px-4 pb-3">
+            <AdminModeSwitch badge={adminBadge} />
+          </div>
+        )}
         <div className="px-4 pb-2">
           <ThemePicker sidebar />
         </div>
@@ -205,6 +250,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
         {mobileMenuOpen && (
           <div className="bg-card border-b border-border p-4 space-y-1 animate-slide-up">
+            {user?.role === "admin" && (
+              <div className="mb-3">
+                <AdminModeSwitch badge={adminBadge} onNavigate={() => setMobileMenuOpen(false)} />
+              </div>
+            )}
             {visibleNavItems.map((item) => (
               <NavItem key={item.href} {...item} onClick={() => setMobileMenuOpen(false)} />
             ))}
