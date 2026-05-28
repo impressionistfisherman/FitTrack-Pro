@@ -100,44 +100,50 @@ function AdminModeSwitch({ badge }: { badge: number }) {
   const isAdminView = location.startsWith("/admin");
 
   return (
-    <div className="mb-3 flex justify-end">
-      <div className="flex items-center gap-1 rounded-xl border border-border bg-card p-1 shadow-sm">
-        <Link href="/">
-          <Button
-            size="sm"
-            variant={isAdminView ? "ghost" : "default"}
-            className={cn(
-              "h-8 gap-1.5 px-3 text-xs",
-              !isAdminView && "bg-primary text-primary-foreground hover:bg-primary/90",
-              isAdminView && "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Home size={14} />
-            사용자
-          </Button>
-        </Link>
-        <Link href="/admin">
-          <Button
-            size="sm"
-            variant={isAdminView ? "default" : "ghost"}
-            className={cn(
-              "h-8 gap-1.5 px-3 text-xs",
-              isAdminView && "bg-primary text-primary-foreground hover:bg-primary/90",
-              !isAdminView && "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <ShieldCheck size={14} />
-            관리자
-            {badge > 0 && (
-              <span className={cn(
-                "ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                isAdminView ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary text-primary-foreground"
-              )}>
-                {badge > 99 ? "99+" : badge}
-              </span>
-            )}
-          </Button>
-        </Link>
+    <div className="mt-14 border-b border-border/70 bg-background/80 px-4 py-2 backdrop-blur-sm sm:px-6 xl:mt-0 xl:px-8">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+        <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
+          <ShieldCheck size={14} className="text-primary" />
+          <span>관리자 권한</span>
+        </div>
+        <div className="ml-auto flex items-center gap-1 rounded-full border border-border bg-card/80 p-1">
+          <Link href="/">
+            <Button
+              size="sm"
+              variant={isAdminView ? "ghost" : "default"}
+              className={cn(
+                "h-8 rounded-full px-3 text-xs",
+                !isAdminView && "bg-primary text-primary-foreground hover:bg-primary/90",
+                isAdminView && "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
+              )}
+            >
+              <Home size={14} />
+              사용자 화면
+            </Button>
+          </Link>
+          <Link href="/admin">
+            <Button
+              size="sm"
+              variant={isAdminView ? "default" : "ghost"}
+              className={cn(
+                "h-8 rounded-full px-3 text-xs",
+                isAdminView && "bg-primary text-primary-foreground hover:bg-primary/90",
+                !isAdminView && "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
+              )}
+            >
+              <ShieldCheck size={14} />
+              관리자 화면
+              {badge > 0 && (
+                <span className={cn(
+                  "ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold",
+                  isAdminView ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary text-primary-foreground"
+                )}>
+                  {badge > 99 ? "99+" : badge}
+                </span>
+              )}
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -265,8 +271,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── 메인 콘텐츠 ── */}
       <main className="app-main">
-        <div className="app-main-inner" aria-busy={loading}>
-          {user?.role === "admin" && !loading ? <AdminModeSwitch badge={adminBadge} /> : null}
+        {user?.role === "admin" && !loading ? <AdminModeSwitch badge={adminBadge} /> : null}
+        <div className={cn("app-main-inner", user?.role === "admin" && !loading && "pt-0")} aria-busy={loading}>
           {loading ? <AppContentSkeleton /> : children}
         </div>
       </main>
