@@ -226,39 +226,6 @@ function NavItem({ href, icon: Icon, label, badge, onClick }: {
   );
 }
 
-function MobileNavItem({ href, icon: Icon, label, badge }: {
-  href: string; icon: any; label: string; badge?: number;
-}) {
-  const [location, navigate] = useLocation();
-  const { path: currentPath, hash: currentHash } = useRouteState(location);
-  const { path: itemPath, hash: itemHash } = splitHref(href);
-  const isRootItem = itemPath === "/" || itemPath === "/trainer" || itemPath === "/admin";
-  const isActive = itemHash
-    ? currentPath === itemPath && currentHash === itemHash
-    : isRootItem ? currentPath === itemPath && currentHash === "" : currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
-  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    handleInternalNavigation({ event, href, navigate });
-  };
-  return (
-    <a href={href} onClick={handleClick} className="block">
-      <div className={cn(
-        "flex flex-col items-center gap-1 px-3 py-2 rounded-xl",
-        isActive ? "text-primary" : "text-muted-foreground"
-      )}>
-        <div className={cn("relative p-1.5 rounded-lg", isActive ? "bg-primary/20" : "")}>
-          <Icon size={20} />
-          {badge ? (
-            <span className="absolute -right-1 -top-1 min-w-4 rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">
-              {badge > 9 ? "9+" : badge}
-            </span>
-          ) : null}
-        </div>
-        <span className="text-[10px] font-medium">{label}</span>
-      </div>
-    </a>
-  );
-}
-
 function RoleModeSwitch({ badge, showTrainer, showAdmin }: { badge: number; showTrainer: boolean; showAdmin: boolean }) {
   const [location, navigate] = useLocation();
   const { path: currentPath } = useRouteState(location);
@@ -267,19 +234,19 @@ function RoleModeSwitch({ badge, showTrainer, showAdmin }: { badge: number; show
   const isUserView = !isAdminView && !isTrainerView;
 
   return (
-    <div className="mt-14 border-b border-border/70 bg-background/80 px-4 py-2 backdrop-blur-sm sm:px-6 xl:mt-0 xl:px-8">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+    <div className="mt-14 border-b border-border/70 bg-background/80 px-3 py-2 backdrop-blur-sm sm:px-6 xl:mt-0 xl:px-8">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 overflow-hidden">
         <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
           {isAdminView ? <ShieldCheck size={14} className="text-primary" /> : <Users size={14} className="text-primary" />}
           <span>{showAdmin ? "홈 전환" : "트레이너 홈 전환"}</span>
         </div>
-        <div className="ml-auto flex items-center gap-1 rounded-full border border-border bg-card/80 p-1">
+        <div className="ml-auto flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border bg-card/80 p-1">
           <a href="/" onClick={(event) => handleInternalNavigation({ event, href: "/", navigate })}>
             <Button
               size="sm"
               variant={isUserView ? "default" : "ghost"}
               className={cn(
-                "h-8 rounded-full px-3 text-xs",
+                "h-8 shrink-0 rounded-full px-3 text-xs whitespace-nowrap",
                 isUserView && "bg-primary text-primary-foreground hover:bg-primary/90",
                 !isUserView && "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
               )}
@@ -294,7 +261,7 @@ function RoleModeSwitch({ badge, showTrainer, showAdmin }: { badge: number; show
                 size="sm"
                 variant={isTrainerView ? "default" : "ghost"}
                 className={cn(
-                  "h-8 rounded-full px-3 text-xs",
+                  "h-8 shrink-0 rounded-full px-3 text-xs whitespace-nowrap",
                   isTrainerView && "bg-primary text-primary-foreground hover:bg-primary/90",
                   !isTrainerView && "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
                 )}
@@ -310,7 +277,7 @@ function RoleModeSwitch({ badge, showTrainer, showAdmin }: { badge: number; show
                 size="sm"
                 variant={isAdminView ? "default" : "ghost"}
                 className={cn(
-                  "h-8 rounded-full px-3 text-xs",
+                  "h-8 shrink-0 rounded-full px-3 text-xs whitespace-nowrap",
                   isAdminView && "bg-primary text-primary-foreground hover:bg-primary/90",
                   !isAdminView && "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
                 )}
@@ -371,6 +338,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isAdmin = user?.role === "admin";
   const showRoleSwitch = !loading && (isTrainer || isAdmin);
   const visibleNavItems = loading ? [] : getVisibleNavItems({ location, isTrainer, isAdmin, adminBadge, coachingBadge });
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
 
   return (
     <div className="app-layout-root">
@@ -470,25 +449,46 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         {mobileMenuOpen && (
-          <div className="bg-card border-b border-border p-4 space-y-1 animate-slide-up">
-            {loading ? (
-              <div className="space-y-2" aria-label="메뉴를 불러오는 중">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <div key={index} className="h-11 skeleton rounded-xl" />
-                ))}
+          <div className="fixed inset-0 top-14 z-40 xl:hidden" role="dialog" aria-modal="true" aria-label="모바일 메뉴">
+            <button
+              type="button"
+              className="absolute inset-0 bg-background/70 backdrop-blur-sm"
+              aria-label="메뉴 닫기"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <div className="relative flex h-[calc(100dvh-3.5rem)] w-[min(20rem,86vw)] flex-col border-r border-border bg-sidebar shadow-2xl animate-slide-right">
+              <div className="border-b border-sidebar-border p-4">
+                <div className="flex items-center gap-3">
+                  <UserAvatar user={user} className="h-9 w-9" />
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold text-foreground">{isAuthenticated ? displayName : "로그인이 필요합니다"}</div>
+                    <div className="truncate text-xs text-muted-foreground">{isAuthenticated ? user?.email || "" : "로그인 후 기록을 관리하세요"}</div>
+                  </div>
+                </div>
               </div>
-            ) : (
-              visibleNavItems.map((item) => (
-                <NavItem key={item.id} {...item} onClick={() => setMobileMenuOpen(false)} />
-              ))
-            )}
-            {isAuthenticated && (
-              <button onClick={() => { logout(); setMobileMenuOpen(false); }}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground w-full transition-colors">
-                <LogOut size={20} />
-                <span className="font-medium text-sm">로그아웃</span>
-              </button>
-            )}
+              <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+                {loading ? (
+                  <div className="space-y-2" aria-label="메뉴를 불러오는 중">
+                    {Array.from({ length: 4 }).map((_, index) => (
+                      <div key={index} className="h-11 skeleton rounded-xl" />
+                    ))}
+                  </div>
+                ) : (
+                  visibleNavItems.map((item) => (
+                    <NavItem key={item.id} {...item} onClick={() => setMobileMenuOpen(false)} />
+                  ))
+                )}
+              </nav>
+              <div className="border-t border-sidebar-border p-4">
+                {isAuthenticated && (
+                  <button onClick={() => { logout(); setMobileMenuOpen(false); }}
+                    className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                    <LogOut size={20} />
+                    <span className="text-sm font-medium">로그아웃</span>
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </header>
@@ -502,20 +502,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {loading ? <AppContentSkeleton /> : children}
         </div>
       </main>
-
-      {/* ── 모바일 하단 네비게이션 ── */}
-      <nav className="app-mobile-nav bg-card/95 backdrop-blur-md border-t border-border">
-        <div className="flex items-center justify-around px-2 py-1">
-          {loading ? (
-            Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="my-2 h-9 w-12 skeleton rounded-xl" />
-            ))
-          ) : (
-            visibleNavItems.map((item) => <MobileNavItem key={item.id} {...item} />)
-          )}
-        </div>
-      </nav>
-
     </div>
   );
 }
