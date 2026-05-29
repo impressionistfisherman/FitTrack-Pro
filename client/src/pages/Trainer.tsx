@@ -219,7 +219,7 @@ export default function Trainer() {
             </CardContent>
           </Card>
 
-          <Card className="border-border bg-card">
+          <Card id="requests" className="scroll-mt-24 border-border bg-card">
             <CardContent className="p-5">
               <div className="mb-3 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
@@ -270,7 +270,7 @@ export default function Trainer() {
           </Card>
         </div>
 
-        <Card className="border-border bg-card">
+        <Card id="clients" className="scroll-mt-24 border-border bg-card">
           <CardContent className="p-5">
             <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
               <div>

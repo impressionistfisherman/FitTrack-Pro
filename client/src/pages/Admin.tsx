@@ -91,7 +91,7 @@ export default function Admin() {
         </Card>
       </div>
 
-      <Card className="border-border bg-card">
+      <Card id="applications" className="scroll-mt-24 border-border bg-card">
         <CardContent className="p-5">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
@@ -213,7 +213,7 @@ export default function Admin() {
         </CardContent>
       </Card>
 
-      <Card className="mt-4 border-border bg-card">
+      <Card id="trainers" className="mt-4 scroll-mt-24 border-border bg-card">
         <CardContent className="p-5">
           <div className="mb-4 flex items-center gap-2">
             <Users size={17} className="text-primary" />

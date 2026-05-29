@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
   Activity, Bot, Calendar, Dumbbell, Home,
-  LogIn, LogOut, Menu, MessageSquare, Scale, ShieldCheck, Users, X,
+  LogIn, LogOut, Menu, MessageSquare, Scale, ShieldCheck, UserCheck, Users, X,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -12,7 +12,14 @@ import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import ThemePicker from "./ThemePicker";
 
-const navItems = [
+type SidebarNavItem = {
+  href: string;
+  icon: any;
+  label: string;
+  badge?: number;
+};
+
+const userNavItems: SidebarNavItem[] = [
   { href: "/", icon: Home, label: "홈" },
   { href: "/exercises", icon: Dumbbell, label: "운동" },
   { href: "/routines", icon: Activity, label: "루틴" },
@@ -21,6 +28,39 @@ const navItems = [
   { href: "/coaching", icon: MessageSquare, label: "코칭" },
   { href: "/ai-coach", icon: Bot, label: "AI 코치" },
 ];
+
+function getVisibleNavItems({
+  location,
+  isTrainer,
+  isAdmin,
+  adminBadge,
+}: {
+  location: string;
+  isTrainer: boolean;
+  isAdmin: boolean;
+  adminBadge: number;
+}): SidebarNavItem[] {
+  if (isAdmin && location.startsWith("/admin")) {
+    return [
+      { href: "/admin", icon: ShieldCheck, label: "관리자 홈" },
+      { href: "/admin#applications", icon: UserCheck, label: "신청 관리", badge: adminBadge },
+      { href: "/admin#trainers", icon: Users, label: "승인 트레이너" },
+    ];
+  }
+
+  if (isTrainer && location.startsWith("/trainer")) {
+    return [
+      { href: "/trainer", icon: Users, label: "대시보드" },
+      { href: "/trainer#requests", icon: UserCheck, label: "회원 요청" },
+      { href: "/trainer#clients", icon: MessageSquare, label: "담당 회원" },
+    ];
+  }
+
+  return userNavItems.filter((item) => {
+    if (item.href === "/coaching") return !isTrainer;
+    return true;
+  });
+}
 
 function AppContentSkeleton() {
   return (
@@ -190,6 +230,7 @@ function UserAvatar({ user, className = "h-8 w-8" }: { user?: any; className?: s
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, loading, logout } = useAuth();
+  const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: pendingApplications } = trpc.admin.trainerApplications.useQuery(
     { status: "pending" },
@@ -200,7 +241,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isTrainer = (user as any)?.appRole === "trainer";
   const isAdmin = user?.role === "admin";
   const showRoleSwitch = !loading && (isTrainer || isAdmin);
-  const visibleNavItems = navItems;
+  const visibleNavItems = getVisibleNavItems({ location, isTrainer, isAdmin, adminBadge });
 
   return (
     <div className="app-layout-root">
