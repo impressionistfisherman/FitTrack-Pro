@@ -3,7 +3,7 @@ import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
-  Activity, Bot, Calendar, Dumbbell, Home,
+  Activity, Bot, Calendar, CheckSquare, Dumbbell, Home,
   LogIn, LogOut, Menu, MessageSquare, Scale, ShieldCheck, UserCheck, Users, X,
 } from "lucide-react";
 import { useState } from "react";
@@ -49,10 +49,24 @@ function getVisibleNavItems({
   }
 
   if (isTrainer && location.startsWith("/trainer")) {
+    if (location.startsWith("/trainer/clients/")) {
+      return [
+        { href: "/trainer", icon: Users, label: "트레이너 홈" },
+        { href: `${location.split("#")[0]}#timeline`, icon: Calendar, label: "코칭 타임라인" },
+        { href: `${location.split("#")[0]}#tasks`, icon: UserCheck, label: "회원 과제" },
+        { href: `${location.split("#")[0]}#notes`, icon: MessageSquare, label: "비공개 메모" },
+        { href: `${location.split("#")[0]}#report`, icon: Activity, label: "진행 리포트" },
+        { href: `${location.split("#")[0]}#ai-helper`, icon: Bot, label: "AI 코칭 보조" },
+        { href: `${location.split("#")[0]}#pt-sessions`, icon: Dumbbell, label: "PT 기록" },
+      ];
+    }
     return [
       { href: "/trainer", icon: Users, label: "대시보드" },
       { href: "/trainer#requests", icon: UserCheck, label: "회원 요청" },
       { href: "/trainer#clients", icon: MessageSquare, label: "담당 회원" },
+      { href: "/trainer#clients", icon: Calendar, label: "코칭 타임라인" },
+      { href: "/trainer#clients", icon: CheckSquare, label: "회원 과제" },
+      { href: "/trainer#clients", icon: Activity, label: "진행 리포트" },
     ];
   }
 

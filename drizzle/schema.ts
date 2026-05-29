@@ -205,6 +205,43 @@ export const trainerPtSessions = mysqlTable("trainer_pt_sessions", {
 
 export type TrainerPtSession = typeof trainerPtSessions.$inferSelect;
 
+export const coachingComments = mysqlTable("coaching_comments", {
+  id: int("id").autoincrement().primaryKey(),
+  trainerUserId: int("trainer_user_id").notNull(),
+  clientUserId: int("client_user_id").notNull(),
+  authorUserId: int("author_user_id").notNull(),
+  targetType: varchar("target_type", { length: 32 }).default("general").notNull(),
+  targetId: int("target_id"),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const coachingTasks = mysqlTable("coaching_tasks", {
+  id: int("id").autoincrement().primaryKey(),
+  trainerUserId: int("trainer_user_id").notNull(),
+  clientUserId: int("client_user_id").notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  status: varchar("status", { length: 24 }).default("open").notNull(),
+  dueDate: timestamp("due_date"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export const trainerClientNotes = mysqlTable("trainer_client_notes", {
+  id: int("id").autoincrement().primaryKey(),
+  trainerUserId: int("trainer_user_id").notNull(),
+  clientUserId: int("client_user_id").notNull(),
+  note: text("note").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CoachingComment = typeof coachingComments.$inferSelect;
+export type CoachingTask = typeof coachingTasks.$inferSelect;
+export type TrainerClientNote = typeof trainerClientNotes.$inferSelect;
+
 // 운동별 목표 테이블
 export const exerciseGoals = mysqlTable("exercise_goals", {
   id: int("id").autoincrement().primaryKey(),

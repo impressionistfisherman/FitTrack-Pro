@@ -1,3 +1,4 @@
+import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -5,8 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, CalendarDays, ChevronDown, ImagePlus, Loader2, MessageSquare, Plus, Search, Trash2, User } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ArrowLeft, Bot, CalendarDays, CheckSquare, ChevronDown, FileText, ImagePlus, Loader2, MessageSquare, Plus, Search, Trash2, User } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Link, useRoute } from "wouter";
 
@@ -91,6 +92,7 @@ async function prepareImageDataUrl(file: File) {
 }
 
 export default function TrainerClientDetail() {
+  const { user } = useAuth();
   const [, params] = useRoute("/trainer/clients/:id");
   const clientUserId = Number(params?.id ?? 0);
   const utils = trpc.useUtils();
@@ -101,6 +103,10 @@ export default function TrainerClientDetail() {
   const [ptDuration, setPtDuration] = useState("60");
   const [ptNotes, setPtNotes] = useState("");
   const [ptFeedback, setPtFeedback] = useState("");
+  const [commentDraft, setCommentDraft] = useState("");
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskDescription, setTaskDescription] = useState("");
+  const [privateNote, setPrivateNote] = useState("");
   const [exerciseSearch, setExerciseSearch] = useState("");
   const [selectedExercises, setSelectedExercises] = useState<PtExercise[]>([]);
   const [captureMessage, setCaptureMessage] = useState("");
@@ -134,6 +140,44 @@ export default function TrainerClientDetail() {
     },
     onError: (error) => toast.error(error.message || "피드백 저장에 실패했습니다."),
   });
+  const addCommentMutation = trpc.trainer.addComment.useMutation({
+    onSuccess: () => {
+      toast.success("코칭 답글을 남겼습니다.");
+      setCommentDraft("");
+      utils.trainer.clientDetail.invalidate({ clientUserId, limit: 20 });
+    },
+    onError: (error) => toast.error(error.message || "답글 저장에 실패했습니다."),
+  });
+  const addTaskMutation = trpc.trainer.addTask.useMutation({
+    onSuccess: () => {
+      toast.success("회원 과제를 등록했습니다.");
+      setTaskTitle("");
+      setTaskDescription("");
+      utils.trainer.clientDetail.invalidate({ clientUserId, limit: 20 });
+    },
+    onError: (error) => toast.error(error.message || "과제 등록에 실패했습니다."),
+  });
+  const updateTaskStatusMutation = trpc.trainer.updateTaskStatus.useMutation({
+    onSuccess: () => {
+      toast.success("과제 상태를 변경했습니다.");
+      utils.trainer.clientDetail.invalidate({ clientUserId, limit: 20 });
+    },
+    onError: (error) => toast.error(error.message || "과제 상태 변경에 실패했습니다."),
+  });
+  const savePrivateNoteMutation = trpc.trainer.savePrivateNote.useMutation({
+    onSuccess: () => {
+      toast.success("회원 메모를 저장했습니다.");
+      utils.trainer.clientDetail.invalidate({ clientUserId, limit: 20 });
+    },
+    onError: (error) => toast.error(error.message || "회원 메모 저장에 실패했습니다."),
+  });
+  const aiFeedbackDraftMutation = trpc.trainer.aiFeedbackDraft.useMutation({
+    onSuccess: (result) => {
+      setDrafts((items) => ({ ...items, general: result.draft || "" }));
+      toast.success("AI 피드백 초안을 만들었습니다.");
+    },
+    onError: (error) => toast.error(error.message || "AI 초안 생성에 실패했습니다."),
+  });
 
   const addFeedback = (key: string, sessionId?: number) => {
     const message = drafts[key]?.trim();
@@ -145,6 +189,36 @@ export default function TrainerClientDetail() {
     const selectedIds = new Set(selectedExercises.map((item) => item.exercise.id));
     return (exercises ?? []).filter((exercise: any) => !selectedIds.has(exercise.id)).slice(0, 12);
   }, [exercises, selectedExercises]);
+
+  useEffect(() => {
+    setPrivateNote(data?.privateNote?.note ?? "");
+  }, [data?.privateNote?.note]);
+
+  const timeline = useMemo(() => {
+    const feedback = (data?.feedback ?? []).map((item: any) => ({
+      type: "피드백",
+      date: item.createdAt,
+      title: item.message,
+    }));
+    const ptSessions = (data?.ptSessions ?? []).map((item: any) => ({
+      type: "PT",
+      date: item.createdAt,
+      title: item.title || item.sessionName || "PT 기록",
+    }));
+    const comments = (data?.comments ?? []).map((item: any) => ({
+      type: item.authorUserId === clientUserId ? "회원 답글" : "트레이너 답글",
+      date: item.createdAt,
+      title: item.message,
+    }));
+    const tasks = (data?.tasks ?? []).map((item: any) => ({
+      type: item.status === "done" ? "완료 과제" : "과제",
+      date: item.updatedAt ?? item.createdAt,
+      title: item.title,
+    }));
+    return [...feedback, ...ptSessions, ...comments, ...tasks]
+      .sort((a, b) => new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime())
+      .slice(0, 20);
+  }, [clientUserId, data]);
 
   const addPtExercise = (exercise: any, seed?: Partial<PtExercise>) => {
     setSelectedExercises((items) => {
@@ -578,7 +652,201 @@ export default function TrainerClientDetail() {
             })}
           </div>
 
-          <Card className="h-fit border-border bg-card">
+          <div className="space-y-3">
+          <Card id="timeline" className="h-fit scroll-mt-24 border-border bg-card">
+            <CardContent className="p-4">
+              <h2 className="mb-3 flex items-center gap-2 font-semibold text-foreground">
+                <CalendarDays size={16} className="text-primary" />
+                코칭 타임라인
+              </h2>
+              {timeline.length ? (
+                <div className="space-y-2">
+                  {timeline.map((item: any, index: number) => (
+                    <div key={`${item.type}-${index}`} className="rounded-lg border border-border bg-accent/30 p-3">
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">{item.type}</span>
+                        <span className="text-[11px] text-muted-foreground">{new Date(item.date).toLocaleDateString("ko-KR")}</span>
+                      </div>
+                      <p className="line-clamp-3 text-sm leading-relaxed text-foreground">{item.title}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="rounded-lg border border-dashed border-border bg-accent/20 p-3 text-sm text-muted-foreground">
+                  아직 코칭 타임라인이 없습니다.
+                </p>
+              )}
+              <div className="mt-3 space-y-2">
+                <Textarea
+                  value={commentDraft}
+                  onChange={(event) => setCommentDraft(event.target.value)}
+                  placeholder="회원에게 남길 짧은 답글이나 확인 메시지"
+                  className="min-h-20 resize-none border-border bg-accent text-foreground"
+                  maxLength={1200}
+                />
+                <Button
+                  type="button"
+                  className="w-full bg-primary text-primary-foreground"
+                  disabled={!commentDraft.trim() || addCommentMutation.isPending || !user?.id}
+                  onClick={() => addCommentMutation.mutate({
+                    trainerUserId: Number(user?.id),
+                    clientUserId,
+                    targetType: "general",
+                    message: commentDraft,
+                  })}
+                >
+                  <MessageSquare size={14} />
+                  답글 남기기
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card id="tasks" className="h-fit scroll-mt-24 border-border bg-card">
+            <CardContent className="p-4">
+              <h2 className="mb-3 flex items-center gap-2 font-semibold text-foreground">
+                <CheckSquare size={16} className="text-primary" />
+                회원 과제
+              </h2>
+              <div className="space-y-2">
+                <Input
+                  value={taskTitle}
+                  onChange={(event) => setTaskTitle(event.target.value)}
+                  placeholder="예: 이번 주 유산소 2회"
+                  className="border-border bg-accent text-foreground"
+                  maxLength={200}
+                />
+                <Textarea
+                  value={taskDescription}
+                  onChange={(event) => setTaskDescription(event.target.value)}
+                  placeholder="과제 설명, 수행 기준, 주의사항"
+                  className="min-h-20 resize-none border-border bg-accent text-foreground"
+                  maxLength={1000}
+                />
+                <Button
+                  type="button"
+                  className="w-full bg-primary text-primary-foreground"
+                  disabled={!taskTitle.trim() || addTaskMutation.isPending}
+                  onClick={() => addTaskMutation.mutate({ clientUserId, title: taskTitle, description: taskDescription })}
+                >
+                  <Plus size={14} />
+                  과제 등록
+                </Button>
+              </div>
+              <div className="mt-4 space-y-2">
+                {data?.tasks?.length ? data.tasks.map((task: any) => (
+                  <div key={task.id} className="rounded-lg border border-border bg-accent/30 p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-foreground">{task.title}</div>
+                        {task.description ? <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{task.description}</p> : null}
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="h-8 shrink-0 border-border bg-background text-xs"
+                        disabled={updateTaskStatusMutation.isPending}
+                        onClick={() => updateTaskStatusMutation.mutate({ taskId: Number(task.id), status: task.status === "done" ? "open" : "done" })}
+                      >
+                        {task.status === "done" ? "완료됨" : "완료"}
+                      </Button>
+                    </div>
+                  </div>
+                )) : (
+                  <p className="rounded-lg border border-dashed border-border bg-accent/20 p-3 text-sm text-muted-foreground">
+                    아직 등록한 과제가 없습니다.
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card id="notes" className="h-fit scroll-mt-24 border-border bg-card">
+            <CardContent className="p-4">
+              <h2 className="mb-3 flex items-center gap-2 font-semibold text-foreground">
+                <FileText size={16} className="text-primary" />
+                트레이너 비공개 메모
+              </h2>
+              <Textarea
+                value={privateNote}
+                onChange={(event) => setPrivateNote(event.target.value)}
+                placeholder="통증, 자세 습관, 선호 운동, 상담 내용 등 트레이너만 보는 메모"
+                className="min-h-28 resize-none border-border bg-accent text-foreground"
+                maxLength={2000}
+              />
+              <Button
+                type="button"
+                className="mt-2 w-full bg-primary text-primary-foreground"
+                disabled={savePrivateNoteMutation.isPending}
+                onClick={() => savePrivateNoteMutation.mutate({ clientUserId, note: privateNote })}
+              >
+                메모 저장
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card id="report" className="h-fit scroll-mt-24 border-border bg-card">
+            <CardContent className="p-4">
+              <h2 className="mb-3 font-semibold text-foreground">회원 진행 리포트</h2>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-lg bg-accent/40 p-3">
+                  <div className="text-lg font-bold text-foreground">{data?.report?.sessionCount ?? 0}회</div>
+                  <div className="text-xs text-muted-foreground">최근 4주 운동</div>
+                </div>
+                <div className="rounded-lg bg-accent/40 p-3">
+                  <div className="text-lg font-bold text-primary">{Math.round(data?.report?.totalVolume ?? 0).toLocaleString()}kg</div>
+                  <div className="text-xs text-muted-foreground">최근 4주 볼륨</div>
+                </div>
+                <div className="rounded-lg bg-accent/40 p-3">
+                  <div className="text-lg font-bold text-foreground">{data?.report?.totalDurationMinutes ?? 0}분</div>
+                  <div className="text-xs text-muted-foreground">운동 시간</div>
+                </div>
+                <div className="rounded-lg bg-accent/40 p-3">
+                  <div className="text-lg font-bold text-orange-300">{data?.report?.openTasks ?? 0}개</div>
+                  <div className="text-xs text-muted-foreground">미완료 과제</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card id="ai-helper" className="h-fit scroll-mt-24 border-primary/20 bg-primary/5">
+            <CardContent className="p-4">
+              <h2 className="mb-2 flex items-center gap-2 font-semibold text-foreground">
+                <Bot size={16} className="text-primary" />
+                AI 코칭 보조
+              </h2>
+              <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
+                최근 운동, 과제, 메모를 바탕으로 회원에게 보낼 피드백 초안을 만듭니다.
+              </p>
+              <Button
+                type="button"
+                className="w-full bg-primary text-primary-foreground"
+                disabled={aiFeedbackDraftMutation.isPending}
+                onClick={() => aiFeedbackDraftMutation.mutate({ clientUserId, context: privateNote })}
+              >
+                {aiFeedbackDraftMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <Bot size={14} />}
+                피드백 초안 생성
+              </Button>
+              <Textarea
+                value={drafts.general ?? ""}
+                onChange={(event) => setDrafts((items) => ({ ...items, general: event.target.value }))}
+                placeholder="AI 초안 또는 일반 피드백을 작성하세요."
+                className="mt-3 min-h-28 resize-none border-border bg-background text-foreground"
+                maxLength={1200}
+              />
+              <Button
+                className="mt-2 w-full bg-primary text-primary-foreground"
+                disabled={!drafts.general?.trim() || feedbackMutation.isPending}
+                onClick={() => addFeedback("general")}
+              >
+                <MessageSquare size={14} />
+                일반 피드백 저장
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card id="pt-sessions" className="h-fit scroll-mt-24 border-border bg-card">
             <CardContent className="p-4">
               <h2 className="mb-3 font-semibold text-foreground">PT 진행 기록</h2>
               {data?.ptSessions?.length ? (
@@ -624,6 +892,7 @@ export default function TrainerClientDetail() {
               )}
             </CardContent>
           </Card>
+          </div>
         </div>
       )}
     </div>

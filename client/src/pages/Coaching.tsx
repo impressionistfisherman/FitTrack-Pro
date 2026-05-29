@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
-import { CalendarDays, CheckCircle2, Dumbbell, LogIn, MessageSquare, ShieldCheck, Users } from "lucide-react";
+import { CalendarDays, CheckCircle2, CheckSquare, Dumbbell, LogIn, MessageSquare, ShieldCheck, Users } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Link } from "wouter";
@@ -38,6 +38,7 @@ export default function Coaching() {
   const { user, isAuthenticated, loading } = useAuth();
   const utils = trpc.useUtils();
   const [trainerCodeInput, setTrainerCodeInput] = useState("");
+  const [commentDraft, setCommentDraft] = useState("");
   const { data: trainerStatus, isLoading } = trpc.trainer.status.useQuery(undefined, { enabled: isAuthenticated });
   const registerTrainerMutation = trpc.trainer.registerTrainer.useMutation({
     onSuccess: () => {
@@ -53,6 +54,21 @@ export default function Coaching() {
       utils.trainer.status.invalidate();
     },
     onError: () => toast.error("트레이너 연결 해제에 실패했습니다."),
+  });
+  const addCommentMutation = trpc.trainer.addComment.useMutation({
+    onSuccess: () => {
+      toast.success("트레이너에게 메시지를 남겼습니다.");
+      setCommentDraft("");
+      utils.trainer.status.invalidate();
+    },
+    onError: (error) => toast.error(error.message || "메시지 저장에 실패했습니다."),
+  });
+  const updateTaskStatusMutation = trpc.trainer.updateTaskStatus.useMutation({
+    onSuccess: () => {
+      toast.success("과제 상태를 업데이트했습니다.");
+      utils.trainer.status.invalidate();
+    },
+    onError: (error) => toast.error(error.message || "과제 상태 변경에 실패했습니다."),
   });
 
   if (loading || isLoading) {
@@ -85,7 +101,16 @@ export default function Coaching() {
   const pendingTrainers = (trainerStatus as any)?.pendingTrainers ?? [];
   const feedback = (trainerStatus as any)?.feedback ?? [];
   const ptSessions = (trainerStatus as any)?.ptSessions ?? [];
+  const comments = (trainerStatus as any)?.comments ?? [];
+  const tasks = (trainerStatus as any)?.tasks ?? [];
   const clients = (trainerStatus as any)?.clients ?? [];
+  const primaryTrainer = linkedTrainers[0]?.trainer;
+  const timeline = [
+    ...feedback.map((item: any) => ({ type: "피드백", title: item.message, date: item.createdAt, person: item.trainer })),
+    ...ptSessions.map((item: any) => ({ type: "PT", title: item.title || item.sessionName || "PT 기록", date: item.createdAt, person: item.trainer })),
+    ...comments.map((item: any) => ({ type: "답글", title: item.message, date: item.createdAt, person: item.author })),
+    ...tasks.map((item: any) => ({ type: item.status === "done" ? "완료 과제" : "과제", title: item.title, date: item.updatedAt ?? item.createdAt, person: null })),
+  ].sort((a, b) => new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime()).slice(0, 12);
 
   return (
     <div className="page-shell page-shell-wide animate-fade-in">
@@ -206,9 +231,112 @@ export default function Coaching() {
               </div>
             </CardContent>
           </Card>
+
+          {appRole !== "trainer" && linkedTrainers.length > 0 ? (
+            <Card className="border-border bg-card">
+              <CardContent className="p-5">
+                <div className="mb-3 flex items-center gap-2 text-base font-semibold text-foreground">
+                  <MessageSquare size={17} className="text-primary" />
+                  트레이너에게 남기기
+                </div>
+                <Input
+                  value={commentDraft}
+                  onChange={(event) => setCommentDraft(event.target.value)}
+                  placeholder="컨디션, 통증, 수행 어려움, 요청사항을 남겨주세요."
+                  className="border-border bg-background text-foreground"
+                  maxLength={1200}
+                />
+                <div className="mt-2 flex justify-end">
+                  <Button
+                    type="button"
+                    className="bg-primary text-primary-foreground"
+                    disabled={!commentDraft.trim() || addCommentMutation.isPending || !primaryTrainer?.id}
+                    onClick={() => addCommentMutation.mutate({
+                      trainerUserId: Number(primaryTrainer.id),
+                      clientUserId: Number(user?.id),
+                      message: commentDraft,
+                      targetType: "general",
+                    })}
+                  >
+                    답글 남기기
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
         </div>
 
         <div className="space-y-4">
+          <Card className="border-border bg-card">
+            <CardContent className="p-5">
+              <div className="mb-4 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+                  <CalendarDays size={17} className="text-primary" />
+                  코칭 타임라인
+                </div>
+                <Badge className="border border-border bg-accent text-muted-foreground">{timeline.length}개</Badge>
+              </div>
+              {timeline.length ? (
+                <div className="space-y-2">
+                  {timeline.map((item: any, index: number) => (
+                    <div key={`${item.type}-${index}`} className="rounded-xl border border-border bg-accent/25 p-3">
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <Badge className="border border-primary/25 bg-primary/10 text-primary">{item.type}</Badge>
+                        <span className="text-xs text-muted-foreground">{formatDate(item.date)}</span>
+                      </div>
+                      <p className="line-clamp-2 text-sm leading-relaxed text-foreground">{item.title}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-border bg-accent/20 p-5 text-center text-sm text-muted-foreground">
+                  아직 코칭 타임라인이 없습니다.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="border-border bg-card">
+            <CardContent className="p-5">
+              <div className="mb-4 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+                  <CheckSquare size={17} className="text-primary" />
+                  트레이너 과제
+                </div>
+                <Badge className="border border-border bg-accent text-muted-foreground">{tasks.filter((task: any) => task.status !== "done").length}개 진행 중</Badge>
+              </div>
+              {tasks.length ? (
+                <div className="space-y-2">
+                  {tasks.map((task: any) => (
+                    <div key={task.id} className="rounded-xl border border-border bg-accent/25 p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="font-semibold text-foreground">{task.title}</div>
+                          {task.description ? <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{task.description}</p> : null}
+                          {task.dueDate ? <p className="mt-1 text-xs text-muted-foreground">마감 {formatDate(task.dueDate)}</p> : null}
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={task.status === "done" ? "outline" : "default"}
+                          className={task.status === "done" ? "border-border bg-background" : "bg-primary text-primary-foreground"}
+                          disabled={updateTaskStatusMutation.isPending}
+                          onClick={() => updateTaskStatusMutation.mutate({ taskId: Number(task.id), status: task.status === "done" ? "open" : "done" })}
+                        >
+                          {task.status === "done" ? "완료됨" : "완료"}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-border bg-accent/20 p-5 text-center text-sm text-muted-foreground">
+                  아직 받은 과제가 없습니다.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <Card className="border-border bg-card">
             <CardContent className="p-5">
               <div className="mb-4 flex items-center justify-between gap-2">

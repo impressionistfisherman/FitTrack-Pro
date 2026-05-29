@@ -6,6 +6,8 @@ import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   addBodyWeight,
+  addCoachingComment,
+  addCoachingTask,
   addExerciseToRoutine,
   addTrainerFeedback,
   addTrainerPtSession,
@@ -19,6 +21,10 @@ import {
   deleteWorkoutSession,
   deleteWorkoutLog,
   getBodyWeights,
+  getCoachingCommentsForClient,
+  getCoachingCommentsForPair,
+  getCoachingTasksForClient,
+  getCoachingTasksForPair,
   getExerciseById,
   getExerciseHistory,
   getExercises,
@@ -39,6 +45,8 @@ import {
   getTrainerClientRequests,
   getTrainerCode,
   getTrainerApplication,
+  getTrainerClientNote,
+  getTrainerClientReport,
   getTrainerFeedbackForClient,
   getTrainerFeedbackForPair,
   getTrainerPtSessionsForClient,
@@ -66,8 +74,10 @@ import {
   replaceUserGoals,
   setUserPreference,
   toggleFavorite,
+  updateCoachingTaskStatus,
   updateRoutine,
   updateRoutineExercise,
+  upsertTrainerClientNote,
   updateUserProfileImage,
   updateUserProfileName,
   upsertUserGoal,
@@ -1455,6 +1465,8 @@ export const appRouter = router({
         pendingTrainers: await getPendingClientTrainerLinks(ctx.user.id),
         feedback: await getTrainerFeedbackForClient(ctx.user.id, 10),
         ptSessions: await getTrainerPtSessionsForClient(ctx.user.id, 10),
+        comments: await getCoachingCommentsForClient(ctx.user.id, 20),
+        tasks: await getCoachingTasksForClient(ctx.user.id, 30),
       };
     }),
     issueCode: protectedProcedure.mutation(async ({ ctx }) => {
@@ -1530,6 +1542,10 @@ export const appRouter = router({
           sessions: detailedSessions,
           feedback: await getTrainerFeedbackForPair(ctx.user.id, input.clientUserId, 30),
           ptSessions: await getTrainerPtSessionsForPair(ctx.user.id, input.clientUserId, 20),
+          comments: await getCoachingCommentsForPair(ctx.user.id, input.clientUserId, 80),
+          tasks: await getCoachingTasksForPair(ctx.user.id, input.clientUserId, 50),
+          privateNote: await getTrainerClientNote(ctx.user.id, input.clientUserId),
+          report: await getTrainerClientReport(ctx.user.id, input.clientUserId),
         };
       }),
     createPtRecord: protectedProcedure
@@ -1582,6 +1598,87 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const id = await addTrainerFeedback(ctx.user.id, input.clientUserId, input.message, input.sessionId);
         return { success: true, id };
+      }),
+    addComment: protectedProcedure
+      .input(z.object({
+        trainerUserId: z.number(),
+        clientUserId: z.number(),
+        targetType: z.enum(["general", "feedback", "pt_session", "workout_session", "task"]).default("general"),
+        targetId: z.number().optional(),
+        message: z.string().trim().min(1).max(1200),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const id = await addCoachingComment({
+          trainerUserId: input.trainerUserId,
+          clientUserId: input.clientUserId,
+          authorUserId: ctx.user.id,
+          targetType: input.targetType,
+          targetId: input.targetId,
+          message: input.message,
+        });
+        return { success: true, id };
+      }),
+    addTask: protectedProcedure
+      .input(z.object({
+        clientUserId: z.number(),
+        title: z.string().trim().min(1).max(200),
+        description: z.string().trim().max(1000).optional(),
+        dueDate: z.date().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const appRole = await getUserAppRole(ctx.user.id);
+        if (appRole !== "trainer" && ctx.user.role !== "admin") {
+          throw new Error("트레이너만 회원 과제를 만들 수 있습니다.");
+        }
+        const id = await addCoachingTask(ctx.user.id, input.clientUserId, input);
+        return { success: true, id };
+      }),
+    updateTaskStatus: protectedProcedure
+      .input(z.object({ taskId: z.number(), status: z.enum(["open", "done"]) }))
+      .mutation(async ({ ctx, input }) => {
+        await updateCoachingTaskStatus(ctx.user.id, input.taskId, input.status);
+        return { success: true };
+      }),
+    savePrivateNote: protectedProcedure
+      .input(z.object({ clientUserId: z.number(), note: z.string().trim().max(2000) }))
+      .mutation(async ({ ctx, input }) => {
+        const appRole = await getUserAppRole(ctx.user.id);
+        if (appRole !== "trainer" && ctx.user.role !== "admin") {
+          throw new Error("트레이너만 회원 메모를 저장할 수 있습니다.");
+        }
+        await upsertTrainerClientNote(ctx.user.id, input.clientUserId, input.note);
+        return { success: true };
+      }),
+    aiFeedbackDraft: protectedProcedure
+      .input(z.object({
+        clientUserId: z.number(),
+        context: z.string().trim().max(4000).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const appRole = await getUserAppRole(ctx.user.id);
+        if (appRole !== "trainer" && ctx.user.role !== "admin") {
+          throw new Error("트레이너만 AI 피드백 초안을 만들 수 있습니다.");
+        }
+        const sessions = await getLinkedClientWorkoutSessions(ctx.user.id, input.clientUserId, 5);
+        const report = await getTrainerClientReport(ctx.user.id, input.clientUserId);
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: "당신은 퍼스널 트레이너 보조 코치입니다. 회원에게 보낼 수 있는 짧고 구체적인 한국어 피드백 초안을 작성하세요. 칭찬, 주의점, 다음 액션을 포함하세요.",
+            },
+            {
+              role: "user",
+              content: `최근 28일 리포트: 운동 ${report.sessionCount}회, 총볼륨 ${Math.round(report.totalVolume || 0)}kg, 총시간 ${report.totalDurationMinutes}분, 미완료 과제 ${report.openTasks}개.
+최근 세션: ${sessions.map((session: any) => `${session.name || "운동"} ${session.durationMinutes || 0}분`).join(", ") || "없음"}
+트레이너 메모: ${input.context || "없음"}
+
+회원에게 보낼 피드백 초안을 4~6문장으로 작성하세요.`,
+            },
+          ],
+        });
+        const content = response.choices[0]?.message?.content;
+        return { draft: typeof content === "string" ? content.trim() : "" };
       }),
   }),
 

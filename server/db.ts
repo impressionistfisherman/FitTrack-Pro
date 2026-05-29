@@ -883,6 +883,42 @@ async function ensureTrainerTables() {
       created_at timestamp
     )`,
   );
+  await run(
+    `CREATE TABLE IF NOT EXISTS coaching_comments (
+      id ${autoId},
+      trainer_user_id integer NOT NULL,
+      client_user_id integer NOT NULL,
+      author_user_id integer NOT NULL,
+      target_type varchar(32) NOT NULL DEFAULT 'general',
+      target_id integer,
+      message text NOT NULL,
+      created_at timestamp
+    )`,
+  );
+  await run(
+    `CREATE TABLE IF NOT EXISTS coaching_tasks (
+      id ${autoId},
+      trainer_user_id integer NOT NULL,
+      client_user_id integer NOT NULL,
+      title varchar(200) NOT NULL,
+      description text,
+      status varchar(24) NOT NULL DEFAULT 'open',
+      due_date timestamp,
+      completed_at timestamp,
+      created_at timestamp,
+      updated_at timestamp
+    )`,
+  );
+  await run(
+    `CREATE TABLE IF NOT EXISTS trainer_client_notes (
+      id ${autoId},
+      trainer_user_id integer NOT NULL,
+      client_user_id integer NOT NULL,
+      note text NOT NULL,
+      created_at timestamp,
+      updated_at timestamp
+    )`,
+  );
   trainerTablesReady = true;
 }
 
@@ -1452,6 +1488,266 @@ export async function getTrainerPtSessionsForClient(clientUserId: number, limit 
       profileImageUrl: aliasValue(row, "trainer_profile_image_url"),
     }),
   }));
+}
+
+async function assertLinkedPairForAuthor(authorUserId: number, trainerUserId: number, clientUserId: number) {
+  if (authorUserId !== trainerUserId && authorUserId !== clientUserId) {
+    throw new Error("해당 코칭 대화에 접근할 수 없습니다.");
+  }
+  if (!(await isTrainerLinkedToClient(trainerUserId, clientUserId))) {
+    throw new Error("연결된 트레이너와 회원만 사용할 수 있습니다.");
+  }
+}
+
+function normalizeCoachingComment(row: Row): Row {
+  return {
+    id: Number(row.id),
+    trainerUserId: Number(aliasValue(row, "trainer_user_id")),
+    clientUserId: Number(aliasValue(row, "client_user_id")),
+    authorUserId: Number(aliasValue(row, "author_user_id")),
+    targetType: aliasValue(row, "target_type"),
+    targetId: aliasValue(row, "target_id") ? Number(aliasValue(row, "target_id")) : null,
+    message: row.message,
+    createdAt: aliasValue(row, "created_at"),
+    author: normalizeUser({
+      id: Number(aliasValue(row, "author_id")),
+      name: aliasValue(row, "author_name"),
+      email: aliasValue(row, "author_email"),
+      profileImageUrl: aliasValue(row, "author_profile_image_url"),
+    }),
+  };
+}
+
+export async function addCoachingComment(input: {
+  trainerUserId: number;
+  clientUserId: number;
+  authorUserId: number;
+  targetType?: string;
+  targetId?: number;
+  message: string;
+}): Promise<number> {
+  await ensureTrainerTables();
+  await assertLinkedPairForAuthor(input.authorUserId, input.trainerUserId, input.clientUserId);
+  const result = await run(
+    `INSERT INTO coaching_comments
+     (trainer_user_id, client_user_id, author_user_id, target_type, target_id, message, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    input.trainerUserId,
+    input.clientUserId,
+    input.authorUserId,
+    input.targetType ?? "general",
+    input.targetId ?? null,
+    input.message.trim(),
+    new Date().toISOString(),
+  );
+  return getInsertId(result);
+}
+
+export async function getCoachingCommentsForClient(clientUserId: number, limit = 50): Promise<Row[]> {
+  await ensureTrainerTables();
+  await ensureUserProfileImageColumn();
+  const rows = await all(
+    `SELECT
+       c.*,
+       u.id AS author_id,
+       u.name AS author_name,
+       u.email AS author_email,
+       u.profileImageUrl AS author_profile_image_url
+     FROM coaching_comments c
+     JOIN users u ON u.id = c.author_user_id
+     JOIN trainer_client_links l
+       ON l.trainer_user_id = c.trainer_user_id
+      AND l.client_user_id = c.client_user_id
+      AND l.status = 'active'
+     WHERE c.client_user_id = ?
+     ORDER BY c.created_at DESC
+     LIMIT ?`,
+    clientUserId,
+    limit,
+  );
+  return rows.map(normalizeCoachingComment);
+}
+
+export async function getCoachingCommentsForPair(trainerUserId: number, clientUserId: number, limit = 80): Promise<Row[]> {
+  await ensureTrainerTables();
+  await ensureUserProfileImageColumn();
+  if (!(await isTrainerLinkedToClient(trainerUserId, clientUserId))) {
+    throw new Error("연결된 회원의 코칭 대화만 확인할 수 있습니다.");
+  }
+  const rows = await all(
+    `SELECT
+       c.*,
+       u.id AS author_id,
+       u.name AS author_name,
+       u.email AS author_email,
+       u.profileImageUrl AS author_profile_image_url
+     FROM coaching_comments c
+     JOIN users u ON u.id = c.author_user_id
+     WHERE c.trainer_user_id = ? AND c.client_user_id = ?
+     ORDER BY c.created_at DESC
+     LIMIT ?`,
+    trainerUserId,
+    clientUserId,
+    limit,
+  );
+  return rows.map(normalizeCoachingComment);
+}
+
+function normalizeCoachingTask(row: Row): Row {
+  return {
+    id: Number(row.id),
+    trainerUserId: Number(aliasValue(row, "trainer_user_id")),
+    clientUserId: Number(aliasValue(row, "client_user_id")),
+    title: row.title,
+    description: row.description ?? "",
+    status: row.status,
+    dueDate: aliasValue(row, "due_date"),
+    completedAt: aliasValue(row, "completed_at"),
+    createdAt: aliasValue(row, "created_at"),
+    updatedAt: aliasValue(row, "updated_at"),
+  };
+}
+
+export async function addCoachingTask(trainerUserId: number, clientUserId: number, input: {
+  title: string;
+  description?: string;
+  dueDate?: Date | string | null;
+}): Promise<number> {
+  await ensureTrainerTables();
+  if (!(await isTrainerLinkedToClient(trainerUserId, clientUserId))) {
+    throw new Error("연결된 회원에게만 과제를 남길 수 있습니다.");
+  }
+  const now = new Date().toISOString();
+  const result = await run(
+    `INSERT INTO coaching_tasks
+     (trainer_user_id, client_user_id, title, description, status, due_date, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    trainerUserId,
+    clientUserId,
+    input.title.trim(),
+    input.description?.trim() ?? null,
+    "open",
+    toDbDate(input.dueDate) ?? null,
+    now,
+    now,
+  );
+  return getInsertId(result);
+}
+
+export async function updateCoachingTaskStatus(authorUserId: number, taskId: number, status: "open" | "done"): Promise<void> {
+  await ensureTrainerTables();
+  const task = await get("SELECT * FROM coaching_tasks WHERE id = ? LIMIT 1", taskId);
+  if (!task) throw new Error("과제를 찾을 수 없습니다.");
+  await assertLinkedPairForAuthor(authorUserId, Number(task.trainer_user_id), Number(task.client_user_id));
+  await run(
+    "UPDATE coaching_tasks SET status = ?, completed_at = ?, updated_at = ? WHERE id = ?",
+    status,
+    status === "done" ? new Date().toISOString() : null,
+    new Date().toISOString(),
+    taskId,
+  );
+}
+
+export async function getCoachingTasksForClient(clientUserId: number, limit = 50): Promise<Row[]> {
+  await ensureTrainerTables();
+  const rows = await all(
+    `SELECT t.*
+     FROM coaching_tasks t
+     JOIN trainer_client_links l
+       ON l.trainer_user_id = t.trainer_user_id
+      AND l.client_user_id = t.client_user_id
+      AND l.status = 'active'
+     WHERE t.client_user_id = ?
+     ORDER BY t.status ASC, COALESCE(t.due_date, t.created_at) ASC
+     LIMIT ?`,
+    clientUserId,
+    limit,
+  );
+  return rows.map(normalizeCoachingTask);
+}
+
+export async function getCoachingTasksForPair(trainerUserId: number, clientUserId: number, limit = 50): Promise<Row[]> {
+  await ensureTrainerTables();
+  if (!(await isTrainerLinkedToClient(trainerUserId, clientUserId))) {
+    throw new Error("연결된 회원의 과제만 확인할 수 있습니다.");
+  }
+  const rows = await all(
+    `SELECT * FROM coaching_tasks
+     WHERE trainer_user_id = ? AND client_user_id = ?
+     ORDER BY status ASC, COALESCE(due_date, created_at) ASC
+     LIMIT ?`,
+    trainerUserId,
+    clientUserId,
+    limit,
+  );
+  return rows.map(normalizeCoachingTask);
+}
+
+export async function upsertTrainerClientNote(trainerUserId: number, clientUserId: number, note: string): Promise<void> {
+  await ensureTrainerTables();
+  if (!(await isTrainerLinkedToClient(trainerUserId, clientUserId))) {
+    throw new Error("연결된 회원에게만 메모를 남길 수 있습니다.");
+  }
+  const existing = await get(
+    "SELECT id FROM trainer_client_notes WHERE trainer_user_id = ? AND client_user_id = ? LIMIT 1",
+    trainerUserId,
+    clientUserId,
+  );
+  const now = new Date().toISOString();
+  if (existing?.id) {
+    await run("UPDATE trainer_client_notes SET note = ?, updated_at = ? WHERE id = ?", note.trim(), now, existing.id);
+    return;
+  }
+  await run(
+    "INSERT INTO trainer_client_notes (trainer_user_id, client_user_id, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+    trainerUserId,
+    clientUserId,
+    note.trim(),
+    now,
+    now,
+  );
+}
+
+export async function getTrainerClientNote(trainerUserId: number, clientUserId: number): Promise<Row | null> {
+  await ensureTrainerTables();
+  if (!(await isTrainerLinkedToClient(trainerUserId, clientUserId))) {
+    throw new Error("연결된 회원의 메모만 확인할 수 있습니다.");
+  }
+  const row = await get(
+    "SELECT * FROM trainer_client_notes WHERE trainer_user_id = ? AND client_user_id = ? LIMIT 1",
+    trainerUserId,
+    clientUserId,
+  );
+  return row ? {
+    id: Number(row.id),
+    note: row.note ?? "",
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  } : null;
+}
+
+export async function getTrainerClientReport(trainerUserId: number, clientUserId: number): Promise<Row> {
+  await ensureTrainerTables();
+  if (!(await isTrainerLinkedToClient(trainerUserId, clientUserId))) {
+    throw new Error("연결된 회원의 리포트만 확인할 수 있습니다.");
+  }
+  const now = new Date();
+  const from = new Date(now);
+  from.setDate(from.getDate() - 28);
+  const sessions = await getSessionsInDateRange(clientUserId, from, now);
+  const volume = await getWorkoutVolumeInDateRange(clientUserId, from, now);
+  const tasks = await getCoachingTasksForPair(trainerUserId, clientUserId, 100);
+  const openTasks = tasks.filter((task) => task.status !== "done").length;
+  const completedTasks = tasks.filter((task) => task.status === "done").length;
+  return {
+    periodDays: 28,
+    sessionCount: sessions.length,
+    totalVolume: volume,
+    totalDurationMinutes: sessions.reduce((sum, session) => sum + (Number(session.durationMinutes) || 0), 0),
+    openTasks,
+    completedTasks,
+    lastWorkoutAt: sessions[0]?.workoutDate ?? sessions[0]?.startedAt ?? null,
+  };
 }
 
 export async function getLinkedClientWorkoutSessions(trainerUserId: number, clientUserId: number, limit = 10): Promise<Row[]> {
