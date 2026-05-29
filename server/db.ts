@@ -1116,10 +1116,6 @@ export async function reviewTrainerApplication(adminUserId: number, applicationI
 
 export async function linkTrainerByCode(clientUserId: number, code: string): Promise<Row> {
   await ensureTrainerTables();
-  const appRole = await getUserAppRole(clientUserId);
-  if (appRole === "trainer") {
-    throw new Error("트레이너 계정은 다른 트레이너를 등록할 수 없습니다.");
-  }
   const normalizedCode = code.replace(/\s+/g, "").toUpperCase();
   const trainerCodeRow = await get(
     "SELECT trainer_user_id FROM trainer_codes WHERE code = ? AND is_active = ? LIMIT 1",

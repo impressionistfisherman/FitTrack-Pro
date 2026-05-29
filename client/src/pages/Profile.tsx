@@ -665,31 +665,32 @@ export default function Profile() {
                 </div>
               )}
 
-              {appRole !== "trainer" && (
-                <div className="rounded-xl border border-border bg-accent/30 p-3">
-                  <Label className="mb-1.5 block text-xs text-muted-foreground">내 트레이너 등록</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={trainerCodeInput}
-                      onChange={(event) => setTrainerCodeInput(event.target.value.toUpperCase())}
-                      placeholder="예: FT-ABCDEFGH"
-                      className="bg-background border-border text-foreground"
-                      maxLength={32}
-                    />
-                    <Button
-                      type="button"
-                      className="shrink-0 bg-primary text-primary-foreground"
-                      disabled={!trainerCodeInput.trim() || registerTrainerMutation.isPending}
-                      onClick={() => registerTrainerMutation.mutate({ code: trainerCodeInput })}
-                    >
-                      등록
-                    </Button>
-                  </div>
-                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                    등록한 트레이너는 내 운동 기록과 진행 추이를 확인하고 피드백을 남길 수 있습니다.
-                  </p>
+              <div className="rounded-xl border border-border bg-accent/30 p-3">
+                <Label className="mb-1.5 block text-xs text-muted-foreground">
+                  {appRole === "trainer" ? "상위 트레이너 등록" : "내 트레이너 등록"}
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={trainerCodeInput}
+                    onChange={(event) => setTrainerCodeInput(event.target.value.toUpperCase())}
+                    placeholder="예: FT-ABCDEFGH"
+                    className="bg-background border-border text-foreground"
+                    maxLength={32}
+                  />
+                  <Button
+                    type="button"
+                    className="shrink-0 bg-primary text-primary-foreground"
+                    disabled={!trainerCodeInput.trim() || registerTrainerMutation.isPending}
+                    onClick={() => registerTrainerMutation.mutate({ code: trainerCodeInput })}
+                  >
+                    등록
+                  </Button>
                 </div>
-              )}
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  등록한 트레이너는 내 운동 기록과 진행 추이를 확인하고 피드백을 남길 수 있습니다.
+                  {appRole === "trainer" ? " 트레이너도 상위 코치에게 코칭을 받을 수 있습니다." : ""}
+                </p>
+              </div>
 
               {linkedTrainers.length > 0 && (
                 <div className="space-y-2">
