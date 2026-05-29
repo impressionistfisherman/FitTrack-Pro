@@ -136,7 +136,7 @@ function NavItem({ href, icon: Icon, label, badge, onClick }: {
   const isRootItem = itemPath === "/" || itemPath === "/trainer" || itemPath === "/admin";
   const isActive = itemHash
     ? currentPath === itemPath && currentHash === itemHash
-    : isRootItem ? currentPath === itemPath : currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
+    : isRootItem ? currentPath === itemPath && currentHash === "" : currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) return;
     onClick?.();
@@ -193,7 +193,7 @@ function MobileNavItem({ href, icon: Icon, label, badge }: {
   const isRootItem = itemPath === "/" || itemPath === "/trainer" || itemPath === "/admin";
   const isActive = itemHash
     ? currentPath === itemPath && currentHash === itemHash
-    : isRootItem ? currentPath === itemPath : currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
+    : isRootItem ? currentPath === itemPath && currentHash === "" : currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) return;
     event.preventDefault();
@@ -342,7 +342,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isTrainer = (user as any)?.appRole === "trainer";
   const isAdmin = user?.role === "admin";
   const showRoleSwitch = !loading && (isTrainer || isAdmin);
-  const visibleNavItems = getVisibleNavItems({ location, isTrainer, isAdmin, adminBadge });
+  const visibleNavItems = loading ? [] : getVisibleNavItems({ location, isTrainer, isAdmin, adminBadge });
 
   return (
     <div className="app-layout-root">
@@ -363,7 +363,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {visibleNavItems.map((item) => <NavItem key={item.id} {...item} />)}
+          {loading ? (
+            <div className="space-y-2 px-1 py-1" aria-label="메뉴를 불러오는 중">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className="h-11 skeleton rounded-xl" />
+              ))}
+            </div>
+          ) : (
+            visibleNavItems.map((item) => <NavItem key={item.id} {...item} />)
+          )}
         </nav>
         <div className="px-4 pb-2">
           <ThemePicker sidebar />
@@ -435,9 +443,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
         {mobileMenuOpen && (
           <div className="bg-card border-b border-border p-4 space-y-1 animate-slide-up">
-            {visibleNavItems.map((item) => (
-              <NavItem key={item.id} {...item} onClick={() => setMobileMenuOpen(false)} />
-            ))}
+            {loading ? (
+              <div className="space-y-2" aria-label="메뉴를 불러오는 중">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="h-11 skeleton rounded-xl" />
+                ))}
+              </div>
+            ) : (
+              visibleNavItems.map((item) => (
+                <NavItem key={item.id} {...item} onClick={() => setMobileMenuOpen(false)} />
+              ))
+            )}
             {isAuthenticated && (
               <button onClick={() => { logout(); setMobileMenuOpen(false); }}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground w-full transition-colors">
@@ -462,7 +478,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* ── 모바일 하단 네비게이션 ── */}
       <nav className="app-mobile-nav bg-card/95 backdrop-blur-md border-t border-border">
         <div className="flex items-center justify-around px-2 py-1">
-          {visibleNavItems.map((item) => <MobileNavItem key={item.id} {...item} />)}
+          {loading ? (
+            Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="my-2 h-9 w-12 skeleton rounded-xl" />
+            ))
+          ) : (
+            visibleNavItems.map((item) => <MobileNavItem key={item.id} {...item} />)
+          )}
         </div>
       </nav>
 
