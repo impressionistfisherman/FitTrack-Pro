@@ -6,7 +6,7 @@ import {
   Activity, Bot, Calendar, CheckSquare, Dumbbell, Home,
   LogIn, LogOut, Menu, MessageSquare, Scale, ShieldCheck, UserCheck, Users, X,
 } from "lucide-react";
-import { useState } from "react";
+import { type MouseEvent, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -99,20 +99,71 @@ function AppContentSkeleton() {
   );
 }
 
+function splitHref(href: string) {
+  const [path, hash] = href.split("#");
+  return { path: path || "/", hash: hash ? `#${hash}` : "" };
+}
+
+function scrollToHash(hash: string) {
+  if (!hash || typeof document === "undefined") return;
+  const target = document.getElementById(hash.slice(1));
+  target?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function useCurrentHash() {
+  const [hash, setHash] = useState(() => (typeof window === "undefined" ? "" : window.location.hash));
+
+  useEffect(() => {
+    const updateHash = () => setHash(window.location.hash);
+    window.addEventListener("hashchange", updateHash);
+    window.addEventListener("popstate", updateHash);
+    return () => {
+      window.removeEventListener("hashchange", updateHash);
+      window.removeEventListener("popstate", updateHash);
+    };
+  }, []);
+
+  return hash;
+}
+
 function NavItem({ href, icon: Icon, label, badge, onClick }: {
   href: string; icon: any; label: string; badge?: number; onClick?: () => void;
 }) {
-  const [location] = useLocation();
-  const currentPath = location.split("#")[0];
-  const itemPath = href.split("#")[0];
-  const itemHash = href.includes("#") ? `#${href.split("#")[1]}` : "";
-  const currentHash = typeof window === "undefined" ? "" : window.location.hash;
+  const [location, navigate] = useLocation();
+  const currentHash = useCurrentHash();
+  const currentPath = splitHref(location).path;
+  const { path: itemPath, hash: itemHash } = splitHref(href);
   const isRootItem = itemPath === "/" || itemPath === "/trainer" || itemPath === "/admin";
   const isActive = itemHash
     ? currentPath === itemPath && currentHash === itemHash
     : isRootItem ? currentPath === itemPath : currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
+  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) return;
+    onClick?.();
+    event.preventDefault();
+    if (!itemHash) {
+      navigate(itemPath);
+      if (typeof window !== "undefined" && window.location.hash) {
+        window.history.replaceState(null, "", itemPath);
+        window.dispatchEvent(new Event("hashchange"));
+      }
+      return;
+    }
+    if (currentPath !== itemPath) {
+      navigate(itemPath);
+      window.setTimeout(() => {
+        window.history.replaceState(null, "", `${itemPath}${itemHash}`);
+        window.dispatchEvent(new Event("hashchange"));
+        scrollToHash(itemHash);
+      }, 0);
+      return;
+    }
+    window.history.pushState(null, "", `${itemPath}${itemHash}`);
+    window.dispatchEvent(new Event("hashchange"));
+    scrollToHash(itemHash);
+  };
   return (
-    <Link href={href} onClick={onClick} className="block">
+    <a href={href} onClick={handleClick} className="block">
       <div className={cn(
         "flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200",
         isActive
@@ -128,24 +179,47 @@ function NavItem({ href, icon: Icon, label, badge, onClick }: {
         ) : null}
         {isActive && <span className={cn("text-primary text-xs", !badge && "ml-auto")}>›</span>}
       </div>
-    </Link>
+    </a>
   );
 }
 
 function MobileNavItem({ href, icon: Icon, label, badge }: {
   href: string; icon: any; label: string; badge?: number;
 }) {
-  const [location] = useLocation();
-  const currentPath = location.split("#")[0];
-  const itemPath = href.split("#")[0];
-  const itemHash = href.includes("#") ? `#${href.split("#")[1]}` : "";
-  const currentHash = typeof window === "undefined" ? "" : window.location.hash;
+  const [location, navigate] = useLocation();
+  const currentHash = useCurrentHash();
+  const currentPath = splitHref(location).path;
+  const { path: itemPath, hash: itemHash } = splitHref(href);
   const isRootItem = itemPath === "/" || itemPath === "/trainer" || itemPath === "/admin";
   const isActive = itemHash
     ? currentPath === itemPath && currentHash === itemHash
     : isRootItem ? currentPath === itemPath : currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
+  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) return;
+    event.preventDefault();
+    if (!itemHash) {
+      navigate(itemPath);
+      if (typeof window !== "undefined" && window.location.hash) {
+        window.history.replaceState(null, "", itemPath);
+        window.dispatchEvent(new Event("hashchange"));
+      }
+      return;
+    }
+    if (currentPath !== itemPath) {
+      navigate(itemPath);
+      window.setTimeout(() => {
+        window.history.replaceState(null, "", `${itemPath}${itemHash}`);
+        window.dispatchEvent(new Event("hashchange"));
+        scrollToHash(itemHash);
+      }, 0);
+      return;
+    }
+    window.history.pushState(null, "", `${itemPath}${itemHash}`);
+    window.dispatchEvent(new Event("hashchange"));
+    scrollToHash(itemHash);
+  };
   return (
-    <Link href={href} className="block">
+    <a href={href} onClick={handleClick} className="block">
       <div className={cn(
         "flex flex-col items-center gap-1 px-3 py-2 rounded-xl",
         isActive ? "text-primary" : "text-muted-foreground"
@@ -160,7 +234,7 @@ function MobileNavItem({ href, icon: Icon, label, badge }: {
         </div>
         <span className="text-[10px] font-medium">{label}</span>
       </div>
-    </Link>
+    </a>
   );
 }
 
