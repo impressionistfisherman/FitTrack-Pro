@@ -1404,6 +1404,56 @@ export async function getTrainerPtSessionsForPair(trainerUserId: number, clientU
   }));
 }
 
+export async function getTrainerPtSessionsForClient(clientUserId: number, limit = 20): Promise<Row[]> {
+  await ensureTrainerTables();
+  await ensureUserProfileImageColumn();
+  const rows = await all(
+    `SELECT
+       p.id AS pt_id,
+       p.session_id,
+       p.title,
+       p.notes AS pt_notes,
+       p.created_at AS pt_created_at,
+       ws.name AS session_name,
+       ws.workoutDate AS workout_date,
+       ws.durationMinutes AS duration_minutes,
+       ws.totalVolume AS total_volume,
+       u.id AS trainer_id,
+       u.name AS trainer_name,
+       u.email AS trainer_email,
+       u.profileImageUrl AS trainer_profile_image_url
+     FROM trainer_pt_sessions p
+     JOIN workout_sessions ws ON ws.id = p.session_id
+     JOIN users u ON u.id = p.trainer_user_id
+     JOIN trainer_client_links l
+       ON l.trainer_user_id = p.trainer_user_id
+      AND l.client_user_id = p.client_user_id
+      AND l.status = 'active'
+     WHERE p.client_user_id = ?
+     ORDER BY p.created_at DESC
+     LIMIT ?`,
+    clientUserId,
+    limit,
+  );
+  return rows.map((row) => ({
+    id: Number(aliasValue(row, "pt_id")),
+    sessionId: Number(aliasValue(row, "session_id")),
+    title: aliasValue(row, "title"),
+    notes: aliasValue(row, "pt_notes"),
+    createdAt: aliasValue(row, "pt_created_at"),
+    sessionName: aliasValue(row, "session_name"),
+    workoutDate: aliasValue(row, "workout_date"),
+    durationMinutes: Number(aliasValue(row, "duration_minutes")) || 0,
+    totalVolume: Number(aliasValue(row, "total_volume")) || 0,
+    trainer: normalizeUser({
+      id: Number(aliasValue(row, "trainer_id")),
+      name: aliasValue(row, "trainer_name"),
+      email: aliasValue(row, "trainer_email"),
+      profileImageUrl: aliasValue(row, "trainer_profile_image_url"),
+    }),
+  }));
+}
+
 export async function getLinkedClientWorkoutSessions(trainerUserId: number, clientUserId: number, limit = 10): Promise<Row[]> {
   if (!(await isTrainerLinkedToClient(trainerUserId, clientUserId))) {
     throw new Error("연결된 회원의 기록만 확인할 수 있습니다.");

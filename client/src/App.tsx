@@ -13,6 +13,7 @@ import RoutineDetail from "./pages/RoutineDetail";
 import WorkoutSession from "./pages/WorkoutSession";
 import History from "./pages/History";
 import AICoach from "./pages/AICoach";
+import Coaching from "@/pages/Coaching";
 import Profile from "@/pages/Profile";
 import BodyWeight from "@/pages/BodyWeight";
 import Admin from "@/pages/Admin";
@@ -35,6 +36,7 @@ function Routes() {
       <Route path="/workout/:sessionId" component={WorkoutSession} />
       <Route path="/history" component={History} />
       <Route path="/ai-coach" component={AICoach} />
+      <Route path="/coaching" component={Coaching} />
       <Route path="/profile" component={Profile} />
       <Route path="/body-weight" component={BodyWeight} />
       <Route path="/admin" component={Admin} />

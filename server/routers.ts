@@ -41,6 +41,7 @@ import {
   getTrainerApplication,
   getTrainerFeedbackForClient,
   getTrainerFeedbackForPair,
+  getTrainerPtSessionsForClient,
   getTrainerPtSessionsForPair,
   getUserPreference,
   getUserStats,
@@ -1453,6 +1454,7 @@ export const appRouter = router({
         trainers: await getClientTrainers(ctx.user.id),
         pendingTrainers: await getPendingClientTrainerLinks(ctx.user.id),
         feedback: await getTrainerFeedbackForClient(ctx.user.id, 10),
+        ptSessions: await getTrainerPtSessionsForClient(ctx.user.id, 10),
       };
     }),
     issueCode: protectedProcedure.mutation(async ({ ctx }) => {

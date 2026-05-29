@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
   Activity, Bot, Calendar, Dumbbell, Home,
-  LogIn, LogOut, Menu, Scale, ShieldCheck, Users, X,
+  LogIn, LogOut, Menu, MessageSquare, Scale, ShieldCheck, Users, X,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -18,6 +18,7 @@ const navItems = [
   { href: "/routines", icon: Activity, label: "루틴" },
   { href: "/history", icon: Calendar, label: "기록" },
   { href: "/body-weight", icon: Scale, label: "체중" },
+  { href: "/coaching", icon: MessageSquare, label: "코칭" },
   { href: "/ai-coach", icon: Bot, label: "AI 코치" },
 ];
 
