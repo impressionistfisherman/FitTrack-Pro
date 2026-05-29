@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import ThemePicker from "./ThemePicker";
 
 type SidebarNavItem = {
+  id: string;
   href: string;
   icon: any;
   label: string;
@@ -20,13 +21,13 @@ type SidebarNavItem = {
 };
 
 const userNavItems: SidebarNavItem[] = [
-  { href: "/", icon: Home, label: "홈" },
-  { href: "/exercises", icon: Dumbbell, label: "운동" },
-  { href: "/routines", icon: Activity, label: "루틴" },
-  { href: "/history", icon: Calendar, label: "기록" },
-  { href: "/body-weight", icon: Scale, label: "체중" },
-  { href: "/coaching", icon: MessageSquare, label: "코칭" },
-  { href: "/ai-coach", icon: Bot, label: "AI 코치" },
+  { id: "user-home", href: "/", icon: Home, label: "홈" },
+  { id: "user-exercises", href: "/exercises", icon: Dumbbell, label: "운동" },
+  { id: "user-routines", href: "/routines", icon: Activity, label: "루틴" },
+  { id: "user-history", href: "/history", icon: Calendar, label: "기록" },
+  { id: "user-body-weight", href: "/body-weight", icon: Scale, label: "체중" },
+  { id: "user-coaching", href: "/coaching", icon: MessageSquare, label: "코칭" },
+  { id: "user-ai-coach", href: "/ai-coach", icon: Bot, label: "AI 코치" },
 ];
 
 function getVisibleNavItems({
@@ -42,31 +43,29 @@ function getVisibleNavItems({
 }): SidebarNavItem[] {
   if (isAdmin && location.startsWith("/admin")) {
     return [
-      { href: "/admin", icon: ShieldCheck, label: "관리자 홈" },
-      { href: "/admin#applications", icon: UserCheck, label: "신청 관리", badge: adminBadge },
-      { href: "/admin#trainers", icon: Users, label: "승인 트레이너" },
+      { id: "admin-home", href: "/admin", icon: ShieldCheck, label: "관리자 홈" },
+      { id: "admin-applications", href: "/admin#applications", icon: UserCheck, label: "신청 관리", badge: adminBadge },
+      { id: "admin-trainers", href: "/admin#trainers", icon: Users, label: "승인 트레이너" },
     ];
   }
 
   if (isTrainer && location.startsWith("/trainer")) {
+    const trainerClientPath = location.split("#")[0];
     if (location.startsWith("/trainer/clients/")) {
       return [
-        { href: "/trainer", icon: Users, label: "트레이너 홈" },
-        { href: `${location.split("#")[0]}#timeline`, icon: Calendar, label: "코칭 타임라인" },
-        { href: `${location.split("#")[0]}#tasks`, icon: UserCheck, label: "회원 과제" },
-        { href: `${location.split("#")[0]}#notes`, icon: MessageSquare, label: "비공개 메모" },
-        { href: `${location.split("#")[0]}#report`, icon: Activity, label: "진행 리포트" },
-        { href: `${location.split("#")[0]}#ai-helper`, icon: Bot, label: "AI 코칭 보조" },
-        { href: `${location.split("#")[0]}#pt-sessions`, icon: Dumbbell, label: "PT 기록" },
+        { id: "trainer-home", href: "/trainer", icon: Users, label: "트레이너 홈" },
+        { id: "trainer-client-timeline", href: `${trainerClientPath}#timeline`, icon: Calendar, label: "코칭 타임라인" },
+        { id: "trainer-client-tasks", href: `${trainerClientPath}#tasks`, icon: CheckSquare, label: "회원 과제" },
+        { id: "trainer-client-notes", href: `${trainerClientPath}#notes`, icon: MessageSquare, label: "비공개 메모" },
+        { id: "trainer-client-report", href: `${trainerClientPath}#report`, icon: Activity, label: "진행 리포트" },
+        { id: "trainer-client-ai-helper", href: `${trainerClientPath}#ai-helper`, icon: Bot, label: "AI 코칭 보조" },
+        { id: "trainer-client-pt-sessions", href: `${trainerClientPath}#pt-sessions`, icon: Dumbbell, label: "PT 기록" },
       ];
     }
     return [
-      { href: "/trainer", icon: Users, label: "대시보드" },
-      { href: "/trainer#requests", icon: UserCheck, label: "회원 요청" },
-      { href: "/trainer#clients", icon: MessageSquare, label: "담당 회원" },
-      { href: "/trainer#clients", icon: Calendar, label: "코칭 타임라인" },
-      { href: "/trainer#clients", icon: CheckSquare, label: "회원 과제" },
-      { href: "/trainer#clients", icon: Activity, label: "진행 리포트" },
+      { id: "trainer-dashboard", href: "/trainer", icon: Users, label: "트레이너 홈" },
+      { id: "trainer-requests", href: "/trainer#requests", icon: UserCheck, label: "회원 요청" },
+      { id: "trainer-clients", href: "/trainer#clients", icon: MessageSquare, label: "담당 회원" },
     ];
   }
 
@@ -104,7 +103,14 @@ function NavItem({ href, icon: Icon, label, badge, onClick }: {
   href: string; icon: any; label: string; badge?: number; onClick?: () => void;
 }) {
   const [location] = useLocation();
-  const isActive = href === "/" ? location === "/" : location.startsWith(href);
+  const currentPath = location.split("#")[0];
+  const itemPath = href.split("#")[0];
+  const itemHash = href.includes("#") ? `#${href.split("#")[1]}` : "";
+  const currentHash = typeof window === "undefined" ? "" : window.location.hash;
+  const isRootItem = itemPath === "/" || itemPath === "/trainer" || itemPath === "/admin";
+  const isActive = itemHash
+    ? currentPath === itemPath && currentHash === itemHash
+    : isRootItem ? currentPath === itemPath : currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
   return (
     <Link href={href} onClick={onClick} className="block">
       <div className={cn(
@@ -130,7 +136,14 @@ function MobileNavItem({ href, icon: Icon, label, badge }: {
   href: string; icon: any; label: string; badge?: number;
 }) {
   const [location] = useLocation();
-  const isActive = href === "/" ? location === "/" : location.startsWith(href);
+  const currentPath = location.split("#")[0];
+  const itemPath = href.split("#")[0];
+  const itemHash = href.includes("#") ? `#${href.split("#")[1]}` : "";
+  const currentHash = typeof window === "undefined" ? "" : window.location.hash;
+  const isRootItem = itemPath === "/" || itemPath === "/trainer" || itemPath === "/admin";
+  const isActive = itemHash
+    ? currentPath === itemPath && currentHash === itemHash
+    : isRootItem ? currentPath === itemPath : currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
   return (
     <Link href={href} className="block">
       <div className={cn(
@@ -276,7 +289,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {visibleNavItems.map((item) => <NavItem key={item.href} {...item} />)}
+          {visibleNavItems.map((item) => <NavItem key={item.id} {...item} />)}
         </nav>
         <div className="px-4 pb-2">
           <ThemePicker sidebar />
@@ -349,7 +362,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {mobileMenuOpen && (
           <div className="bg-card border-b border-border p-4 space-y-1 animate-slide-up">
             {visibleNavItems.map((item) => (
-              <NavItem key={item.href} {...item} onClick={() => setMobileMenuOpen(false)} />
+              <NavItem key={item.id} {...item} onClick={() => setMobileMenuOpen(false)} />
             ))}
             {isAuthenticated && (
               <button onClick={() => { logout(); setMobileMenuOpen(false); }}
@@ -375,7 +388,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* ── 모바일 하단 네비게이션 ── */}
       <nav className="app-mobile-nav bg-card/95 backdrop-blur-md border-t border-border">
         <div className="flex items-center justify-around px-2 py-1">
-          {visibleNavItems.map((item) => <MobileNavItem key={item.href} {...item} />)}
+          {visibleNavItems.map((item) => <MobileNavItem key={item.id} {...item} />)}
         </div>
       </nav>
 
