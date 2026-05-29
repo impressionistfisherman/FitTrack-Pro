@@ -23,9 +23,11 @@ function useHashView() {
     const updateHash = () => setHash(window.location.hash);
     window.addEventListener("hashchange", updateHash);
     window.addEventListener("popstate", updateHash);
+    window.addEventListener("fittrack:routechange", updateHash);
     return () => {
       window.removeEventListener("hashchange", updateHash);
       window.removeEventListener("popstate", updateHash);
+      window.removeEventListener("fittrack:routechange", updateHash);
     };
   }, []);
 

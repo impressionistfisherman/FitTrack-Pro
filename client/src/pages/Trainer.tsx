@@ -51,9 +51,11 @@ function useHashView() {
     const updateHash = () => setHash(window.location.hash);
     window.addEventListener("hashchange", updateHash);
     window.addEventListener("popstate", updateHash);
+    window.addEventListener("fittrack:routechange", updateHash);
     return () => {
       window.removeEventListener("hashchange", updateHash);
       window.removeEventListener("popstate", updateHash);
+      window.removeEventListener("fittrack:routechange", updateHash);
     };
   }, []);
 
@@ -289,7 +291,7 @@ export default function Trainer() {
                           variant="outline"
                           className="border-border bg-background text-muted-foreground"
                           disabled={reviewClientRequestMutation.isPending}
-                          onClick={() => reviewClientRequestMutation.mutate({ linkId: Number(request.linkId), status: "removed" })}
+                          onClick={() => reviewClientRequestMutation.mutate({ linkId: Number(request.linkId), status: "rejected" })}
                         >
                           거절
                         </Button>

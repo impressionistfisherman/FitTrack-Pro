@@ -35,11 +35,13 @@ function getVisibleNavItems({
   isTrainer,
   isAdmin,
   adminBadge,
+  coachingBadge,
 }: {
   location: string;
   isTrainer: boolean;
   isAdmin: boolean;
   adminBadge: number;
+  coachingBadge: number;
 }): SidebarNavItem[] {
   if (isAdmin && location.startsWith("/admin")) {
     return [
@@ -69,10 +71,9 @@ function getVisibleNavItems({
     ];
   }
 
-  return userNavItems.filter((item) => {
-    if (item.href === "/coaching") return !isTrainer && !isAdmin;
-    return true;
-  });
+  return userNavItems.map((item) => item.href === "/coaching"
+    ? { ...item, badge: coachingBadge }
+    : item);
 }
 
 function AppContentSkeleton() {
@@ -358,12 +359,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { status: "pending" },
     { enabled: user?.role === "admin" }
   );
+  const { data: coachingNotifications } = trpc.trainer.notifications.useQuery(undefined, {
+    enabled: Boolean(user?.id),
+    staleTime: 1000 * 30,
+    refetchOnWindowFocus: false,
+  });
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
   const adminBadge = pendingApplications?.length ?? 0;
+  const coachingBadge = coachingNotifications?.unreadCount ?? 0;
   const isTrainer = (user as any)?.appRole === "trainer";
   const isAdmin = user?.role === "admin";
   const showRoleSwitch = !loading && (isTrainer || isAdmin);
-  const visibleNavItems = loading ? [] : getVisibleNavItems({ location, isTrainer, isAdmin, adminBadge });
+  const visibleNavItems = loading ? [] : getVisibleNavItems({ location, isTrainer, isAdmin, adminBadge, coachingBadge });
 
   return (
     <div className="app-layout-root">

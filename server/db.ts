@@ -919,6 +919,14 @@ async function ensureTrainerTables() {
       updated_at timestamp
     )`,
   );
+  await run(
+    `CREATE TABLE IF NOT EXISTS coaching_read_states (
+      user_id integer NOT NULL,
+      scope varchar(64) NOT NULL,
+      last_read_at timestamp NOT NULL,
+      PRIMARY KEY (user_id, scope)
+    )`,
+  );
   trainerTablesReady = true;
 }
 
@@ -1108,6 +1116,10 @@ export async function reviewTrainerApplication(adminUserId: number, applicationI
 
 export async function linkTrainerByCode(clientUserId: number, code: string): Promise<Row> {
   await ensureTrainerTables();
+  const appRole = await getUserAppRole(clientUserId);
+  if (appRole === "trainer") {
+    throw new Error("트레이너 계정은 다른 트레이너를 등록할 수 없습니다.");
+  }
   const normalizedCode = code.replace(/\s+/g, "").toUpperCase();
   const trainerCodeRow = await get(
     "SELECT trainer_user_id FROM trainer_codes WHERE code = ? AND is_active = ? LIMIT 1",
@@ -1125,6 +1137,12 @@ export async function linkTrainerByCode(clientUserId: number, code: string): Pro
     clientUserId,
   );
   if (existing) {
+    if (existing.status === "blocked") {
+      throw new Error("차단된 트레이너 연결은 다시 요청할 수 없습니다.");
+    }
+    if (existing.status === "active") {
+      throw new Error("이미 연결된 트레이너입니다.");
+    }
     await run(
       "UPDATE trainer_client_links SET status = ?, updated_at = ? WHERE id = ?",
       "pending",
@@ -1145,7 +1163,11 @@ export async function linkTrainerByCode(clientUserId: number, code: string): Pro
   return { id: getInsertId(result), trainerUserId };
 }
 
-export async function reviewTrainerClientLink(trainerUserId: number, linkId: number, status: "active" | "removed"): Promise<void> {
+export async function reviewTrainerClientLink(
+  trainerUserId: number,
+  linkId: number,
+  status: "active" | "rejected" | "removed" | "blocked" | "expired",
+): Promise<void> {
   await ensureTrainerTables();
   await run(
     "UPDATE trainer_client_links SET status = ?, updated_at = ? WHERE id = ? AND trainer_user_id = ?",
@@ -1165,6 +1187,110 @@ export async function unlinkTrainer(clientUserId: number, trainerUserId: number)
     trainerUserId,
     clientUserId,
   );
+}
+
+async function getCoachingLastReadAt(userId: number): Promise<string> {
+  await ensureTrainerTables();
+  const row = await get(
+    "SELECT last_read_at FROM coaching_read_states WHERE user_id = ? AND scope = ? LIMIT 1",
+    userId,
+    "coaching",
+  );
+  return String(row?.last_read_at ?? "1970-01-01T00:00:00.000Z");
+}
+
+export async function markCoachingRead(userId: number): Promise<void> {
+  await ensureTrainerTables();
+  const now = new Date().toISOString();
+  const existing = await get(
+    "SELECT user_id FROM coaching_read_states WHERE user_id = ? AND scope = ? LIMIT 1",
+    userId,
+    "coaching",
+  );
+  if (existing) {
+    await run(
+      "UPDATE coaching_read_states SET last_read_at = ? WHERE user_id = ? AND scope = ?",
+      now,
+      userId,
+      "coaching",
+    );
+    return;
+  }
+  await run(
+    "INSERT INTO coaching_read_states (user_id, scope, last_read_at) VALUES (?, ?, ?)",
+    userId,
+    "coaching",
+    now,
+  );
+}
+
+export async function getCoachingNotificationSummary(userId: number): Promise<Row> {
+  await ensureTrainerTables();
+  const since = await getCoachingLastReadAt(userId);
+  const feedback = await get(
+    `SELECT COUNT(*) AS count
+     FROM trainer_feedback f
+     JOIN trainer_client_links l
+       ON l.trainer_user_id = f.trainer_user_id
+      AND l.client_user_id = f.client_user_id
+      AND l.status = 'active'
+     WHERE f.client_user_id = ? AND f.created_at > ?`,
+    userId,
+    since,
+  );
+  const ptSessions = await get(
+    `SELECT COUNT(*) AS count
+     FROM trainer_pt_sessions p
+     JOIN trainer_client_links l
+       ON l.trainer_user_id = p.trainer_user_id
+      AND l.client_user_id = p.client_user_id
+      AND l.status = 'active'
+     WHERE p.client_user_id = ? AND p.created_at > ?`,
+    userId,
+    since,
+  );
+  const comments = await get(
+    `SELECT COUNT(*) AS count
+     FROM coaching_comments c
+     JOIN trainer_client_links l
+       ON l.trainer_user_id = c.trainer_user_id
+      AND l.client_user_id = c.client_user_id
+      AND l.status = 'active'
+     WHERE (c.client_user_id = ? OR c.trainer_user_id = ?)
+       AND c.author_user_id != ?
+       AND c.created_at > ?`,
+    userId,
+    userId,
+    userId,
+    since,
+  );
+  const tasks = await get(
+    `SELECT COUNT(*) AS count
+     FROM coaching_tasks t
+     JOIN trainer_client_links l
+       ON l.trainer_user_id = t.trainer_user_id
+      AND l.client_user_id = t.client_user_id
+      AND l.status = 'active'
+     WHERE t.client_user_id = ? AND COALESCE(t.updated_at, t.created_at) > ?`,
+    userId,
+    since,
+  );
+  const requests = await get(
+    "SELECT COUNT(*) AS count FROM trainer_client_links WHERE trainer_user_id = ? AND status = 'pending'",
+    userId,
+  );
+  const counts = {
+    feedback: Number(feedback?.count ?? 0),
+    ptSessions: Number(ptSessions?.count ?? 0),
+    comments: Number(comments?.count ?? 0),
+    tasks: Number(tasks?.count ?? 0),
+    requests: Number(requests?.count ?? 0),
+  };
+  return {
+    ...counts,
+    unreadCount: counts.feedback + counts.ptSessions + counts.comments + counts.tasks + counts.requests,
+    lastReadAt: since,
+  };
 }
 
 export async function isTrainerLinkedToClient(trainerUserId: number, clientUserId: number): Promise<boolean> {

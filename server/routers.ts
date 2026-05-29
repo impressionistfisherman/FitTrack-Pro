@@ -23,6 +23,7 @@ import {
   getBodyWeights,
   getCoachingCommentsForClient,
   getCoachingCommentsForPair,
+  getCoachingNotificationSummary,
   getCoachingTasksForClient,
   getCoachingTasksForPair,
   getExerciseById,
@@ -65,6 +66,7 @@ import {
   listTrainerApplications,
   listApprovedTrainers,
   linkTrainerByCode,
+  markCoachingRead,
   reviewTrainerApplication,
   reviewTrainerClientLink,
   removeExerciseFromRoutine,
@@ -1469,6 +1471,13 @@ export const appRouter = router({
         tasks: await getCoachingTasksForClient(ctx.user.id, 30),
       };
     }),
+    notifications: protectedProcedure.query(async ({ ctx }) => {
+      return await getCoachingNotificationSummary(ctx.user.id);
+    }),
+    markCoachingRead: protectedProcedure.mutation(async ({ ctx }) => {
+      await markCoachingRead(ctx.user.id);
+      return { success: true };
+    }),
     issueCode: protectedProcedure.mutation(async ({ ctx }) => {
       const appRole = await getUserAppRole(ctx.user.id);
       if (appRole !== "trainer" && ctx.user.role !== "admin") {
@@ -1508,7 +1517,7 @@ export const appRouter = router({
         };
       }),
     reviewClientRequest: protectedProcedure
-      .input(z.object({ linkId: z.number(), status: z.enum(["active", "removed"]) }))
+      .input(z.object({ linkId: z.number(), status: z.enum(["active", "rejected", "removed", "blocked", "expired"]) }))
       .mutation(async ({ ctx, input }) => {
         const appRole = await getUserAppRole(ctx.user.id);
         if (appRole !== "trainer" && ctx.user.role !== "admin") {

@@ -160,3 +160,22 @@ describe("goals (protected)", () => {
     expect(result === null || result !== undefined).toBe(true);
   });
 });
+
+describe("trainer notifications", () => {
+  it("returns a coaching notification summary and supports marking it read", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const summary = await caller.trainer.notifications();
+
+    expect(summary).toMatchObject({
+      feedback: expect.any(Number),
+      ptSessions: expect.any(Number),
+      comments: expect.any(Number),
+      tasks: expect.any(Number),
+      requests: expect.any(Number),
+      unreadCount: expect.any(Number),
+    });
+
+    await expect(caller.trainer.markCoachingRead()).resolves.toEqual({ success: true });
+  });
+});

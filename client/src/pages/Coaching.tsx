@@ -8,7 +8,7 @@ import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { CalendarDays, CheckCircle2, CheckSquare, Dumbbell, LogIn, MessageSquare, ShieldCheck, Users } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Link } from "wouter";
 
@@ -40,6 +40,15 @@ export default function Coaching() {
   const [trainerCodeInput, setTrainerCodeInput] = useState("");
   const [commentDraft, setCommentDraft] = useState("");
   const { data: trainerStatus, isLoading } = trpc.trainer.status.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: notifications } = trpc.trainer.notifications.useQuery(undefined, {
+    enabled: isAuthenticated,
+    staleTime: 1000 * 30,
+    refetchOnWindowFocus: false,
+  });
+  const markedReadRef = useRef(false);
+  const markReadMutation = trpc.trainer.markCoachingRead.useMutation({
+    onSuccess: () => utils.trainer.notifications.invalidate(),
+  });
   const registerTrainerMutation = trpc.trainer.registerTrainer.useMutation({
     onSuccess: () => {
       toast.success("트레이너에게 연결 요청을 보냈습니다.");
@@ -70,6 +79,12 @@ export default function Coaching() {
     },
     onError: (error) => toast.error(error.message || "과제 상태 변경에 실패했습니다."),
   });
+
+  useEffect(() => {
+    if (!isAuthenticated || loading || isLoading || markedReadRef.current) return;
+    markedReadRef.current = true;
+    markReadMutation.mutate();
+  }, [isAuthenticated, isLoading, loading, markReadMutation]);
 
   if (loading || isLoading) {
     return (
@@ -119,14 +134,21 @@ export default function Coaching() {
           <h1 className="page-title">코칭 공간</h1>
           <p className="page-description">회원과 트레이너가 공유하는 피드백, PT 기록, 연결 상태를 확인하세요</p>
         </div>
-        {appRole === "trainer" ? (
-          <Button asChild className="w-fit bg-primary text-primary-foreground">
-            <Link href="/trainer">
-              <Users size={15} />
-              트레이너 대시보드
-            </Link>
-          </Button>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          {notifications?.unreadCount ? (
+            <Badge className="border border-primary/30 bg-primary/10 text-primary">
+              새 코칭 {notifications.unreadCount}건 확인됨
+            </Badge>
+          ) : null}
+          {appRole === "trainer" ? (
+            <Button asChild className="w-fit bg-primary text-primary-foreground">
+              <Link href="/trainer">
+                <Users size={15} />
+                트레이너 대시보드
+              </Link>
+            </Button>
+          ) : null}
+        </div>
       </div>
 
       {appRole === "trainer" ? (
