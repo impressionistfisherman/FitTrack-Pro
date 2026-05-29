@@ -235,12 +235,11 @@ function RoleModeSwitch({ badge, showTrainer, showAdmin }: { badge: number; show
 
   return (
     <div className="mt-14 border-b border-border/70 bg-background/80 px-3 py-2 backdrop-blur-sm sm:px-6 xl:mt-0 xl:px-8">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 overflow-hidden">
-        <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
-          {isAdminView ? <ShieldCheck size={14} className="text-primary" /> : <Users size={14} className="text-primary" />}
-          <span>{showAdmin ? "홈 전환" : "트레이너 홈 전환"}</span>
-        </div>
-        <div className="ml-auto flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border bg-card/80 p-1">
+      <div className="mx-auto flex max-w-7xl items-center justify-center overflow-hidden">
+        <div
+          className="flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border bg-card/80 p-1 shadow-sm"
+          aria-label={showAdmin ? "사용자, 트레이너, 관리자 홈 전환" : "사용자, 트레이너 홈 전환"}
+        >
           <a href="/" onClick={(event) => handleInternalNavigation({ event, href: "/", navigate })}>
             <Button
               size="sm"
@@ -456,7 +455,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               aria-label="메뉴 닫기"
               onClick={() => setMobileMenuOpen(false)}
             />
-            <div className="relative flex h-[calc(100dvh-3.5rem)] w-[min(20rem,86vw)] flex-col border-r border-border bg-sidebar shadow-2xl animate-slide-right">
+            <div className="relative ml-auto flex h-[calc(100dvh-3.5rem)] w-[min(20rem,86vw)] flex-col border-l border-border bg-sidebar shadow-2xl animate-slide-left">
               <div className="border-b border-sidebar-border p-4">
                 <div className="flex items-center gap-3">
                   <UserAvatar user={user} className="h-9 w-9" />
