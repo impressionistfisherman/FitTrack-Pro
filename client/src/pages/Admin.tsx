@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ShieldCheck, UserCheck, Users, UserX } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const statusLabels: Record<string, string> = {
@@ -16,8 +16,25 @@ const statusLabels: Record<string, string> = {
   rejected: "거절",
 };
 
+function useHashView() {
+  const [hash, setHash] = useState(() => (typeof window === "undefined" ? "" : window.location.hash));
+
+  useEffect(() => {
+    const updateHash = () => setHash(window.location.hash);
+    window.addEventListener("hashchange", updateHash);
+    window.addEventListener("popstate", updateHash);
+    return () => {
+      window.removeEventListener("hashchange", updateHash);
+      window.removeEventListener("popstate", updateHash);
+    };
+  }, []);
+
+  return hash;
+}
+
 export default function Admin() {
   const { user, loading } = useAuth();
+  const hashView = useHashView();
   const utils = trpc.useUtils();
   const [status, setStatus] = useState<"pending" | "approved" | "rejected" | "all">("pending");
   const [reviewNotes, setReviewNotes] = useState<Record<number, string>>({});
@@ -37,6 +54,21 @@ export default function Admin() {
     },
     onError: (error) => toast.error(error.message || "처리에 실패했습니다."),
   });
+  const view = hashView === "#applications" ? "applications" : hashView === "#trainers" ? "trainers" : "dashboard";
+  const pageMeta = {
+    dashboard: {
+      title: "관리자",
+      description: "트레이너 신청과 승인 상태를 관리하세요",
+    },
+    applications: {
+      title: "신청 관리",
+      description: "트레이너 신청을 검토하고 승인 또는 거절하세요",
+    },
+    trainers: {
+      title: "승인 트레이너",
+      description: "승인된 트레이너와 발급된 코드를 확인하세요",
+    },
+  }[view];
 
   if (loading) {
     return (
@@ -65,11 +97,12 @@ export default function Admin() {
     <div className="page-shell page-shell-narrow animate-fade-in">
       <div className="page-header">
         <div>
-          <h1 className="page-title">관리자</h1>
-          <p className="page-description">트레이너 신청과 승인 상태를 관리하세요</p>
+          <h1 className="page-title">{pageMeta.title}</h1>
+          <p className="page-description">{pageMeta.description}</p>
         </div>
       </div>
 
+      {view === "dashboard" ? (
       <div className="mb-4 grid gap-3 sm:grid-cols-3">
         <Card className="border-border bg-card">
           <CardContent className="p-4">
@@ -90,7 +123,9 @@ export default function Admin() {
           </CardContent>
         </Card>
       </div>
+      ) : null}
 
+      {view !== "trainers" ? (
       <Card id="applications" className="scroll-mt-24 border-border bg-card">
         <CardContent className="p-5">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -212,7 +247,9 @@ export default function Admin() {
           )}
         </CardContent>
       </Card>
+      ) : null}
 
+      {view !== "applications" ? (
       <Card id="trainers" className="mt-4 scroll-mt-24 border-border bg-card">
         <CardContent className="p-5">
           <div className="mb-4 flex items-center gap-2">
@@ -251,6 +288,7 @@ export default function Admin() {
           )}
         </CardContent>
       </Card>
+      ) : null}
     </div>
   );
 }

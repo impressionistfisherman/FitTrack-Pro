@@ -9,7 +9,7 @@ const args = mode === "production"
 
 const child = spawn(command, args, {
   stdio: "inherit",
-  shell: process.platform === "win32",
+  shell: process.platform === "win32" && mode === "development",
   env: {
     ...process.env,
     NODE_ENV: mode,

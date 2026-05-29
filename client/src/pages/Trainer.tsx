@@ -18,7 +18,7 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Link } from "wouter";
 
@@ -42,6 +42,22 @@ function PersonAvatar({ person, className = "h-10 w-10" }: { person?: any; class
 function formatDate(value?: string | Date | null) {
   if (!value) return "";
   return new Date(value).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" });
+}
+
+function useHashView() {
+  const [hash, setHash] = useState(() => (typeof window === "undefined" ? "" : window.location.hash));
+
+  useEffect(() => {
+    const updateHash = () => setHash(window.location.hash);
+    window.addEventListener("hashchange", updateHash);
+    window.addEventListener("popstate", updateHash);
+    return () => {
+      window.removeEventListener("hashchange", updateHash);
+      window.removeEventListener("popstate", updateHash);
+    };
+  }, []);
+
+  return hash;
 }
 
 function StatCard({ icon: Icon, label, value, tone = "primary" }: {
@@ -72,6 +88,7 @@ function StatCard({ icon: Icon, label, value, tone = "primary" }: {
 
 export default function Trainer() {
   const { user, isAuthenticated, loading } = useAuth();
+  const hashView = useHashView();
   const utils = trpc.useUtils();
   const [feedbackDrafts, setFeedbackDrafts] = useState<Record<number, string>>({});
   const { data: trainerStatus, isLoading } = trpc.trainer.status.useQuery(undefined, {
@@ -159,13 +176,28 @@ export default function Trainer() {
   const activeClientCount = clients.length;
   const totalSessions = clients.reduce((sum: number, client: any) => sum + Number(client.sessionCount ?? 0), 0);
   const clientsWithRecentWorkout = clients.filter((client: any) => client.lastWorkoutAt).length;
+  const view = hashView === "#requests" ? "requests" : hashView === "#clients" ? "clients" : "dashboard";
+  const pageMeta = {
+    dashboard: {
+      title: "트레이너 대시보드",
+      description: "회원 요청, 운동 기록, PT 기록과 피드백을 한곳에서 관리하세요",
+    },
+    requests: {
+      title: "회원 요청",
+      description: "트레이너 코드를 등록한 회원 요청을 승인하거나 거절하세요",
+    },
+    clients: {
+      title: "담당 회원",
+      description: "연결된 회원의 최근 기록을 확인하고 피드백 또는 PT 기록을 남기세요",
+    },
+  }[view];
 
   return (
     <div className="page-shell page-shell-wide animate-fade-in">
       <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="page-title">트레이너 대시보드</h1>
-          <p className="page-description">회원 요청, 운동 기록, PT 기록과 피드백을 한곳에서 관리하세요</p>
+          <h1 className="page-title">{pageMeta.title}</h1>
+          <p className="page-description">{pageMeta.description}</p>
         </div>
         <Button
           type="button"
@@ -179,14 +211,21 @@ export default function Trainer() {
         </Button>
       </div>
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-3">
-        <StatCard icon={Users} label="담당 회원" value={activeClientCount} />
-        <StatCard icon={UserCheck} label="승인 요청" value={requests.length} tone="orange" />
-        <StatCard icon={Dumbbell} label="확인 가능한 운동 기록" value={totalSessions} tone="blue" />
-      </div>
+      {view === "dashboard" ? (
+        <div className="mb-4 grid gap-3 sm:grid-cols-3">
+          <StatCard icon={Users} label="담당 회원" value={activeClientCount} />
+          <StatCard icon={UserCheck} label="승인 요청" value={requests.length} tone="orange" />
+          <StatCard icon={Dumbbell} label="확인 가능한 운동 기록" value={totalSessions} tone="blue" />
+        </div>
+      ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(320px,0.8fr)_minmax(0,1.2fr)]">
+      <div className={cn(
+        "grid gap-4",
+        view === "dashboard" ? "xl:grid-cols-[minmax(320px,0.8fr)_minmax(0,1.2fr)]" : "xl:grid-cols-1"
+      )}>
+        {view !== "clients" ? (
         <div className="space-y-4">
+          {view === "dashboard" ? (
           <Card className="border-primary/20 bg-primary/10">
             <CardContent className="p-5">
               <div className="mb-3 flex items-center justify-between gap-3">
@@ -218,6 +257,7 @@ export default function Trainer() {
               </div>
             </CardContent>
           </Card>
+          ) : null}
 
           <Card id="requests" className="scroll-mt-24 border-border bg-card">
             <CardContent className="p-5">
@@ -269,7 +309,9 @@ export default function Trainer() {
             </CardContent>
           </Card>
         </div>
+        ) : null}
 
+        {view !== "requests" ? (
         <Card id="clients" className="scroll-mt-24 border-border bg-card">
           <CardContent className="p-5">
             <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
@@ -354,6 +396,7 @@ export default function Trainer() {
             )}
           </CardContent>
         </Card>
+        ) : null}
       </div>
     </div>
   );
