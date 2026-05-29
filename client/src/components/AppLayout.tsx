@@ -148,7 +148,7 @@ function RoleModeSwitch({ badge, showTrainer, showAdmin }: { badge: number; show
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
           {isAdminView ? <ShieldCheck size={14} className="text-primary" /> : <Users size={14} className="text-primary" />}
-          <span>{showAdmin ? "권한 화면 전환" : "트레이너 권한"}</span>
+          <span>{showAdmin ? "홈 전환" : "트레이너 홈 전환"}</span>
         </div>
         <div className="ml-auto flex items-center gap-1 rounded-full border border-border bg-card/80 p-1">
           <Link href="/">
@@ -162,7 +162,7 @@ function RoleModeSwitch({ badge, showTrainer, showAdmin }: { badge: number; show
               )}
             >
               <Home size={14} />
-              사용자 화면
+              사용자 홈
             </Button>
           </Link>
           {showTrainer ? (
@@ -177,7 +177,7 @@ function RoleModeSwitch({ badge, showTrainer, showAdmin }: { badge: number; show
                 )}
               >
                 <Users size={14} />
-                트레이너 화면
+                트레이너 홈
               </Button>
             </Link>
           ) : null}
@@ -193,7 +193,7 @@ function RoleModeSwitch({ badge, showTrainer, showAdmin }: { badge: number; show
                 )}
               >
                 <ShieldCheck size={14} />
-                관리자 화면
+                관리자 홈
                 {badge > 0 && (
                   <span className={cn(
                     "ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold",
