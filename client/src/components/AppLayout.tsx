@@ -70,7 +70,7 @@ function getVisibleNavItems({
   }
 
   return userNavItems.filter((item) => {
-    if (item.href === "/coaching") return !isTrainer;
+    if (item.href === "/coaching") return !isTrainer && !isAdmin;
     return true;
   });
 }
@@ -104,63 +104,105 @@ function splitHref(href: string) {
   return { path: path || "/", hash: hash ? `#${hash}` : "" };
 }
 
+function getBrowserRouteState(fallbackLocation = "/") {
+  if (typeof window === "undefined") {
+    const fallback = splitHref(fallbackLocation);
+    return { path: fallback.path, hash: fallback.hash };
+  }
+  return {
+    path: window.location.pathname || "/",
+    hash: window.location.hash || "",
+  };
+}
+
+function emitRouteStateChange() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event("hashchange"));
+  window.dispatchEvent(new Event("fittrack:routechange"));
+}
+
 function scrollToHash(hash: string) {
   if (!hash || typeof document === "undefined") return;
   const target = document.getElementById(hash.slice(1));
   target?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function useCurrentHash() {
-  const [hash, setHash] = useState(() => (typeof window === "undefined" ? "" : window.location.hash));
+function useRouteState(location: string) {
+  const [route, setRoute] = useState(() => getBrowserRouteState(location));
 
   useEffect(() => {
-    const updateHash = () => setHash(window.location.hash);
-    window.addEventListener("hashchange", updateHash);
-    window.addEventListener("popstate", updateHash);
-    return () => {
-      window.removeEventListener("hashchange", updateHash);
-      window.removeEventListener("popstate", updateHash);
-    };
-  }, []);
+    setRoute(getBrowserRouteState(location));
+  }, [location]);
 
-  return hash;
+  useEffect(() => {
+    const updateRoute = () => setRoute(getBrowserRouteState(location));
+    window.addEventListener("hashchange", updateRoute);
+    window.addEventListener("popstate", updateRoute);
+    window.addEventListener("fittrack:routechange", updateRoute);
+    return () => {
+      window.removeEventListener("hashchange", updateRoute);
+      window.removeEventListener("popstate", updateRoute);
+      window.removeEventListener("fittrack:routechange", updateRoute);
+    };
+  }, [location]);
+
+  return route;
+}
+
+function handleInternalNavigation({
+  event,
+  href,
+  navigate,
+  onClick,
+}: {
+  event: MouseEvent<HTMLAnchorElement>;
+  href: string;
+  navigate: (to: string) => void;
+  onClick?: () => void;
+}) {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) return;
+  onClick?.();
+  event.preventDefault();
+
+  const { path: itemPath, hash: itemHash } = splitHref(href);
+  const currentPath = getBrowserRouteState().path;
+
+  if (!itemHash) {
+    navigate(itemPath);
+    window.setTimeout(() => {
+      window.history.replaceState(null, "", itemPath);
+      emitRouteStateChange();
+    }, 0);
+    return;
+  }
+
+  if (currentPath !== itemPath) {
+    navigate(itemPath);
+    window.setTimeout(() => {
+      window.history.replaceState(null, "", `${itemPath}${itemHash}`);
+      emitRouteStateChange();
+      scrollToHash(itemHash);
+    }, 0);
+    return;
+  }
+
+  window.history.pushState(null, "", `${itemPath}${itemHash}`);
+  emitRouteStateChange();
+  scrollToHash(itemHash);
 }
 
 function NavItem({ href, icon: Icon, label, badge, onClick }: {
   href: string; icon: any; label: string; badge?: number; onClick?: () => void;
 }) {
   const [location, navigate] = useLocation();
-  const currentHash = useCurrentHash();
-  const currentPath = splitHref(location).path;
+  const { path: currentPath, hash: currentHash } = useRouteState(location);
   const { path: itemPath, hash: itemHash } = splitHref(href);
   const isRootItem = itemPath === "/" || itemPath === "/trainer" || itemPath === "/admin";
   const isActive = itemHash
     ? currentPath === itemPath && currentHash === itemHash
     : isRootItem ? currentPath === itemPath && currentHash === "" : currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) return;
-    onClick?.();
-    event.preventDefault();
-    if (!itemHash) {
-      navigate(itemPath);
-      if (typeof window !== "undefined" && window.location.hash) {
-        window.history.replaceState(null, "", itemPath);
-        window.dispatchEvent(new Event("hashchange"));
-      }
-      return;
-    }
-    if (currentPath !== itemPath) {
-      navigate(itemPath);
-      window.setTimeout(() => {
-        window.history.replaceState(null, "", `${itemPath}${itemHash}`);
-        window.dispatchEvent(new Event("hashchange"));
-        scrollToHash(itemHash);
-      }, 0);
-      return;
-    }
-    window.history.pushState(null, "", `${itemPath}${itemHash}`);
-    window.dispatchEvent(new Event("hashchange"));
-    scrollToHash(itemHash);
+    handleInternalNavigation({ event, href, navigate, onClick });
   };
   return (
     <a href={href} onClick={handleClick} className="block">
@@ -187,36 +229,14 @@ function MobileNavItem({ href, icon: Icon, label, badge }: {
   href: string; icon: any; label: string; badge?: number;
 }) {
   const [location, navigate] = useLocation();
-  const currentHash = useCurrentHash();
-  const currentPath = splitHref(location).path;
+  const { path: currentPath, hash: currentHash } = useRouteState(location);
   const { path: itemPath, hash: itemHash } = splitHref(href);
   const isRootItem = itemPath === "/" || itemPath === "/trainer" || itemPath === "/admin";
   const isActive = itemHash
     ? currentPath === itemPath && currentHash === itemHash
     : isRootItem ? currentPath === itemPath && currentHash === "" : currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) return;
-    event.preventDefault();
-    if (!itemHash) {
-      navigate(itemPath);
-      if (typeof window !== "undefined" && window.location.hash) {
-        window.history.replaceState(null, "", itemPath);
-        window.dispatchEvent(new Event("hashchange"));
-      }
-      return;
-    }
-    if (currentPath !== itemPath) {
-      navigate(itemPath);
-      window.setTimeout(() => {
-        window.history.replaceState(null, "", `${itemPath}${itemHash}`);
-        window.dispatchEvent(new Event("hashchange"));
-        scrollToHash(itemHash);
-      }, 0);
-      return;
-    }
-    window.history.pushState(null, "", `${itemPath}${itemHash}`);
-    window.dispatchEvent(new Event("hashchange"));
-    scrollToHash(itemHash);
+    handleInternalNavigation({ event, href, navigate });
   };
   return (
     <a href={href} onClick={handleClick} className="block">
@@ -239,9 +259,10 @@ function MobileNavItem({ href, icon: Icon, label, badge }: {
 }
 
 function RoleModeSwitch({ badge, showTrainer, showAdmin }: { badge: number; showTrainer: boolean; showAdmin: boolean }) {
-  const [location] = useLocation();
-  const isAdminView = location.startsWith("/admin");
-  const isTrainerView = location.startsWith("/trainer");
+  const [location, navigate] = useLocation();
+  const { path: currentPath } = useRouteState(location);
+  const isAdminView = currentPath.startsWith("/admin");
+  const isTrainerView = currentPath.startsWith("/trainer");
   const isUserView = !isAdminView && !isTrainerView;
 
   return (
@@ -252,7 +273,7 @@ function RoleModeSwitch({ badge, showTrainer, showAdmin }: { badge: number; show
           <span>{showAdmin ? "홈 전환" : "트레이너 홈 전환"}</span>
         </div>
         <div className="ml-auto flex items-center gap-1 rounded-full border border-border bg-card/80 p-1">
-          <Link href="/">
+          <a href="/" onClick={(event) => handleInternalNavigation({ event, href: "/", navigate })}>
             <Button
               size="sm"
               variant={isUserView ? "default" : "ghost"}
@@ -265,9 +286,9 @@ function RoleModeSwitch({ badge, showTrainer, showAdmin }: { badge: number; show
               <Home size={14} />
               사용자 홈
             </Button>
-          </Link>
+          </a>
           {showTrainer ? (
-            <Link href="/trainer">
+            <a href="/trainer" onClick={(event) => handleInternalNavigation({ event, href: "/trainer", navigate })}>
               <Button
                 size="sm"
                 variant={isTrainerView ? "default" : "ghost"}
@@ -280,10 +301,10 @@ function RoleModeSwitch({ badge, showTrainer, showAdmin }: { badge: number; show
                 <Users size={14} />
                 트레이너 홈
               </Button>
-            </Link>
+            </a>
           ) : null}
           {showAdmin ? (
-            <Link href="/admin">
+            <a href="/admin" onClick={(event) => handleInternalNavigation({ event, href: "/admin", navigate })}>
               <Button
                 size="sm"
                 variant={isAdminView ? "default" : "ghost"}
@@ -304,7 +325,7 @@ function RoleModeSwitch({ badge, showTrainer, showAdmin }: { badge: number; show
                   </span>
                 )}
               </Button>
-            </Link>
+            </a>
           ) : null}
         </div>
       </div>
