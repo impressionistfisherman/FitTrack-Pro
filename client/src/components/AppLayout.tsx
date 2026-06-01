@@ -318,7 +318,7 @@ function UserAvatar({ user, className = "h-8 w-8" }: { user?: any; className?: s
 }
 
 function BrandLogo({ className = "h-full w-full" }: { className?: string }) {
-  return <img src="/logo.png" alt="FitTrack" className={cn("object-contain", className)} />;
+  return <img src="/brand-mark.png" alt="FitTrack" className={cn("object-contain", className)} />;
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -362,8 +362,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="p-6 border-b border-sidebar-border">
           <Link href="/" className="block">
             <div className="flex items-center gap-3 cursor-pointer">
-              <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center overflow-hidden">
-                <BrandLogo className="h-8 w-8" />
+              <div className="w-10 h-10 rounded-xl border border-primary/30 flex items-center justify-center overflow-hidden bg-background shadow-sm shadow-primary/10">
+                <BrandLogo className="h-full w-full" />
               </div>
               <div>
                 <div className="font-display text-xl text-foreground tracking-wide">FITTRACK</div>
@@ -425,8 +425,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex items-center justify-between px-4 h-14">
           <Link href="/" className="block">
             <div className="flex items-center gap-2 cursor-pointer">
-              <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center overflow-hidden">
-                <BrandLogo className="h-6 w-6" />
+              <div className="w-8 h-8 rounded-lg border border-primary/30 flex items-center justify-center overflow-hidden bg-background shadow-sm shadow-primary/10">
+                <BrandLogo className="h-full w-full" />
               </div>
               <span className="font-display text-lg tracking-wide">FITTRACK</span>
             </div>

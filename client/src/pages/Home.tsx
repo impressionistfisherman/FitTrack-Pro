@@ -572,8 +572,8 @@ export default function Home() {
         </div>
 
         <div className="text-center max-w-md relative z-10 animate-slide-up">
-          <div className="w-20 h-20 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-6 overflow-hidden">
-            <img src="/logo.png" alt="FitTrack" className="h-16 w-16 object-contain" />
+          <div className="w-20 h-20 rounded-2xl border border-primary/30 flex items-center justify-center mx-auto mb-6 overflow-hidden bg-background shadow-lg shadow-primary/10">
+            <img src="/brand-mark.png" alt="FitTrack" className="h-full w-full object-contain" />
           </div>
           <h1 className="text-4xl font-display tracking-wider text-foreground mb-2">FITTRACK PRO</h1>
           <p className="text-muted-foreground mb-2 text-sm font-medium">스마트 운동 관리 플랫폼</p>
