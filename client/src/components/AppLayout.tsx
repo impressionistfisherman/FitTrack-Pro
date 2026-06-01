@@ -362,10 +362,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="p-6 border-b border-sidebar-border">
           <Link href="/" className="block">
             <div className="flex items-center gap-3 cursor-pointer">
-              <div className="w-10 h-10 rounded-xl border border-primary/30 flex items-center justify-center overflow-hidden bg-background shadow-sm shadow-primary/10">
-                <BrandLogo className="h-full w-full" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center">
+                <BrandLogo className="h-10 w-10" />
               </div>
-              <div>
+              <div className="pt-0.5">
                 <div className="font-display text-xl text-foreground tracking-wide">FITTRACK</div>
                 <div className="text-[10px] text-muted-foreground font-medium tracking-widest uppercase">Pro</div>
               </div>
@@ -425,8 +425,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex items-center justify-between px-4 h-14">
           <Link href="/" className="block">
             <div className="flex items-center gap-2 cursor-pointer">
-              <div className="w-8 h-8 rounded-lg border border-primary/30 flex items-center justify-center overflow-hidden bg-background shadow-sm shadow-primary/10">
-                <BrandLogo className="h-full w-full" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center">
+                <BrandLogo className="h-8 w-8" />
               </div>
               <span className="font-display text-lg tracking-wide">FITTRACK</span>
             </div>
