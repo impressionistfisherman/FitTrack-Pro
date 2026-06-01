@@ -317,6 +317,10 @@ function UserAvatar({ user, className = "h-8 w-8" }: { user?: any; className?: s
   );
 }
 
+function BrandLogo({ className = "h-full w-full" }: { className?: string }) {
+  return <img src="/logo.png" alt="FitTrack" className={cn("object-contain", className)} />;
+}
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const [location] = useLocation();
@@ -358,8 +362,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="p-6 border-b border-sidebar-border">
           <Link href="/" className="block">
             <div className="flex items-center gap-3 cursor-pointer">
-              <div className="w-9 h-9 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
-                <Dumbbell size={18} className="text-primary" />
+              <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center overflow-hidden">
+                <BrandLogo className="h-8 w-8" />
               </div>
               <div>
                 <div className="font-display text-xl text-foreground tracking-wide">FITTRACK</div>
@@ -421,8 +425,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex items-center justify-between px-4 h-14">
           <Link href="/" className="block">
             <div className="flex items-center gap-2 cursor-pointer">
-              <div className="w-7 h-7 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center">
-                <Dumbbell size={14} className="text-primary" />
+              <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center overflow-hidden">
+                <BrandLogo className="h-6 w-6" />
               </div>
               <span className="font-display text-lg tracking-wide">FITTRACK</span>
             </div>
