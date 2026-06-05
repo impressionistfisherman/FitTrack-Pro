@@ -535,6 +535,11 @@ export async function getUserByOpenId(openId: string): Promise<any> {
   return normalizeUser(await get("SELECT * FROM users WHERE openId = ? LIMIT 1", openId));
 }
 
+export async function getUserByEmail(email: string): Promise<any> {
+  await ensureUserProfileImageColumn();
+  return normalizeUser(await get("SELECT * FROM users WHERE lower(email) = lower(?) ORDER BY lastSignedIn DESC, id DESC LIMIT 1", email));
+}
+
 export async function getUserById(userId: number): Promise<any> {
   await ensureUserProfileImageColumn();
   return normalizeUser(await get("SELECT * FROM users WHERE id = ? LIMIT 1", userId));
@@ -547,7 +552,11 @@ export async function getFirstUser(): Promise<any> {
 
 export async function upsertUser(input: InsertUser): Promise<any> {
   await ensureUserProfileImageColumn();
-  const existing = await getUserByOpenId(input.openId);
+  const existingByOpenId = await getUserByOpenId(input.openId);
+  const existingByEmail = typeof input.email === "string" && input.email.includes("@")
+    ? await getUserByEmail(input.email)
+    : null;
+  const existing = existingByOpenId ?? existingByEmail;
   const email = typeof input.email === "string"
     ? input.email.toLowerCase()
     : typeof existing?.email === "string"
@@ -557,8 +566,9 @@ export async function upsertUser(input: InsertUser): Promise<any> {
   if (existing) {
     await run(
       `UPDATE users
-       SET name = ?, email = ?, loginMethod = ?, role = ?, lastSignedIn = ?, updatedAt = ?
+       SET openId = ?, name = ?, email = ?, loginMethod = ?, role = ?, lastSignedIn = ?, updatedAt = ?
        WHERE id = ?`,
+      input.openId ?? existing.openId,
       input.name ?? existing.name ?? null,
       input.email ?? existing.email ?? null,
       input.loginMethod ?? existing.loginMethod ?? null,

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { appRouter } from "./routers";
+import { getUserByEmail, upsertUser } from "./db";
 import { COOKIE_NAME } from "../shared/const";
 import type { TrpcContext } from "./_core/context";
 
@@ -64,6 +65,32 @@ describe("auth.me", () => {
     const result = await caller.auth.me();
     expect(result).not.toBeNull();
     expect(result?.name).toBe("Test User");
+  });
+});
+
+describe("users.upsertUser", () => {
+  it("reuses an existing user when the same email logs in with a different openId", async () => {
+    const email = "duplicate-login@fittrack.local";
+    const firstId = await upsertUser({
+      openId: "legacy-provider:duplicate-login",
+      email,
+      name: "Legacy Duplicate",
+      loginMethod: "google",
+      role: "user",
+    });
+
+    const secondId = await upsertUser({
+      openId: "google:duplicate-login",
+      email,
+      name: "Current Duplicate",
+      loginMethod: "google",
+      role: "user",
+    });
+    const byEmail = await getUserByEmail(email);
+
+    expect(secondId).toBe(firstId);
+    expect(byEmail.id).toBe(firstId);
+    expect(byEmail.openId).toBe("google:duplicate-login");
   });
 });
 
