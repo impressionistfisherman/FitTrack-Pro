@@ -332,7 +332,7 @@ export default function TrainerClientDetail() {
   };
 
   return (
-    <div className="page-shell page-shell-narrow animate-fade-in">
+    <div className="page-shell page-shell-narrow max-w-full animate-fade-in">
       <div className="page-header">
         <Link href="/profile" className="mb-2 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft size={15} />
@@ -347,27 +347,29 @@ export default function TrainerClientDetail() {
           {Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-40 skeleton rounded-xl" />)}
         </div>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="space-y-3">
+        <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="min-w-0 space-y-3">
             <Card className="border-primary/20 bg-primary/5">
-              <CardContent className="flex items-center gap-3 p-4">
-                <Avatar className="h-14 w-14 border border-primary/30 bg-primary/10">
-                  {data?.client?.profileImageUrl ? (
-                    <AvatarImage src={data.client.profileImageUrl} alt={`${data.client.name ?? "회원"} 프로필`} className="object-cover" />
-                  ) : null}
-                  <AvatarFallback className="bg-primary/10 text-lg font-bold text-primary">
-                    {clientInitial(data?.client)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <User size={15} className="text-primary" />
-                    <h2 className="truncate text-lg font-bold text-foreground">{data?.client?.name ?? "회원"}</h2>
+              <CardContent className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:p-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <Avatar className="h-14 w-14 shrink-0 border border-primary/30 bg-primary/10">
+                    {data?.client?.profileImageUrl ? (
+                      <AvatarImage src={data.client.profileImageUrl} alt={`${data.client.name ?? "회원"} 프로필`} className="object-cover" />
+                    ) : null}
+                    <AvatarFallback className="bg-primary/10 text-lg font-bold text-primary">
+                      {clientInitial(data?.client)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <User size={15} className="shrink-0 text-primary" />
+                      <h2 className="truncate text-lg font-bold text-foreground">{data?.client?.name ?? "회원"}</h2>
+                    </div>
+                    <p className="truncate text-sm text-muted-foreground">{data?.client?.email ?? ""}</p>
                   </div>
-                  <p className="truncate text-sm text-muted-foreground">{data?.client?.email ?? ""}</p>
                 </div>
                 <Button
-                  className="ml-auto shrink-0 bg-primary text-primary-foreground"
+                  className="w-full bg-primary text-primary-foreground sm:ml-auto sm:w-auto sm:shrink-0"
                   onClick={() => setPtOpen((open) => !open)}
                 >
                   <Plus size={14} />
@@ -379,8 +381,8 @@ export default function TrainerClientDetail() {
 
             {ptOpen && (
               <Card className="border-primary/20 bg-card">
-                <CardContent className="space-y-4 p-4">
-                  <div className="grid gap-3 md:grid-cols-3">
+                <CardContent className="space-y-4 p-3 sm:p-4">
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                     <div className="space-y-1.5">
                       <Label className="text-xs text-muted-foreground">PT 제목</Label>
                       <Input
@@ -415,7 +417,7 @@ export default function TrainerClientDetail() {
                     </div>
                   </div>
 
-                  <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-dashed border-border bg-accent/30 p-4 transition-colors hover:border-primary/50 hover:bg-primary/5">
+                  <label className="flex cursor-pointer flex-col items-start gap-3 rounded-xl border border-dashed border-border bg-accent/30 p-3 transition-colors hover:border-primary/50 hover:bg-primary/5 sm:flex-row sm:p-4">
                     <div className="rounded-xl bg-primary/10 p-2 text-primary">
                       {parseWorkoutCapture.isPending ? <Loader2 size={18} className="animate-spin" /> : <ImagePlus size={18} />}
                     </div>
@@ -439,8 +441,8 @@ export default function TrainerClientDetail() {
                     />
                   </label>
 
-                  <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
-                    <div className="space-y-2">
+                  <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
+                    <div className="min-w-0 space-y-2">
                       <Label className="text-xs text-muted-foreground">운동 검색</Label>
                       <div className="relative">
                         <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -451,7 +453,7 @@ export default function TrainerClientDetail() {
                           className="border-border bg-accent pl-9 text-foreground"
                         />
                       </div>
-                      <div className="max-h-72 overflow-y-auto rounded-xl border border-border bg-background">
+                      <div className="max-h-64 overflow-y-auto rounded-xl border border-border bg-background sm:max-h-72">
                         {exercisesFetching ? (
                           <div className="p-4 text-sm text-muted-foreground">운동을 불러오는 중...</div>
                         ) : availableExercises.length ? (
@@ -475,11 +477,11 @@ export default function TrainerClientDetail() {
                       </div>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="min-w-0 space-y-3">
                       {selectedExercises.length ? selectedExercises.map((item) => {
                         const mode = inputMode(item.exercise);
                         return (
-                          <div key={item.exercise.id} className="rounded-xl border border-border bg-accent/25 p-3">
+                          <div key={item.exercise.id} className="min-w-0 rounded-xl border border-border bg-accent/25 p-3">
                             <div className="mb-3 flex items-start justify-between gap-3">
                               <div className="min-w-0">
                                 <div className="truncate font-semibold text-foreground">{item.exercise.nameKo}</div>
@@ -497,28 +499,28 @@ export default function TrainerClientDetail() {
                             </div>
                             {mode === "strength" ? (
                               <div className="space-y-2">
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
                                   <Label className="text-xs text-muted-foreground">세트 수</Label>
                                   <Button type="button" size="sm" variant="outline" className="h-8 border-border bg-background" onClick={() => updatePtSetCount(item.exercise.id, item.sets.length - 1)}>-</Button>
                                   <span className="w-10 text-center text-sm font-semibold">{item.sets.length}</span>
                                   <Button type="button" size="sm" variant="outline" className="h-8 border-border bg-background text-primary" onClick={() => updatePtSetCount(item.exercise.id, item.sets.length + 1)}>+</Button>
                                 </div>
                                 {item.sets.map((set) => (
-                                  <div key={set.setNumber} className="grid grid-cols-[42px_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2">
+                                  <div key={set.setNumber} className="grid grid-cols-[3rem_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2">
                                     <span className="text-xs text-muted-foreground">{set.setNumber}세트</span>
                                     <Input
                                       inputMode="decimal"
                                       value={set.weightKg}
                                       onChange={(event) => updatePtSet(item.exercise.id, set.setNumber, "weightKg", event.target.value)}
                                       placeholder="kg"
-                                      className="h-9 border-border bg-background text-center text-foreground"
+                                      className="h-9 min-w-0 border-border bg-background text-center text-foreground"
                                     />
                                     <Input
                                       inputMode="numeric"
                                       value={set.reps}
                                       onChange={(event) => updatePtSet(item.exercise.id, set.setNumber, "reps", event.target.value)}
                                       placeholder="회"
-                                      className="h-9 border-border bg-background text-center text-foreground"
+                                      className="h-9 min-w-0 border-border bg-background text-center text-foreground"
                                     />
                                   </div>
                                 ))}
@@ -557,7 +559,7 @@ export default function TrainerClientDetail() {
                     </div>
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label className="text-xs text-muted-foreground">PT 메모</Label>
                       <Textarea
@@ -580,13 +582,13 @@ export default function TrainerClientDetail() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-2">
-                    <Button type="button" variant="outline" className="border-border bg-background" onClick={() => setPtOpen(false)}>
+                  <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <Button type="button" variant="outline" className="w-full border-border bg-background sm:w-auto" onClick={() => setPtOpen(false)}>
                       취소
                     </Button>
                     <Button
                       type="button"
-                      className="bg-primary text-primary-foreground"
+                      className="w-full bg-primary text-primary-foreground sm:w-auto"
                       disabled={createPtRecord.isPending || parseWorkoutCapture.isPending}
                       onClick={savePtRecord}
                     >
@@ -610,7 +612,7 @@ export default function TrainerClientDetail() {
               const volume = logs.reduce((sum: number, item: any) => sum + (Number(item.log?.weightKg) || 0) * (Number(item.log?.reps) || 0), 0);
               return (
                 <Card key={session.id} className="border-border bg-card">
-                  <CardContent className="p-4">
+                  <CardContent className="p-3 sm:p-4">
                     <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <h2 className="font-semibold text-foreground">{session.name || "운동 세션"}</h2>
@@ -638,7 +640,7 @@ export default function TrainerClientDetail() {
                     />
                     <div className="mt-2 flex justify-end">
                       <Button
-                        className="bg-primary text-primary-foreground"
+                        className="w-full bg-primary text-primary-foreground sm:w-auto"
                         disabled={!drafts[key]?.trim() || feedbackMutation.isPending}
                         onClick={() => addFeedback(key, session.id)}
                       >
@@ -652,9 +654,9 @@ export default function TrainerClientDetail() {
             })}
           </div>
 
-          <div className="space-y-3">
+          <div className="min-w-0 space-y-3">
           <Card id="timeline" className="h-fit scroll-mt-24 border-border bg-card">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <h2 className="mb-3 flex items-center gap-2 font-semibold text-foreground">
                 <CalendarDays size={16} className="text-primary" />
                 코칭 타임라인
@@ -703,7 +705,7 @@ export default function TrainerClientDetail() {
           </Card>
 
           <Card id="tasks" className="h-fit scroll-mt-24 border-border bg-card">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <h2 className="mb-3 flex items-center gap-2 font-semibold text-foreground">
                 <CheckSquare size={16} className="text-primary" />
                 회원 과제
@@ -763,7 +765,7 @@ export default function TrainerClientDetail() {
           </Card>
 
           <Card id="notes" className="h-fit scroll-mt-24 border-border bg-card">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <h2 className="mb-3 flex items-center gap-2 font-semibold text-foreground">
                 <FileText size={16} className="text-primary" />
                 트레이너 비공개 메모
@@ -787,9 +789,9 @@ export default function TrainerClientDetail() {
           </Card>
 
           <Card id="report" className="h-fit scroll-mt-24 border-border bg-card">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <h2 className="mb-3 font-semibold text-foreground">회원 진행 리포트</h2>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <div className="rounded-lg bg-accent/40 p-3">
                   <div className="text-lg font-bold text-foreground">{data?.report?.sessionCount ?? 0}회</div>
                   <div className="text-xs text-muted-foreground">최근 4주 운동</div>
@@ -811,7 +813,7 @@ export default function TrainerClientDetail() {
           </Card>
 
           <Card id="ai-helper" className="h-fit scroll-mt-24 border-primary/20 bg-primary/5">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <h2 className="mb-2 flex items-center gap-2 font-semibold text-foreground">
                 <Bot size={16} className="text-primary" />
                 AI 코칭 보조
@@ -847,7 +849,7 @@ export default function TrainerClientDetail() {
           </Card>
 
           <Card id="pt-sessions" className="h-fit scroll-mt-24 border-border bg-card">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <h2 className="mb-3 font-semibold text-foreground">PT 진행 기록</h2>
               {data?.ptSessions?.length ? (
                 <div className="mb-5 space-y-2">
