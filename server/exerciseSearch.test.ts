@@ -29,4 +29,9 @@ describe("exercise search aliases", () => {
     expect(matchesExerciseSearchText("플레이트 풀다운", "리버스 그립 머신 랫 풀다운", "Reverse Grip Machine Lat Pulldown")).toBe(true);
     expect(matchesExerciseSearchText("machine pulldown", "레버리지 프론트 풀다운", "Lever Front Pulldown")).toBe(true);
   });
+
+  it("matches assisted exercise wording in Korean and English", () => {
+    expect(matchesExerciseSearchText("어시스트 풀업", "어시스트 풀업", "Assisted Pull-up")).toBe(true);
+    expect(matchesExerciseSearchText("보조 풀업", "어시스트 풀업", "Assisted Pull-up")).toBe(true);
+  });
 });

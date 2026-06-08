@@ -23,6 +23,7 @@ const synonymGroups = [
   ["풀다운", "풀 다운", "pulldown", "pull down", "pulldowns", "lat pulldown", "랫풀다운", "렛풀다운", "랫 풀다운"],
   ["트라이셉", "트라이셉스", "삼두", "삼두근", "tricep", "triceps"],
   ["바이셉", "바이셉스", "이두", "이두근", "bicep", "biceps"],
+  ["어시스트", "어시스티드", "보조", "보조식", "assisted", "assist"],
   ["익스텐션", "extension", "extensions"],
   ["푸시다운", "pushdown", "pushdowns"],
   ["프레스", "press", "presses"],

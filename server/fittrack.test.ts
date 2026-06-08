@@ -166,6 +166,18 @@ describe("exercises.list", () => {
     const pulldown = await caller.exercises.list({ search: "플레이트 풀다운" });
     expect(pulldown.some((exercise) => exercise.name === "Lever Front Pulldown")).toBe(true);
   });
+
+  it("searches assisted exercises and hides duplicated imported names", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const assistedPullup = await caller.exercises.list({ search: "어시스트 풀업" });
+    expect(assistedPullup.some((exercise) => exercise.name === "Assisted Pull-up")).toBe(true);
+
+    const weightedDips = await caller.exercises.list({ search: "Weighted Three Bench Dips" });
+    expect(weightedDips.filter((exercise) => exercise.name === "Weighted Three Bench Dips")).toHaveLength(1);
+    expect(weightedDips.find((exercise) => exercise.name === "Weighted Three Bench Dips")?.nameKo).toBe("웨이티드 쓰리 벤치 딥스");
+  });
 });
 
 describe("exercises.detail", () => {

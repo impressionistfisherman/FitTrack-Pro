@@ -23145,7 +23145,7 @@
   },
   {
     "name": "Assisted Chest Dip (kneeling)",
-    "nameKo": "Assisted 체스트 딥 닐링",
+    "nameKo": "어시스트 체스트 딥 닐링",
     "bodyPart": "chest",
     "equipment": "machine",
     "category": "strength",
@@ -23172,7 +23172,7 @@
   },
   {
     "name": "Assisted Hanging Knee Raise",
-    "nameKo": "Assisted 행잉 니 레이즈",
+    "nameKo": "어시스트 행잉 니 레이즈",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "strength",
@@ -23198,7 +23198,7 @@
   },
   {
     "name": "Assisted Hanging Knee Raise With Throw Down",
-    "nameKo": "Assisted 행잉 니 레이즈 스로우 다운",
+    "nameKo": "어시스트 행잉 니 레이즈 스로우 다운",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "strength",
@@ -23224,7 +23224,7 @@
   },
   {
     "name": "Assisted Lying Calves Stretch",
-    "nameKo": "Assisted 라잉 카프 스트레치",
+    "nameKo": "어시스트 라잉 카프 스트레치",
     "bodyPart": "legs",
     "equipment": "none",
     "category": "strength",
@@ -23250,7 +23250,7 @@
   },
   {
     "name": "Assisted Lying Glutes Stretch",
-    "nameKo": "Assisted 라잉 Glutes 스트레치",
+    "nameKo": "어시스트 라잉 Glutes 스트레치",
     "bodyPart": "legs",
     "equipment": "none",
     "category": "strength",
@@ -23276,7 +23276,7 @@
   },
   {
     "name": "Assisted Lying Gluteus And Piriformis Stretch",
-    "nameKo": "Assisted 라잉 Gluteus & 피리포미스 스트레치",
+    "nameKo": "어시스트 라잉 Gluteus & 피리포미스 스트레치",
     "bodyPart": "legs",
     "equipment": "none",
     "category": "strength",
@@ -23302,7 +23302,7 @@
   },
   {
     "name": "Assisted Lying Leg Raise With Lateral Throw Down",
-    "nameKo": "Assisted 라잉 레그 레이즈 레터럴 스로우 다운",
+    "nameKo": "어시스트 라잉 레그 레이즈 레터럴 스로우 다운",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "strength",
@@ -23331,7 +23331,7 @@
   },
   {
     "name": "Assisted Lying Leg Raise With Throw Down",
-    "nameKo": "Assisted 라잉 레그 레이즈 스로우 다운",
+    "nameKo": "어시스트 라잉 레그 레이즈 스로우 다운",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "strength",
@@ -23361,7 +23361,7 @@
   },
   {
     "name": "Assisted Motion Russian Twist",
-    "nameKo": "Assisted 모션 러시안 트위스트",
+    "nameKo": "어시스트 모션 러시안 트위스트",
     "bodyPart": "abs",
     "equipment": "medicine_ball",
     "category": "strength",
@@ -23389,7 +23389,7 @@
   },
   {
     "name": "Assisted Parallel Close Grip Pull-up",
-    "nameKo": "Assisted 패러럴 클로즈 그립 풀업",
+    "nameKo": "어시스트 패러럴 클로즈 그립 풀업",
     "bodyPart": "back",
     "equipment": "machine",
     "category": "strength",
@@ -23418,7 +23418,7 @@
   },
   {
     "name": "Assisted Prone Hamstring",
-    "nameKo": "Assisted 프론 햄스트링",
+    "nameKo": "어시스트 프론 햄스트링",
     "bodyPart": "legs",
     "equipment": "none",
     "category": "strength",
@@ -23445,7 +23445,7 @@
   },
   {
     "name": "Assisted Prone Lying Quads Stretch",
-    "nameKo": "Assisted 프론 라잉 Quads 스트레치",
+    "nameKo": "어시스트 프론 라잉 Quads 스트레치",
     "bodyPart": "legs",
     "equipment": "none",
     "category": "strength",
@@ -23472,7 +23472,7 @@
   },
   {
     "name": "Assisted Prone Rectus Femoris Stretch",
-    "nameKo": "Assisted 프론 Rectus Femoris 스트레치",
+    "nameKo": "어시스트 프론 Rectus Femoris 스트레치",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "strength",
@@ -23498,7 +23498,7 @@
   },
   {
     "name": "Assisted Pull-up",
-    "nameKo": "Assisted 풀업",
+    "nameKo": "어시스트 풀업",
     "bodyPart": "back",
     "equipment": "machine",
     "category": "strength",
@@ -23527,7 +23527,7 @@
   },
   {
     "name": "Assisted Seated Pectoralis Major Stretch With Stability Ball",
-    "nameKo": "Assisted 시티드 Pectoralis Major 스트레치 스태빌리티 볼",
+    "nameKo": "어시스트 시티드 Pectoralis Major 스트레치 스태빌리티 볼",
     "bodyPart": "chest",
     "equipment": "none",
     "category": "strength",
@@ -23554,7 +23554,7 @@
   },
   {
     "name": "Assisted Side Lying Adductor Stretch",
-    "nameKo": "Assisted 사이드 라잉 어덕터 스트레치",
+    "nameKo": "어시스트 사이드 라잉 어덕터 스트레치",
     "bodyPart": "legs",
     "equipment": "none",
     "category": "strength",
@@ -23582,7 +23582,7 @@
   },
   {
     "name": "Assisted Sit-up",
-    "nameKo": "Assisted 싯업",
+    "nameKo": "어시스트 싯업",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "strength",
@@ -23609,7 +23609,7 @@
   },
   {
     "name": "Assisted Standing Chin-up",
-    "nameKo": "Assisted 스탠딩 친업",
+    "nameKo": "어시스트 스탠딩 친업",
     "bodyPart": "back",
     "equipment": "machine",
     "category": "strength",
@@ -23638,7 +23638,7 @@
   },
   {
     "name": "Assisted Standing Pull-up",
-    "nameKo": "Assisted 스탠딩 풀업",
+    "nameKo": "어시스트 스탠딩 풀업",
     "bodyPart": "back",
     "equipment": "machine",
     "category": "strength",
@@ -23667,7 +23667,7 @@
   },
   {
     "name": "Assisted Standing Triceps Extension (with Towel)",
-    "nameKo": "Assisted 스탠딩 트라이셉스 익스텐션 타월",
+    "nameKo": "어시스트 스탠딩 트라이셉스 익스텐션 타월",
     "bodyPart": "arms",
     "equipment": "none",
     "category": "strength",
@@ -23693,7 +23693,7 @@
   },
   {
     "name": "Assisted Triceps Dip (kneeling)",
-    "nameKo": "Assisted 트라이셉스 딥 닐링",
+    "nameKo": "어시스트 트라이셉스 딥 닐링",
     "bodyPart": "arms",
     "equipment": "machine",
     "category": "strength",
@@ -23720,7 +23720,7 @@
   },
   {
     "name": "Assisted Wide-grip Chest Dip (kneeling)",
-    "nameKo": "Assisted 와이드 그립 체스트 딥 닐링",
+    "nameKo": "어시스트 와이드 그립 체스트 딥 닐링",
     "bodyPart": "chest",
     "equipment": "machine",
     "category": "strength",
@@ -23969,7 +23969,7 @@
   },
   {
     "name": "Band Assisted Wheel Rollerout",
-    "nameKo": "밴드 Assisted 휠 Rollerout",
+    "nameKo": "밴드 어시스트 휠 Rollerout",
     "bodyPart": "abs",
     "equipment": "resistance_band",
     "category": "strength",
@@ -29638,7 +29638,7 @@
   },
   {
     "name": "Cable Assisted Inverse Leg Curl",
-    "nameKo": "케이블 Assisted Inverse 레그 컬",
+    "nameKo": "케이블 어시스트 Inverse 레그 컬",
     "bodyPart": "legs",
     "equipment": "cable",
     "category": "strength",
@@ -45468,7 +45468,7 @@
   },
   {
     "name": "Lever Assisted Chin-up",
-    "nameKo": "레버리지 Assisted 친업",
+    "nameKo": "레버리지 어시스트 친업",
     "bodyPart": "back",
     "equipment": "machine",
     "category": "strength",
@@ -49949,7 +49949,7 @@
   },
   {
     "name": "Self Assisted Inverse Leg Curl",
-    "nameKo": "Self Assisted Inverse 레그 컬",
+    "nameKo": "셀프 어시스트 Inverse 레그 컬",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -49976,7 +49976,7 @@
   },
   {
     "name": "Self Assisted Inverse Leg Curl (on Floor)",
-    "nameKo": "Self Assisted Inverse 레그 컬 온 플로어",
+    "nameKo": "셀프 어시스트 Inverse 레그 컬 온 플로어",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -53192,7 +53192,7 @@
   },
   {
     "name": "Three Bench Dip",
-    "nameKo": "Three 벤치 딥",
+    "nameKo": "쓰리 벤치 딥",
     "bodyPart": "arms",
     "equipment": "bodyweight",
     "category": "strength",
@@ -54475,7 +54475,7 @@
   },
   {
     "name": "Weighted Three Bench Dips",
-    "nameKo": "웨이티드 Three 벤치 딥스",
+    "nameKo": "웨이티드 쓰리 벤치 딥스",
     "bodyPart": "arms",
     "equipment": "none",
     "category": "strength",

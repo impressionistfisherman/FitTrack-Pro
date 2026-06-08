@@ -483,16 +483,38 @@ function normalizeExerciseSeedKey(value: unknown): string {
     .replaceAll(/[^a-z0-9가-힣]+/g, "");
 }
 
+function shouldUpdateExerciseKoreanName(currentNameKo: unknown, nextNameKo: unknown): boolean {
+  if (typeof currentNameKo !== "string" || typeof nextNameKo !== "string") return false;
+  const current = currentNameKo.trim();
+  const next = nextNameKo.trim();
+  if (!current || !next || current === next) return false;
+  return /[a-z]/i.test(current) && !/[a-z]/i.test(next);
+}
+
+function uniqueExercisesByName(rows: Row[]): Row[] {
+  const seen = new Set<string>();
+  const unique: Row[] = [];
+  for (const row of rows) {
+    const key = normalizeExerciseSeedKey(row.name) || normalizeExerciseSeedKey(row.nameKo) || String(row.id ?? "");
+    if (key && seen.has(key)) continue;
+    if (key) seen.add(key);
+    unique.push(row);
+  }
+  return unique;
+}
+
 async function ensureSupplementalExercises() {
   if (supplementalExercisesReady) return;
 
-  const existingRows = await all("SELECT name, nameKo FROM exercises");
+  const existingRows = await all("SELECT id, name, nameKo FROM exercises");
   const existingKeys = new Set<string>();
+  const existingByNameKey = new Map<string, Row>();
   for (const row of existingRows) {
     const nameKey = normalizeExerciseSeedKey(row.name);
     const nameKoKey = normalizeExerciseSeedKey(row.nameKo);
     if (nameKey) existingKeys.add(nameKey);
     if (nameKoKey) existingKeys.add(nameKoKey);
+    if (nameKey && !existingByNameKey.has(nameKey)) existingByNameKey.set(nameKey, row);
   }
 
   const seedExercises: SeedExercise[] = [
@@ -503,9 +525,18 @@ async function ensureSupplementalExercises() {
   for (const exercise of seedExercises) {
     const nameKey = normalizeExerciseSeedKey(exercise.name);
     const nameKoKey = normalizeExerciseSeedKey(exercise.nameKo);
-    if ((nameKey && existingKeys.has(nameKey)) || (nameKoKey && existingKeys.has(nameKoKey))) continue;
+    const existingByName = nameKey ? existingByNameKey.get(nameKey) : null;
+    if (existingByName) {
+      if (shouldUpdateExerciseKoreanName(existingByName.nameKo, exercise.nameKo)) {
+        await run("UPDATE exercises SET nameKo = ? WHERE id = ?", exercise.nameKo, existingByName.id);
+        existingByName.nameKo = exercise.nameKo;
+        if (nameKoKey) existingKeys.add(nameKoKey);
+      }
+      continue;
+    }
+    if (nameKoKey && existingKeys.has(nameKoKey)) continue;
 
-    await run(
+    const result = await run(
       `INSERT INTO exercises
        (name, nameKo, bodyPart, equipment, category, difficulty, description, descriptionKo, primaryMuscles, secondaryMuscles, gifUrl, secondaryImages, instructions, instructionsKo, createdAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -527,6 +558,7 @@ async function ensureSupplementalExercises() {
     );
     if (nameKey) existingKeys.add(nameKey);
     if (nameKoKey) existingKeys.add(nameKoKey);
+    if (nameKey) existingByNameKey.set(nameKey, { id: getInsertId(result), name: exercise.name, nameKo: exercise.nameKo });
   }
   supplementalExercisesReady = true;
 }
@@ -671,7 +703,7 @@ export async function getExercises(filters?: {
 
   const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
   const rows = await all(`SELECT * FROM exercises ${whereClause} ORDER BY nameKo`, ...params);
-  const normalizedRows = rows.map((row) => normalizeExercise(row));
+  const normalizedRows = uniqueExercisesByName(rows).map((row) => normalizeExercise(row));
   return filters?.search
     ? normalizedRows.filter((row) => matchesExerciseSearchText(filters.search!, row.nameKo, row.name))
     : normalizedRows;

@@ -6,11 +6,45 @@
 
 - 작업 디렉터리: `C:\Users\Hyeonil-Choi\Desktop\fittrack-pro`
 - 기본 브랜치: `master`
-- 최근 작업 커밋: `9a9c836 Cascade workout set values`
+- 최근 작업 커밋: `193e1f4 Allow replacing exercises in workout edits`
 - 검증 규칙은 `AGENTS.md`에 정리되어 있음.
 - `pnpm`은 PATH에 없을 수 있으므로 Windows에서는 `.\node_modules\.bin\pnpm.CMD`로 실행.
 
 ## 최근 완료 작업
+
+### 운동 중복 조회 제거 및 어시스트 운동 검색 보강
+
+요청:
+
+- 운동 검색 결과에 같은 운동이 중복으로 표시됨.
+- 어시스트 운동류가 대거 빠져 있거나 한국어 검색으로 잘 잡히지 않음.
+
+수정:
+
+- `server/db.ts`
+  - `exercises.list` 반환 시 같은 영문 운동명으로 들어온 중복 row를 하나만 보여주도록 정리.
+  - 기존 DB에 `Assisted 풀업`처럼 영어가 섞인 한글명이 있으면 seed의 개선된 한글명으로 갱신하도록 보강.
+- `shared/exerciseSearch.ts`
+  - `어시스트`, `어시스티드`, `보조`, `assisted`, `assist`를 같은 검색 그룹으로 추가.
+- `scripts/build-bulk-exercise-seed.mjs`
+  - `assisted`, `band assisted`, `cable assisted`, `lever assisted`, `self assisted` 한글 변환 추가.
+  - `three`가 그대로 표시되지 않도록 `쓰리` 변환 추가.
+- `server/data/bulk-exercises.json`
+  - assisted 계열 한글명 재생성.
+  - 예: `Assisted Pull-up` -> `어시스트 풀업`, `Band Assisted Pull-Up` -> `밴드 어시스트 풀업`.
+- `server/exerciseSearch.test.ts`, `server/fittrack.test.ts`
+  - `어시스트 풀업`, `보조 풀업` 검색 및 `Weighted Three Bench Dips` 중복 제거 검증 추가.
+
+현재 검증:
+
+- 타깃 테스트 통과:
+  - `.\node_modules\.bin\pnpm.CMD exec vitest run server/exerciseSearch.test.ts server/fittrack.test.ts`
+  - `23 passed`
+- 전체 검증은 이어서 실행 예정.
+
+커밋/푸시:
+
+- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
 
 ### 운동 기록 수정 시 운동 교체
 
@@ -29,11 +63,15 @@
 
 검증:
 
-- 전체 검증은 이어서 실행 예정.
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 테스트 수: `50 passed`
 
 커밋/푸시:
 
-- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
+- 커밋/푸시 완료: `193e1f4 Allow replacing exercises in workout edits`
 
 ### 운동 기록 세트 값 전파
 
