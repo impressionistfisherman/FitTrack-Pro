@@ -6,7 +6,7 @@
 
 - 작업 디렉터리: `C:\Users\Hyeonil-Choi\Desktop\fittrack-pro`
 - 기본 브랜치: `master`
-- 최근 푸시 커밋: `4e46f73 Add session handoff notes`
+- 최근 작업 커밋: `937b5e0 Split trainer client detail views`
 - 검증 규칙은 `AGENTS.md`에 정리되어 있음.
 - `pnpm`은 PATH에 없을 수 있으므로 Windows에서는 `.\node_modules\.bin\pnpm.CMD`로 실행.
 
@@ -44,7 +44,8 @@
 
 커밋/푸시:
 
-- 아직 커밋하지 않음.
+- 커밋 완료: `937b5e0 Split trainer client detail views`
+- 푸시는 현재 세션에서 이어서 진행.
 - 관련 작업 파일: `client/src/components/AppLayout.tsx`, `client/src/pages/TrainerClientDetail.tsx`, `SESSION_HANDOFF.md`
 
 ### 코칭 알림 스코프 분리
