@@ -6,7 +6,7 @@
 
 - 작업 디렉터리: `C:\Users\Hyeonil-Choi\Desktop\fittrack-pro`
 - 기본 브랜치: `master`
-- 최근 작업 커밋: `ec081f4 Update session handoff after trainer detail split`
+- 최근 작업 커밋: `25ed29a Expand exercise catalog from hasaneyldrm dataset`
 - 검증 규칙은 `AGENTS.md`에 정리되어 있음.
 - `pnpm`은 PATH에 없을 수 있으므로 Windows에서는 `.\node_modules\.bin\pnpm.CMD`로 실행.
 
@@ -46,7 +46,8 @@
 
 커밋/푸시:
 
-- 현재 세션에서 커밋/푸시 예정.
+- 커밋 완료: `25ed29a Expand exercise catalog from hasaneyldrm dataset`
+- 푸시는 현재 세션에서 이어서 진행.
 
 ### 트레이너 회원 상세 메뉴 화면 분리
 
