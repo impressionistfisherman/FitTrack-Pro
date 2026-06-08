@@ -200,6 +200,8 @@ describe("trainer notifications", () => {
       comments: expect.any(Number),
       tasks: expect.any(Number),
       requests: expect.any(Number),
+      coachingUnreadCount: expect.any(Number),
+      trainerUnreadCount: expect.any(Number),
       unreadCount: expect.any(Number),
     });
 

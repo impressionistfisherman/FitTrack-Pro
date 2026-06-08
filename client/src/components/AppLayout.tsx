@@ -37,12 +37,14 @@ function getVisibleNavItems({
   isAdmin,
   adminBadge,
   coachingBadge,
+  trainerBadge,
 }: {
   location: string;
   isTrainer: boolean;
   isAdmin: boolean;
   adminBadge: number;
   coachingBadge: number;
+  trainerBadge: number;
 }): SidebarNavItem[] {
   if (isAdmin && location.startsWith("/admin")) {
     return [
@@ -68,7 +70,7 @@ function getVisibleNavItems({
     }
     return [
       { id: "trainer-dashboard", href: "/trainer", icon: Users, label: "트레이너 홈" },
-      { id: "trainer-requests", href: "/trainer#requests", icon: UserCheck, label: "회원 요청" },
+      { id: "trainer-requests", href: "/trainer#requests", icon: UserCheck, label: "회원 요청", badge: trainerBadge },
       { id: "trainer-clients", href: "/trainer#clients", icon: MessageSquare, label: "담당 회원" },
     ];
   }
@@ -338,11 +340,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   });
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
   const adminBadge = pendingApplications?.length ?? 0;
-  const coachingBadge = coachingNotifications?.unreadCount ?? 0;
+  const coachingBadge = coachingNotifications?.coachingUnreadCount ?? 0;
+  const trainerBadge = coachingNotifications?.trainerUnreadCount ?? 0;
   const isTrainer = (user as any)?.appRole === "trainer";
   const isAdmin = user?.role === "admin";
   const showRoleSwitch = !loading && (isTrainer || isAdmin);
-  const visibleNavItems = loading ? [] : getVisibleNavItems({ location, isTrainer, isAdmin, adminBadge, coachingBadge });
+  const visibleNavItems = loading ? [] : getVisibleNavItems({ location, isTrainer, isAdmin, adminBadge, coachingBadge, trainerBadge });
 
   useEffect(() => {
     setMobileMenuOpen(false);

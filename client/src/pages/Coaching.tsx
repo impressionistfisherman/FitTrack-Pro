@@ -117,6 +117,7 @@ export default function Coaching() {
   const comments = (trainerStatus as any)?.comments ?? [];
   const tasks = (trainerStatus as any)?.tasks ?? [];
   const appRole = (trainerStatus as any)?.appRole ?? (user as any)?.appRole ?? "user";
+  const coachingUnreadCount = Number((notifications as any)?.coachingUnreadCount ?? 0);
   const trainerLabel = appRole === "trainer" ? "상위 트레이너" : "트레이너";
   const primaryTrainer = linkedTrainers[0]?.trainer;
   const timeline = [
@@ -134,9 +135,9 @@ export default function Coaching() {
           <p className="page-description">회원과 트레이너가 공유하는 피드백, PT 기록, 연결 상태를 확인하세요</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {notifications?.unreadCount ? (
+          {coachingUnreadCount > 0 ? (
             <Badge className="border border-primary/30 bg-primary/10 text-primary">
-              새 코칭 {notifications.unreadCount}건 확인됨
+              새 코칭 {coachingUnreadCount}건 확인됨
             </Badge>
           ) : null}
         </div>

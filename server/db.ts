@@ -1323,44 +1323,60 @@ export async function unlinkTrainer(clientUserId: number, trainerUserId: number)
   );
 }
 
-async function getCoachingLastReadAt(userId: number): Promise<string> {
+const COACHING_CLIENT_SCOPE = "client_coaching";
+const COACHING_TRAINER_SCOPE = "trainer_work";
+const COACHING_LEGACY_SCOPE = "coaching";
+
+async function getCoachingLastReadAt(userId: number, scope = COACHING_CLIENT_SCOPE): Promise<string> {
   await ensureTrainerTables();
   const row = await get(
     "SELECT last_read_at FROM coaching_read_states WHERE user_id = ? AND scope = ? LIMIT 1",
     userId,
-    "coaching",
+    scope,
   );
-  return String(row?.last_read_at ?? "1970-01-01T00:00:00.000Z");
+  if (row?.last_read_at) return String(row.last_read_at);
+
+  if (scope !== COACHING_LEGACY_SCOPE) {
+    const legacy = await get(
+      "SELECT last_read_at FROM coaching_read_states WHERE user_id = ? AND scope = ? LIMIT 1",
+      userId,
+      COACHING_LEGACY_SCOPE,
+    );
+    if (legacy?.last_read_at) return String(legacy.last_read_at);
+  }
+
+  return "1970-01-01T00:00:00.000Z";
 }
 
-export async function markCoachingRead(userId: number): Promise<void> {
+export async function markCoachingRead(userId: number, scope = COACHING_CLIENT_SCOPE): Promise<void> {
   await ensureTrainerTables();
   const now = new Date().toISOString();
   const existing = await get(
     "SELECT user_id FROM coaching_read_states WHERE user_id = ? AND scope = ? LIMIT 1",
     userId,
-    "coaching",
+    scope,
   );
   if (existing) {
     await run(
       "UPDATE coaching_read_states SET last_read_at = ? WHERE user_id = ? AND scope = ?",
       now,
       userId,
-      "coaching",
+      scope,
     );
     return;
   }
   await run(
     "INSERT INTO coaching_read_states (user_id, scope, last_read_at) VALUES (?, ?, ?)",
     userId,
-    "coaching",
+    scope,
     now,
   );
 }
 
 export async function getCoachingNotificationSummary(userId: number): Promise<Row> {
   await ensureTrainerTables();
-  const since = await getCoachingLastReadAt(userId);
+  const clientSince = await getCoachingLastReadAt(userId, COACHING_CLIENT_SCOPE);
+  const trainerSince = await getCoachingLastReadAt(userId, COACHING_TRAINER_SCOPE);
   const feedback = await get(
     `SELECT COUNT(*) AS count
      FROM trainer_feedback f
@@ -1370,7 +1386,7 @@ export async function getCoachingNotificationSummary(userId: number): Promise<Ro
       AND l.status = 'active'
      WHERE f.client_user_id = ? AND f.created_at > ?`,
     userId,
-    since,
+    clientSince,
   );
   const ptSessions = await get(
     `SELECT COUNT(*) AS count
@@ -1381,7 +1397,7 @@ export async function getCoachingNotificationSummary(userId: number): Promise<Ro
       AND l.status = 'active'
      WHERE p.client_user_id = ? AND p.created_at > ?`,
     userId,
-    since,
+    clientSince,
   );
   const comments = await get(
     `SELECT COUNT(*) AS count
@@ -1396,7 +1412,7 @@ export async function getCoachingNotificationSummary(userId: number): Promise<Ro
     userId,
     userId,
     userId,
-    since,
+    clientSince,
   );
   const tasks = await get(
     `SELECT COUNT(*) AS count
@@ -1407,11 +1423,16 @@ export async function getCoachingNotificationSummary(userId: number): Promise<Ro
       AND l.status = 'active'
      WHERE t.client_user_id = ? AND COALESCE(t.updated_at, t.created_at) > ?`,
     userId,
-    since,
+    clientSince,
   );
   const requests = await get(
-    "SELECT COUNT(*) AS count FROM trainer_client_links WHERE trainer_user_id = ? AND status = 'pending'",
+    `SELECT COUNT(*) AS count
+     FROM trainer_client_links
+     WHERE trainer_user_id = ?
+       AND status = 'pending'
+       AND COALESCE(updated_at, created_at) > ?`,
     userId,
+    trainerSince,
   );
   const counts = {
     feedback: Number(feedback?.count ?? 0),
@@ -1420,10 +1441,16 @@ export async function getCoachingNotificationSummary(userId: number): Promise<Ro
     tasks: Number(tasks?.count ?? 0),
     requests: Number(requests?.count ?? 0),
   };
+  const coachingUnreadCount = counts.feedback + counts.ptSessions + counts.comments + counts.tasks;
+  const trainerUnreadCount = counts.requests;
   return {
     ...counts,
-    unreadCount: counts.feedback + counts.ptSessions + counts.comments + counts.tasks + counts.requests,
-    lastReadAt: since,
+    coachingUnreadCount,
+    trainerUnreadCount,
+    unreadCount: coachingUnreadCount + trainerUnreadCount,
+    clientLastReadAt: clientSince,
+    trainerLastReadAt: trainerSince,
+    lastReadAt: clientSince,
   };
 }
 
