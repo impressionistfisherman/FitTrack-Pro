@@ -149,6 +149,20 @@ describe("exercises.list", () => {
     expect(result.some((exercise) => exercise.name === "Chest Push (multiple response)")).toBe(true);
     expect(result.some((exercise) => exercise.name === "Chest Push (single response)")).toBe(false);
   });
+
+  it("includes expanded cable and leverage machine exercises from hasaneyldrm dataset", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const cableRow = await caller.exercises.list({ search: "원암 케이블 로우" });
+    expect(cableRow.some((exercise) => exercise.name === "Cable One Arm Bent Over Row")).toBe(true);
+
+    const triceps = await caller.exercises.list({ search: "트라이셉스 원암" });
+    expect(triceps.some((exercise) => exercise.name === "Cable Standing One Arm Triceps Extension")).toBe(true);
+
+    const pulldown = await caller.exercises.list({ search: "플레이트 풀다운" });
+    expect(pulldown.some((exercise) => exercise.name === "Lever Front Pulldown")).toBe(true);
+  });
 });
 
 describe("exercises.detail", () => {

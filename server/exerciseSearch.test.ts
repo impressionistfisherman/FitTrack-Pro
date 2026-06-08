@@ -16,4 +16,14 @@ describe("exercise search aliases", () => {
     expect(matchesExerciseSearchText("랫풀다운", "V 바 풀다운", "V-Bar Pulldown")).toBe(true);
     expect(matchesExerciseSearchText("레그익스텐션", "레그 익스텐션", "Leg Extension")).toBe(true);
   });
+
+  it("matches reordered one-arm cable row and triceps aliases", () => {
+    expect(matchesExerciseSearchText("원암 케이블 로우", "케이블 원암 벤트 오버 로우", "Cable One Arm Bent Over Row")).toBe(true);
+    expect(matchesExerciseSearchText("트라이셉스 원암", "케이블 스탠딩 원암 트라이셉스 익스텐션", "Cable Standing One Arm Triceps Extension")).toBe(true);
+  });
+
+  it("maps plate pulldown wording to leverage and machine pulldown names", () => {
+    expect(matchesExerciseSearchText("플레이트 풀다운", "레버리지 프론트 풀다운", "Lever Front Pulldown")).toBe(true);
+    expect(matchesExerciseSearchText("플레이트 풀다운", "리버스 그립 머신 랫 풀다운", "Reverse Grip Machine Lat Pulldown")).toBe(true);
+  });
 });

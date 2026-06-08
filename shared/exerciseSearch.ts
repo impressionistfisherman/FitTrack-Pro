@@ -3,6 +3,8 @@ const aliasGroups = [
   ["이너타이", "이너 타이", "어덕트", "어덕터", "내전근", "adductor", "inner thigh"],
   ["아웃타이", "아웃 타이", "어브덕트", "어브덕터", "외전근", "abductor", "outer thigh"],
   ["랫풀다운", "렛풀다운", "랫 풀 다운", "랫 풀다운", "풀다운", "lat pulldown", "lat pull down", "pulldown"],
+  ["플레이트풀다운", "플레이트 풀다운", "머신풀다운", "머신 풀다운", "레버리지풀다운", "레버리지 풀다운", "레버풀다운", "레버 풀다운", "lever pulldown", "leverage pulldown", "machine pulldown", "lever front pulldown", "레버리지 프론트 풀다운", "레버리지 원암 와이드 풀다운", "리버스 그립 머신 랫 풀다운"],
+  ["원암케이블로우", "원암 케이블 로우", "케이블원암로우", "케이블 원암 로우", "원암 로우 케이블", "one arm cable row", "single arm cable row", "cable one arm row", "cable one arm bent over row", "cable one arm straight back high row", "케이블 원암 벤트 오버 로우", "케이블 원암 스트레이트 백 하이 로우"],
   ["체스트프레스", "체스트 프레스", "chest press"],
   ["숄더프레스", "숄더 프레스", "shoulder press"],
   ["레그프레스", "레그 프레스", "leg press"],
@@ -11,6 +13,7 @@ const aliasGroups = [
   ["스컬크러셔", "스컬 크러셔", "skullcrusher", "skull crusher"],
   ["바이셉컬", "바이셉 컬", "이두컬", "이두 컬", "bicep curl", "biceps curl"],
   ["트라이셉익스텐션", "트라이셉 익스텐션", "삼두익스텐션", "삼두 익스텐션", "triceps extension"],
+  ["트라이셉스원암", "트라이셉스 원암", "트라이셉원암", "트라이셉 원암", "삼두원암", "삼두 원암", "원암트라이셉스", "원암 트라이셉스", "원암트라이셉", "원암 트라이셉", "one arm triceps", "one arm tricep", "single arm triceps", "single arm tricep", "cable standing one arm triceps extension", "cable one arm tricep extension", "cable one arm tricep pushdown", "케이블 스탠딩 원암 트라이셉스 익스텐션", "케이블 원암 트라이셉 익스텐션", "케이블 원암 트라이셉 푸시다운"],
 ];
 
 export function normalizeExerciseSearchText(value: string) {

@@ -3,6 +3,7 @@ import path from "node:path";
 
 const projectRoot = process.cwd();
 const sourcePath = path.resolve(projectRoot, "%TEMP%", "free-exercise-db-codex", "dist", "exercises.json");
+const hasanSourcePath = path.resolve(process.env.TEMP ?? "%TEMP%", "hasan-exercises-dataset", "data", "exercises.json");
 const baselinePath = path.resolve(projectRoot, "server", "data", "core-exercises-baseline.json");
 const targetPath = path.resolve(projectRoot, "server", "data", "bulk-exercises.json");
 
@@ -16,6 +17,18 @@ async function loadSourceExercises() {
   const response = await fetch("https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/dist/exercises.json");
   if (!response.ok) {
     throw new Error(`Failed to download free-exercise-db source: ${response.status}`);
+  }
+  return await response.json();
+}
+
+async function loadHasanSourceExercises() {
+  if (fs.existsSync(hasanSourcePath)) {
+    return JSON.parse(fs.readFileSync(hasanSourcePath, "utf8"));
+  }
+
+  const response = await fetch("https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/data/exercises.json");
+  if (!response.ok) {
+    throw new Error(`Failed to download hasaneyldrm/exercises-dataset source: ${response.status}`);
   }
   return await response.json();
 }
@@ -62,6 +75,15 @@ const manualNameOverrides = new Map([
   ["Cable Incline Triceps Extension", "케이블 인클라인 트라이셉스 익스텐션"],
   ["Cable Internal Rotation", "케이블 인터널 로테이션"],
   ["Cable Iron Cross", "케이블 아이언 크로스"],
+  ["cable one arm pulldown", "케이블 원암 풀다운"],
+  ["cable seated row", "케이블 시티드 로우"],
+  ["cable seated wide-grip row", "케이블 시티드 와이드 그립 로우"],
+  ["cable standing one arm triceps extension", "케이블 스탠딩 원암 트라이셉스 익스텐션"],
+  ["cable standing row (v-bar)", "케이블 스탠딩 V바 로우"],
+  ["lever front pulldown", "레버리지 프론트 풀다운"],
+  ["lever high row", "레버리지 하이 로우"],
+  ["lever one arm lateral wide pulldown", "레버리지 원암 와이드 풀다운"],
+  ["reverse grip machine lat pulldown", "리버스 그립 머신 랫 풀다운"],
   ["Decline EZ Bar Triceps Extension", "디클라인 EZ바 트라이셉스 익스텐션"],
   ["Foot-SMR", "풋 폼롤링"],
   ["Calf Press", "카프 프레스"],
@@ -173,6 +195,7 @@ const englishPhraseMap = [
   ["pallof", "팔로프"],
   ["supinated", "슈피네이티드"],
   ["leverage", "레버리지"],
+  ["lever", "레버리지"],
   ["iso", "아이소"],
   ["see-saw", "시소"],
   ["see saw", "시소"],
@@ -765,13 +788,24 @@ function mapEquipment(value, name = "") {
   const lowerName = String(name).toLowerCase();
   if (lowerName.includes("band")) return "resistance_band";
   if (equipment === "barbell") return "barbell";
+  if (equipment === "olympic barbell") return "barbell";
+  if (equipment === "ez barbell") return "barbell";
   if (equipment === "dumbbell") return "dumbbell";
   if (equipment === "machine") return "machine";
+  if (equipment === "leverage machine") return "machine";
+  if (equipment === "smith machine") return "machine";
+  if (equipment === "sled machine") return "machine";
   if (equipment === "cable") return "cable";
+  if (equipment === "body weight") return "bodyweight";
   if (equipment === "body only") return "bodyweight";
+  if (equipment === "kettlebell") return "kettlebell";
   if (equipment === "kettlebells") return "kettlebell";
+  if (equipment === "band") return "resistance_band";
+  if (equipment === "resistance band") return "resistance_band";
   if (equipment === "bands") return "resistance_band";
   if (equipment === "e-z curl bar") return "barbell";
+  if (equipment === "medicine ball") return "medicine_ball";
+  if (equipment === "stability ball") return "stability_ball";
   return "none";
 }
 
@@ -811,6 +845,9 @@ function findBodyPart(text, allowAbs = true) {
 
 function mapBodyPart(exercise) {
   const category = String(exercise.category ?? "").toLowerCase();
+  const bodyPart = String(exercise.body_part ?? exercise.bodyPart ?? "").toLowerCase();
+  const categoryBodyPart = mapBodyPartLabel(bodyPart || category);
+  if (categoryBodyPart) return categoryBodyPart;
   if (category === "stretching") return "stretching";
   if (category === "cardio" || category === "plyometrics") return "cardio";
   if (category === "powerlifting" || category === "olympic weightlifting" || category === "strongman") return "full_body";
@@ -830,6 +867,82 @@ function mapBodyPart(exercise) {
   return "full_body";
 }
 
+function mapBodyPartLabel(value) {
+  switch (String(value ?? "").toLowerCase()) {
+    case "back":
+      return "back";
+    case "cardio":
+      return "cardio";
+    case "chest":
+      return "chest";
+    case "lower arms":
+    case "upper arms":
+      return "arms";
+    case "lower legs":
+    case "upper legs":
+      return "legs";
+    case "neck":
+      return "full_body";
+    case "shoulders":
+      return "shoulders";
+    case "waist":
+      return "abs";
+    default:
+      return "";
+  }
+}
+
+function titleCaseName(name) {
+  return String(name ?? "")
+    .split(" ")
+    .filter(Boolean)
+    .map((token) => {
+      if (/^[(/)-]+$/.test(token)) return token;
+      if (token === "v-bar") return "V-Bar";
+      if (token === "ez") return "EZ";
+      return token.charAt(0).toUpperCase() + token.slice(1);
+    })
+    .join(" ")
+    .replaceAll(/\b\(([^)]+)\)/g, (match) => match.toUpperCase());
+}
+
+function buildHasanExercise(exercise) {
+  const sourceName = String(exercise.name ?? "").trim();
+  const displayName = titleCaseName(sourceName);
+  const nameKo = manualNameOverrides.get(sourceName) ?? manualNameOverrides.get(displayName) ?? translateFallback(sourceName);
+  const target = String(exercise.target ?? "").trim();
+  const muscleGroup = String(exercise.muscle_group ?? "").trim();
+  const primaryMuscles = [target].filter(Boolean);
+  const secondaryMuscles = Array.from(new Set([
+    ...(Array.isArray(exercise.secondary_muscles) ? exercise.secondary_muscles : []),
+    muscleGroup,
+  ].filter(Boolean)));
+  const instructions = Array.isArray(exercise.instruction_steps?.en)
+    ? exercise.instruction_steps.en
+    : String(exercise.instructions?.en ?? "").split(/(?<=\.)\s+/).filter(Boolean);
+
+  return {
+    name: displayName,
+    nameKo,
+    bodyPart: mapBodyPart({
+      ...exercise,
+      primaryMuscles,
+      secondaryMuscles,
+    }),
+    equipment: mapEquipment(exercise.equipment, sourceName),
+    category: String(exercise.category ?? "").toLowerCase() === "cardio" ? "cardio" : "strength",
+    difficulty: "intermediate",
+    description: sourceName,
+    descriptionKo: null,
+    primaryMuscles,
+    secondaryMuscles,
+    instructions,
+    instructionsKo: null,
+    gifUrl: null,
+    secondaryImages: [],
+  };
+}
+
 function buildImageUrls(images = []) {
   const urls = images.map((image) => `https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${encodeURIComponent(image)}`);
   return {
@@ -840,6 +953,7 @@ function buildImageUrls(images = []) {
 
 async function main() {
   const sourceExercises = await loadSourceExercises();
+  const hasanExercises = await loadHasanSourceExercises();
   const existingKeys = new Set();
   for (const exercise of existingExercises) {
     existingKeys.add(normalizeKey(exercise.name));
@@ -876,6 +990,26 @@ async function main() {
     });
     outputKeys.add(nameKey);
     outputKeys.add(nameKoKey);
+  }
+
+  for (const sourceExercise of hasanExercises) {
+    const exercise = buildHasanExercise(sourceExercise);
+    const nameKey = normalizeKey(sourceExercise.name);
+    const displayNameKey = normalizeKey(exercise.name);
+    const nameKoKey = normalizeKey(exercise.nameKo);
+
+    if (
+      (nameKey && outputKeys.has(nameKey)) ||
+      (displayNameKey && outputKeys.has(displayNameKey)) ||
+      (nameKoKey && outputKeys.has(nameKoKey))
+    ) {
+      continue;
+    }
+
+    output.push(exercise);
+    if (nameKey) outputKeys.add(nameKey);
+    if (displayNameKey) outputKeys.add(displayNameKey);
+    if (nameKoKey) outputKeys.add(nameKoKey);
   }
 
   fs.writeFileSync(targetPath, JSON.stringify(output, null, 2) + "\n", "utf8");

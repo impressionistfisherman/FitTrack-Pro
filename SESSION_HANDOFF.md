@@ -12,6 +12,42 @@
 
 ## 최근 완료 작업
 
+### 운동 DB 확장 및 검색 별칭 보강
+
+요청:
+
+- `원암 케이블 로우`, `플레이트 풀다운`, `트라이셉스 원암` 같은 운동이 없거나 검색 연관이 약함.
+- `hasaneyldrm/exercises-dataset`에서 운동 데이터를 가져와 DB에 더 추가.
+
+수정:
+
+- `scripts/build-bulk-exercise-seed.mjs`
+  - `https://github.com/hasaneyldrm/exercises-dataset`의 `data/exercises.json` 로더 추가.
+  - 기존 `free-exercise-db` 기반 seed 생성 후 Hasan 데이터셋을 중복 제거해서 추가하도록 변경.
+  - 외부 데이터셋 README에 미디어가 교육/비상업 용도 제한으로 명시되어 있어, 이미지/GIF URL은 seed에 넣지 않고 운동명/분류/근육/수행 단계만 추가.
+  - 케이블/레버리지/원암 트라이셉스 주요 운동 한글명 override 추가.
+- `server/data/bulk-exercises.json`
+  - bulk seed 운동 수가 `821`개에서 `1968`개로 증가.
+  - 예: `Cable One Arm Bent Over Row`, `Cable Standing One Arm Triceps Extension`, `Lever Front Pulldown`, `Cable Seated Row`, `Cable One Arm Pulldown` 등 추가.
+- `shared/exerciseSearch.ts`
+  - `원암 케이블 로우`, `트라이셉스 원암`, `플레이트 풀다운` 검색어를 실제 DB 이름과 연결하는 별칭 그룹 추가.
+- `server/exerciseSearch.test.ts`
+  - 순서가 바뀐 한국어 검색어와 플레이트/레버리지 풀다운 별칭 테스트 추가.
+- `server/fittrack.test.ts`
+  - 라우터 `exercises.list`에서 새 seed 운동이 실제 검색 결과로 나오는지 검증 추가.
+
+검증:
+
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 테스트 수: `50 passed`
+
+커밋/푸시:
+
+- 현재 세션에서 커밋/푸시 예정.
+
 ### 트레이너 회원 상세 메뉴 화면 분리
 
 요청:
@@ -136,10 +172,6 @@
 
 아래 파일은 의도적으로 커밋하지 않음.
 
-- `client/src/App.tsx` 이번 작업 변경
-- `client/src/components/AppLayout.tsx` 이번 작업 변경
-- `client/src/pages/TrainerClientDetail.tsx` 이번 작업 변경
-- `SESSION_HANDOFF.md` 이번 작업 기록
 - `local-db/fittrack_local.sqlite`
 - `local-db/fittrack_local.sqlite-shm`
 - `local-db/fittrack_local.sqlite-wal`
@@ -158,9 +190,10 @@
 
 1. 실제 로그인된 트레이너 계정으로 `/trainer/clients/:id` 기본 운동 기록 화면 확인.
 2. 트레이너 회원 상세 사이드바에서 `운동 기록`, `코칭 타임라인`, `회원 과제`, `비공개 메모`, `진행 리포트`, `AI 코칭 보조`, `PT 기록` 클릭 시 URL이 각각 실제 하위 경로로 바뀌고 한 화면에 하나의 메뉴만 표시되는지 확인.
-3. 모바일/좁은 화면에서 회원 카드, PT 기록 추가 버튼, 각 메뉴 카드가 잘리지 않는지 확인.
-4. PT 기록 추가, 과제 등록, 메모 저장, 일반/세션 피드백 저장 후 목록 갱신 확인.
-5. Vercel 배포가 최신 커밋을 반영했는지 확인.
+3. 운동 검색에서 `원암 케이블 로우`, `트라이셉스 원암`, `플레이트 풀다운`, `케이블 시티드 로우`가 기대한 결과를 보여주는지 실제 UI로 확인.
+4. 모바일/좁은 화면에서 회원 카드, PT 기록 추가 버튼, 각 메뉴 카드가 잘리지 않는지 확인.
+5. PT 기록 추가, 과제 등록, 메모 저장, 일반/세션 피드백 저장 후 목록 갱신 확인.
+6. Vercel 배포가 최신 커밋을 반영했는지 확인.
 
 ## 작업 시 항상 지킬 검증 순서
 
