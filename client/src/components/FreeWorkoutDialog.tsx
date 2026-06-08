@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { matchesExerciseSearchText } from "@shared/exerciseSearch";
-import { CalendarDays, ChevronDown, Dumbbell, ImagePlus, Loader2, Minus, Plus, Search, Sparkles, Trash2 } from "lucide-react";
+import { CalendarDays, ChevronDown, Dumbbell, ImagePlus, Loader2, Minus, Pencil, Plus, Search, Sparkles, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -198,6 +198,8 @@ export default function FreeWorkoutDialog({
   const [search, setSearch] = useState("");
   const [exerciseSearchOpen, setExerciseSearchOpen] = useState(false);
   const [selected, setSelected] = useState<SelectedExercise[]>([]);
+  const [replacingExerciseId, setReplacingExerciseId] = useState<number | null>(null);
+  const [replaceSearch, setReplaceSearch] = useState("");
   const [captureMessage, setCaptureMessage] = useState("");
   const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseAiFeedback | null>(null);
   const exerciseSearchRef = useRef<HTMLDivElement | null>(null);
@@ -210,6 +212,10 @@ export default function FreeWorkoutDialog({
   const { data: weights } = trpc.bodyWeight.list.useQuery(
     { limit: 1 },
     { enabled: open, staleTime: 1000 * 60 * 5 }
+  );
+  const { data: replacementExercises, isFetching: replacementExercisesFetching } = trpc.exercises.list.useQuery(
+    { search: replaceSearch || undefined },
+    { enabled: open && replacingExerciseId !== null && replaceSearch.trim().length > 0, staleTime: 1000 * 60 * 5 }
   );
   const startSession = trpc.workout.startSession.useMutation();
   const addLog = trpc.workout.addLog.useMutation();
@@ -228,6 +234,19 @@ export default function FreeWorkoutDialog({
       .filter((exercise) => matchesExerciseSearchText(search, exercise.nameKo, exercise.name))
       .slice(0, 20);
   }, [exercises, search, selected]);
+
+  const filteredReplacementExercises = useMemo(() => {
+    if (replacingExerciseId === null) return [];
+    const selectedIds = new Set(
+      selected
+        .filter((item) => item.exercise.id !== replacingExerciseId)
+        .map((item) => item.exercise.id)
+    );
+    return (replacementExercises ?? [])
+      .filter((exercise) => !selectedIds.has(exercise.id))
+      .filter((exercise) => matchesExerciseSearchText(replaceSearch, exercise.nameKo, exercise.name))
+      .slice(0, 12);
+  }, [replacementExercises, replaceSearch, replacingExerciseId, selected]);
 
   const closeExerciseSearchIfLeaving = (nextFocus: EventTarget | null) => {
     if (nextFocus instanceof Node && exerciseSearchRef.current?.contains(nextFocus)) return;
@@ -309,6 +328,45 @@ export default function FreeWorkoutDialog({
       if (removed && exerciseFeedback?.title?.includes(removed.exercise.nameKo)) setExerciseFeedback(null);
       return items.filter((item) => item.exercise.id !== exerciseId);
     });
+    if (replacingExerciseId === exerciseId) {
+      setReplacingExerciseId(null);
+      setReplaceSearch("");
+    }
+  };
+
+  const startReplacingExercise = (exercise: any) => {
+    setReplacingExerciseId(exercise.id);
+    setReplaceSearch("");
+    setExerciseSearchOpen(false);
+  };
+
+  const replaceExercise = (currentExerciseId: number, nextExercise: any) => {
+    const alreadySelected = selected.some((item) => item.exercise.id === nextExercise.id && item.exercise.id !== currentExerciseId);
+    if (alreadySelected) {
+      toast.info("이미 기록 목록에 있는 운동입니다.");
+      return;
+    }
+
+    setSelected((items) => items.map((item) => {
+      if (item.exercise.id !== currentExerciseId) return item;
+      const nextMode = getExerciseInputMode(nextExercise);
+      const currentMode = getExerciseInputMode(item.exercise);
+      return {
+        ...item,
+        exercise: nextExercise,
+        sets: nextMode === "strength"
+          ? currentMode === "strength" ? item.sets : makeSets(3)
+          : makeSets(1),
+        durationMinutes: nextMode === "strength"
+          ? ""
+          : item.durationMinutes || "30",
+        distanceKm: nextMode === "cardio" ? item.distanceKm : "",
+      };
+    }));
+
+    setReplacingExerciseId(null);
+    setReplaceSearch("");
+    toast.success(`${nextExercise.nameKo}으로 변경했습니다.`);
   };
 
   const reset = () => {
@@ -317,6 +375,8 @@ export default function FreeWorkoutDialog({
     setSearch("");
     setExerciseSearchOpen(false);
     setSelected([]);
+    setReplacingExerciseId(null);
+    setReplaceSearch("");
     setCaptureMessage("");
     setExerciseFeedback(null);
   };
@@ -803,6 +863,18 @@ export default function FreeWorkoutDialog({
                       <div className="ml-auto shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2 py-1 text-[10px] text-primary">
                         {getExerciseInputMode(item.exercise) === "strength" ? "세트 기록" : getExerciseInputMode(item.exercise) === "cardio" ? "시간/거리" : "시간 기록"}
                       </div>
+                      {editSession && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
+                          onClick={() => startReplacingExercise(item.exercise)}
+                          aria-label="운동 변경"
+                        >
+                          <Pencil size={14} />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
@@ -812,6 +884,62 @@ export default function FreeWorkoutDialog({
                         <Trash2 size={14} />
                       </Button>
                     </div>
+
+                    {editSession && replacingExerciseId === item.exercise.id && (
+                      <div className="mb-3 rounded-lg border border-border bg-background/60 p-2">
+                        <Label className="mb-1.5 block text-xs text-muted-foreground">다른 운동으로 변경</Label>
+                        <div className="relative">
+                          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            value={replaceSearch}
+                            onChange={(event) => setReplaceSearch(event.target.value)}
+                            placeholder="변경할 운동 검색..."
+                            className="h-8 bg-card border-border pl-8 text-sm text-foreground"
+                          />
+                        </div>
+                        {replaceSearch.trim().length > 0 && (
+                          <ScrollArea className="mt-2 h-40 rounded-md border border-border">
+                            <div className="space-y-1 p-1.5">
+                              {replacementExercisesFetching && filteredReplacementExercises.length === 0 ? (
+                                <div className="flex h-20 items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                                  <Loader2 size={12} className="animate-spin" />
+                                  검색 중
+                                </div>
+                              ) : filteredReplacementExercises.length > 0 ? filteredReplacementExercises.map((exercise) => (
+                                <button
+                                  key={exercise.id}
+                                  type="button"
+                                  onClick={() => replaceExercise(item.exercise.id, exercise)}
+                                  className="flex w-full items-center gap-2 rounded-md p-2 text-left hover:bg-accent"
+                                >
+                                  <Dumbbell size={14} className="shrink-0 text-primary" />
+                                  <span className="min-w-0">
+                                    <span className="block truncate text-sm font-medium text-foreground">{exercise.nameKo}</span>
+                                    <span className="block truncate text-xs text-muted-foreground">{exercise.name}</span>
+                                  </span>
+                                </button>
+                              )) : (
+                                <div className="flex h-20 items-center justify-center text-xs text-muted-foreground">
+                                  검색 결과가 없습니다
+                                </div>
+                              )}
+                            </div>
+                          </ScrollArea>
+                        )}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="mt-1 h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                          onClick={() => {
+                            setReplacingExerciseId(null);
+                            setReplaceSearch("");
+                          }}
+                        >
+                          취소
+                        </Button>
+                      </div>
+                    )}
 
                     {getExerciseInputMode(item.exercise) === "strength" ? (
                       <>

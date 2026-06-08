@@ -6,11 +6,34 @@
 
 - 작업 디렉터리: `C:\Users\Hyeonil-Choi\Desktop\fittrack-pro`
 - 기본 브랜치: `master`
-- 최근 작업 커밋: `cf9cc83 Generalize exercise search aliases`
+- 최근 작업 커밋: `9a9c836 Cascade workout set values`
 - 검증 규칙은 `AGENTS.md`에 정리되어 있음.
 - `pnpm`은 PATH에 없을 수 있으므로 Windows에서는 `.\node_modules\.bin\pnpm.CMD`로 실행.
 
 ## 최근 완료 작업
+
+### 운동 기록 수정 시 운동 교체
+
+요청:
+
+- 운동 기록 수정에서 운동 추가/삭제뿐 아니라 기존 운동을 선택해 다른 운동으로 변경할 수 있어야 함.
+
+수정:
+
+- `client/src/components/FreeWorkoutDialog.tsx`
+  - 운동 기록 수정 모드에서 선택된 운동 카드에 `운동 변경` 아이콘 버튼 추가.
+  - 카드 안에서 변경할 운동을 검색하고 선택하면 기존 세트 값/시간 입력을 유지하면서 운동만 교체.
+  - 이미 기록 목록에 있는 다른 운동으로 중복 교체되는 것은 방지.
+  - 근력 운동끼리 교체하면 기존 세트 무게/횟수 유지.
+  - 근력/유산소/시간 운동처럼 입력 방식이 달라지는 경우 새 운동 입력 방식에 맞춰 세트/시간 필드 재정리.
+
+검증:
+
+- 전체 검증은 이어서 실행 예정.
+
+커밋/푸시:
+
+- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
 
 ### 운동 기록 세트 값 전파
 
@@ -32,11 +55,15 @@
 
 검증:
 
-- 전체 검증은 이어서 실행 예정.
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 테스트 수: `50 passed`
 
 커밋/푸시:
 
-- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
+- 커밋/푸시 완료: `9a9c836 Cascade workout set values`
 
 ### 운동 검색 연관어 일반화
 
