@@ -209,8 +209,13 @@ function ExerciseBlock({ entry, sessionId, onUpdate, onRemove, onSetComplete, ro
   const toggleExpand = () => onUpdate({ ...entry, expanded: !entry.expanded });
 
   const updateSet = (idx: number, field: keyof SetLog, value: any) => {
-    const sets = [...entry.sets];
-    sets[idx] = { ...sets[idx], [field]: value };
+    const shouldCascade = field === "weightKg" || field === "reps";
+    const sets = entry.sets.map((set, setIdx) => {
+      if (shouldCascade && setIdx >= idx && !set.completed) {
+        return { ...set, [field]: value };
+      }
+      return setIdx === idx ? { ...set, [field]: value } : set;
+    });
     onUpdate({ ...entry, sets });
   };
 

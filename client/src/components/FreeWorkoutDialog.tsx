@@ -136,10 +136,11 @@ function formatDateLabel(value: string) {
 }
 
 function makeSets(count: number, existing: SetEntry[] = []) {
+  const lastExisting = existing[existing.length - 1];
   return Array.from({ length: count }, (_, index) => ({
     setNumber: index + 1,
-    weightKg: existing[index]?.weightKg ?? "",
-    reps: existing[index]?.reps ?? "",
+    weightKg: existing[index]?.weightKg ?? lastExisting?.weightKg ?? "",
+    reps: existing[index]?.reps ?? lastExisting?.reps ?? "",
   }));
 }
 
@@ -289,7 +290,7 @@ export default function FreeWorkoutDialog({
       item.exercise.id === exerciseId
         ? {
             ...item,
-            sets: item.sets.map((set) => set.setNumber === setNumber ? { ...set, [field]: value } : set),
+            sets: item.sets.map((set) => set.setNumber >= setNumber ? { ...set, [field]: value } : set),
           }
         : item
     )));

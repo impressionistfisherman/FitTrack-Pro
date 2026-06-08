@@ -6,11 +6,37 @@
 
 - 작업 디렉터리: `C:\Users\Hyeonil-Choi\Desktop\fittrack-pro`
 - 기본 브랜치: `master`
-- 최근 작업 커밋: `852b064 Update session handoff for exercise catalog expansion`
+- 최근 작업 커밋: `cf9cc83 Generalize exercise search aliases`
 - 검증 규칙은 `AGENTS.md`에 정리되어 있음.
 - `pnpm`은 PATH에 없을 수 있으므로 Windows에서는 `.\node_modules\.bin\pnpm.CMD`로 실행.
 
 ## 최근 완료 작업
+
+### 운동 기록 세트 값 전파
+
+요청:
+
+- 운동 기록 추가 시 세트를 추가하면 바로 직전 세트의 값이 그대로 복사되어야 함.
+- 이전 세트의 무게/횟수를 수정하면 해당 운동의 남은 세트에도 같은 값이 적용되어야 함.
+
+수정:
+
+- `client/src/components/FreeWorkoutDialog.tsx`
+  - 자유 운동 기록 추가/수정에서 세트 수를 늘리면 새 세트가 직전 세트의 무게/횟수를 복사.
+  - 특정 세트의 무게 또는 횟수를 수정하면 그 세트부터 뒤쪽 세트까지 같은 값으로 전파.
+- `client/src/pages/TrainerClientDetail.tsx`
+  - 트레이너 PT 기록 추가 폼의 세트 입력도 동일한 복사/전파 동작 적용.
+- `client/src/pages/WorkoutSession.tsx`
+  - 운동 진행 화면에서 무게/횟수 수정 시 현재 세트부터 남은 미완료 세트에 값 전파.
+  - 완료된 뒤쪽 세트는 이미 저장된 로그가 있을 수 있어 자동 변경하지 않음.
+
+검증:
+
+- 전체 검증은 이어서 실행 예정.
+
+커밋/푸시:
+
+- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
 
 ### 운동 검색 연관어 일반화
 
@@ -35,16 +61,17 @@
 - `server/exerciseSearch.test.ts`, `server/fittrack.test.ts`
   - `삼두 한팔`, `one arm cable row`, `machine pulldown` 등 다른 명칭 조합 테스트 추가.
 
-현재 검증:
+검증:
 
-- 타깃 테스트 통과:
-  - `.\node_modules\.bin\pnpm.CMD exec vitest run server/exerciseSearch.test.ts server/fittrack.test.ts`
-  - `21 passed`
-- 전체 검증은 이어서 실행 예정.
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 테스트 수: `50 passed`
 
 커밋/푸시:
 
-- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
+- 커밋/푸시 완료: `cf9cc83 Generalize exercise search aliases`
 
 ### 운동 DB 확장 및 검색 별칭 보강
 
