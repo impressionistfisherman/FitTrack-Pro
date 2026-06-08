@@ -5,7 +5,7 @@ import mysql from "mysql2/promise";
 import { Pool as PgPool } from "pg";
 import bulkExercises from "./data/bulk-exercises.json";
 import { ENV } from "./_core/env";
-import { expandExerciseSearchTerms } from "../shared/exerciseSearch";
+import { expandExerciseSearchTerms, getExerciseSearchTokenGroups, matchesExerciseSearchText } from "../shared/exerciseSearch";
 
 const databaseUrl = process.env.DATABASE_URL?.trim();
 const sqlitePath = process.env.SQLITE_DB_PATH
@@ -650,9 +650,19 @@ export async function getExercises(filters?: {
     params.push(filters.category);
   }
   if (filters?.search) {
+    const tokenGroups = getExerciseSearchTokenGroups(filters.search).slice(0, 8);
     const terms = expandExerciseSearchTerms(filters.search).slice(0, 12);
-    if (terms.length) {
-      where.push(`(${terms.map(() => "(name LIKE ? OR nameKo LIKE ?)").join(" OR ")})`);
+
+    if (tokenGroups.length) {
+      for (const group of tokenGroups) {
+        const candidates = group.slice(0, 12);
+        where.push(`(${candidates.map(() => "(LOWER(name) LIKE ? OR LOWER(nameKo) LIKE ?)").join(" OR ")})`);
+        for (const token of candidates) {
+          params.push(`%${token}%`, `%${token}%`);
+        }
+      }
+    } else if (terms.length) {
+      where.push(`(${terms.map(() => "(LOWER(name) LIKE ? OR LOWER(nameKo) LIKE ?)").join(" OR ")})`);
       for (const term of terms) {
         params.push(`%${term}%`, `%${term}%`);
       }
@@ -661,7 +671,10 @@ export async function getExercises(filters?: {
 
   const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
   const rows = await all(`SELECT * FROM exercises ${whereClause} ORDER BY nameKo`, ...params);
-  return rows.map((row) => normalizeExercise(row));
+  const normalizedRows = rows.map((row) => normalizeExercise(row));
+  return filters?.search
+    ? normalizedRows.filter((row) => matchesExerciseSearchText(filters.search!, row.nameKo, row.name))
+    : normalizedRows;
 }
 
 export async function getExerciseById(id: number): Promise<Row | null> {

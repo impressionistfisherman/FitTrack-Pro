@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from "sonner";
 import { useWakeLock } from "@/hooks/useWakeLock";
 import RestTimerOverlay from "@/components/RestTimerOverlay";
+import { matchesExerciseSearchText } from "@shared/exerciseSearch";
 
 interface SetLog {
   setNumber: number;
@@ -118,8 +119,7 @@ function AddExerciseModal({ onAdd }: { onAdd: (exercise: any, restSecs: number) 
 
   const filtered = exercises?.filter(ex => {
     if (!search) return true;
-    const q = search.toLowerCase();
-    return ex.nameKo.toLowerCase().includes(q) || ex.name.toLowerCase().includes(q);
+    return matchesExerciseSearchText(search, ex.nameKo, ex.name);
   });
 
   const bodyParts = ["all", "chest", "back", "shoulders", "arms", "legs", "abs", "glutes", "cardio", "stretching"];

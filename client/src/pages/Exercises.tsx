@@ -3,6 +3,7 @@ import { Filter, Heart, Search, X } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
+import { matchesExerciseSearchText } from "@shared/exerciseSearch";
 
 const bodyParts = [
   { value: "all", label: "전체" },
@@ -247,8 +248,7 @@ export default function Exercises() {
     if (showFavOnly && !favIds.has(ex.id)) return false;
     if (difficulty !== "all" && ex.difficulty !== difficulty) return false;
     if (search) {
-      const q = search.toLowerCase();
-      return ex.nameKo.toLowerCase().includes(q) || ex.name.toLowerCase().includes(q);
+      return matchesExerciseSearchText(search, ex.nameKo, ex.name);
     }
     return true;
   });

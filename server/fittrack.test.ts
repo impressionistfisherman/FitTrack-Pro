@@ -160,6 +160,9 @@ describe("exercises.list", () => {
     const triceps = await caller.exercises.list({ search: "트라이셉스 원암" });
     expect(triceps.some((exercise) => exercise.name === "Cable Standing One Arm Triceps Extension")).toBe(true);
 
+    const tricepsPushdown = await caller.exercises.list({ search: "삼두 한팔" });
+    expect(tricepsPushdown.some((exercise) => exercise.name === "Cable One Arm Tricep Pushdown")).toBe(true);
+
     const pulldown = await caller.exercises.list({ search: "플레이트 풀다운" });
     expect(pulldown.some((exercise) => exercise.name === "Lever Front Pulldown")).toBe(true);
   });

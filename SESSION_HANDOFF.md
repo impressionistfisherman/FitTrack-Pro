@@ -6,11 +6,45 @@
 
 - 작업 디렉터리: `C:\Users\Hyeonil-Choi\Desktop\fittrack-pro`
 - 기본 브랜치: `master`
-- 최근 작업 커밋: `25ed29a Expand exercise catalog from hasaneyldrm dataset`
+- 최근 작업 커밋: `852b064 Update session handoff for exercise catalog expansion`
 - 검증 규칙은 `AGENTS.md`에 정리되어 있음.
 - `pnpm`은 PATH에 없을 수 있으므로 Windows에서는 `.\node_modules\.bin\pnpm.CMD`로 실행.
 
 ## 최근 완료 작업
+
+### 운동 검색 연관어 일반화
+
+요청:
+
+- 특정 몇 개 검색어만 하드코딩하는 것이 아니라, 모든 운동이 사용자가 다르게 부르는 이름/순서/표현으로도 연관 조회되어야 함.
+- 예: `원암 케이블 로우`, `트라이셉스 원암`, `삼두 한팔`, `플레이트 풀다운`, `machine pulldown`.
+
+수정:
+
+- `shared/exerciseSearch.ts`
+  - 운동 검색을 문구 별칭 + 토큰 동의어 매칭 조합으로 확장.
+  - `원암/한팔/one arm`, `트라이셉스/삼두/triceps`, `플레이트/레버리지/machine/leverage`, `로우/row`, `풀다운/pulldown` 등 단어 단위 연관어 그룹 추가.
+  - 단어 순서가 달라도 입력 토큰의 각 연관 그룹이 운동명에 포함되면 매칭되도록 변경.
+- `server/db.ts`
+  - `exercises.list` 검색 SQL을 단일 문구 `LIKE`에서 토큰 그룹 기반 후보 조회로 변경.
+  - DB 후보 조회 후 공통 매칭 유틸로 한 번 더 필터링해 서버 결과 정합성 보강.
+- `client/src/pages/Exercises.tsx`
+- `client/src/pages/RoutineDetail.tsx`
+- `client/src/pages/WorkoutSession.tsx`
+  - 화면 내부 재필터도 단순 문자열 포함이 아니라 공통 운동 검색 매칭 로직을 사용하도록 변경.
+- `server/exerciseSearch.test.ts`, `server/fittrack.test.ts`
+  - `삼두 한팔`, `one arm cable row`, `machine pulldown` 등 다른 명칭 조합 테스트 추가.
+
+현재 검증:
+
+- 타깃 테스트 통과:
+  - `.\node_modules\.bin\pnpm.CMD exec vitest run server/exerciseSearch.test.ts server/fittrack.test.ts`
+  - `21 passed`
+- 전체 검증은 이어서 실행 예정.
+
+커밋/푸시:
+
+- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
 
 ### 운동 DB 확장 및 검색 별칭 보강
 

@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { matchesExerciseSearchText } from "@shared/exerciseSearch";
 
 const bodyPartLabels: Record<string, string> = {
   chest: "가슴", back: "등", shoulders: "어깨", arms: "팔",
@@ -71,8 +72,7 @@ function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: nu
 
   const filtered = exercises?.filter((ex) => {
     if (search) {
-      const q = search.toLowerCase();
-      return ex.nameKo.toLowerCase().includes(q) || ex.name.toLowerCase().includes(q);
+      return matchesExerciseSearchText(search, ex.nameKo, ex.name);
     }
     return true;
   });
@@ -289,8 +289,7 @@ function EditRoutineExerciseDialog({ item, onSaved }: { item: any; onSaved: () =
   const bodyPartKo: Record<string, string> = { all: "전체", ...bodyPartLabels };
   const filtered = exercises?.filter((ex) => {
     if (!search) return true;
-    const q = search.toLowerCase();
-    return ex.nameKo.toLowerCase().includes(q) || ex.name.toLowerCase().includes(q);
+    return matchesExerciseSearchText(search, ex.nameKo, ex.name);
   });
 
   const resetFromItem = () => {
