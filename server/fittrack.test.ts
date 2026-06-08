@@ -6,7 +6,7 @@ import type { TrpcContext } from "./_core/context";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
-function createAuthContext(): { ctx: TrpcContext; clearedCookies: any[] } {
+function createAuthContext(role: "user" | "admin" = "user"): { ctx: TrpcContext; clearedCookies: any[] } {
   const clearedCookies: any[] = [];
   const user: AuthenticatedUser = {
     id: 1,
@@ -14,7 +14,7 @@ function createAuthContext(): { ctx: TrpcContext; clearedCookies: any[] } {
     email: "test@fittrack.com",
     name: "Test User",
     loginMethod: "manus",
-    role: "user",
+    role,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -204,5 +204,34 @@ describe("trainer notifications", () => {
     });
 
     await expect(caller.trainer.markCoachingRead()).resolves.toEqual({ success: true });
+  });
+});
+
+describe("feedback", () => {
+  it("allows a user to submit feedback and an admin to update its status", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const message = `테스트 사용자 의견 ${Date.now()}`;
+    const created = await caller.feedback.create({ category: "idea", message });
+
+    expect(created.success).toBe(true);
+    expect(created.id).toBeGreaterThan(0);
+
+    const mine = await caller.feedback.mine();
+    expect(mine.some((item: any) => item.id === created.id && item.message === message)).toBe(true);
+
+    const adminCaller = appRouter.createCaller(createAuthContext("admin").ctx);
+    const allFeedback = await adminCaller.admin.userFeedback({ status: "all" });
+    expect(allFeedback.some((item: any) => item.id === created.id)).toBe(true);
+
+    const updated = await adminCaller.admin.updateUserFeedback({
+      feedbackId: created.id,
+      status: "resolved",
+      adminNote: "테스트 확인 완료",
+    });
+
+    expect(updated.success).toBe(true);
+    expect(updated.feedback?.status).toBe("resolved");
+    expect(updated.feedback?.adminNote).toBe("테스트 확인 완료");
   });
 });

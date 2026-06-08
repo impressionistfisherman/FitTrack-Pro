@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
   Activity, Bot, Calendar, CheckSquare, Dumbbell, Home,
-  LogIn, LogOut, Menu, MessageSquare, Scale, ShieldCheck, UserCheck, Users, X,
+  LogIn, LogOut, Megaphone, Menu, MessageSquare, Scale, ShieldCheck, UserCheck, Users, X,
 } from "lucide-react";
 import { type MouseEvent, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -28,6 +28,7 @@ const userNavItems: SidebarNavItem[] = [
   { id: "user-body-weight", href: "/body-weight", icon: Scale, label: "체중" },
   { id: "user-coaching", href: "/coaching", icon: MessageSquare, label: "코칭" },
   { id: "user-ai-coach", href: "/ai-coach", icon: Bot, label: "AI 코치" },
+  { id: "user-feedback", href: "/feedback", icon: Megaphone, label: "의견" },
 ];
 
 function getVisibleNavItems({
@@ -48,6 +49,7 @@ function getVisibleNavItems({
       { id: "admin-home", href: "/admin", icon: ShieldCheck, label: "관리자 홈" },
       { id: "admin-applications", href: "/admin#applications", icon: UserCheck, label: "신청 관리", badge: adminBadge },
       { id: "admin-trainers", href: "/admin#trainers", icon: Users, label: "승인 트레이너" },
+      { id: "admin-user-feedback", href: "/admin#feedback", icon: Megaphone, label: "사용자 의견" },
     ];
   }
 

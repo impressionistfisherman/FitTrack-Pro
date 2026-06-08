@@ -827,13 +827,15 @@ export async function setUserPreference(userId: number, key: string, value: stri
 
 let trainerTablesReady = false;
 
+function autoIdColumn() {
+  if (databaseType === "postgres") return "SERIAL PRIMARY KEY";
+  if (databaseType === "mysql") return "integer PRIMARY KEY AUTO_INCREMENT";
+  return "integer PRIMARY KEY AUTOINCREMENT";
+}
+
 async function ensureTrainerTables() {
   if (trainerTablesReady) return;
-  const autoId = databaseType === "postgres"
-    ? "SERIAL PRIMARY KEY"
-    : databaseType === "mysql"
-      ? "integer PRIMARY KEY AUTO_INCREMENT"
-      : "integer PRIMARY KEY AUTOINCREMENT";
+  const autoId = autoIdColumn();
   const activeType = databaseType === "postgres" ? "boolean" : "integer";
   const activeDefault = databaseType === "postgres" ? "true" : "1";
   await run(
@@ -940,6 +942,39 @@ async function ensureTrainerTables() {
   trainerTablesReady = true;
 }
 
+let userFeedbackTableReady = false;
+
+async function ensureUserFeedbackTable() {
+  if (userFeedbackTableReady) return;
+  await run(
+    `CREATE TABLE IF NOT EXISTS user_feedback (
+      id ${autoIdColumn()},
+      user_id integer NOT NULL,
+      category varchar(32) NOT NULL DEFAULT 'general',
+      message text NOT NULL,
+      status varchar(24) NOT NULL DEFAULT 'open',
+      admin_note text,
+      created_at timestamp,
+      updated_at timestamp
+    )`,
+  );
+  userFeedbackTableReady = true;
+}
+
+function normalizeUserFeedback(row: Row | null): Row | null {
+  if (!row) return null;
+  return {
+    id: Number(row.id),
+    userId: Number(aliasValue(row, "user_id")),
+    category: row.category ?? "general",
+    message: row.message ?? "",
+    status: row.status ?? "open",
+    adminNote: row.admin_note ?? "",
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 function normalizeTrainerApplication(row: Row | null): Row | null {
   if (!row) return null;
   return {
@@ -966,6 +1001,93 @@ function trainerCode() {
     code += alphabet[Math.floor(Math.random() * alphabet.length)];
   }
   return code;
+}
+
+export type UserFeedbackStatus = "open" | "reviewing" | "resolved" | "closed";
+
+export async function addUserFeedback(
+  userId: number,
+  input: { category: string; message: string },
+): Promise<number> {
+  await ensureUserFeedbackTable();
+  const now = new Date().toISOString();
+  const result = await run(
+    `INSERT INTO user_feedback (user_id, category, message, status, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    userId,
+    input.category,
+    input.message.trim(),
+    "open",
+    now,
+    now,
+  );
+  return getInsertId(result);
+}
+
+export async function getUserFeedback(userId: number, limit = 20): Promise<Row[]> {
+  await ensureUserFeedbackTable();
+  const rows = await all(
+    `SELECT *
+     FROM user_feedback
+     WHERE user_id = ?
+     ORDER BY created_at DESC, id DESC
+     LIMIT ?`,
+    userId,
+    limit,
+  );
+  return rows.map((row) => normalizeUserFeedback(row) as Row);
+}
+
+export async function listUserFeedback(status?: UserFeedbackStatus, limit = 100): Promise<Row[]> {
+  await ensureUserFeedbackTable();
+  await ensureUserProfileImageColumn();
+  const params: any[] = [];
+  const where = status ? "WHERE f.status = ?" : "";
+  if (status) params.push(status);
+  params.push(limit);
+  const rows = await all(
+    `SELECT
+       f.*,
+       u.id AS user_row_id,
+       u.name AS user_name,
+       u.email AS user_email,
+       u.profileImageUrl AS user_profile_image_url
+     FROM user_feedback f
+     LEFT JOIN users u ON u.id = f.user_id
+     ${where}
+     ORDER BY f.created_at DESC, f.id DESC
+     LIMIT ?`,
+    ...params,
+  );
+  return rows.map((row) => ({
+    ...normalizeUserFeedback(row),
+    user: normalizeUser({
+      id: Number(row.user_row_id ?? aliasValue(row, "user_id")),
+      name: row.user_name,
+      email: row.user_email,
+      profileImageUrl: row.user_profile_image_url,
+      role: "user",
+    }),
+  }));
+}
+
+export async function updateUserFeedbackStatus(
+  feedbackId: number,
+  input: { status: UserFeedbackStatus; adminNote?: string },
+): Promise<Row | null> {
+  await ensureUserFeedbackTable();
+  const now = new Date().toISOString();
+  await run(
+    `UPDATE user_feedback
+     SET status = ?, admin_note = ?, updated_at = ?
+     WHERE id = ?`,
+    input.status,
+    input.adminNote?.trim() || null,
+    now,
+    feedbackId,
+  );
+  const row = await get("SELECT * FROM user_feedback WHERE id = ? LIMIT 1", feedbackId);
+  return normalizeUserFeedback(row);
 }
 
 export async function getUserAppRole(userId: number): Promise<"user" | "trainer"> {

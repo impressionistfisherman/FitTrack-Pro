@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ShieldCheck, UserCheck, Users, UserX } from "lucide-react";
+import { Megaphone, ShieldCheck, UserCheck, Users, UserX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -14,6 +14,21 @@ const statusLabels: Record<string, string> = {
   pending: "대기",
   approved: "승인",
   rejected: "거절",
+};
+
+const feedbackCategoryLabels: Record<string, string> = {
+  bug: "오류 제보",
+  idea: "기능 제안",
+  ux: "사용성 의견",
+  data: "운동 데이터",
+  other: "기타",
+};
+
+const feedbackStatusLabels: Record<string, string> = {
+  open: "접수",
+  reviewing: "검토 중",
+  resolved: "완료",
+  closed: "보류",
 };
 
 function useHashView() {
@@ -39,13 +54,20 @@ export default function Admin() {
   const hashView = useHashView();
   const utils = trpc.useUtils();
   const [status, setStatus] = useState<"pending" | "approved" | "rejected" | "all">("pending");
+  const [feedbackStatus, setFeedbackStatus] = useState<"open" | "reviewing" | "resolved" | "closed" | "all">("open");
   const [reviewNotes, setReviewNotes] = useState<Record<number, string>>({});
+  const [feedbackNotes, setFeedbackNotes] = useState<Record<number, string>>({});
+  const [feedbackStatuses, setFeedbackStatuses] = useState<Record<number, "open" | "reviewing" | "resolved" | "closed">>({});
   const { data: applications, isLoading } = trpc.admin.trainerApplications.useQuery(
     { status },
     { enabled: user?.role === "admin" }
   );
   const { data: approvedTrainers, isLoading: approvedTrainersLoading } = trpc.admin.approvedTrainers.useQuery(
     undefined,
+    { enabled: user?.role === "admin" }
+  );
+  const { data: userFeedback, isLoading: userFeedbackLoading } = trpc.admin.userFeedback.useQuery(
+    { status: feedbackStatus },
     { enabled: user?.role === "admin" }
   );
   const reviewMutation = trpc.admin.reviewTrainerApplication.useMutation({
@@ -56,7 +78,20 @@ export default function Admin() {
     },
     onError: (error) => toast.error(error.message || "처리에 실패했습니다."),
   });
-  const view = hashView === "#applications" ? "applications" : hashView === "#trainers" ? "trainers" : "dashboard";
+  const feedbackMutation = trpc.admin.updateUserFeedback.useMutation({
+    onSuccess: () => {
+      toast.success("의견 상태를 저장했습니다.");
+      utils.admin.userFeedback.invalidate();
+    },
+    onError: (error) => toast.error(error.message || "의견 상태 저장에 실패했습니다."),
+  });
+  const view = hashView === "#applications"
+    ? "applications"
+    : hashView === "#trainers"
+      ? "trainers"
+      : hashView === "#feedback"
+        ? "feedback"
+        : "dashboard";
   const pageMeta = {
     dashboard: {
       title: "관리자",
@@ -69,6 +104,10 @@ export default function Admin() {
     trainers: {
       title: "승인 트레이너",
       description: "승인된 트레이너와 발급된 코드를 확인하세요",
+    },
+    feedback: {
+      title: "사용자 의견",
+      description: "사용자가 남긴 오류 제보와 개선 의견을 확인하세요",
     },
   }[view];
 
@@ -105,7 +144,7 @@ export default function Admin() {
       </div>
 
       {view === "dashboard" ? (
-      <div className="mb-4 grid gap-3 sm:grid-cols-3">
+      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="border-border bg-card">
           <CardContent className="p-4">
             <div className="text-xs text-muted-foreground">현재 필터 신청</div>
@@ -124,10 +163,16 @@ export default function Admin() {
             <div className="mt-1 text-sm font-semibold text-foreground">신청 검토 후 코드 발급</div>
           </CardContent>
         </Card>
+        <Card className="border-border bg-card">
+          <CardContent className="p-4">
+            <div className="text-xs text-muted-foreground">접수된 사용자 의견</div>
+            <div className="mt-1 text-2xl font-bold text-primary">{userFeedback?.length ?? 0}</div>
+          </CardContent>
+        </Card>
       </div>
       ) : null}
 
-      {view !== "trainers" ? (
+      {view !== "trainers" && view !== "feedback" ? (
       <Card id="applications" className="scroll-mt-24 border-border bg-card">
         <CardContent className="p-5">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -251,7 +296,7 @@ export default function Admin() {
       </Card>
       ) : null}
 
-      {view !== "applications" ? (
+      {view !== "applications" && view !== "feedback" ? (
       <Card id="trainers" className="mt-4 scroll-mt-24 border-border bg-card">
         <CardContent className="p-5">
           <div className="mb-4 flex items-center gap-2">
@@ -286,6 +331,115 @@ export default function Admin() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      ) : null}
+
+      {view === "dashboard" || view === "feedback" ? (
+      <Card id="feedback" className="mt-4 scroll-mt-24 border-border bg-card">
+        <CardContent className="p-5">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <Megaphone size={17} className="text-primary" />
+              <span className="font-semibold text-foreground">사용자 의견 관리</span>
+              <Badge className="border border-border bg-accent text-muted-foreground">{userFeedback?.length ?? 0}건</Badge>
+            </div>
+            <Select value={feedbackStatus} onValueChange={(value) => setFeedbackStatus(value as any)}>
+              <SelectTrigger className="w-full border-border bg-accent text-foreground sm:w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="border-border bg-card">
+                <SelectItem value="open">접수</SelectItem>
+                <SelectItem value="reviewing">검토 중</SelectItem>
+                <SelectItem value="resolved">완료</SelectItem>
+                <SelectItem value="closed">보류</SelectItem>
+                <SelectItem value="all">전체</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {userFeedbackLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="h-32 skeleton rounded-xl" />
+              ))}
+            </div>
+          ) : !userFeedback?.length ? (
+            <div className="rounded-xl border border-dashed border-border bg-accent/20 p-8 text-center text-sm text-muted-foreground">
+              조건에 맞는 사용자 의견이 없습니다.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {userFeedback.map((item: any) => {
+                const selectedStatus = feedbackStatuses[item.id] ?? item.status;
+                const note = feedbackNotes[item.id] ?? item.adminNote ?? "";
+                return (
+                  <div key={item.id} className="rounded-xl border border-border bg-accent/25 p-4">
+                    <div className="mb-3 flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h2 className="truncate text-base font-semibold text-foreground">{item.user?.name || "사용자"}</h2>
+                          <Badge className="border border-primary/25 bg-primary/10 text-primary">
+                            {feedbackCategoryLabels[item.category] ?? "기타"}
+                          </Badge>
+                          <Badge className="border border-border bg-background text-muted-foreground">
+                            {feedbackStatusLabels[item.status] ?? item.status}
+                          </Badge>
+                        </div>
+                        <p className="mt-1 truncate text-xs text-muted-foreground">{item.user?.email || "이메일 없음"}</p>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(item.createdAt).toLocaleString("ko-KR")}
+                      </div>
+                    </div>
+                    <p className="whitespace-pre-wrap rounded-lg bg-background/40 p-3 text-sm leading-relaxed text-foreground">
+                      {item.message}
+                    </p>
+                    <div className="mt-3 grid gap-3 lg:grid-cols-[180px_minmax(0,1fr)_auto] lg:items-end">
+                      <div>
+                        <label className="mb-2 block text-xs text-muted-foreground">처리 상태</label>
+                        <Select
+                          value={selectedStatus}
+                          onValueChange={(value) => setFeedbackStatuses((items) => ({ ...items, [item.id]: value as any }))}
+                        >
+                          <SelectTrigger className="border-border bg-background text-foreground">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="border-border bg-card">
+                            <SelectItem value="open">접수</SelectItem>
+                            <SelectItem value="reviewing">검토 중</SelectItem>
+                            <SelectItem value="resolved">완료</SelectItem>
+                            <SelectItem value="closed">보류</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-xs text-muted-foreground">관리자 메모</label>
+                        <Textarea
+                          value={note}
+                          onChange={(event) => setFeedbackNotes((items) => ({ ...items, [item.id]: event.target.value }))}
+                          placeholder="처리 메모를 남기면 사용자 의견 내역에 표시됩니다."
+                          className="min-h-12 resize-none border-border bg-background text-foreground"
+                          maxLength={1000}
+                        />
+                      </div>
+                      <Button
+                        className="bg-primary text-primary-foreground"
+                        disabled={feedbackMutation.isPending}
+                        onClick={() => feedbackMutation.mutate({
+                          feedbackId: item.id,
+                          status: selectedStatus,
+                          adminNote: note,
+                        })}
+                      >
+                        저장
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>

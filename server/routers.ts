@@ -6,6 +6,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   addBodyWeight,
+  addUserFeedback,
   addCoachingComment,
   addCoachingTask,
   addExerciseToRoutine,
@@ -21,6 +22,7 @@ import {
   deleteWorkoutSession,
   deleteWorkoutLog,
   getBodyWeights,
+  getUserFeedback,
   getCoachingCommentsForClient,
   getCoachingCommentsForPair,
   getCoachingNotificationSummary,
@@ -65,6 +67,7 @@ import {
   isFavorite,
   listTrainerApplications,
   listApprovedTrainers,
+  listUserFeedback,
   linkTrainerByCode,
   markCoachingRead,
   reviewTrainerApplication,
@@ -82,6 +85,7 @@ import {
   upsertTrainerClientNote,
   updateUserProfileImage,
   updateUserProfileName,
+  updateUserFeedbackStatus,
   upsertUserGoal,
 } from "./db";
 
@@ -129,6 +133,9 @@ const goalLabels: Record<string, string> = {
   flexibility: "유연성",
   general: "일반 건강",
 };
+
+const userFeedbackCategorySchema = z.enum(["bug", "idea", "ux", "data", "other"]);
+const userFeedbackStatusSchema = z.enum(["open", "reviewing", "resolved", "closed"]);
 
 const customSplitPresetSchema = z.object({
   id: z.string().min(1).max(80),
@@ -1687,6 +1694,21 @@ export const appRouter = router({
       }),
   }),
 
+  feedback: router({
+    create: protectedProcedure
+      .input(z.object({
+        category: userFeedbackCategorySchema.default("other"),
+        message: z.string().trim().min(5, "의견을 5자 이상 입력해주세요.").max(2000, "의견은 2000자 이하로 입력해주세요."),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const id = await addUserFeedback(ctx.user.id, input);
+        return { success: true, id };
+      }),
+    mine: protectedProcedure.query(async ({ ctx }) => {
+      return await getUserFeedback(ctx.user.id, 30);
+    }),
+  }),
+
   admin: router({
     trainerApplications: adminProcedure
       .input(z.object({
@@ -1713,6 +1735,27 @@ export const appRouter = router({
           input.reviewNote ?? "",
         );
         return { success: true, application };
+      }),
+    userFeedback: adminProcedure
+      .input(z.object({
+        status: z.union([userFeedbackStatusSchema, z.literal("all")]).default("open"),
+      }).optional())
+      .query(async ({ input }) => {
+        const status = input?.status && input.status !== "all" ? input.status : undefined;
+        return await listUserFeedback(status, 100);
+      }),
+    updateUserFeedback: adminProcedure
+      .input(z.object({
+        feedbackId: z.number(),
+        status: userFeedbackStatusSchema,
+        adminNote: z.string().max(1000).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const feedback = await updateUserFeedbackStatus(input.feedbackId, {
+          status: input.status,
+          adminNote: input.adminNote,
+        });
+        return { success: true, feedback };
       }),
   }),
 

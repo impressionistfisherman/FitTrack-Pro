@@ -242,6 +242,19 @@ export type CoachingComment = typeof coachingComments.$inferSelect;
 export type CoachingTask = typeof coachingTasks.$inferSelect;
 export type TrainerClientNote = typeof trainerClientNotes.$inferSelect;
 
+export const userFeedback = mysqlTable("user_feedback", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("user_id").notNull(),
+  category: varchar("category", { length: 32 }).default("general").notNull(),
+  message: text("message").notNull(),
+  status: varchar("status", { length: 24 }).default("open").notNull(),
+  adminNote: text("admin_note"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserFeedback = typeof userFeedback.$inferSelect;
+
 // 운동별 목표 테이블
 export const exerciseGoals = mysqlTable("exercise_goals", {
   id: int("id").autoincrement().primaryKey(),

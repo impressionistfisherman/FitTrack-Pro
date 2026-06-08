@@ -16,6 +16,7 @@ const WorkoutSession = lazy(() => import("./pages/WorkoutSession"));
 const History = lazy(() => import("./pages/History"));
 const AICoach = lazy(() => import("./pages/AICoach"));
 const Coaching = lazy(() => import("@/pages/Coaching"));
+const Feedback = lazy(() => import("@/pages/Feedback"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const BodyWeight = lazy(() => import("@/pages/BodyWeight"));
 const Admin = lazy(() => import("@/pages/Admin"));
@@ -40,6 +41,7 @@ function Routes() {
         <Route path="/history" component={History} />
         <Route path="/ai-coach" component={AICoach} />
         <Route path="/coaching" component={Coaching} />
+        <Route path="/feedback" component={Feedback} />
         <Route path="/profile" component={Profile} />
         <Route path="/body-weight" component={BodyWeight} />
         <Route path="/admin" component={Admin} />
