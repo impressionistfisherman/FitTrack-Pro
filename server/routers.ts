@@ -86,6 +86,7 @@ import {
   updateUserProfileImage,
   updateUserProfileName,
   updateUserFeedbackStatus,
+  updateWorkoutSession,
   upsertUserGoal,
 } from "./db";
 
@@ -170,6 +171,19 @@ const trainerWorkoutLogSchema = z.object({
   durationSeconds: z.number().min(0).max(24 * 60 * 60).optional(),
   distanceM: z.number().min(0).max(1_000_000).optional(),
   notes: z.string().max(200).optional(),
+});
+
+const workoutLogInputSchema = z.object({
+  exerciseId: z.number(),
+  setNumber: z.number().int().min(1).max(200),
+  reps: z.number().min(0).max(1000).optional(),
+  weightKg: z.number().min(0).max(1000).optional(),
+  durationSeconds: z.number().min(0).max(24 * 60 * 60).optional(),
+  distanceM: z.number().min(0).max(1_000_000).optional(),
+  isWarmup: z.boolean().optional(),
+  rpe: z.number().min(1).max(10).optional(),
+  memo: z.string().max(200).optional(),
+  notes: z.string().max(500).optional(),
 });
 
 function parseCustomSplitPresets(value: string | null): CustomSplitPreset[] {
@@ -2134,26 +2148,27 @@ ${exerciseSummary.slice(0, 80).join("\n")}
       }),
 
     addLog: protectedProcedure
-      .input(
-        z.object({
-          sessionId: z.number(),
-          exerciseId: z.number(),
-          setNumber: z.number(),
-          reps: z.number().optional(),
-          weightKg: z.number().optional(),
-          durationSeconds: z.number().optional(),
-          distanceM: z.number().optional(),
-          isWarmup: z.boolean().optional(),
-          rpe: z.number().min(1).max(10).optional(),
-          memo: z.string().max(200).optional(),
-          notes: z.string().optional(),
-        })
-      )
+      .input(workoutLogInputSchema.extend({ sessionId: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const session = await getWorkoutSessionById(input.sessionId);
         if (!session || session.userId !== ctx.user.id) throw new Error("Not found");
         const logId = await addWorkoutLog(input);
         return { logId };
+      }),
+
+    updateSession: protectedProcedure
+      .input(z.object({
+        sessionId: z.number(),
+        workoutDate: z.date().optional(),
+        durationMinutes: z.number().min(0).max(24 * 60),
+        notes: z.string().max(500).optional(),
+        logs: z.array(workoutLogInputSchema).min(1).max(500),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const session = await getWorkoutSessionById(input.sessionId);
+        if (!session || session.userId !== ctx.user.id) throw new Error("Not found");
+        await updateWorkoutSession(input.sessionId, input);
+        return { success: true };
       }),
 
     deleteLog: protectedProcedure

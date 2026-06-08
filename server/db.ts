@@ -5,6 +5,7 @@ import mysql from "mysql2/promise";
 import { Pool as PgPool } from "pg";
 import bulkExercises from "./data/bulk-exercises.json";
 import { ENV } from "./_core/env";
+import { expandExerciseSearchTerms } from "../shared/exerciseSearch";
 
 const databaseUrl = process.env.DATABASE_URL?.trim();
 const sqlitePath = process.env.SQLITE_DB_PATH
@@ -649,8 +650,13 @@ export async function getExercises(filters?: {
     params.push(filters.category);
   }
   if (filters?.search) {
-    where.push("(name LIKE ? OR nameKo LIKE ?)");
-    params.push(`%${filters.search}%`, `%${filters.search}%`);
+    const terms = expandExerciseSearchTerms(filters.search).slice(0, 12);
+    if (terms.length) {
+      where.push(`(${terms.map(() => "(name LIKE ? OR nameKo LIKE ?)").join(" OR ")})`);
+      for (const term of terms) {
+        params.push(`%${term}%`, `%${term}%`);
+      }
+    }
   }
 
   const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
@@ -2246,6 +2252,49 @@ export async function completeWorkoutSession(sessionId: number, durationMinutes:
     new Date().toISOString(),
     durationMinutes,
     notes ?? null,
+    totalVolume,
+    sessionId,
+  );
+}
+
+export async function updateWorkoutSession(sessionId: number, input: {
+  workoutDate?: Date;
+  durationMinutes: number;
+  notes?: string;
+  logs: Row[];
+}): Promise<void> {
+  const workoutDate = toDbDate(input.workoutDate);
+  await run("DELETE FROM workout_logs WHERE sessionId = ?", sessionId);
+  for (const log of input.logs) {
+    await run(
+      `INSERT INTO workout_logs
+       (sessionId, exerciseId, setNumber, reps, weightKg, durationSeconds, distanceM, isWarmup, rpe, memo, notes, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sessionId,
+      log.exerciseId,
+      log.setNumber,
+      log.reps ?? null,
+      log.weightKg ?? null,
+      log.durationSeconds ?? null,
+      log.distanceM ?? null,
+      Boolean(log.isWarmup),
+      log.rpe ?? null,
+      log.memo ?? null,
+      log.notes ?? null,
+      new Date().toISOString(),
+    );
+  }
+  const totalVolume = await recalculateWorkoutSessionVolume(sessionId);
+  await run(
+    `UPDATE workout_sessions
+     SET workoutDate = COALESCE(?, workoutDate), startedAt = COALESCE(?, startedAt),
+         completedAt = ?, durationMinutes = ?, notes = ?, totalVolume = ?
+     WHERE id = ?`,
+    workoutDate,
+    workoutDate,
+    new Date().toISOString(),
+    input.durationMinutes,
+    input.notes ?? null,
     totalVolume,
     sessionId,
   );

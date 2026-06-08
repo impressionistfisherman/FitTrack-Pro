@@ -8,8 +8,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { matchesExerciseSearchText } from "@shared/exerciseSearch";
 import { CalendarDays, ChevronDown, Dumbbell, ImagePlus, Loader2, Minus, Plus, Search, Sparkles, Trash2 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type SetEntry = {
@@ -182,10 +183,14 @@ export default function FreeWorkoutDialog({
   open,
   onOpenChange,
   onComplete,
+  initialDate,
+  editSession,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onComplete?: () => void;
+  initialDate?: string;
+  editSession?: any | null;
 }) {
   const [workoutDate, setWorkoutDate] = useState(todayInputValue());
   const [workoutDurationMinutes, setWorkoutDurationMinutes] = useState("");
@@ -208,6 +213,7 @@ export default function FreeWorkoutDialog({
   const startSession = trpc.workout.startSession.useMutation();
   const addLog = trpc.workout.addLog.useMutation();
   const completeSession = trpc.workout.completeSession.useMutation();
+  const updateSession = trpc.workout.updateSession.useMutation();
   const parseWorkoutCapture = trpc.ai.parseWorkoutCapture.useMutation();
   const exerciseSelectionFeedback = trpc.ai.exerciseSelectionFeedback.useMutation({
     onSuccess: (data) => setExerciseFeedback(data as ExerciseAiFeedback),
@@ -216,8 +222,11 @@ export default function FreeWorkoutDialog({
 
   const filteredExercises = useMemo(() => {
     const selectedIds = new Set(selected.map((item) => item.exercise.id));
-    return (exercises ?? []).filter((exercise) => !selectedIds.has(exercise.id)).slice(0, 20);
-  }, [exercises, selected]);
+    return (exercises ?? [])
+      .filter((exercise) => !selectedIds.has(exercise.id))
+      .filter((exercise) => matchesExerciseSearchText(search, exercise.nameKo, exercise.name))
+      .slice(0, 20);
+  }, [exercises, search, selected]);
 
   const closeExerciseSearchIfLeaving = (nextFocus: EventTarget | null) => {
     if (nextFocus instanceof Node && exerciseSearchRef.current?.contains(nextFocus)) return;
@@ -302,13 +311,106 @@ export default function FreeWorkoutDialog({
   };
 
   const reset = () => {
-    setWorkoutDate(todayInputValue());
+    setWorkoutDate(initialDate || todayInputValue());
     setWorkoutDurationMinutes("");
     setSearch("");
     setExerciseSearchOpen(false);
     setSelected([]);
     setCaptureMessage("");
     setExerciseFeedback(null);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    if (!editSession) {
+      reset();
+      return;
+    }
+
+    setWorkoutDate(toDateInputValue(new Date(editSession.workoutDate ?? editSession.startedAt ?? editSession.completedAt)));
+    setWorkoutDurationMinutes(editSession.durationMinutes ? String(editSession.durationMinutes) : "");
+    setSearch("");
+    setExerciseSearchOpen(false);
+    setCaptureMessage("");
+    setExerciseFeedback(null);
+    const groups = new Map<number, SelectedExercise>();
+    for (const item of editSession.logs ?? []) {
+      const exercise = item.exercise;
+      const log = item.log;
+      const exerciseId = Number(log.exerciseId ?? exercise?.id);
+      if (!exerciseId || !exercise) continue;
+      const mode = getExerciseInputMode(exercise);
+      if (!groups.has(exerciseId)) {
+        groups.set(exerciseId, {
+          exercise,
+          sets: mode === "strength" ? [] : makeSets(1),
+          durationMinutes: "",
+          distanceKm: "",
+          intensity: "moderate",
+        });
+      }
+      const current = groups.get(exerciseId)!;
+      if (mode === "strength") {
+        current.sets.push({
+          setNumber: Number(log.setNumber) || current.sets.length + 1,
+          weightKg: log.weightKg != null ? String(log.weightKg) : "",
+          reps: log.reps != null ? String(log.reps) : "",
+        });
+      } else {
+        current.durationMinutes = log.durationSeconds ? String(Math.round(Number(log.durationSeconds) / 60)) : "";
+        current.distanceKm = log.distanceM ? String(Number(log.distanceM) / 1000) : "";
+        current.intensity = String(log.notes ?? "").includes("높음")
+          ? "high"
+          : String(log.notes ?? "").includes("낮음")
+            ? "low"
+            : "moderate";
+      }
+    }
+    setSelected(Array.from(groups.values()).map((item) => ({
+      ...item,
+      sets: item.sets.length ? item.sets.sort((a, b) => a.setNumber - b.setNumber) : makeSets(1),
+    })));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editSession?.id, initialDate]);
+
+  const buildWorkoutLogs = () => {
+    const logs: Array<{
+      exerciseId: number;
+      setNumber: number;
+      reps?: number;
+      weightKg?: number;
+      durationSeconds?: number;
+      distanceM?: number;
+      notes?: string;
+    }> = [];
+
+    for (const item of selected) {
+      const mode = getExerciseInputMode(item.exercise);
+      if (mode === "strength") {
+        for (const set of item.sets) {
+          if (!set.reps.trim() && !set.weightKg.trim()) continue;
+          logs.push({
+            exerciseId: item.exercise.id,
+            setNumber: set.setNumber,
+            reps: set.reps.trim() ? Number(set.reps) : undefined,
+            weightKg: set.weightKg.trim() ? Number(set.weightKg) : undefined,
+          });
+        }
+        continue;
+      }
+
+      if (Number(item.durationMinutes) > 0) {
+        logs.push({
+          exerciseId: item.exercise.id,
+          setNumber: 1,
+          durationSeconds: Math.round(Number(item.durationMinutes) * 60),
+          distanceM: item.distanceKm.trim() ? Number(item.distanceKm) * 1000 : undefined,
+          notes: `강도: ${intensityLabels[item.intensity]}`,
+        });
+      }
+    }
+
+    return logs;
   };
 
   const handleCaptureUpload = async (file?: File) => {
@@ -410,43 +512,40 @@ export default function FreeWorkoutDialog({
 
     try {
       const date = new Date(`${workoutDate}T12:00:00`);
+      const logs = buildWorkoutLogs();
+      const durationMinutes = Math.max(0, enteredWorkoutDuration || selected.reduce((sum, item) => sum + estimateExerciseDuration(item), 0));
+      const notes = `예상 소모 칼로리: ${totalCalories}kcal`;
+      if (editSession?.id) {
+        await updateSession.mutateAsync({
+          sessionId: editSession.id,
+          workoutDate: date,
+          durationMinutes,
+          notes,
+          logs,
+        });
+        toast.success("운동 기록을 수정했습니다.");
+        onComplete?.();
+        reset();
+        onOpenChange(false);
+        return;
+      }
+
       const session = await startSession.mutateAsync({
         name: "자유 운동 세션",
         workoutDate: date,
       });
 
-      for (const item of selected) {
-        const mode = getExerciseInputMode(item.exercise);
-        if (mode === "strength") {
-          for (const set of item.sets) {
-            if (!set.reps.trim() && !set.weightKg.trim()) continue;
-            await addLog.mutateAsync({
-              sessionId: session.sessionId,
-              exerciseId: item.exercise.id,
-              setNumber: set.setNumber,
-              reps: set.reps.trim() ? Number(set.reps) : undefined,
-              weightKg: set.weightKg.trim() ? Number(set.weightKg) : undefined,
-            });
-          }
-          continue;
-        }
-
-        if (Number(item.durationMinutes) > 0) {
-          await addLog.mutateAsync({
-            sessionId: session.sessionId,
-            exerciseId: item.exercise.id,
-            setNumber: 1,
-            durationSeconds: Math.round(Number(item.durationMinutes) * 60),
-            distanceM: item.distanceKm.trim() ? Number(item.distanceKm) * 1000 : undefined,
-            notes: `강도: ${intensityLabels[item.intensity]}`,
-          });
-        }
+      for (const log of logs) {
+        await addLog.mutateAsync({
+          sessionId: session.sessionId,
+          ...log,
+        });
       }
 
       await completeSession.mutateAsync({
         sessionId: session.sessionId,
-        durationMinutes: Math.max(0, enteredWorkoutDuration || selected.reduce((sum, item) => sum + estimateExerciseDuration(item), 0)),
-        notes: `예상 소모 칼로리: ${totalCalories}kcal`,
+        durationMinutes,
+        notes,
       });
 
       toast.success("운동 기록을 저장했습니다.");
@@ -459,7 +558,7 @@ export default function FreeWorkoutDialog({
     }
   };
 
-  const isSaving = startSession.isPending || addLog.isPending || completeSession.isPending;
+  const isSaving = startSession.isPending || addLog.isPending || completeSession.isPending || updateSession.isPending;
   const isParsingCapture = parseWorkoutCapture.isPending;
   const bodyWeightKg = weights?.[0]?.weightKg ?? 70;
   const enteredWorkoutDuration = Math.max(0, Number(workoutDurationMinutes) || 0);
@@ -498,7 +597,7 @@ export default function FreeWorkoutDialog({
         selected.length > 0 ? "sm:max-w-[min(100vw-2rem,54rem)]" : "sm:max-w-[26rem]"
       )}>
         <DialogHeader className="shrink-0 border-b border-border px-5 py-4">
-          <DialogTitle className="text-foreground">운동 기록 추가</DialogTitle>
+          <DialogTitle className="text-foreground">{editSession ? "운동 기록 수정" : "운동 기록 추가"}</DialogTitle>
         </DialogHeader>
 
         <div className={cn(
@@ -860,7 +959,7 @@ export default function FreeWorkoutDialog({
               취소
             </Button>
             <Button onClick={handleComplete} disabled={isSaving || isParsingCapture || !canSave} className="h-10 min-w-0">
-              {isSaving ? "저장 중..." : "운동 기록 저장"}
+              {isSaving ? "저장 중..." : editSession ? "수정 저장" : "운동 기록 저장"}
             </Button>
           </div>
         </div>

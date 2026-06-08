@@ -4,8 +4,9 @@ import { trpc } from "@/lib/trpc";
 import BodyWeightTracker from "@/components/BodyWeightTracker";
 import FreeWorkoutDialog from "@/components/FreeWorkoutDialog";
 import { cn } from "@/lib/utils";
-import { Activity, Calendar, ChevronDown, ChevronLeft, ChevronRight, Clock, Dumbbell, LogIn, TrendingUp, Plus, Trash2 } from "lucide-react";
+import { Activity, Calendar, ChevronDown, ChevronLeft, ChevronRight, Clock, Dumbbell, LogIn, TrendingUp, Plus, Trash2, Pencil } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import { matchesExerciseSearchText } from "@shared/exerciseSearch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -200,7 +201,15 @@ function ExerciseProgressItem({ exercise, maxWeight, maxReps, goalData }: any) {
   );
 }
 
-function SessionCard({ session, onDelete }: { session: any; onDelete: (sessionId: number) => void }) {
+function SessionCard({
+  session,
+  onDelete,
+  onEdit,
+}: {
+  session: any;
+  onDelete: (sessionId: number) => void;
+  onEdit: (session: any) => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const logs = session.logs ?? [];
   const exerciseGroups = useMemo(() => {
@@ -248,6 +257,18 @@ function SessionCard({ session, onDelete }: { session: any; onDelete: (sessionId
               <Clock size={9} className="mr-1" />
               {session.durationMinutes}분
             </Badge>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+              onClick={(event) => {
+                event.stopPropagation();
+                onEdit(session);
+              }}
+              title="운동 기록 수정"
+            >
+              <Pencil size={14} />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -340,6 +361,7 @@ export default function History() {
   const [exerciseSearchOpen, setExerciseSearchOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(toDateKey(new Date()));
   const [freeWorkoutOpen, setFreeWorkoutOpen] = useState(false);
+  const [editingSession, setEditingSession] = useState<any | null>(null);
   const exerciseSearchBoxRef = useRef<HTMLDivElement | null>(null);
 
   const { data: sessions } = trpc.history.calendar.useQuery({ year, month }, { enabled: isAuthenticated });
@@ -369,6 +391,11 @@ export default function History() {
     utils.history.recentWorkouts.invalidate();
     utils.history.calendar.invalidate();
     utils.weeklyGoals.get.invalidate();
+  };
+
+  const openEditWorkout = (session: any) => {
+    setEditingSession(session);
+    setFreeWorkoutOpen(true);
   };
 
   const prevMonth = () => {
@@ -401,8 +428,7 @@ export default function History() {
     const source = exercises ?? [];
     const filtered = query
       ? source.filter((exercise: any) => {
-          const haystack = `${exercise.nameKo ?? ""} ${exercise.name ?? ""}`.toLowerCase();
-          return haystack.includes(query);
+          return matchesExerciseSearchText(query, exercise.nameKo, exercise.name);
         })
       : source;
     return filtered.slice(0, 12);
@@ -477,8 +503,13 @@ export default function History() {
     <div className="page-shell animate-fade-in">
       <FreeWorkoutDialog
         open={freeWorkoutOpen}
-        onOpenChange={setFreeWorkoutOpen}
+        onOpenChange={(nextOpen) => {
+          setFreeWorkoutOpen(nextOpen);
+          if (!nextOpen) setEditingSession(null);
+        }}
         onComplete={handleFreeWorkoutComplete}
+        initialDate={selectedDate}
+        editSession={editingSession}
       />
 
       <div className="page-header">
@@ -488,7 +519,10 @@ export default function History() {
             <p className="page-description">달력과 차트로 운동 진행 상황을 확인하세요</p>
           </div>
           <Button
-            onClick={() => setFreeWorkoutOpen(true)}
+            onClick={() => {
+              setEditingSession(null);
+              setFreeWorkoutOpen(true);
+            }}
             className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
           >
             <Plus size={16} />
@@ -539,7 +573,7 @@ export default function History() {
                 {selectedDateSessions.length > 0 ? (
                   <div className="space-y-2">
                     {selectedDateSessions.map((session: any) => (
-                      <SessionCard key={session.id} session={session} onDelete={handleDeleteSession} />
+                      <SessionCard key={session.id} session={session} onDelete={handleDeleteSession} onEdit={openEditWorkout} />
                     ))}
                   </div>
                 ) : (
@@ -667,7 +701,7 @@ export default function History() {
             <div className="space-y-3">
               {recentWorkouts && recentWorkouts.length > 0 ? (
                 recentWorkouts.slice(0, 5).map((session: any) => (
-                  <SessionCard key={session.id} session={session} onDelete={handleDeleteSession} />
+                  <SessionCard key={session.id} session={session} onDelete={handleDeleteSession} onEdit={openEditWorkout} />
                 ))
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
