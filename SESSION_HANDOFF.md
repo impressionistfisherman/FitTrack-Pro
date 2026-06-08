@@ -6,7 +6,7 @@
 
 - 작업 디렉터리: `C:\Users\Hyeonil-Choi\Desktop\fittrack-pro`
 - 기본 브랜치: `master`
-- 최근 작업 커밋: `937b5e0 Split trainer client detail views`
+- 최근 작업 커밋: `ec081f4 Update session handoff after trainer detail split`
 - 검증 규칙은 `AGENTS.md`에 정리되어 있음.
 - `pnpm`은 PATH에 없을 수 있으므로 Windows에서는 `.\node_modules\.bin\pnpm.CMD`로 실행.
 
@@ -20,14 +20,18 @@
 
 수정:
 
+- `client/src/App.tsx`
+  - `/trainer/clients/:id/:view` 라우트 추가.
 - `client/src/components/AppLayout.tsx`
   - 트레이너 회원 상세 사이드바에 `운동 기록` 기본 메뉴 추가.
-  - 기존 hash 메뉴와 중복되지 않도록 고유 `id` 사용.
+  - `#timeline` 같은 hash anchor 대신 `/trainer/clients/:id/timeline`, `/tasks`, `/notes`, `/report`, `/ai-helper`, `/pt-sessions` 실제 하위 경로로 이동하도록 변경.
+  - 기본 `운동 기록` 메뉴가 하위 화면에서도 계속 활성화되지 않도록 상세 기본 경로는 exact match 처리.
 - `client/src/pages/TrainerClientDetail.tsx`
-  - URL hash를 `TrainerClientView` 상태로 해석하도록 추가.
-  - 기본 경로는 `운동 기록`, `#timeline`, `#tasks`, `#notes`, `#report`, `#ai-helper`, `#pt-sessions`는 각각 별도 화면으로 렌더링.
+  - URL 하위 경로를 `TrainerClientView`로 해석하도록 변경.
+  - 기본 경로는 `운동 기록`, `/timeline`, `/tasks`, `/notes`, `/report`, `/ai-helper`, `/pt-sessions`는 각각 별도 화면으로 렌더링.
   - 각 메뉴 선택 시 페이지 제목/설명이 해당 화면에 맞게 바뀜.
-  - 기존 PT 기록 추가 폼과 저장/피드백/과제/메모 기능은 유지.
+  - `PT 기록 추가` 버튼과 PT 입력 폼은 `운동 기록`, `PT 기록` 화면에서만 표시.
+  - `비공개 메모`, `회원 과제`, `진행 리포트`, `AI 코칭 보조` 화면에서는 해당 화면 본문만 표시.
 
 검증:
 
@@ -37,16 +41,18 @@
 - `git diff --check` 통과
 - 로컬 서버 응답 확인:
   - `http://localhost:3001/trainer/clients/1` 200 응답
-  - `http://localhost:3000/trainer/clients/1` 200 응답
+  - `http://localhost:3001/trainer/clients/1/notes` 200 응답
+  - `http://localhost:3001/trainer/clients/1/tasks` 200 응답
+  - `http://localhost:3001/trainer/clients/1/pt-sessions` 200 응답
 - 화면 자동 확인 제한:
   - 인앱 Browser가 `iab` 세션을 사용할 수 없다고 반환.
   - 로컬 `playwright` 패키지도 설치되어 있지 않아 브라우저 자동 QA는 미완료.
 
 커밋/푸시:
 
-- 커밋 완료: `937b5e0 Split trainer client detail views`
-- 푸시는 현재 세션에서 이어서 진행.
-- 관련 작업 파일: `client/src/components/AppLayout.tsx`, `client/src/pages/TrainerClientDetail.tsx`, `SESSION_HANDOFF.md`
+- 이전 커밋/푸시 완료: `937b5e0 Split trainer client detail views`, `ec081f4 Update session handoff after trainer detail split`
+- 현재 하위 경로 분리 보강 작업은 커밋/푸시 예정.
+- 관련 작업 파일: `client/src/App.tsx`, `client/src/components/AppLayout.tsx`, `client/src/pages/TrainerClientDetail.tsx`, `SESSION_HANDOFF.md`
 
 ### 코칭 알림 스코프 분리
 
@@ -103,6 +109,7 @@
 
 아래 파일은 의도적으로 커밋하지 않음.
 
+- `client/src/App.tsx` 이번 작업 변경
 - `client/src/components/AppLayout.tsx` 이번 작업 변경
 - `client/src/pages/TrainerClientDetail.tsx` 이번 작업 변경
 - `SESSION_HANDOFF.md` 이번 작업 기록
@@ -123,7 +130,7 @@
 ## 다음 세션에서 우선 확인할 것
 
 1. 실제 로그인된 트레이너 계정으로 `/trainer/clients/:id` 기본 운동 기록 화면 확인.
-2. 트레이너 회원 상세 사이드바에서 `운동 기록`, `코칭 타임라인`, `회원 과제`, `비공개 메모`, `진행 리포트`, `AI 코칭 보조`, `PT 기록` 클릭 시 한 화면에 하나의 메뉴만 표시되는지 확인.
+2. 트레이너 회원 상세 사이드바에서 `운동 기록`, `코칭 타임라인`, `회원 과제`, `비공개 메모`, `진행 리포트`, `AI 코칭 보조`, `PT 기록` 클릭 시 URL이 각각 실제 하위 경로로 바뀌고 한 화면에 하나의 메뉴만 표시되는지 확인.
 3. 모바일/좁은 화면에서 회원 카드, PT 기록 추가 버튼, 각 메뉴 카드가 잘리지 않는지 확인.
 4. PT 기록 추가, 과제 등록, 메모 저장, 일반/세션 피드백 저장 후 목록 갱신 확인.
 5. Vercel 배포가 최신 커밋을 반영했는지 확인.

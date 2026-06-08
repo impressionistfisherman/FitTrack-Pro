@@ -96,8 +96,10 @@ function getVisibleNavItems({
   }
 
   if (isTrainer && location.startsWith("/trainer")) {
-    const trainerClientPath = location.split("#")[0];
     if (location.startsWith("/trainer/clients/")) {
+      const trainerClientPath =
+        location.match(/^\/trainer\/clients\/[^/#?]+/)?.[0] ??
+        location.split("#")[0];
       return [
         {
           id: "trainer-home",
@@ -113,37 +115,37 @@ function getVisibleNavItems({
         },
         {
           id: "trainer-client-timeline",
-          href: `${trainerClientPath}#timeline`,
+          href: `${trainerClientPath}/timeline`,
           icon: Calendar,
           label: "코칭 타임라인",
         },
         {
           id: "trainer-client-tasks",
-          href: `${trainerClientPath}#tasks`,
+          href: `${trainerClientPath}/tasks`,
           icon: CheckSquare,
           label: "회원 과제",
         },
         {
           id: "trainer-client-notes",
-          href: `${trainerClientPath}#notes`,
+          href: `${trainerClientPath}/notes`,
           icon: MessageSquare,
           label: "비공개 메모",
         },
         {
           id: "trainer-client-report",
-          href: `${trainerClientPath}#report`,
+          href: `${trainerClientPath}/report`,
           icon: Activity,
           label: "진행 리포트",
         },
         {
           id: "trainer-client-ai-helper",
-          href: `${trainerClientPath}#ai-helper`,
+          href: `${trainerClientPath}/ai-helper`,
           icon: Bot,
           label: "AI 코칭 보조",
         },
         {
           id: "trainer-client-pt-sessions",
-          href: `${trainerClientPath}#pt-sessions`,
+          href: `${trainerClientPath}/pt-sessions`,
           icon: Dumbbell,
           label: "PT 기록",
         },
@@ -322,8 +324,11 @@ function NavItem({
   const { path: itemPath, hash: itemHash } = splitHref(href);
   const isRootItem =
     itemPath === "/" || itemPath === "/trainer" || itemPath === "/admin";
+  const isTrainerClientBaseItem = /^\/trainer\/clients\/[^/]+$/.test(itemPath);
   const isActive = itemHash
     ? currentPath === itemPath && currentHash === itemHash
+    : isTrainerClientBaseItem
+      ? currentPath === itemPath
     : isRootItem
       ? currentPath === itemPath && currentHash === ""
       : currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);

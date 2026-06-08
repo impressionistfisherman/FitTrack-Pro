@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Link, useRoute } from "wouter";
+import { Link, useLocation, useRoute } from "wouter";
 
 function clientInitial(client?: any) {
   return (client?.name || client?.email || "회원")
@@ -159,47 +159,41 @@ const viewCopy: Record<
   },
 };
 
-function readTrainerClientView(): TrainerClientView {
-  if (typeof window === "undefined") return "workouts";
-  const hash = window.location.hash.replace(/^#/, "");
+function normalizeTrainerClientView(value?: string): TrainerClientView | null {
   if (
-    hash === "timeline" ||
-    hash === "tasks" ||
-    hash === "notes" ||
-    hash === "report" ||
-    hash === "ai-helper" ||
-    hash === "pt-sessions"
+    value === "timeline" ||
+    value === "tasks" ||
+    value === "notes" ||
+    value === "report" ||
+    value === "ai-helper" ||
+    value === "pt-sessions"
   ) {
-    return hash;
+    return value;
   }
-  return "workouts";
+  return null;
 }
 
-function useTrainerClientView() {
-  const [view, setView] = useState<TrainerClientView>(() =>
-    readTrainerClientView()
-  );
-
-  useEffect(() => {
-    const updateView = () => setView(readTrainerClientView());
-    window.addEventListener("hashchange", updateView);
-    window.addEventListener("popstate", updateView);
-    window.addEventListener("fittrack:routechange", updateView);
-    return () => {
-      window.removeEventListener("hashchange", updateView);
-      window.removeEventListener("popstate", updateView);
-      window.removeEventListener("fittrack:routechange", updateView);
-    };
-  }, []);
-
-  return view;
+function readTrainerClientView(pathView?: string, location = ""): TrainerClientView {
+  const routeView = normalizeTrainerClientView(pathView);
+  if (routeView) return routeView;
+  if (typeof window === "undefined") return "workouts";
+  const hash = window.location.hash.replace(/^#/, "");
+  const hashView = normalizeTrainerClientView(hash);
+  if (hashView) return hashView;
+  const pathViewFromLocation = location.split("#")[0].split("/").filter(Boolean).at(-1);
+  const locationView = normalizeTrainerClientView(pathViewFromLocation);
+  if (locationView) return locationView;
+  return "workouts";
 }
 
 export default function TrainerClientDetail() {
   const { user } = useAuth();
-  const [, params] = useRoute("/trainer/clients/:id");
+  const [location] = useLocation();
+  const [, detailParams] = useRoute("/trainer/clients/:id/:view");
+  const [, baseParams] = useRoute("/trainer/clients/:id");
+  const params = detailParams ?? baseParams;
   const clientUserId = Number(params?.id ?? 0);
-  const activeView = useTrainerClientView();
+  const activeView = readTrainerClientView((detailParams as any)?.view, location);
   const activeViewCopy = viewCopy[activeView];
   const utils = trpc.useUtils();
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -312,6 +306,12 @@ export default function TrainerClientDetail() {
   useEffect(() => {
     setPrivateNote(data?.privateNote?.note ?? "");
   }, [data?.privateNote?.note]);
+
+  useEffect(() => {
+    if (activeView !== "workouts" && activeView !== "pt-sessions") {
+      setPtOpen(false);
+    }
+  }, [activeView]);
 
   const timeline = useMemo(() => {
     const feedback = (data?.feedback ?? []).map((item: any) => ({
@@ -551,25 +551,27 @@ export default function TrainerClientDetail() {
                   </p>
                 </div>
               </div>
-              <Button
-                className="w-full bg-primary text-primary-foreground sm:ml-auto sm:w-auto sm:shrink-0"
-                onClick={() => setPtOpen(open => !open)}
-              >
-                <Plus size={14} />
-                PT 기록 추가
-                <ChevronDown
-                  size={14}
-                  className={
-                    ptOpen
-                      ? "rotate-180 transition-transform"
-                      : "transition-transform"
-                  }
-                />
-              </Button>
+              {(activeView === "workouts" || activeView === "pt-sessions") && (
+                <Button
+                  className="w-full bg-primary text-primary-foreground sm:ml-auto sm:w-auto sm:shrink-0"
+                  onClick={() => setPtOpen(open => !open)}
+                >
+                  <Plus size={14} />
+                  PT 기록 추가
+                  <ChevronDown
+                    size={14}
+                    className={
+                      ptOpen
+                        ? "rotate-180 transition-transform"
+                        : "transition-transform"
+                    }
+                  />
+                </Button>
+              )}
             </CardContent>
           </Card>
 
-          {ptOpen && (
+          {ptOpen && (activeView === "workouts" || activeView === "pt-sessions") && (
             <Card className="border-primary/20 bg-card">
               <CardContent className="space-y-4 p-3 sm:p-4">
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

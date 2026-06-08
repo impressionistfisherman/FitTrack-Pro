@@ -46,6 +46,7 @@ function Routes() {
         <Route path="/body-weight" component={BodyWeight} />
         <Route path="/admin" component={Admin} />
         <Route path="/trainer" component={Trainer} />
+        <Route path="/trainer/clients/:id/:view" component={TrainerClientDetail} />
         <Route path="/trainer/clients/:id" component={TrainerClientDetail} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
