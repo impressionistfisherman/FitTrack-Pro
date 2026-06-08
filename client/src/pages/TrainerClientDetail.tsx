@@ -625,20 +625,26 @@ export default function TrainerClientDetail() {
                         <Button
                           type="button"
                           variant="outline"
-                          className="h-10 w-full justify-start gap-2 border-border bg-accent px-3 text-left font-normal text-foreground hover:bg-accent/80"
+                          className="w-full justify-between border-border bg-accent px-3 font-normal text-foreground hover:bg-accent/80 hover:text-foreground"
                         >
-                          <CalendarDays
+                          <span className="flex min-w-0 items-center gap-2">
+                            <CalendarDays
+                              size={15}
+                              className="shrink-0 text-muted-foreground"
+                            />
+                            <span className="truncate">
+                              {formatDateLabel(ptDate)}
+                            </span>
+                          </span>
+                          <ChevronDown
                             size={15}
                             className="shrink-0 text-muted-foreground"
                           />
-                          <span className="truncate">
-                            {formatDateLabel(ptDate)}
-                          </span>
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent
                         align="start"
-                        className="w-auto border-border bg-popover p-0"
+                        className="w-auto border-border bg-popover p-0 text-popover-foreground"
                       >
                         <Calendar
                           mode="single"
@@ -648,7 +654,8 @@ export default function TrainerClientDetail() {
                             setPtDate(toDateInputValue(date));
                             setPtDatePickerOpen(false);
                           }}
-                          captionLayout="dropdown"
+                          buttonVariant="ghost"
+                          className="rounded-md"
                         />
                       </PopoverContent>
                     </Popover>
