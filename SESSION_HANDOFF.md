@@ -6,11 +6,46 @@
 
 - 작업 디렉터리: `C:\Users\Hyeonil-Choi\Desktop\fittrack-pro`
 - 기본 브랜치: `master`
-- 최근 푸시 커밋: `4710d89 Fix coaching notification scopes`
+- 최근 푸시 커밋: `4e46f73 Add session handoff notes`
 - 검증 규칙은 `AGENTS.md`에 정리되어 있음.
 - `pnpm`은 PATH에 없을 수 있으므로 Windows에서는 `.\node_modules\.bin\pnpm.CMD`로 실행.
 
 ## 최근 완료 작업
+
+### 트레이너 회원 상세 메뉴 화면 분리
+
+요청:
+
+- 트레이너 홈 > 회원 상세/회원 운동 기록 화면에서 운동 기록, 코칭 타임라인, 회원 과제, 비공개 메모, 진행 리포트, AI 코칭 보조, PT 기록이 한 화면에 몰려 있어 보기 어렵다는 문제.
+
+수정:
+
+- `client/src/components/AppLayout.tsx`
+  - 트레이너 회원 상세 사이드바에 `운동 기록` 기본 메뉴 추가.
+  - 기존 hash 메뉴와 중복되지 않도록 고유 `id` 사용.
+- `client/src/pages/TrainerClientDetail.tsx`
+  - URL hash를 `TrainerClientView` 상태로 해석하도록 추가.
+  - 기본 경로는 `운동 기록`, `#timeline`, `#tasks`, `#notes`, `#report`, `#ai-helper`, `#pt-sessions`는 각각 별도 화면으로 렌더링.
+  - 각 메뉴 선택 시 페이지 제목/설명이 해당 화면에 맞게 바뀜.
+  - 기존 PT 기록 추가 폼과 저장/피드백/과제/메모 기능은 유지.
+
+검증:
+
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 로컬 서버 응답 확인:
+  - `http://localhost:3001/trainer/clients/1` 200 응답
+  - `http://localhost:3000/trainer/clients/1` 200 응답
+- 화면 자동 확인 제한:
+  - 인앱 Browser가 `iab` 세션을 사용할 수 없다고 반환.
+  - 로컬 `playwright` 패키지도 설치되어 있지 않아 브라우저 자동 QA는 미완료.
+
+커밋/푸시:
+
+- 아직 커밋하지 않음.
+- 관련 작업 파일: `client/src/components/AppLayout.tsx`, `client/src/pages/TrainerClientDetail.tsx`, `SESSION_HANDOFF.md`
 
 ### 코칭 알림 스코프 분리
 
@@ -67,6 +102,9 @@
 
 아래 파일은 의도적으로 커밋하지 않음.
 
+- `client/src/components/AppLayout.tsx` 이번 작업 변경
+- `client/src/pages/TrainerClientDetail.tsx` 이번 작업 변경
+- `SESSION_HANDOFF.md` 이번 작업 기록
 - `local-db/fittrack_local.sqlite`
 - `local-db/fittrack_local.sqlite-shm`
 - `local-db/fittrack_local.sqlite-wal`
@@ -83,11 +121,11 @@
 
 ## 다음 세션에서 우선 확인할 것
 
-1. Vercel 배포가 최신 커밋 `4710d89`를 반영했는지 확인.
-2. 사용자 화면 `코칭`에서 실제 코칭 내용이 없을 때 알림 배지가 사라지는지 확인.
-3. 트레이너 화면 `회원 요청`에서는 트레이너 요청 알림만 표시되는지 확인.
-4. 관리자/트레이너/사용자 홈 전환 후 사이드바가 중복 생성되지 않는지 확인.
-5. 모바일에서 사이드바, 홈 전환 UI, 코칭 화면이 잘리지 않는지 확인.
+1. 실제 로그인된 트레이너 계정으로 `/trainer/clients/:id` 기본 운동 기록 화면 확인.
+2. 트레이너 회원 상세 사이드바에서 `운동 기록`, `코칭 타임라인`, `회원 과제`, `비공개 메모`, `진행 리포트`, `AI 코칭 보조`, `PT 기록` 클릭 시 한 화면에 하나의 메뉴만 표시되는지 확인.
+3. 모바일/좁은 화면에서 회원 카드, PT 기록 추가 버튼, 각 메뉴 카드가 잘리지 않는지 확인.
+4. PT 기록 추가, 과제 등록, 메모 저장, 일반/세션 피드백 저장 후 목록 갱신 확인.
+5. Vercel 배포가 최신 커밋을 반영했는지 확인.
 
 ## 작업 시 항상 지킬 검증 순서
 
@@ -112,4 +150,3 @@ git diff --check
 - DB는 Supabase Postgres 연결.
 - OAuth, Gemini, DB 관련 환경변수는 Vercel Project Settings에 설정되어 있어야 함.
 - 앱 로딩 중 예전 화면이나 잘못된 메뉴가 잠깐 뜨는 문제는 이전에 여러 차례 수정했으므로, 새 기능 추가 시 다시 재발하지 않는지 확인 필요.
-
