@@ -51,8 +51,32 @@
 커밋/푸시:
 
 - 이전 커밋/푸시 완료: `937b5e0 Split trainer client detail views`, `ec081f4 Update session handoff after trainer detail split`
-- 현재 하위 경로 분리 보강 작업은 커밋/푸시 예정.
+- 하위 경로 분리 보강 커밋/푸시 완료: `98fcc65 Use routed trainer client detail tabs`
 - 관련 작업 파일: `client/src/App.tsx`, `client/src/components/AppLayout.tsx`, `client/src/pages/TrainerClientDetail.tsx`, `SESSION_HANDOFF.md`
+
+### PT 기록 날짜 달력 선택
+
+요청:
+
+- 트레이너 회원 상세 > PT 기록 추가 폼의 `진행 날짜`에서 달력이 뜨면 좋겠다는 요청.
+
+수정:
+
+- `client/src/pages/TrainerClientDetail.tsx`
+  - 기존 브라우저 기본 `type="date"` 입력을 앱 UI `Calendar` + `Popover` 조합으로 변경.
+  - 날짜 버튼 클릭 시 달력 팝오버가 열리고, 날짜 선택 시 `YYYY-MM-DD` 값으로 저장 후 팝오버 닫힘.
+  - 버튼에는 `2026년 6월 1일 월` 같은 한국어 날짜 라벨 표시.
+
+검증:
+
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+
+커밋/푸시:
+
+- 현재 세션에서 커밋/푸시 예정.
 
 ### 코칭 알림 스코프 분리
 

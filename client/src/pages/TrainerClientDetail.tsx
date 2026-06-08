@@ -2,9 +2,11 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import {
   ArrowLeft,
@@ -58,6 +60,30 @@ function todayValue() {
   const now = new Date();
   const offset = now.getTimezoneOffset() * 60000;
   return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+}
+
+function parseDateInputValue(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function toDateInputValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateLabel(value: string) {
+  const date = parseDateInputValue(value);
+  if (!date) return "날짜 선택";
+  return date.toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+  });
 }
 
 function makeSets(count: number, existing: PtSet[] = []) {
@@ -200,6 +226,7 @@ export default function TrainerClientDetail() {
   const [ptOpen, setPtOpen] = useState(false);
   const [ptTitle, setPtTitle] = useState("PT 운동 기록");
   const [ptDate, setPtDate] = useState(todayValue());
+  const [ptDatePickerOpen, setPtDatePickerOpen] = useState(false);
   const [ptDuration, setPtDuration] = useState("60");
   const [ptNotes, setPtNotes] = useState("");
   const [ptFeedback, setPtFeedback] = useState("");
@@ -590,18 +617,41 @@ export default function TrainerClientDetail() {
                     <Label className="text-xs text-muted-foreground">
                       진행 날짜
                     </Label>
-                    <div className="relative">
-                      <CalendarDays
-                        size={15}
-                        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                      />
-                      <Input
-                        type="date"
-                        value={ptDate}
-                        onChange={event => setPtDate(event.target.value)}
-                        className="border-border bg-accent pl-9 text-foreground"
-                      />
-                    </div>
+                    <Popover
+                      open={ptDatePickerOpen}
+                      onOpenChange={setPtDatePickerOpen}
+                    >
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="h-10 w-full justify-start gap-2 border-border bg-accent px-3 text-left font-normal text-foreground hover:bg-accent/80"
+                        >
+                          <CalendarDays
+                            size={15}
+                            className="shrink-0 text-muted-foreground"
+                          />
+                          <span className="truncate">
+                            {formatDateLabel(ptDate)}
+                          </span>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="start"
+                        className="w-auto border-border bg-popover p-0"
+                      >
+                        <Calendar
+                          mode="single"
+                          selected={parseDateInputValue(ptDate)}
+                          onSelect={date => {
+                            if (!date) return;
+                            setPtDate(toDateInputValue(date));
+                            setPtDatePickerOpen(false);
+                          }}
+                          captionLayout="dropdown"
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground">
