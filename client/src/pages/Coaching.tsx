@@ -538,20 +538,35 @@ export default function Coaching() {
               {ptSessions.length ? (
                 <div className="space-y-3">
                   {ptSessions.map((item: any) => (
-                    <button
-                      type="button"
+                    <div
                       key={item.id}
-                      className="w-full rounded-xl border border-border bg-accent/25 p-4 text-left transition-colors hover:border-primary/30 hover:bg-accent/40"
+                      role="button"
+                      tabIndex={0}
+                      className="w-full cursor-pointer rounded-xl border border-border bg-accent/25 p-4 text-left transition-colors hover:border-primary/30 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                       onClick={() => setSelectedPtSession(item)}
+                      onKeyDown={(event) => {
+                        if (event.key !== "Enter" && event.key !== " ") return;
+                        event.preventDefault();
+                        setSelectedPtSession(item);
+                      }}
                     >
                       <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <div className="truncate text-sm font-semibold text-foreground">{item.title || item.sessionName || "PT 운동 기록"}</div>
-                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="h-7 shrink-0 gap-1 border-primary/30 bg-primary/10 px-2.5 text-xs text-primary hover:bg-primary/15 hover:text-primary"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setSelectedPtSession(item);
+                              }}
+                            >
                               <Eye size={12} />
                               상세 보기
-                            </span>
+                            </Button>
                           </div>
                           <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
                             <span className="inline-flex items-center gap-1">
@@ -591,7 +606,7 @@ export default function Coaching() {
                           ) : null}
                         </div>
                       ) : null}
-                    </button>
+                    </div>
                   ))}
                 </div>
               ) : (
