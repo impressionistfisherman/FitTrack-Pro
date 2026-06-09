@@ -1404,9 +1404,7 @@ async function getCoachingLastReadAt(userId: number, scope = COACHING_CLIENT_SCO
   return "1970-01-01T00:00:00.000Z";
 }
 
-export async function markCoachingRead(userId: number, scope = COACHING_CLIENT_SCOPE): Promise<void> {
-  await ensureTrainerTables();
-  const now = new Date(Date.now() + 5000).toISOString();
+async function upsertCoachingReadState(userId: number, scope: string, lastReadAt: string) {
   const existing = await get(
     "SELECT user_id FROM coaching_read_states WHERE user_id = ? AND scope = ? LIMIT 1",
     userId,
@@ -1415,7 +1413,7 @@ export async function markCoachingRead(userId: number, scope = COACHING_CLIENT_S
   if (existing) {
     await run(
       "UPDATE coaching_read_states SET last_read_at = ? WHERE user_id = ? AND scope = ?",
-      now,
+      lastReadAt,
       userId,
       scope,
     );
@@ -1425,8 +1423,17 @@ export async function markCoachingRead(userId: number, scope = COACHING_CLIENT_S
     "INSERT INTO coaching_read_states (user_id, scope, last_read_at) VALUES (?, ?, ?)",
     userId,
     scope,
-    now,
+    lastReadAt,
   );
+}
+
+export async function markCoachingRead(userId: number, scope = COACHING_CLIENT_SCOPE): Promise<void> {
+  await ensureTrainerTables();
+  const now = new Date(Date.now() + 60_000).toISOString();
+  await upsertCoachingReadState(userId, scope, now);
+  if (scope === COACHING_CLIENT_SCOPE) {
+    await upsertCoachingReadState(userId, COACHING_LEGACY_SCOPE, now);
+  }
 }
 
 export async function getCoachingNotificationSummary(userId: number): Promise<Row> {

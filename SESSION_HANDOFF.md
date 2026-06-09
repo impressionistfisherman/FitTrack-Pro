@@ -12,6 +12,34 @@
 
 ## 최근 완료 작업
 
+### 코칭 알림 강력 새로고침 후 재표시 수정
+
+요청:
+
+- 코칭 알림은 코칭 화면에서 사라지지만 강력 새로고침하면 다시 생김.
+
+수정:
+
+- `server/db.ts`
+  - `markCoachingRead`가 회원 코칭 scope와 legacy scope를 함께 갱신하도록 변경.
+  - 읽음 시각 보정 폭을 늘려 생성/조회 시각 정밀도 차이로 같은 항목이 다시 미읽음 처리되는 상황을 줄임.
+- `server/fittrack.test.ts`
+  - 읽음 처리 직후와 재조회 시 코칭 미읽음 수가 0으로 유지되는 회귀 테스트 강화.
+
+검증:
+
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 테스트 수: `54 passed`
+- 로컬 서버 응답 확인:
+  - `http://localhost:3000/coaching` 200 응답
+
+커밋/푸시:
+
+- 기능 커밋/푸시 완료: `Persist coaching read state across refresh`
+
 ### 무게 추이 날짜 표시 및 운동 검색 정렬 수정
 
 요청:

@@ -247,11 +247,19 @@ describe("trainer notifications", () => {
     });
 
     await expect(caller.trainer.markCoachingRead()).resolves.toMatchObject({
-      feedback: expect.any(Number),
-      ptSessions: expect.any(Number),
-      comments: expect.any(Number),
-      tasks: expect.any(Number),
-      coachingUnreadCount: expect.any(Number),
+      feedback: 0,
+      ptSessions: 0,
+      comments: 0,
+      tasks: 0,
+      coachingUnreadCount: 0,
+    });
+
+    await expect(caller.trainer.notifications()).resolves.toMatchObject({
+      feedback: 0,
+      ptSessions: 0,
+      comments: 0,
+      tasks: 0,
+      coachingUnreadCount: 0,
     });
   });
 });
