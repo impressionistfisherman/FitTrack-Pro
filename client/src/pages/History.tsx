@@ -373,28 +373,46 @@ function SessionCard({
 
   return (
     <Card className="bg-card border-border hover:border-primary/20 transition-colors">
-      <CardContent className="p-4">
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <button
-            type="button"
-            className="min-w-0 flex-1 text-left"
-            onClick={() => onView(session)}
-            aria-label="운동 기록 상세 보기"
-          >
-            <div className="font-semibold text-foreground text-sm">{session.name || "운동 세션"}</div>
-            <div className="text-xs text-muted-foreground mt-0.5">
-              {getSessionDate(session).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric", weekday: "short" })}
-            </div>
-          </button>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs border-border text-muted-foreground">
+      <CardContent className="p-3 sm:p-4">
+        <div className="mb-3 space-y-2 sm:flex sm:items-start sm:justify-between sm:gap-3 sm:space-y-0">
+          <div className="flex min-w-0 items-start gap-2">
+            <button
+              type="button"
+              className="min-w-0 flex-1 text-left"
+              onClick={() => onView(session)}
+              aria-label="운동 기록 상세 보기"
+            >
+              <div className="truncate text-sm font-semibold text-foreground">{session.name || "운동 세션"}</div>
+              <div className="mt-0.5 truncate text-xs text-muted-foreground">
+                <span className="sm:hidden">
+                  {getSessionDate(session).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric", weekday: "short" })}
+                </span>
+                <span className="hidden sm:inline">
+                  {getSessionDate(session).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric", weekday: "short" })}
+                </span>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setExpanded((value) => !value)}
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground sm:hidden"
+              aria-label={expanded ? "운동 기록 접기" : "운동 기록 자세히 보기"}
+            >
+              <ChevronDown
+                size={16}
+                className={cn("transition-transform", expanded && "rotate-180")}
+              />
+            </button>
+          </div>
+          <div className="flex items-center gap-1 rounded-lg border border-border bg-accent/25 p-1 sm:border-0 sm:bg-transparent sm:p-0">
+            <Badge variant="outline" className="h-7 shrink-0 border-border px-2 text-[11px] text-muted-foreground">
               <Clock size={9} className="mr-1" />
               {session.durationMinutes}분
             </Badge>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+              className="h-7 w-7 text-muted-foreground hover:bg-primary/10 hover:text-primary sm:h-8 sm:w-8"
               onClick={(event) => {
                 event.stopPropagation();
                 onView(session);
@@ -406,7 +424,7 @@ function SessionCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+              className="h-7 w-7 text-muted-foreground hover:bg-primary/10 hover:text-primary sm:h-8 sm:w-8"
               onClick={(event) => {
                 event.stopPropagation();
                 onEdit(session);
@@ -418,7 +436,7 @@ function SessionCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              className="h-7 w-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive sm:h-8 sm:w-8"
               onClick={(event) => {
                 event.stopPropagation();
                 onDelete(session.id);
@@ -430,7 +448,7 @@ function SessionCard({
             <button
               type="button"
               onClick={() => setExpanded((value) => !value)}
-              className="mt-1 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+              className="hidden rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground sm:block"
               aria-label={expanded ? "운동 기록 접기" : "운동 기록 자세히 보기"}
             >
               <ChevronDown
@@ -441,20 +459,20 @@ function SessionCard({
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="p-2 bg-accent/50 rounded-lg">
+        <div className="grid grid-cols-3 gap-1.5 text-center sm:gap-2">
+          <div className="min-w-0 rounded-lg bg-accent/50 p-2">
             <div className="text-sm font-bold text-foreground">{exerciseCount}</div>
-            <div className="text-[10px] text-muted-foreground">운동 종류</div>
+            <div className="truncate whitespace-nowrap text-[10px] text-muted-foreground">운동 종류</div>
           </div>
-          <div className="p-2 bg-accent/50 rounded-lg">
+          <div className="min-w-0 rounded-lg bg-accent/50 p-2">
             <div className="text-sm font-bold text-foreground">{hasTimedOnly ? totalMinutes : strengthLogs.length}</div>
-            <div className="text-[10px] text-muted-foreground">{hasTimedOnly ? "총 시간(분)" : "총 세트"}</div>
+            <div className="truncate whitespace-nowrap text-[10px] text-muted-foreground">{hasTimedOnly ? "총 시간" : "총 세트"}</div>
           </div>
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <div className="text-sm font-bold text-primary">
+          <div className="min-w-0 rounded-lg bg-primary/10 p-2">
+            <div className="truncate text-sm font-bold text-primary">
               {hasTimedOnly ? distanceText : Math.round(totalVolume).toLocaleString()}
             </div>
-            <div className="text-[10px] text-muted-foreground">{hasTimedOnly ? "거리" : "볼륨 (kg)"}</div>
+            <div className="truncate whitespace-nowrap text-[10px] text-muted-foreground">{hasTimedOnly ? "거리" : "볼륨"}</div>
           </div>
         </div>
 

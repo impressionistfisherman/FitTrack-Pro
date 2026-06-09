@@ -12,6 +12,34 @@
 
 ## 최근 완료 작업
 
+### 스마트폰 운동 기록 카드 레이아웃 개선
+
+요청:
+
+- 스마트폰 화면에서 운동 기록 카드 글자가 세로로 깨지고 UI/UX가 태블릿 대비 너무 떨어짐.
+
+수정:
+
+- `client/src/pages/History.tsx`
+  - 모바일에서 운동 기록 카드 제목/날짜 행과 액션 버튼 행을 분리.
+  - 모바일 날짜 표기는 짧게, 태블릿 이상은 기존 긴 날짜 표기 유지.
+  - 액션 버튼과 펼침 버튼 크기/배치를 모바일에 맞게 조정.
+  - 통계 박스 라벨을 줄바꿈 없이 표시하도록 정리.
+
+검증:
+
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 테스트 수: `55 passed`
+- 로컬 서버 응답 확인:
+  - `http://localhost:3000/history` 200 응답
+
+커밋/푸시:
+
+- 기능 커밋/푸시 완료: `Polish mobile workout history cards`
+
 ### 모바일 운동 검색 sticky 처리
 
 요청:
