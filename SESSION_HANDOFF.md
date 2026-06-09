@@ -6,7 +6,7 @@
 
 - 작업 디렉터리: `C:\Users\Hyeonil-Choi\Desktop\fittrack-pro`
 - 기본 브랜치: `master`
-- 최근 작업 커밋: `5d3b7fc Update handoff after detail views`
+- 최근 작업 커밋: `a14d1ff Fix coaching badge and PT detail view`
 - 검증 규칙은 `AGENTS.md`에 정리되어 있음.
 - `pnpm`은 PATH에 없을 수 있으므로 Windows에서는 `.\node_modules\.bin\pnpm.CMD`로 실행.
 
@@ -23,10 +23,12 @@
 
 - `client/src/components/AppLayout.tsx`
   - `/coaching` 경로에 있을 때 사용자 코칭 배지를 즉시 0으로 표시.
+  - `wouter` location 값만 보지 않고 실제 브라우저 path 상태를 기준으로 `/coaching` 여부를 판단.
   - 레이아웃 레벨에서도 `trainer.markCoachingRead`를 호출해 사이드바 알림 쿼리와 페이지 알림 쿼리가 따로 움직이는 상황을 보강.
   - 읽음 처리 mutation 시작 시 알림 캐시를 optimistic 0으로 반영.
 - `client/src/pages/Coaching.tsx`
   - 사용자 코칭 화면의 PT 진행 기록 카드를 클릭 가능한 상세 보기로 변경.
+  - 긴 세트 목록에서도 보이도록 PT 카드 제목 옆에 `상세 보기` 표시를 노출.
   - PT 상세 모달에서 트레이너, 날짜, 진행 시간, 볼륨, 메모, 운동별 전체 세트 로그를 확인 가능.
   - 페이지 진입 시 `trainer.status` 로딩 여부와 무관하게 코칭 읽음 처리를 실행하고, 알림 재조회로 배지가 되살아나는 흐름을 줄임.
 

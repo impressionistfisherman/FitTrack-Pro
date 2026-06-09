@@ -546,7 +546,13 @@ export default function Coaching() {
                     >
                       <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0">
-                          <div className="truncate text-sm font-semibold text-foreground">{item.title || item.sessionName || "PT 운동 기록"}</div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <div className="truncate text-sm font-semibold text-foreground">{item.title || item.sessionName || "PT 운동 기록"}</div>
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                              <Eye size={12} />
+                              상세 보기
+                            </span>
+                          </div>
                           <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
                             <span className="inline-flex items-center gap-1">
                               <CalendarDays size={12} />
@@ -585,10 +591,6 @@ export default function Coaching() {
                           ) : null}
                         </div>
                       ) : null}
-                      <div className="mt-3 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs text-primary">
-                        <Eye size={12} />
-                        상세 보기
-                      </div>
                     </button>
                   ))}
                 </div>

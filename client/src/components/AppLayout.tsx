@@ -518,6 +518,7 @@ function BrandLogo({ className = "h-full w-full" }: { className?: string }) {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const [location] = useLocation();
+  const { path: currentPath } = useRouteState(location);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const utils = trpc.useUtils();
   const coachingReadMarkedRef = useRef(false);
@@ -534,7 +535,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   );
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
-  const isCoachingPage = location.startsWith("/coaching");
+  const isCoachingPage = currentPath === "/coaching";
   const adminBadge = pendingApplications?.length ?? 0;
   const coachingBadge = isCoachingPage ? 0 : coachingNotifications?.coachingUnreadCount ?? 0;
   const trainerBadge = coachingNotifications?.trainerUnreadCount ?? 0;
