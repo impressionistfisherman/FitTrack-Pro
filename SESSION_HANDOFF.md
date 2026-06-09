@@ -12,6 +12,35 @@
 
 ## 최근 완료 작업
 
+### 운동 기록 추가 모달 하단 검색 도킹 개선
+
+요청:
+
+- 운동 검색이 계속 보이는 것은 좋지만, 스마트폰/태블릿에서 검색 패널이 콘텐츠 중간을 가리고 있음.
+- 검색 패널은 화면을 덮지 말고 하단에 붙어 있어야 함.
+
+수정:
+
+- `client/src/components/FreeWorkoutDialog.tsx`
+  - 모바일/태블릿 검색 패널을 스크롤 콘텐츠 내부 sticky에서 모달 하단 도킹 영역으로 이동.
+  - 선택한 운동 카드와 AI 피드백을 검색 패널이 가리지 않도록 본문 스크롤 영역과 하단 영역을 분리.
+  - 큰 화면에서는 기존 좌측 검색 영역을 유지.
+
+검증:
+
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 테스트 수: `55 passed`
+- 로컬 서버 응답 확인:
+  - `http://localhost:3000/history` 200 응답
+- 인앱 브라우저 확인은 세션 연결 실패로 수행하지 못함: `Browser is not available: iab`
+
+커밋/푸시:
+
+- 기능 커밋/푸시 완료: `Dock mobile workout search panel`
+
 ### 스마트폰 운동 기록 카드 레이아웃 개선
 
 요청:
