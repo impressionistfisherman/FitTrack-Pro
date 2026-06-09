@@ -1205,6 +1205,23 @@ function normalizeCaptureNumber(value: unknown) {
   return Number.isFinite(number) && number > 0 ? number : 0;
 }
 
+function normalizePositiveNumber(value: unknown, max: number) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return 0;
+  return Math.min(max, Math.round(number * 10) / 10);
+}
+
+function normalizeInBodyCaptureResult(parsed: any) {
+  return {
+    measuredAt: /^\d{4}-\d{2}-\d{2}$/.test(String(parsed?.measuredAt ?? "")) ? String(parsed.measuredAt) : "",
+    weightKg: normalizePositiveNumber(parsed?.weightKg, 300),
+    bodyFatPct: normalizePositiveNumber(parsed?.bodyFatPct, 100),
+    muscleMassKg: normalizePositiveNumber(parsed?.muscleMassKg, 100),
+    confidence: Math.max(0, Math.min(1, Number(parsed?.confidence) || 0)),
+    notes: String(parsed?.notes ?? "").replace(/\s+/g, " ").trim().slice(0, 160),
+  };
+}
+
 function normalizeWorkoutCaptureResult(parsed: any, exercises: any[]) {
   const parsedExercises = Array.isArray(parsed?.exercises) ? parsed.exercises.slice(0, 30) : [];
   const matched: any[] = [];
@@ -2500,6 +2517,78 @@ exerciseId는 항상 0으로 반환하세요. 서버가 운동 DB와 별도로 �
         }
 
         return normalizeWorkoutCaptureResult(parsed, exercises);
+      }),
+
+    parseInBodyCapture: protectedProcedure
+      .input(z.object({
+        imageDataUrl: z.string().min(100).max(5_800_000),
+      }))
+      .mutation(async ({ input }) => {
+        if (!input.imageDataUrl.startsWith("data:image/")) {
+          throw new Error("이미지 파일만 분석할 수 있습니다.");
+        }
+
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: `당신은 인바디/InBody 체성분 결과지를 읽어 구조화하는 OCR 도우미입니다.
+이미지에 명확히 보이는 값만 추출하세요. 보이지 않는 값은 추측하거나 계산하지 마세요.
+체중은 kg, 체지방률은 %, 골격근량은 kg 단위의 숫자로 반환하세요.
+체지방량(kg)만 보이고 체지방률(%)이 보이지 않으면 bodyFatPct는 0으로 반환하세요.
+근육량, 제지방량, 세포외수분비 같은 항목을 골격근량으로 대체하지 마세요.
+측정일이 명확히 보이면 YYYY-MM-DD로 반환하고, 없으면 빈 문자열로 반환하세요.
+응답은 반드시 JSON만 반환하세요.`,
+            },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: `반환 규칙:
+- weightKg: 체중/Weight 값
+- bodyFatPct: 체지방률/Percent Body Fat/PBF 값
+- muscleMassKg: 골격근량/Skeletal Muscle Mass/SMM 값
+- confidence: 전체 OCR 신뢰도 0~1
+- notes: 어떤 값이 누락됐는지 또는 이미지 판독상 주의점`,
+                },
+                {
+                  type: "image_url",
+                  image_url: { url: input.imageDataUrl },
+                },
+              ],
+            },
+          ],
+          maxTokens: 1024,
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "inbody_capture_parse",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  measuredAt: { type: "string" },
+                  weightKg: { type: "number" },
+                  bodyFatPct: { type: "number" },
+                  muscleMassKg: { type: "number" },
+                  confidence: { type: "number" },
+                  notes: { type: "string" },
+                },
+                required: ["measuredAt", "weightKg", "bodyFatPct", "muscleMassKg", "confidence", "notes"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        const rawContent = response.choices[0]?.message?.content;
+        const content = typeof rawContent === "string" ? rawContent : "";
+        try {
+          return normalizeInBodyCaptureResult(content ? JSON.parse(content) : null);
+        } catch {
+          throw new Error("인바디 분석 결과를 읽지 못했습니다. 글자가 선명한 이미지로 다시 시도해주세요.");
+        }
       }),
 
     exerciseSelectionFeedback: protectedProcedure

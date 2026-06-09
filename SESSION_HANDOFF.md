@@ -6,11 +6,46 @@
 
 - 작업 디렉터리: `C:\Users\Hyeonil-Choi\Desktop\fittrack-pro`
 - 기본 브랜치: `master`
-- 최근 작업 커밋: `c69f26d Reflect exercise durations in workout time`
+- 최근 작업 커밋: `Add InBody image parsing for body weight`
 - 검증 규칙은 `AGENTS.md`에 정리되어 있음.
 - `pnpm`은 PATH에 없을 수 있으므로 Windows에서는 `.\node_modules\.bin\pnpm.CMD`로 실행.
 
 ## 최근 완료 작업
+
+### 인바디 이미지 기반 체성분 기록
+
+요청:
+
+- 체중 기록을 인바디 기준 체성분 기록으로 확장할 수 있어야 함.
+- 인바디 정보 이미지를 주면 자동 인식해서 기록할 수 있으면 좋겠음.
+
+수정:
+
+- `client/src/components/BodyWeightTracker.tsx`
+  - 체중 기록 모달에 인바디 이미지 인식 버튼 추가.
+  - 이미지 업로드 시 체중, 체지방률, 골격근량, 측정 날짜를 자동 입력.
+  - 수동 기록에도 측정 날짜와 골격근량 입력을 추가.
+  - 최신 체중 카드와 최근 기록 목록에 체지방률/골격근량을 함께 표시.
+- `server/routers.ts`
+  - `ai.parseInBodyCapture` mutation 추가.
+  - 인바디/InBody 결과 이미지에서 체중 kg, 체지방률 %, 골격근량 kg, 측정일만 구조화해 반환.
+  - 체지방량 kg만 보일 때 체지방률로 임의 변환하지 않도록 제한.
+
+검증:
+
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 테스트 수: `52 passed`
+- 로컬 서버 응답 확인:
+  - `http://localhost:3000/body-weight` 200 응답
+- 화면 자동 확인 제한:
+  - 인앱 Browser 도구가 현재 세션에 노출되지 않아 스크린샷 QA는 미완료.
+
+커밋/푸시:
+
+- 기능 커밋/푸시 완료: `Add InBody image parsing for body weight`
 
 ### 최근 운동 기록 접기/펼치기
 
