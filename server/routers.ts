@@ -1497,7 +1497,7 @@ export const appRouter = router({
     }),
     markCoachingRead: protectedProcedure.mutation(async ({ ctx }) => {
       await markCoachingRead(ctx.user.id);
-      return { success: true };
+      return await getCoachingNotificationSummary(ctx.user.id);
     }),
     issueCode: protectedProcedure.mutation(async ({ ctx }) => {
       const appRole = await getUserAppRole(ctx.user.id);

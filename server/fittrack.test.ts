@@ -237,7 +237,13 @@ describe("trainer notifications", () => {
       unreadCount: expect.any(Number),
     });
 
-    await expect(caller.trainer.markCoachingRead()).resolves.toEqual({ success: true });
+    await expect(caller.trainer.markCoachingRead()).resolves.toMatchObject({
+      feedback: expect.any(Number),
+      ptSessions: expect.any(Number),
+      comments: expect.any(Number),
+      tasks: expect.any(Number),
+      coachingUnreadCount: expect.any(Number),
+    });
   });
 });
 

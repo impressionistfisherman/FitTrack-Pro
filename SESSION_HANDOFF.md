@@ -6,11 +6,58 @@
 
 - 작업 디렉터리: `C:\Users\Hyeonil-Choi\Desktop\fittrack-pro`
 - 기본 브랜치: `master`
-- 최근 작업 커밋: `9f64829 Dedupe exercises and improve assisted search`
+- 최근 작업 커밋: `1d0dd81 Improve mobile workout and coaching UX`
 - 검증 규칙은 `AGENTS.md`에 정리되어 있음.
 - `pnpm`은 PATH에 없을 수 있으므로 Windows에서는 `.\node_modules\.bin\pnpm.CMD`로 실행.
 
 ## 최근 완료 작업
+
+### 운동/PT 상세 보기 및 코칭 읽음 처리 보강
+
+요청:
+
+- 트레이너가 기록한 PT 기록을 상세로 확인할 수 있어야 함.
+- 운동 기록에서 수정 화면으로 들어가지 않고 기록을 눌러 상세를 볼 수 있어야 함.
+- 코칭 화면에 들어와도 사용자 코칭 알림 배지 `1`이 해소되지 않음.
+
+수정:
+
+- `client/src/pages/History.tsx`
+  - 운동 기록 카드의 제목/상세 아이콘 클릭 시 읽기 전용 상세 모달을 열도록 추가.
+  - 수정은 별도 연필 버튼과 상세 모달의 `수정` 버튼으로 분리.
+  - 상세 모달에서 날짜, 운동 시간, 기록 세트, 볼륨, 운동별 세트 값을 확인 가능.
+- `server/db.ts`
+  - 트레이너 회원 상세에서 조회하는 PT 기록에도 연결된 운동 로그를 함께 반환.
+  - 코칭 읽음 시간 저장 시 같은 순간 생성/갱신된 항목이 다시 미읽음으로 잡히지 않도록 읽음 시간을 짧게 보정.
+- `server/routers.ts`
+  - `trainer.markCoachingRead`가 읽음 처리 후 최신 알림 요약을 반환하도록 변경.
+- `client/src/pages/Coaching.tsx`
+  - 코칭 페이지 로드 시 알림 수와 관계없이 한 번 읽음 처리.
+  - 알림 캐시에 코칭 미읽음 0건을 즉시 반영.
+- `client/src/pages/TrainerClientDetail.tsx`
+  - PT 기록 목록과 코칭 타임라인의 PT 항목을 상세 모달로 연결.
+  - 상세 모달에서 PT 메모, 진행 시간, 볼륨, 운동별 세트 로그 확인 가능.
+- `server/fittrack.test.ts`
+  - 코칭 읽음 처리 반환값 변경에 맞춰 테스트 갱신.
+
+검증:
+
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 테스트 수: `52 passed`
+- 로컬 서버 응답 확인:
+  - `http://localhost:3000/history` 200 응답
+  - `http://localhost:3000/coaching` 200 응답
+  - `http://localhost:3000/trainer/clients/1/timeline` 200 응답
+  - `http://localhost:3000/trainer/clients/1/pt-sessions` 200 응답
+- 화면 자동 확인 제한:
+  - 인앱 Browser가 `iab` 세션을 사용할 수 없다고 반환해 스크린샷 QA는 미완료.
+
+커밋/푸시:
+
+- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
 
 ### 모바일 운동 기록/코칭/오늘의 운동 UX 개선
 

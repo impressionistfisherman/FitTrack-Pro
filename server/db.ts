@@ -1395,7 +1395,7 @@ async function getCoachingLastReadAt(userId: number, scope = COACHING_CLIENT_SCO
 
 export async function markCoachingRead(userId: number, scope = COACHING_CLIENT_SCOPE): Promise<void> {
   await ensureTrainerTables();
-  const now = new Date().toISOString();
+  const now = new Date(Date.now() + 5000).toISOString();
   const existing = await get(
     "SELECT user_id FROM coaching_read_states WHERE user_id = ? AND scope = ? LIMIT 1",
     userId,
@@ -1759,16 +1759,21 @@ export async function getTrainerPtSessionsForPair(trainerUserId: number, clientU
     clientUserId,
     limit,
   );
-  return rows.map((row) => ({
-    id: Number(aliasValue(row, "pt_id")),
-    sessionId: Number(aliasValue(row, "session_id")),
-    title: aliasValue(row, "title"),
-    notes: aliasValue(row, "pt_notes"),
-    createdAt: aliasValue(row, "pt_created_at"),
-    sessionName: aliasValue(row, "session_name"),
-    workoutDate: aliasValue(row, "workout_date"),
-    durationMinutes: Number(aliasValue(row, "duration_minutes")) || 0,
-    totalVolume: Number(aliasValue(row, "total_volume")) || 0,
+  return await Promise.all(rows.map(async (row) => {
+    const sessionId = Number(aliasValue(row, "session_id"));
+    const logs = sessionId ? await getWorkoutLogsBySession(sessionId) : [];
+    return {
+      id: Number(aliasValue(row, "pt_id")),
+      sessionId,
+      title: aliasValue(row, "title"),
+      notes: aliasValue(row, "pt_notes"),
+      createdAt: aliasValue(row, "pt_created_at"),
+      sessionName: aliasValue(row, "session_name"),
+      workoutDate: aliasValue(row, "workout_date"),
+      durationMinutes: Number(aliasValue(row, "duration_minutes")) || 0,
+      totalVolume: Number(aliasValue(row, "total_volume")) || 0,
+      logs,
+    };
   }));
 }
 

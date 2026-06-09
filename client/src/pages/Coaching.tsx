@@ -46,16 +46,21 @@ export default function Coaching() {
   });
   const markedReadRef = useRef(false);
   const markReadMutation = trpc.trainer.markCoachingRead.useMutation({
-    onSuccess: () => {
-      utils.trainer.notifications.setData(undefined, (current: any) => current ? {
-        ...current,
-        feedback: 0,
-        ptSessions: 0,
-        comments: 0,
-        tasks: 0,
-        coachingUnreadCount: 0,
-        unreadCount: Number(current.trainerUnreadCount ?? 0),
-      } : current);
+    onSuccess: (summary: any) => {
+      utils.trainer.notifications.setData(undefined, (current: any) => {
+        const next = summary ?? current;
+        if (!next && !current) return current;
+        return {
+          ...(current ?? {}),
+          ...(next ?? {}),
+          feedback: 0,
+          ptSessions: 0,
+          comments: 0,
+          tasks: 0,
+          coachingUnreadCount: 0,
+          unreadCount: Number((next ?? current)?.trainerUnreadCount ?? 0),
+        };
+      });
       utils.trainer.notifications.invalidate();
       utils.trainer.status.invalidate();
     },
@@ -94,14 +99,10 @@ export default function Coaching() {
   const coachingUnreadCount = Number((notifications as any)?.coachingUnreadCount ?? 0);
 
   useEffect(() => {
-    if (coachingUnreadCount <= 0) {
-      markedReadRef.current = false;
-      return;
-    }
-    if (!isAuthenticated || loading || isLoading || markedReadRef.current || coachingUnreadCount <= 0) return;
+    if (!isAuthenticated || loading || isLoading || markedReadRef.current || markReadMutation.isPending) return;
     markedReadRef.current = true;
     markReadMutation.mutate();
-  }, [coachingUnreadCount, isAuthenticated, isLoading, loading, markReadMutation]);
+  }, [isAuthenticated, isLoading, loading, markReadMutation]);
 
   if (loading || isLoading) {
     return (

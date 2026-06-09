@@ -1,9 +1,11 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -15,6 +17,7 @@ import {
   CheckSquare,
   ChevronDown,
   FileText,
+  Eye,
   ImagePlus,
   Loader2,
   MessageSquare,
@@ -84,6 +87,132 @@ function formatDateLabel(value: string) {
     day: "numeric",
     weekday: "short",
   });
+}
+
+function formatShortDate(value?: string | Date | null) {
+  if (!value) return "";
+  return new Date(value).toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  });
+}
+
+function groupWorkoutLogs(logs: any[] = []) {
+  const groups = new Map<number, { exercise: any; logs: any[] }>();
+  for (const item of logs) {
+    const exerciseId = Number(item.log?.exerciseId ?? item.exercise?.id);
+    if (!exerciseId) continue;
+    if (!groups.has(exerciseId)) groups.set(exerciseId, { exercise: item.exercise, logs: [] });
+    groups.get(exerciseId)!.logs.push(item);
+  }
+  return Array.from(groups.values());
+}
+
+function formatWorkoutLogValue(log: any) {
+  if (log.durationSeconds) {
+    const minutes = Math.round(Number(log.durationSeconds) / 60);
+    const distance = Number(log.distanceM) > 0
+      ? ` · ${(Number(log.distanceM) / 1000).toFixed(Number(log.distanceM) >= 10000 ? 0 : 1)}km`
+      : "";
+    return `${minutes}분${distance}`;
+  }
+  return `${Number(log.weightKg) || 0}kg × ${Number(log.reps) || 0}회`;
+}
+
+function WorkoutLogDetailList({ logs }: { logs: any[] }) {
+  const exerciseGroups = useMemo(() => groupWorkoutLogs(logs), [logs]);
+  if (!exerciseGroups.length) {
+    return (
+      <div className="rounded-lg border border-dashed border-border bg-accent/20 p-4 text-center text-sm text-muted-foreground">
+        기록된 운동 세트가 없습니다.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {exerciseGroups.map(({ exercise, logs: exerciseLogs }, groupIndex) => (
+        <div key={exercise?.id ?? groupIndex} className="rounded-xl border border-border bg-accent/25 p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <div className="truncate text-sm font-semibold text-foreground">
+                {exercise?.nameKo ?? exercise?.name ?? "운동"}
+              </div>
+              {exercise?.name ? (
+                <div className="truncate text-xs text-muted-foreground">{exercise.name}</div>
+              ) : null}
+            </div>
+            <Badge variant="outline" className="shrink-0 border-border text-muted-foreground">
+              {exerciseLogs.length}세트
+            </Badge>
+          </div>
+          <div className="space-y-1.5">
+            {exerciseLogs.map((item: any, index: number) => (
+              <div
+                key={item.log?.id ?? `${exercise?.id ?? "exercise"}-${index}`}
+                className="flex items-center justify-between gap-3 rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-sm"
+              >
+                <span className="text-muted-foreground">{item.log?.setNumber ?? index + 1}세트</span>
+                <span className="font-medium text-foreground">{formatWorkoutLogValue(item.log ?? {})}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PtSessionDetailDialog({
+  session,
+  open,
+  onOpenChange,
+}: {
+  session: any | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const logs = session?.logs ?? [];
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto border-border bg-card p-0 text-foreground sm:max-w-2xl">
+        {session ? (
+          <div className="p-5">
+            <DialogHeader>
+              <DialogTitle>{session.title || session.sessionName || "PT 운동 기록"}</DialogTitle>
+              <div className="text-sm text-muted-foreground">
+                {formatShortDate(session.workoutDate ?? session.createdAt)}
+              </div>
+            </DialogHeader>
+            <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-lg bg-accent/50 p-3">
+                <div className="text-base font-bold text-foreground">{Number(session.durationMinutes) || 0}</div>
+                <div className="text-[11px] text-muted-foreground">진행 시간(분)</div>
+              </div>
+              <div className="rounded-lg bg-accent/50 p-3">
+                <div className="text-base font-bold text-foreground">{logs.length}</div>
+                <div className="text-[11px] text-muted-foreground">기록 세트</div>
+              </div>
+              <div className="rounded-lg bg-primary/10 p-3">
+                <div className="text-base font-bold text-primary">{Math.round(Number(session.totalVolume) || 0).toLocaleString()}</div>
+                <div className="text-[11px] text-muted-foreground">볼륨 kg</div>
+              </div>
+            </div>
+            {session.notes ? (
+              <div className="mt-4 rounded-xl border border-border bg-accent/25 p-3">
+                <div className="mb-1 text-xs font-semibold text-muted-foreground">트레이너 메모</div>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{session.notes}</p>
+              </div>
+            ) : null}
+            <div className="mt-4">
+              <WorkoutLogDetailList logs={logs} />
+            </div>
+          </div>
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function makeSets(count: number, existing: PtSet[] = []) {
@@ -237,6 +366,7 @@ export default function TrainerClientDetail() {
   const [privateNote, setPrivateNote] = useState("");
   const [exerciseSearch, setExerciseSearch] = useState("");
   const [selectedExercises, setSelectedExercises] = useState<PtExercise[]>([]);
+  const [selectedPtSession, setSelectedPtSession] = useState<any | null>(null);
   const [captureMessage, setCaptureMessage] = useState("");
   const { data, isLoading } = trpc.trainer.clientDetail.useQuery(
     { clientUserId, limit: 20 },
@@ -351,6 +481,7 @@ export default function TrainerClientDetail() {
       type: "PT",
       date: item.createdAt,
       title: item.title || item.sessionName || "PT 기록",
+      source: item,
     }));
     const comments = (data?.comments ?? []).map((item: any) => ({
       type: item.authorUserId === clientUserId ? "회원 답글" : "트레이너 답글",
@@ -532,6 +663,13 @@ export default function TrainerClientDetail() {
 
   return (
     <div className="page-shell page-shell-narrow max-w-full animate-fade-in">
+      <PtSessionDetailDialog
+        session={selectedPtSession}
+        open={Boolean(selectedPtSession)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) setSelectedPtSession(null);
+        }}
+      />
       <div className="page-header">
         <Link
           href="/profile"
@@ -1085,24 +1223,54 @@ export default function TrainerClientDetail() {
                 </h2>
                 {timeline.length ? (
                   <div className="space-y-2">
-                    {timeline.map((item: any, index: number) => (
-                      <div
-                        key={`${item.type}-${index}`}
-                        className="rounded-lg border border-border bg-accent/30 p-3"
-                      >
-                        <div className="mb-1 flex items-center justify-between gap-2">
-                          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
-                            {item.type}
-                          </span>
-                          <span className="text-[11px] text-muted-foreground">
-                            {new Date(item.date).toLocaleDateString("ko-KR")}
-                          </span>
+                    {timeline.map((item: any, index: number) => {
+                      const content = (
+                        <>
+                          <div className="mb-1 flex items-center justify-between gap-2">
+                            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                              {item.type}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground">
+                              {new Date(item.date).toLocaleDateString("ko-KR")}
+                            </span>
+                          </div>
+                          <p className="line-clamp-3 text-sm leading-relaxed text-foreground">
+                            {item.title}
+                          </p>
+                          {item.source?.logs?.length ? (
+                            <div className="mt-2 space-y-1">
+                              {item.source.logs.slice(0, 3).map((entry: any, logIndex: number) => (
+                                <div key={entry.log?.id ?? logIndex} className="flex items-center justify-between gap-2 rounded-md bg-background/45 px-2 py-1 text-xs">
+                                  <span className="truncate text-muted-foreground">{entry.exercise?.nameKo ?? entry.exercise?.name ?? "운동"}</span>
+                                  <span className="shrink-0 text-foreground">{formatWorkoutLogValue(entry.log ?? {})}</span>
+                                </div>
+                              ))}
+                              {item.source.logs.length > 3 ? (
+                                <div className="text-xs text-muted-foreground">외 {item.source.logs.length - 3}개 세트</div>
+                              ) : null}
+                            </div>
+                          ) : null}
+                        </>
+                      );
+
+                      return item.source ? (
+                        <button
+                          type="button"
+                          key={`${item.type}-${index}`}
+                          className="w-full rounded-lg border border-border bg-accent/30 p-3 text-left transition-colors hover:border-primary/30 hover:bg-accent/50"
+                          onClick={() => setSelectedPtSession(item.source)}
+                        >
+                          {content}
+                        </button>
+                      ) : (
+                        <div
+                          key={`${item.type}-${index}`}
+                          className="rounded-lg border border-border bg-accent/30 p-3"
+                        >
+                          {content}
                         </div>
-                        <p className="line-clamp-3 text-sm leading-relaxed text-foreground">
-                          {item.title}
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="rounded-lg border border-dashed border-border bg-accent/20 p-3 text-sm text-muted-foreground">
@@ -1384,9 +1552,11 @@ export default function TrainerClientDetail() {
                 {data?.ptSessions?.length ? (
                   <div className="mb-5 space-y-2">
                     {data.ptSessions.map((item: any) => (
-                      <div
+                      <button
+                        type="button"
                         key={item.id}
-                        className="rounded-lg border border-border bg-accent/30 p-3"
+                        className="w-full rounded-lg border border-border bg-accent/30 p-3 text-left transition-colors hover:border-primary/30 hover:bg-accent/50"
+                        onClick={() => setSelectedPtSession(item)}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
@@ -1412,7 +1582,24 @@ export default function TrainerClientDetail() {
                             {item.notes}
                           </p>
                         ) : null}
-                      </div>
+                        {item.logs?.length ? (
+                          <div className="mt-3 space-y-1.5">
+                            {item.logs.slice(0, 4).map((entry: any, logIndex: number) => (
+                              <div key={entry.log?.id ?? logIndex} className="flex items-center justify-between gap-2 rounded-md bg-background/45 px-2.5 py-1.5 text-xs">
+                                <span className="truncate text-muted-foreground">{entry.exercise?.nameKo ?? entry.exercise?.name ?? "운동"}</span>
+                                <span className="shrink-0 text-foreground">{formatWorkoutLogValue(entry.log ?? {})}</span>
+                              </div>
+                            ))}
+                            {item.logs.length > 4 ? (
+                              <div className="text-xs text-muted-foreground">외 {item.logs.length - 4}개 세트</div>
+                            ) : null}
+                          </div>
+                        ) : null}
+                        <div className="mt-3 inline-flex items-center gap-1 text-xs text-primary">
+                          <Eye size={12} />
+                          상세 보기
+                        </div>
+                      </button>
                     ))}
                   </div>
                 ) : (

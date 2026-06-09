@@ -4,12 +4,13 @@ import { trpc } from "@/lib/trpc";
 import BodyWeightTracker from "@/components/BodyWeightTracker";
 import FreeWorkoutDialog from "@/components/FreeWorkoutDialog";
 import { cn } from "@/lib/utils";
-import { Activity, Calendar, ChevronDown, ChevronLeft, ChevronRight, Clock, Dumbbell, LogIn, TrendingUp, Plus, Trash2, Pencil } from "lucide-react";
+import { Activity, Calendar, ChevronDown, ChevronLeft, ChevronRight, Clock, Dumbbell, Eye, LogIn, TrendingUp, Plus, Trash2, Pencil } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { matchesExerciseSearchText } from "@shared/exerciseSearch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar
 } from "recharts";
@@ -201,27 +202,153 @@ function ExerciseProgressItem({ exercise, maxWeight, maxReps, goalData }: any) {
   );
 }
 
+function groupSessionLogs(logs: any[] = []) {
+  const groups = new Map<number, { exercise: any; logs: any[] }>();
+  for (const item of logs) {
+    const exerciseId = Number(item.log?.exerciseId ?? item.exercise?.id);
+    if (!exerciseId) continue;
+    if (!groups.has(exerciseId)) groups.set(exerciseId, { exercise: item.exercise, logs: [] });
+    groups.get(exerciseId)!.logs.push(item);
+  }
+  return Array.from(groups.values());
+}
+
+function formatWorkoutLogValue(log: any) {
+  if (log.durationSeconds) {
+    const minutes = Math.round(Number(log.durationSeconds) / 60);
+    const distance = Number(log.distanceM) > 0
+      ? ` · ${(Number(log.distanceM) / 1000).toFixed(Number(log.distanceM) >= 10000 ? 0 : 1)}km`
+      : "";
+    return `${minutes}분${distance}`;
+  }
+  const weight = Number(log.weightKg) || 0;
+  const reps = Number(log.reps) || 0;
+  return `${weight}kg × ${reps}회`;
+}
+
+function WorkoutLogDetailList({ logs }: { logs: any[] }) {
+  const exerciseGroups = useMemo(() => groupSessionLogs(logs), [logs]);
+  if (!exerciseGroups.length) {
+    return (
+      <div className="rounded-lg border border-dashed border-border bg-accent/20 p-4 text-center text-sm text-muted-foreground">
+        기록된 운동 세트가 없습니다.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {exerciseGroups.map(({ exercise, logs: exerciseLogs }, groupIndex) => (
+        <div key={exercise?.id ?? groupIndex} className="rounded-xl border border-border bg-accent/25 p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <div className="truncate text-sm font-semibold text-foreground">
+                {exercise?.nameKo ?? exercise?.name ?? "운동"}
+              </div>
+              {exercise?.name ? (
+                <div className="truncate text-xs text-muted-foreground">{exercise.name}</div>
+              ) : null}
+            </div>
+            <Badge variant="outline" className="shrink-0 border-border text-muted-foreground">
+              {exerciseLogs.length}세트
+            </Badge>
+          </div>
+          <div className="space-y-1.5">
+            {exerciseLogs.map((item: any, index: number) => (
+              <div
+                key={item.log?.id ?? `${exercise?.id ?? "exercise"}-${index}`}
+                className="flex items-center justify-between gap-3 rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-sm"
+              >
+                <span className="text-muted-foreground">{item.log?.setNumber ?? index + 1}세트</span>
+                <span className="font-medium text-foreground">{formatWorkoutLogValue(item.log ?? {})}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SessionDetailDialog({
+  session,
+  open,
+  onOpenChange,
+  onEdit,
+}: {
+  session: any | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onEdit: (session: any) => void;
+}) {
+  const logs = session?.logs ?? [];
+  const strengthLogs = logs.filter((item: any) => item.log?.reps || item.log?.weightKg);
+  const timedLogs = logs.filter((item: any) => item.log?.durationSeconds);
+  const computedVolume = strengthLogs.reduce((sum: number, item: any) => (
+    sum + (Number(item.log?.reps) || 0) * (Number(item.log?.weightKg) || 0)
+  ), 0);
+  const totalVolume = Math.max(computedVolume, Number(session?.totalVolume) || 0);
+  const durationMinutes = Number(session?.durationMinutes) || Math.round(timedLogs.reduce((sum: number, item: any) => sum + (Number(item.log?.durationSeconds) || 0), 0) / 60) || 0;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto border-border bg-card p-0 text-foreground sm:max-w-2xl">
+        {session ? (
+          <div className="p-5">
+            <DialogHeader>
+              <DialogTitle>{session.name || "운동 기록 상세"}</DialogTitle>
+              <div className="text-sm text-muted-foreground">
+                {getSessionDate(session).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric", weekday: "short" })}
+              </div>
+            </DialogHeader>
+            <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-lg bg-accent/50 p-3">
+                <div className="text-base font-bold text-foreground">{durationMinutes}</div>
+                <div className="text-[11px] text-muted-foreground">운동 시간(분)</div>
+              </div>
+              <div className="rounded-lg bg-accent/50 p-3">
+                <div className="text-base font-bold text-foreground">{strengthLogs.length || logs.length}</div>
+                <div className="text-[11px] text-muted-foreground">기록 세트</div>
+              </div>
+              <div className="rounded-lg bg-primary/10 p-3">
+                <div className="text-base font-bold text-primary">{Math.round(totalVolume).toLocaleString()}</div>
+                <div className="text-[11px] text-muted-foreground">볼륨 kg</div>
+              </div>
+            </div>
+            <div className="mt-4">
+              <WorkoutLogDetailList logs={logs} />
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button
+                type="button"
+                className="gap-2 bg-primary text-primary-foreground"
+                onClick={() => onEdit(session)}
+              >
+                <Pencil size={14} />
+                수정
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function SessionCard({
   session,
   onDelete,
   onEdit,
+  onView,
 }: {
   session: any;
   onDelete: (sessionId: number) => void;
   onEdit: (session: any) => void;
+  onView: (session: any) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const logs = session.logs ?? [];
-  const exerciseGroups = useMemo(() => {
-    const groups = new Map<number, { exercise: any; logs: any[] }>();
-    for (const item of logs) {
-      const exerciseId = Number(item.log.exerciseId ?? item.exercise?.id);
-      if (!exerciseId) continue;
-      if (!groups.has(exerciseId)) groups.set(exerciseId, { exercise: item.exercise, logs: [] });
-      groups.get(exerciseId)!.logs.push(item);
-    }
-    return Array.from(groups.values());
-  }, [logs]);
+  const exerciseGroups = useMemo(() => groupSessionLogs(logs), [logs]);
   const exerciseCount = exerciseGroups.length;
   const strengthLogs = logs.filter((l: any) => l.log.reps || l.log.weightKg);
   const timedLogs = logs.filter((l: any) => l.log.durationSeconds);
@@ -244,8 +371,8 @@ function SessionCard({
           <button
             type="button"
             className="min-w-0 flex-1 text-left"
-            onClick={() => setExpanded((value) => !value)}
-            aria-expanded={expanded}
+            onClick={() => onView(session)}
+            aria-label="운동 기록 상세 보기"
           >
             <div className="font-semibold text-foreground text-sm">{session.name || "운동 세션"}</div>
             <div className="text-xs text-muted-foreground mt-0.5">
@@ -257,6 +384,18 @@ function SessionCard({
               <Clock size={9} className="mr-1" />
               {session.durationMinutes}분
             </Badge>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+              onClick={(event) => {
+                event.stopPropagation();
+                onView(session);
+              }}
+              title="운동 기록 상세 보기"
+            >
+              <Eye size={14} />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -362,6 +501,7 @@ export default function History() {
   const [selectedDate, setSelectedDate] = useState(toDateKey(new Date()));
   const [freeWorkoutOpen, setFreeWorkoutOpen] = useState(false);
   const [editingSession, setEditingSession] = useState<any | null>(null);
+  const [viewingSession, setViewingSession] = useState<any | null>(null);
   const exerciseSearchBoxRef = useRef<HTMLDivElement | null>(null);
 
   const { data: sessions } = trpc.history.calendar.useQuery({ year, month }, { enabled: isAuthenticated });
@@ -396,6 +536,11 @@ export default function History() {
   const openEditWorkout = (session: any) => {
     setEditingSession(session);
     setFreeWorkoutOpen(true);
+  };
+
+  const openEditFromDetail = (session: any) => {
+    setViewingSession(null);
+    openEditWorkout(session);
   };
 
   const prevMonth = () => {
@@ -511,6 +656,14 @@ export default function History() {
         initialDate={selectedDate}
         editSession={editingSession}
       />
+      <SessionDetailDialog
+        session={viewingSession}
+        open={Boolean(viewingSession)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) setViewingSession(null);
+        }}
+        onEdit={openEditFromDetail}
+      />
 
       <div className="page-header">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -573,7 +726,7 @@ export default function History() {
                 {selectedDateSessions.length > 0 ? (
                   <div className="space-y-2">
                     {selectedDateSessions.map((session: any) => (
-                      <SessionCard key={session.id} session={session} onDelete={handleDeleteSession} onEdit={openEditWorkout} />
+                      <SessionCard key={session.id} session={session} onDelete={handleDeleteSession} onEdit={openEditWorkout} onView={setViewingSession} />
                     ))}
                   </div>
                 ) : (
@@ -701,7 +854,7 @@ export default function History() {
             <div className="space-y-3">
               {recentWorkouts && recentWorkouts.length > 0 ? (
                 recentWorkouts.slice(0, 5).map((session: any) => (
-                  <SessionCard key={session.id} session={session} onDelete={handleDeleteSession} onEdit={openEditWorkout} />
+                  <SessionCard key={session.id} session={session} onDelete={handleDeleteSession} onEdit={openEditWorkout} onView={setViewingSession} />
                 ))
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
