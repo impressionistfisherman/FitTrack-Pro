@@ -1427,12 +1427,88 @@ async function upsertCoachingReadState(userId: number, scope: string, lastReadAt
   );
 }
 
+function maxTimestampIso(...values: Array<string | null | undefined>): string {
+  let maxTime = 0;
+  for (const value of values) {
+    if (!value) continue;
+    const time = Date.parse(String(value));
+    if (Number.isFinite(time)) maxTime = Math.max(maxTime, time);
+  }
+  return new Date(maxTime).toISOString();
+}
+
+async function getLatestCoachingNotificationAt(userId: number, scope: string): Promise<string | null> {
+  if (scope === COACHING_TRAINER_SCOPE) {
+    const row = await get(
+      `SELECT MAX(COALESCE(updated_at, created_at)) AS latest_at
+       FROM trainer_client_links
+       WHERE trainer_user_id = ?
+         AND status = 'pending'`,
+      userId,
+    );
+    return row?.latest_at ? String(row.latest_at) : null;
+  }
+
+  const row = await get(
+    `SELECT MAX(event_at) AS latest_at
+     FROM (
+       SELECT f.created_at AS event_at
+       FROM trainer_feedback f
+       JOIN trainer_client_links l
+         ON l.trainer_user_id = f.trainer_user_id
+        AND l.client_user_id = f.client_user_id
+        AND l.status = 'active'
+       WHERE f.client_user_id = ?
+
+       UNION ALL
+
+       SELECT p.created_at AS event_at
+       FROM trainer_pt_sessions p
+       JOIN trainer_client_links l
+         ON l.trainer_user_id = p.trainer_user_id
+        AND l.client_user_id = p.client_user_id
+        AND l.status = 'active'
+       WHERE p.client_user_id = ?
+
+       UNION ALL
+
+       SELECT c.created_at AS event_at
+       FROM coaching_comments c
+       JOIN trainer_client_links l
+         ON l.trainer_user_id = c.trainer_user_id
+        AND l.client_user_id = c.client_user_id
+        AND l.status = 'active'
+       WHERE (c.client_user_id = ? OR c.trainer_user_id = ?)
+         AND c.author_user_id != ?
+
+       UNION ALL
+
+       SELECT COALESCE(t.updated_at, t.created_at) AS event_at
+       FROM coaching_tasks t
+       JOIN trainer_client_links l
+         ON l.trainer_user_id = t.trainer_user_id
+        AND l.client_user_id = t.client_user_id
+        AND l.status = 'active'
+       WHERE t.client_user_id = ?
+     ) events`,
+    userId,
+    userId,
+    userId,
+    userId,
+    userId,
+    userId,
+  );
+  return row?.latest_at ? String(row.latest_at) : null;
+}
+
 export async function markCoachingRead(userId: number, scope = COACHING_CLIENT_SCOPE): Promise<void> {
   await ensureTrainerTables();
-  const now = new Date(Date.now() + 60_000).toISOString();
-  await upsertCoachingReadState(userId, scope, now);
+  const now = new Date().toISOString();
+  const latestNotificationAt = await getLatestCoachingNotificationAt(userId, scope);
+  const lastReadAt = maxTimestampIso(now, latestNotificationAt);
+  await upsertCoachingReadState(userId, scope, lastReadAt);
   if (scope === COACHING_CLIENT_SCOPE) {
-    await upsertCoachingReadState(userId, COACHING_LEGACY_SCOPE, now);
+    await upsertCoachingReadState(userId, COACHING_LEGACY_SCOPE, lastReadAt);
   }
 }
 

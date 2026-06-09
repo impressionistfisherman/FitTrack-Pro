@@ -1,6 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { appRouter } from "./routers";
-import { addWorkoutLog, createWorkoutSession, getExerciseHistory, getUserByEmail, upsertUser } from "./db";
+import {
+  addTrainerFeedback,
+  addTrainerPtSession,
+  addWorkoutLog,
+  createWorkoutSession,
+  ensureTrainerCode,
+  getCoachingNotificationSummary,
+  getExerciseHistory,
+  getUserByEmail,
+  linkTrainerByCode,
+  markCoachingRead,
+  reviewTrainerClientLink,
+  upsertUser,
+} from "./db";
 import { COOKIE_NAME } from "../shared/const";
 import type { TrpcContext } from "./_core/context";
 
@@ -280,6 +293,54 @@ describe("trainer notifications", () => {
       comments: 0,
       tasks: 0,
       coachingUnreadCount: 0,
+    });
+  });
+
+  it("keeps confirmed PT notifications read across fresh notification summaries", async () => {
+    const unique = Date.now();
+    const trainerId = await upsertUser({
+      openId: `trainer-notification-${unique}`,
+      email: `trainer-notification-${unique}@fittrack.local`,
+      name: "Notification Trainer",
+      loginMethod: "test",
+      role: "user",
+    });
+    const clientId = await upsertUser({
+      openId: `client-notification-${unique}`,
+      email: `client-notification-${unique}@fittrack.local`,
+      name: "Notification Client",
+      loginMethod: "test",
+      role: "user",
+    });
+
+    const code = await ensureTrainerCode(trainerId);
+    const link = await linkTrainerByCode(clientId, code);
+    await reviewTrainerClientLink(trainerId, Number(link.id), "active");
+
+    const sessionId = await createWorkoutSession(clientId, {
+      name: "PT 알림 테스트",
+      workoutDate: new Date(),
+    });
+    await addTrainerPtSession(trainerId, clientId, sessionId, "PT 운동 기록");
+
+    expect(await getCoachingNotificationSummary(clientId)).toMatchObject({
+      ptSessions: 1,
+      coachingUnreadCount: 1,
+    });
+
+    await markCoachingRead(clientId);
+    expect(await getCoachingNotificationSummary(clientId)).toMatchObject({
+      ptSessions: 0,
+      coachingUnreadCount: 0,
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    await addTrainerFeedback(trainerId, clientId, "새 피드백 알림");
+
+    expect(await getCoachingNotificationSummary(clientId)).toMatchObject({
+      feedback: 1,
+      ptSessions: 0,
+      coachingUnreadCount: 1,
     });
   });
 });
