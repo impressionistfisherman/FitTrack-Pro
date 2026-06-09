@@ -11,6 +11,7 @@ import {
   getUserByEmail,
   linkTrainerByCode,
   markCoachingRead,
+  preparePostgresSql,
   reviewTrainerClientLink,
   upsertUser,
 } from "./db";
@@ -263,6 +264,13 @@ describe("goals (protected)", () => {
 });
 
 describe("trainer notifications", () => {
+  it("does not append RETURNING id for coaching read-state inserts in Postgres SQL", () => {
+    const sql = preparePostgresSql(
+      "INSERT INTO coaching_read_states (user_id, scope, last_read_at) VALUES (?, ?, ?)",
+    );
+    expect(sql).not.toMatch(/RETURNING id/i);
+  });
+
   it("returns a coaching notification summary and supports marking it read", async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);

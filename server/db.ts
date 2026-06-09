@@ -124,11 +124,11 @@ function quotePostgresIdentifiers(sql: string) {
   }, sql);
 }
 
-function preparePostgresSql(sql: string) {
+export function preparePostgresSql(sql: string) {
   let text = quotePostgresIdentifiers(sql.trim());
   if (
     /^insert\s+/i.test(text) &&
-    !/\b(user_preferences|trainer_codes)\b/i.test(text) &&
+    !/\b(user_preferences|trainer_codes|coaching_read_states)\b/i.test(text) &&
     !/\breturning\b/i.test(text)
   ) {
     text = `${text} RETURNING id`;
