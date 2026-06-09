@@ -12,6 +12,39 @@
 
 ## 최근 완료 작업
 
+### 자유 운동 기록 이름 입력 및 모바일 운동 추가 UX 개선
+
+요청:
+
+- 운동 기록 추가/수정 시 `자유 운동 세션` 고정명이 아니라 사용자가 이름을 입력할 수 있어야 함.
+- 모바일에서 운동 검색 아래 이상한 투명 영역이 보임.
+- 운동을 추가할 때마다 위로 올라가서 추가해야 하는 흐름이 번거로워, 모바일에서는 운동 추가가 아래쪽에 있는 편이 나음.
+
+수정:
+
+- `client/src/components/FreeWorkoutDialog.tsx`
+  - 운동 기록 이름 입력 필드 추가.
+  - 새 기록 저장 시 입력한 이름으로 세션 생성.
+  - 기존 기록 수정 시 기존 이름을 불러오고 수정 저장 시 이름도 갱신.
+  - 모바일 레이아웃을 `기본 정보 → 선택한 운동 목록 → 운동 검색` 순서로 변경.
+  - 운동 검색 결과 영역에 배경/그림자를 명확히 주고 검색어가 있을 때만 열리도록 유지.
+- `server/routers.ts`, `server/db.ts`
+  - 운동 기록 수정 API가 세션 이름을 받을 수 있도록 확장.
+
+검증:
+
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 테스트 수: `55 passed`
+- 로컬 서버 응답 확인:
+  - `http://localhost:3000/history` 200 응답
+
+커밋/푸시:
+
+- 기능 커밋/푸시 완료: `Improve free workout entry UX`
+
 ### 운동별 무게 추이 UX 및 평균 무게 그래프 개선
 
 요청:

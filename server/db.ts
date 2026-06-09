@@ -2358,6 +2358,7 @@ export async function completeWorkoutSession(sessionId: number, durationMinutes:
 }
 
 export async function updateWorkoutSession(sessionId: number, input: {
+  name?: string;
   workoutDate?: Date;
   durationMinutes: number;
   notes?: string;
@@ -2387,9 +2388,11 @@ export async function updateWorkoutSession(sessionId: number, input: {
   const totalVolume = await recalculateWorkoutSessionVolume(sessionId);
   await run(
     `UPDATE workout_sessions
-     SET workoutDate = COALESCE(?, workoutDate), startedAt = COALESCE(?, startedAt),
+     SET name = COALESCE(?, name),
+         workoutDate = COALESCE(?, workoutDate), startedAt = COALESCE(?, startedAt),
          completedAt = ?, durationMinutes = ?, notes = ?, totalVolume = ?
      WHERE id = ?`,
+    input.name?.trim() || null,
     workoutDate,
     workoutDate,
     new Date().toISOString(),

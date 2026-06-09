@@ -2176,6 +2176,7 @@ ${exerciseSummary.slice(0, 80).join("\n")}
     updateSession: protectedProcedure
       .input(z.object({
         sessionId: z.number(),
+        name: z.string().trim().min(1).max(200).optional(),
         workoutDate: z.date().optional(),
         durationMinutes: z.number().min(0).max(24 * 60),
         notes: z.string().max(500).optional(),

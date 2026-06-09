@@ -193,6 +193,7 @@ export default function FreeWorkoutDialog({
   initialDate?: string;
   editSession?: any | null;
 }) {
+  const [workoutName, setWorkoutName] = useState("");
   const [workoutDate, setWorkoutDate] = useState(todayInputValue());
   const [workoutDurationMinutes, setWorkoutDurationMinutes] = useState("");
   const [search, setSearch] = useState("");
@@ -371,6 +372,7 @@ export default function FreeWorkoutDialog({
   };
 
   const reset = () => {
+    setWorkoutName("");
     setWorkoutDate(initialDate || todayInputValue());
     setWorkoutDurationMinutes("");
     setSearch("");
@@ -389,6 +391,7 @@ export default function FreeWorkoutDialog({
       return;
     }
 
+    setWorkoutName(editSession.name || "");
     setWorkoutDate(toDateInputValue(new Date(editSession.workoutDate ?? editSession.startedAt ?? editSession.completedAt)));
     setWorkoutDurationMinutes(editSession.durationMinutes ? String(editSession.durationMinutes) : "");
     setSearch("");
@@ -577,9 +580,11 @@ export default function FreeWorkoutDialog({
       const logs = buildWorkoutLogs();
       const durationMinutes = Math.max(0, enteredWorkoutDuration, selected.reduce((sum, item) => sum + estimateExerciseDuration(item), 0));
       const notes = `예상 소모 칼로리: ${totalCalories}kcal`;
+      const sessionName = workoutName.trim() || "운동 세션";
       if (editSession?.id) {
         await updateSession.mutateAsync({
           sessionId: editSession.id,
+          name: sessionName,
           workoutDate: date,
           durationMinutes,
           notes,
@@ -593,7 +598,7 @@ export default function FreeWorkoutDialog({
       }
 
       const session = await startSession.mutateAsync({
-        name: "자유 운동 세션",
+        name: sessionName,
         workoutDate: date,
       });
 
@@ -666,7 +671,18 @@ export default function FreeWorkoutDialog({
           "grid min-h-0 flex-1 gap-4 overflow-y-auto px-5 py-4",
           selected.length > 0 && "lg:grid-cols-[300px_minmax(0,1fr)] lg:items-stretch"
         )}>
-          <div className="min-w-0 space-y-3">
+          <div className="order-1 min-w-0 space-y-3 lg:order-1">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">운동 기록 이름</Label>
+              <Input
+                value={workoutName}
+                onChange={(event) => setWorkoutName(event.target.value)}
+                placeholder="예: 등 운동, 하체 루틴, PT 3회차"
+                maxLength={200}
+                className="bg-accent border-border text-foreground"
+              />
+            </div>
+
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">운동 날짜</Label>
               <Popover>
@@ -759,63 +775,63 @@ export default function FreeWorkoutDialog({
                 />
               </div>
             </label>
+          </div>
 
-            <div
-              ref={exerciseSearchRef}
-              onBlur={(event) => closeExerciseSearchIfLeaving(event.relatedTarget)}
-              className="space-y-1.5"
-            >
-              <Label className="text-xs text-muted-foreground">운동 검색</Label>
-              <div className="relative">
-                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={search}
-                  onFocus={() => setExerciseSearchOpen(search.trim().length > 0)}
-                  onChange={(event) => {
-                    setSearch(event.target.value);
-                    setExerciseSearchOpen(event.target.value.trim().length > 0);
-                  }}
-                  placeholder="벤치, 스쿼트..."
-                  className="bg-accent border-border text-foreground pl-9"
-                />
-              </div>
-
-              {shouldShowExerciseList && (
-                <ScrollArea className="h-56 rounded-lg border border-border lg:h-[224px]">
-                  <div className="p-2 space-y-1">
-                    {exercisesLoading ? (
-                      Array.from({ length: 5 }).map((_, index) => (
-                        <div key={index} className="flex items-center gap-2 rounded-md p-2">
-                          <div className="h-4 w-4 skeleton rounded" />
-                          <div className="min-w-0 flex-1 space-y-1.5">
-                            <div className="h-3.5 w-2/3 skeleton rounded" />
-                            <div className="h-3 w-1/2 skeleton rounded" />
-                          </div>
-                        </div>
-                      ))
-                    ) : filteredExercises.length > 0 ? filteredExercises.map((exercise) => (
-                      <button
-                        key={exercise.id}
-                        type="button"
-                        onClick={() => addExercise(exercise)}
-                        className="w-full flex items-center gap-2 rounded-md p-2 text-left hover:bg-accent"
-                      >
-                        <Dumbbell size={15} className="text-primary shrink-0" />
-                        <span className="min-w-0">
-                          <span className="block text-sm font-medium truncate">{exercise.nameKo}</span>
-                          <span className="block text-xs text-muted-foreground truncate">{exercise.name}</span>
-                        </span>
-                        <Plus size={14} className="ml-auto text-muted-foreground shrink-0" />
-                      </button>
-                    )) : (
-                      <div className="flex h-28 items-center justify-center rounded-md text-center text-sm text-muted-foreground">
-                        검색 결과가 없습니다
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
-              )}
+          <div
+            ref={exerciseSearchRef}
+            onBlur={(event) => closeExerciseSearchIfLeaving(event.relatedTarget)}
+            className="order-3 min-w-0 space-y-1.5 lg:order-2"
+          >
+            <Label className="text-xs text-muted-foreground">운동 검색</Label>
+            <div className="relative">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onFocus={() => setExerciseSearchOpen(search.trim().length > 0)}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setExerciseSearchOpen(event.target.value.trim().length > 0);
+                }}
+                placeholder="벤치, 스쿼트..."
+                className="bg-accent border-border text-foreground pl-9"
+              />
             </div>
+
+            {shouldShowExerciseList && (
+              <ScrollArea className="h-56 rounded-xl border border-border bg-background/95 shadow-lg lg:h-[224px]">
+                <div className="p-2 space-y-1">
+                  {exercisesLoading ? (
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <div key={index} className="flex items-center gap-2 rounded-md p-2">
+                        <div className="h-4 w-4 skeleton rounded" />
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <div className="h-3.5 w-2/3 skeleton rounded" />
+                          <div className="h-3 w-1/2 skeleton rounded" />
+                        </div>
+                      </div>
+                    ))
+                  ) : filteredExercises.length > 0 ? filteredExercises.map((exercise) => (
+                    <button
+                      key={exercise.id}
+                      type="button"
+                      onClick={() => addExercise(exercise)}
+                      className="w-full flex items-center gap-2 rounded-md p-2 text-left hover:bg-accent"
+                    >
+                      <Dumbbell size={15} className="text-primary shrink-0" />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-medium truncate">{exercise.nameKo}</span>
+                        <span className="block text-xs text-muted-foreground truncate">{exercise.name}</span>
+                      </span>
+                      <Plus size={14} className="ml-auto text-muted-foreground shrink-0" />
+                    </button>
+                  )) : (
+                    <div className="flex h-20 items-center justify-center rounded-md text-center text-sm text-muted-foreground">
+                      검색 결과가 없습니다
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            )}
             {shouldShowExerciseList && exercisesFetching && !exercisesLoading && (
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Loader2 size={12} className="animate-spin" />
@@ -824,7 +840,11 @@ export default function FreeWorkoutDialog({
             )}
           </div>
 
-          {selected.length > 0 && (
+          <div className={cn(
+            "order-2 min-w-0 lg:order-3",
+            selected.length > 0 && "lg:row-span-2"
+          )}>
+          {selected.length > 0 ? (
             <div className="min-h-0 min-w-0 rounded-xl border border-border bg-accent/10 p-3 lg:min-h-[360px] lg:max-h-[calc(90dvh-11rem)] lg:overflow-y-auto">
               <div className="space-y-3">
                 {(exerciseSelectionFeedback.isPending || exerciseFeedback) && (
@@ -1060,7 +1080,8 @@ export default function FreeWorkoutDialog({
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
+          </div>
         </div>
 
         <div className="grid shrink-0 gap-3 border-t border-border bg-card/95 px-5 py-4 backdrop-blur sm:flex sm:items-center sm:justify-between">
