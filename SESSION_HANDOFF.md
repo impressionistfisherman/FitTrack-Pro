@@ -6,11 +6,37 @@
 
 - 작업 디렉터리: `C:\Users\Hyeonil-Choi\Desktop\fittrack-pro`
 - 기본 브랜치: `master`
-- 최근 작업 커밋: `9ed3399 Add workout and PT detail views`
+- 최근 작업 커밋: `5d3b7fc Update handoff after detail views`
 - 검증 규칙은 `AGENTS.md`에 정리되어 있음.
 - `pnpm`은 PATH에 없을 수 있으므로 Windows에서는 `.\node_modules\.bin\pnpm.CMD`로 실행.
 
 ## 최근 완료 작업
+
+### 사용자 코칭 알림 해소 및 PT 상세 재보강
+
+요청:
+
+- 사용자 > 코칭에 들어와도 코칭 배지 `1`이 사라지지 않음.
+- 사용자 > 코칭 > PT 진행 기록에서 상세 내용을 확인할 수 없음.
+
+수정:
+
+- `client/src/components/AppLayout.tsx`
+  - `/coaching` 경로에 있을 때 사용자 코칭 배지를 즉시 0으로 표시.
+  - 레이아웃 레벨에서도 `trainer.markCoachingRead`를 호출해 사이드바 알림 쿼리와 페이지 알림 쿼리가 따로 움직이는 상황을 보강.
+  - 읽음 처리 mutation 시작 시 알림 캐시를 optimistic 0으로 반영.
+- `client/src/pages/Coaching.tsx`
+  - 사용자 코칭 화면의 PT 진행 기록 카드를 클릭 가능한 상세 보기로 변경.
+  - PT 상세 모달에서 트레이너, 날짜, 진행 시간, 볼륨, 메모, 운동별 전체 세트 로그를 확인 가능.
+  - 페이지 진입 시 `trainer.status` 로딩 여부와 무관하게 코칭 읽음 처리를 실행하고, 알림 재조회로 배지가 되살아나는 흐름을 줄임.
+
+검증:
+
+- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
+
+커밋/푸시:
+
+- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
 
 ### 운동/PT 상세 보기 및 코칭 읽음 처리 보강
 

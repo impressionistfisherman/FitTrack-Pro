@@ -20,7 +20,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { type MouseEvent, useEffect, useState } from "react";
+import { type MouseEvent, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -519,6 +519,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const utils = trpc.useUtils();
+  const coachingReadMarkedRef = useRef(false);
   const { data: pendingApplications } = trpc.admin.trainerApplications.useQuery(
     { status: "pending" },
     { enabled: user?.role === "admin" }
@@ -532,8 +534,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   );
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
+  const isCoachingPage = location.startsWith("/coaching");
   const adminBadge = pendingApplications?.length ?? 0;
-  const coachingBadge = coachingNotifications?.coachingUnreadCount ?? 0;
+  const coachingBadge = isCoachingPage ? 0 : coachingNotifications?.coachingUnreadCount ?? 0;
   const trainerBadge = coachingNotifications?.trainerUnreadCount ?? 0;
   const isTrainer = (user as any)?.appRole === "trainer";
   const isAdmin = user?.role === "admin";
@@ -552,6 +555,48 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location]);
+
+  const markCoachingReadMutation = trpc.trainer.markCoachingRead.useMutation({
+    onMutate: () => {
+      utils.trainer.notifications.setData(undefined, (current: any) =>
+        current ? {
+          ...current,
+          feedback: 0,
+          ptSessions: 0,
+          comments: 0,
+          tasks: 0,
+          coachingUnreadCount: 0,
+          unreadCount: Number(current.trainerUnreadCount ?? 0),
+        } : current
+      );
+    },
+    onSuccess: (summary: any) => {
+      utils.trainer.notifications.setData(undefined, (current: any) => {
+        const next = summary ?? current;
+        if (!next && !current) return current;
+        return {
+          ...(current ?? {}),
+          ...(next ?? {}),
+          feedback: 0,
+          ptSessions: 0,
+          comments: 0,
+          tasks: 0,
+          coachingUnreadCount: 0,
+          unreadCount: Number((next ?? current)?.trainerUnreadCount ?? 0),
+        };
+      });
+    },
+  });
+
+  useEffect(() => {
+    if (!isCoachingPage) {
+      coachingReadMarkedRef.current = false;
+      return;
+    }
+    if (!isAuthenticated || loading || !user?.id || coachingReadMarkedRef.current || markCoachingReadMutation.isPending) return;
+    coachingReadMarkedRef.current = true;
+    markCoachingReadMutation.mutate();
+  }, [isAuthenticated, isCoachingPage, loading, markCoachingReadMutation, user?.id]);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
