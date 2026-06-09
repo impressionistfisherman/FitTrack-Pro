@@ -203,10 +203,11 @@ export default function FreeWorkoutDialog({
   const [captureMessage, setCaptureMessage] = useState("");
   const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseAiFeedback | null>(null);
   const exerciseSearchRef = useRef<HTMLDivElement | null>(null);
-  const shouldShowExerciseList = exerciseSearchOpen || search.trim().length > 0;
+  const hasExerciseSearch = search.trim().length > 0;
+  const shouldShowExerciseList = exerciseSearchOpen && hasExerciseSearch;
 
   const { data: exercises, isLoading: exercisesLoading, isFetching: exercisesFetching } = trpc.exercises.list.useQuery(
-    { search: search || undefined },
+    { search: search.trim() || undefined },
     { enabled: open && shouldShowExerciseList, staleTime: 1000 * 60 * 5 }
   );
   const { data: weights } = trpc.bodyWeight.list.useQuery(
@@ -267,7 +268,7 @@ export default function FreeWorkoutDialog({
       intensity: "moderate",
     }]);
     setSearch("");
-    setExerciseSearchOpen(true);
+    setExerciseSearchOpen(false);
     toast.success(`${exercise.nameKo}을(를) 기록 목록에 추가했습니다.`);
     setExerciseFeedback({
       title: `${exercise.nameKo} 추가 피드백`,
@@ -769,10 +770,10 @@ export default function FreeWorkoutDialog({
                 <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={search}
-                  onFocus={() => setExerciseSearchOpen(true)}
+                  onFocus={() => setExerciseSearchOpen(search.trim().length > 0)}
                   onChange={(event) => {
                     setSearch(event.target.value);
-                    setExerciseSearchOpen(true);
+                    setExerciseSearchOpen(event.target.value.trim().length > 0);
                   }}
                   placeholder="벤치, 스쿼트..."
                   className="bg-accent border-border text-foreground pl-9"

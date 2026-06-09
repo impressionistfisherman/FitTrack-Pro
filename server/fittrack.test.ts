@@ -157,6 +157,9 @@ describe("exercises.list", () => {
     const cableRow = await caller.exercises.list({ search: "원암 케이블 로우" });
     expect(cableRow.some((exercise) => exercise.name === "Cable One Arm Bent Over Row")).toBe(true);
 
+    const compactCableRow = await caller.exercises.list({ search: "케이블원암로우" });
+    expect(compactCableRow.some((exercise) => exercise.name === "Cable One Arm Bent Over Row")).toBe(true);
+
     const triceps = await caller.exercises.list({ search: "트라이셉스 원암" });
     expect(triceps.some((exercise) => exercise.name === "Cable Standing One Arm Triceps Extension")).toBe(true);
 

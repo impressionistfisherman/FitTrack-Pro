@@ -1,16 +1,66 @@
 # FitTrack Pro 세션 인수인계
 
-마지막 업데이트: 2026-06-08
+마지막 업데이트: 2026-06-09
 
 ## 현재 저장소 상태
 
 - 작업 디렉터리: `C:\Users\Hyeonil-Choi\Desktop\fittrack-pro`
 - 기본 브랜치: `master`
-- 최근 작업 커밋: `193e1f4 Allow replacing exercises in workout edits`
+- 최근 작업 커밋: `9f64829 Dedupe exercises and improve assisted search`
 - 검증 규칙은 `AGENTS.md`에 정리되어 있음.
 - `pnpm`은 PATH에 없을 수 있으므로 Windows에서는 `.\node_modules\.bin\pnpm.CMD`로 실행.
 
 ## 최근 완료 작업
+
+### 모바일 운동 기록/코칭/오늘의 운동 UX 개선
+
+요청:
+
+- 모바일 운동 기록 시 검색어를 입력하지 않아도 운동 목록이 표시되어 답답함.
+- 운동 검색에서 띄어쓰기 차이로 검색이 안 되는 경우가 있음.
+- 트레이너가 기록한 PT 기록을 코칭에서 바로 확인하기 어려움.
+- 코칭 기록을 확인해도 알림이 해소되지 않음.
+- AI 오늘의 운동 추천을 바로 운동할 때 쓸 수 없고 루틴처럼만 보임.
+
+수정:
+
+- `client/src/components/FreeWorkoutDialog.tsx`
+  - 운동 기록 추가/수정 검색 목록은 실제 검색어가 있을 때만 표시.
+  - 운동 추가 후 검색 목록을 다시 펼치지 않도록 변경.
+- `shared/exerciseSearch.ts`
+  - `케이블원암로우`, `트라이셉스원암`처럼 띄어쓰기 없는 복합 검색어를 동의어 토큰으로 분해해 매칭.
+- `server/db.ts`
+  - 회원 코칭 화면의 PT 기록에 연결된 운동 로그를 함께 내려주도록 확장.
+- `client/src/pages/Coaching.tsx`
+  - PT 진행 기록 카드에서 운동명, 무게/횟수 또는 시간 요약을 바로 표시.
+  - 코칭 미읽음 알림을 확인 시 즉시 0으로 optimistic 반영하고 관련 쿼리 재조회.
+- `client/src/pages/AICoach.tsx`
+  - 오늘의 운동 추천 결과에 `바로 시작` 버튼 추가.
+  - 추천 1일 플랜을 루틴으로 저장한 뒤 즉시 운동 세션을 생성하고 운동 화면으로 이동.
+- `server/exerciseSearch.test.ts`, `server/fittrack.test.ts`
+  - 띄어쓰기 없는 운동 검색 검증 추가.
+
+검증:
+
+- 타깃 테스트 통과:
+  - `.\node_modules\.bin\pnpm.CMD exec vitest run server/exerciseSearch.test.ts server/fittrack.test.ts`
+  - `23 passed`
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 테스트 수: `52 passed`
+- 로컬 서버 응답 확인:
+  - `http://localhost:3000/coaching` 200 응답
+  - `http://localhost:3000/ai-coach` 200 응답
+  - `http://localhost:3000/history` 200 응답
+- 화면 자동 확인 제한:
+  - 인앱 Browser 도구가 현재 세션에 노출되지 않음.
+  - 로컬 `playwright` 패키지도 설치되어 있지 않아 스크린샷 QA는 미완료.
+
+커밋/푸시:
+
+- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
 
 ### 운동 중복 조회 제거 및 어시스트 운동 검색 보강
 
@@ -35,16 +85,17 @@
 - `server/exerciseSearch.test.ts`, `server/fittrack.test.ts`
   - `어시스트 풀업`, `보조 풀업` 검색 및 `Weighted Three Bench Dips` 중복 제거 검증 추가.
 
-현재 검증:
+검증:
 
-- 타깃 테스트 통과:
-  - `.\node_modules\.bin\pnpm.CMD exec vitest run server/exerciseSearch.test.ts server/fittrack.test.ts`
-  - `23 passed`
-- 전체 검증은 이어서 실행 예정.
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 테스트 수: `52 passed`
 
 커밋/푸시:
 
-- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
+- 커밋/푸시 완료: `9f64829 Dedupe exercises and improve assisted search`
 
 ### 운동 기록 수정 시 운동 교체
 

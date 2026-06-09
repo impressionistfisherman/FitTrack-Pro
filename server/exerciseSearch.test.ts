@@ -19,7 +19,9 @@ describe("exercise search aliases", () => {
 
   it("matches reordered one-arm cable row and triceps aliases", () => {
     expect(matchesExerciseSearchText("원암 케이블 로우", "케이블 원암 벤트 오버 로우", "Cable One Arm Bent Over Row")).toBe(true);
+    expect(matchesExerciseSearchText("케이블원암로우", "케이블 원암 벤트 오버 로우", "Cable One Arm Bent Over Row")).toBe(true);
     expect(matchesExerciseSearchText("트라이셉스 원암", "케이블 스탠딩 원암 트라이셉스 익스텐션", "Cable Standing One Arm Triceps Extension")).toBe(true);
+    expect(matchesExerciseSearchText("트라이셉스원암", "케이블 스탠딩 원암 트라이셉스 익스텐션", "Cable Standing One Arm Triceps Extension")).toBe(true);
     expect(matchesExerciseSearchText("삼두 한팔", "케이블 원암 트라이셉 푸시다운", "Cable One Arm Tricep Pushdown")).toBe(true);
     expect(matchesExerciseSearchText("one arm cable row", "케이블 원암 벤트 오버 로우", "Cable One Arm Bent Over Row")).toBe(true);
   });

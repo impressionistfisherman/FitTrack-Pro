@@ -46,7 +46,19 @@ export default function Coaching() {
   });
   const markedReadRef = useRef(false);
   const markReadMutation = trpc.trainer.markCoachingRead.useMutation({
-    onSuccess: () => utils.trainer.notifications.invalidate(),
+    onSuccess: () => {
+      utils.trainer.notifications.setData(undefined, (current: any) => current ? {
+        ...current,
+        feedback: 0,
+        ptSessions: 0,
+        comments: 0,
+        tasks: 0,
+        coachingUnreadCount: 0,
+        unreadCount: Number(current.trainerUnreadCount ?? 0),
+      } : current);
+      utils.trainer.notifications.invalidate();
+      utils.trainer.status.invalidate();
+    },
   });
   const registerTrainerMutation = trpc.trainer.registerTrainer.useMutation({
     onSuccess: () => {
@@ -79,11 +91,17 @@ export default function Coaching() {
     onError: (error) => toast.error(error.message || "과제 상태 변경에 실패했습니다."),
   });
 
+  const coachingUnreadCount = Number((notifications as any)?.coachingUnreadCount ?? 0);
+
   useEffect(() => {
-    if (!isAuthenticated || loading || isLoading || markedReadRef.current) return;
+    if (coachingUnreadCount <= 0) {
+      markedReadRef.current = false;
+      return;
+    }
+    if (!isAuthenticated || loading || isLoading || markedReadRef.current || coachingUnreadCount <= 0) return;
     markedReadRef.current = true;
     markReadMutation.mutate();
-  }, [isAuthenticated, isLoading, loading, markReadMutation]);
+  }, [coachingUnreadCount, isAuthenticated, isLoading, loading, markReadMutation]);
 
   if (loading || isLoading) {
     return (
@@ -117,7 +135,6 @@ export default function Coaching() {
   const comments = (trainerStatus as any)?.comments ?? [];
   const tasks = (trainerStatus as any)?.tasks ?? [];
   const appRole = (trainerStatus as any)?.appRole ?? (user as any)?.appRole ?? "user";
-  const coachingUnreadCount = Number((notifications as any)?.coachingUnreadCount ?? 0);
   const trainerLabel = appRole === "trainer" ? "상위 트레이너" : "트레이너";
   const primaryTrainer = linkedTrainers[0]?.trainer;
   const timeline = [
@@ -399,6 +416,29 @@ export default function Coaching() {
                         ) : null}
                       </div>
                       {item.notes ? <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{item.notes}</p> : null}
+                      {item.logs?.length ? (
+                        <div className="mt-3 space-y-2">
+                          {item.logs.slice(0, 6).map((entry: any, index: number) => {
+                            const exercise = entry.exercise ?? {};
+                            const log = entry.log ?? {};
+                            return (
+                              <div key={`${item.id}-${log.id ?? index}`} className="rounded-lg border border-border/70 bg-background/45 px-3 py-2">
+                                <div className="flex min-w-0 items-center justify-between gap-2">
+                                  <span className="truncate text-sm font-medium text-foreground">{exercise.nameKo ?? exercise.name ?? "운동"}</span>
+                                  <span className="shrink-0 text-xs text-muted-foreground">
+                                    {log.durationSeconds
+                                      ? `${Math.round(Number(log.durationSeconds) / 60)}분`
+                                      : `${log.weightKg ?? 0}kg x ${log.reps ?? 0}회`}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {item.logs.length > 6 ? (
+                            <div className="text-xs text-muted-foreground">외 {item.logs.length - 6}개 세트</div>
+                          ) : null}
+                        </div>
+                      ) : null}
                       <div className="mt-3 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs text-primary">
                         <CheckCircle2 size={12} />
                         트레이너가 기록한 PT 세션

@@ -1,7 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import DietRecommendation from "@/components/DietRecommendation";
+import { getAppPath } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { CalendarDays, Dumbbell, RefreshCw, Save, Sparkles, Utensils } from "lucide-react";
+import { CalendarDays, Dumbbell, Play, RefreshCw, Save, Sparkles, Utensils } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -623,6 +624,8 @@ function DailyWorkoutRecommendation() {
   const [customRequest, setCustomRequest] = useState("");
   const [environmentInitialized, setEnvironmentInitialized] = useState(false);
   const dailyMutation = trpc.ai.dailyWorkoutRecommendation.useMutation();
+  const saveTodayWorkout = trpc.ai.saveProgramAsRoutines.useMutation();
+  const startSession = trpc.workout.startSession.useMutation();
   const preferencesQuery = trpc.preferences.get.useQuery();
   const gymName = preferencesQuery.data?.gymName ?? "";
   const gymEquipmentDetails = preferencesQuery.data?.gymEquipmentDetails ?? [];
@@ -631,6 +634,7 @@ function DailyWorkoutRecommendation() {
   const preferredExercises = preferencesQuery.data?.preferredExercises ?? "";
   const availableWorkoutTimes = preferencesQuery.data?.availableWorkoutTimes ?? "";
   const workout = dailyMutation.data?.workout;
+  const isStartingWorkout = saveTodayWorkout.isPending || startSession.isPending;
 
   useEffect(() => {
     if (!preferencesQuery.data || environmentInitialized) return;
@@ -680,6 +684,35 @@ function DailyWorkoutRecommendation() {
       availableWorkoutTimes: availableWorkoutTimes || undefined,
       customRequest: customRequest.trim() || undefined,
     });
+  };
+
+  const startRecommendedWorkout = async () => {
+    if (!workout) return;
+    try {
+      const result = await saveTodayWorkout.mutateAsync({
+        daysPerWeek: 1,
+        program: {
+          weeklyPlan: [{
+            ...workout,
+            day: "오늘",
+          }],
+          generalAdvice: dailyMutation.data?.reason ?? "오늘의 AI 추천 운동",
+        },
+      });
+      const routineId = result.created?.[0]?.routineId;
+      if (!routineId) {
+        toast.error("추천 운동을 시작할 루틴을 만들지 못했습니다.");
+        return;
+      }
+      const session = await startSession.mutateAsync({
+        routineId,
+        name: workout.focus ? `오늘의 운동 - ${workout.focus}` : "오늘의 운동",
+      });
+      window.location.href = getAppPath(`/workout/${session.sessionId}`);
+    } catch (error) {
+      console.error(error);
+      toast.error("오늘의 운동 시작에 실패했습니다.");
+    }
   };
 
   return (
@@ -867,12 +900,23 @@ function DailyWorkoutRecommendation() {
       {workout && (
         <Card className="bg-card border-border">
           <CardContent className="p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="font-semibold text-foreground">오늘 추천 운동</div>
                 <div className="text-xs text-primary">{workout.focus}</div>
               </div>
-              <div className="text-xs text-muted-foreground">{workout.duration}</div>
+              <div className="flex items-center gap-2">
+                <div className="text-xs text-muted-foreground">{workout.duration}</div>
+                <Button
+                  size="sm"
+                  className="gap-2 bg-primary text-primary-foreground"
+                  onClick={startRecommendedWorkout}
+                  disabled={isStartingWorkout}
+                >
+                  <Play size={13} className="fill-primary-foreground" />
+                  {isStartingWorkout ? "시작 중" : "바로 시작"}
+                </Button>
+              </div>
             </div>
             {(workout.warmupStretch?.length || workout.cooldownStretch?.length) && (
               <div className="mb-3 grid gap-2 md:grid-cols-2">

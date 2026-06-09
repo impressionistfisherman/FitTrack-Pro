@@ -99,13 +99,32 @@ export function expandExerciseSearchTerms(query: string) {
 export function getExerciseSearchTokenGroups(query: string) {
   const groups: string[][] = [];
   const seenGroups = new Set<string>();
+  const addGroup = (group: string[]) => {
+    const normalizedGroup = Array.from(new Set(group)).filter(Boolean);
+    const key = normalizedGroup.slice().sort().join("|");
+    if (!key || seenGroups.has(key)) return;
+    seenGroups.add(key);
+    groups.push(normalizedGroup);
+  };
 
   for (const token of tokenizeExerciseSearchText(query)) {
     const group = Array.from(new Set([token, ...expandToken(token)])).filter(Boolean);
-    const key = group.slice().sort().join("|");
-    if (!key || seenGroups.has(key)) continue;
-    seenGroups.add(key);
-    groups.push(group);
+    if (group.length > 1) {
+      addGroup(group);
+      continue;
+    }
+
+    const embeddedSynonymKeys = Array.from(synonymByCompact.keys())
+      .filter((key) => key.length >= 2 && token.includes(key) && key !== token)
+      .sort((a, b) => token.indexOf(a) - token.indexOf(b) || b.length - a.length);
+    if (embeddedSynonymKeys.length) {
+      for (const key of embeddedSynonymKeys) {
+        addGroup(Array.from(new Set([key, ...expandToken(key)])));
+      }
+      continue;
+    }
+
+    addGroup(group);
   }
 
   return groups;

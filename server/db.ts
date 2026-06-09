@@ -1803,22 +1803,27 @@ export async function getTrainerPtSessionsForClient(clientUserId: number, limit 
     clientUserId,
     limit,
   );
-  return rows.map((row) => ({
-    id: Number(aliasValue(row, "pt_id")),
-    sessionId: Number(aliasValue(row, "session_id")),
-    title: aliasValue(row, "title"),
-    notes: aliasValue(row, "pt_notes"),
-    createdAt: aliasValue(row, "pt_created_at"),
-    sessionName: aliasValue(row, "session_name"),
-    workoutDate: aliasValue(row, "workout_date"),
-    durationMinutes: Number(aliasValue(row, "duration_minutes")) || 0,
-    totalVolume: Number(aliasValue(row, "total_volume")) || 0,
-    trainer: normalizeUser({
-      id: Number(aliasValue(row, "trainer_id")),
-      name: aliasValue(row, "trainer_name"),
-      email: aliasValue(row, "trainer_email"),
-      profileImageUrl: aliasValue(row, "trainer_profile_image_url"),
-    }),
+  return await Promise.all(rows.map(async (row) => {
+    const sessionId = Number(aliasValue(row, "session_id"));
+    const logs = sessionId ? await getWorkoutLogsBySession(sessionId) : [];
+    return {
+      id: Number(aliasValue(row, "pt_id")),
+      sessionId,
+      title: aliasValue(row, "title"),
+      notes: aliasValue(row, "pt_notes"),
+      createdAt: aliasValue(row, "pt_created_at"),
+      sessionName: aliasValue(row, "session_name"),
+      workoutDate: aliasValue(row, "workout_date"),
+      durationMinutes: Number(aliasValue(row, "duration_minutes")) || 0,
+      totalVolume: Number(aliasValue(row, "total_volume")) || 0,
+      logs,
+      trainer: normalizeUser({
+        id: Number(aliasValue(row, "trainer_id")),
+        name: aliasValue(row, "trainer_name"),
+        email: aliasValue(row, "trainer_email"),
+        profileImageUrl: aliasValue(row, "trainer_profile_image_url"),
+      }),
+    };
   }));
 }
 
