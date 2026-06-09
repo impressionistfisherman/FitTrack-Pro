@@ -537,7 +537,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
   const isCoachingPage = currentPath === "/coaching";
   const adminBadge = pendingApplications?.length ?? 0;
-  const coachingBadge = isCoachingPage ? 0 : coachingNotifications?.coachingUnreadCount ?? 0;
+  const coachingBadge = coachingNotifications?.coachingUnreadCount ?? 0;
   const trainerBadge = coachingNotifications?.trainerUnreadCount ?? 0;
   const isTrainer = (user as any)?.appRole === "trainer";
   const isAdmin = user?.role === "admin";
@@ -572,20 +572,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       );
     },
     onSuccess: (summary: any) => {
-      utils.trainer.notifications.setData(undefined, (current: any) => {
-        const next = summary ?? current;
-        if (!next && !current) return current;
-        return {
-          ...(current ?? {}),
-          ...(next ?? {}),
-          feedback: 0,
-          ptSessions: 0,
-          comments: 0,
-          tasks: 0,
-          coachingUnreadCount: 0,
-          unreadCount: Number((next ?? current)?.trainerUnreadCount ?? 0),
-        };
-      });
+      if (summary) utils.trainer.notifications.setData(undefined, summary);
+      utils.trainer.notifications.invalidate();
     },
   });
 

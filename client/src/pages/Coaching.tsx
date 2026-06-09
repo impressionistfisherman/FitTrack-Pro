@@ -183,20 +183,8 @@ export default function Coaching() {
       } : current);
     },
     onSuccess: (summary: any) => {
-      utils.trainer.notifications.setData(undefined, (current: any) => {
-        const next = summary ?? current;
-        if (!next && !current) return current;
-        return {
-          ...(current ?? {}),
-          ...(next ?? {}),
-          feedback: 0,
-          ptSessions: 0,
-          comments: 0,
-          tasks: 0,
-          coachingUnreadCount: 0,
-          unreadCount: Number((next ?? current)?.trainerUnreadCount ?? 0),
-        };
-      });
+      if (summary) utils.trainer.notifications.setData(undefined, summary);
+      utils.trainer.notifications.invalidate();
       utils.trainer.status.invalidate();
     },
   });
