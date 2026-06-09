@@ -2567,18 +2567,29 @@ export async function getExerciseHistory(userId: number, exerciseId: number, lim
     exerciseId,
   );
 
-  const grouped = new Map<number, Row[]>();
+  const grouped = new Map<string, Row[]>();
   for (const row of rows) {
-    grouped.set(row.sessionId, [...(grouped.get(row.sessionId) ?? []), row]);
+    const date = new Date(row.sessionDate);
+    const dateKey = Number.isNaN(date.getTime()) ? String(row.sessionDate ?? row.sessionId) : date.toISOString().slice(0, 10);
+    grouped.set(dateKey, [...(grouped.get(dateKey) ?? []), row]);
   }
 
-  return Array.from(grouped.values()).slice(0, limit).map((logs) => ({
-    date: logs[0].sessionDate,
-    logs,
-    maxWeight: Math.max(...logs.map((log) => log.weightKg ?? 0)),
-    maxReps: Math.max(...logs.map((log) => log.reps ?? 0)),
-    totalVolume: logs.reduce((sum, log) => sum + (log.weightKg ?? 0) * (log.reps ?? 0), 0),
-  }));
+  return Array.from(grouped.values()).slice(0, limit).map((logs) => {
+    const weightedLogs = logs.filter((log) => Number(log.weightKg) > 0);
+    const averageWeight = weightedLogs.length
+      ? weightedLogs.reduce((sum, log) => sum + Number(log.weightKg), 0) / weightedLogs.length
+      : 0;
+    return {
+      date: logs[0].sessionDate,
+      logs,
+      maxWeight: Math.max(...logs.map((log) => log.weightKg ?? 0)),
+      averageWeight: Math.round(averageWeight * 10) / 10,
+      maxReps: Math.max(...logs.map((log) => log.reps ?? 0)),
+      totalVolume: logs.reduce((sum, log) => sum + (log.weightKg ?? 0) * (log.reps ?? 0), 0),
+      setCount: logs.length,
+      sessionCount: new Set(logs.map((log) => log.sessionId)).size,
+    };
+  });
 }
 
 export async function getMonthlyStats(userId: number, months = 6): Promise<Row[]> {

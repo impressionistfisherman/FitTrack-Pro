@@ -12,6 +12,40 @@
 
 ## 최근 완료 작업
 
+### 운동별 무게 추이 UX 및 평균 무게 그래프 개선
+
+요청:
+
+- 운동별 무게 추이 카드가 처음부터 빈 공간을 너무 크게 차지함.
+- 검색 후보가 열렸을 때만 영역이 늘어나야 함.
+- 무게 추이는 예시 운동의 날짜별 평균 무게 변화량으로 보여야 상승/하락을 알 수 있음.
+
+수정:
+
+- `client/src/pages/History.tsx`
+  - 운동별 무게 추이 카드의 고정 `min-height` 제거.
+  - 검색 후보는 검색어가 있을 때만 열리도록 변경.
+  - 막대 차트를 날짜별 평균 무게 라인 차트로 변경.
+  - 최근 평균 무게와 직전 기록 대비 변화량을 차트 상단에 표시.
+- `server/db.ts`
+  - 운동 히스토리를 날짜별로 묶고 해당 날짜의 평균 무게, 세트 수, 세션 수를 반환.
+- `server/fittrack.test.ts`
+  - 운동 히스토리가 날짜별 평균 무게를 반환하는 회귀 테스트 추가.
+
+검증:
+
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 테스트 수: `55 passed`
+- 로컬 서버 응답 확인:
+  - `http://localhost:3000/history` 200 응답
+
+커밋/푸시:
+
+- 기능 커밋/푸시 완료: `Improve exercise weight trend chart`
+
 ### 코칭 알림 강력 새로고침 후 재표시 수정
 
 요청:

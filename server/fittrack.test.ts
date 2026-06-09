@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { appRouter } from "./routers";
-import { getUserByEmail, upsertUser } from "./db";
+import { addWorkoutLog, createWorkoutSession, getExerciseHistory, getUserByEmail, upsertUser } from "./db";
 import { COOKIE_NAME } from "../shared/const";
 import type { TrpcContext } from "./_core/context";
 
@@ -215,6 +215,26 @@ describe("exercises.detail", () => {
     const caller = appRouter.createCaller(ctx);
     const result = await caller.exercises.detail({ id: 999999 });
     expect(result).toBeNull();
+  });
+});
+
+describe("exercise history", () => {
+  it("returns date-level average weight for trend charts", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const exercises = await caller.exercises.list({ search: "바벨 로우" });
+    const exerciseId = exercises[0].id;
+    const sessionId = await createWorkoutSession(ctx.user!.id, {
+      name: "평균 무게 테스트",
+      workoutDate: new Date("2026-06-08T12:00:00.000Z"),
+    });
+
+    await addWorkoutLog({ sessionId, exerciseId, setNumber: 1, weightKg: 80, reps: 10 });
+    await addWorkoutLog({ sessionId, exerciseId, setNumber: 2, weightKg: 100, reps: 8 });
+
+    const history = await getExerciseHistory(ctx.user!.id, exerciseId, 1);
+    expect(history[0].averageWeight).toBe(90);
+    expect(history[0].setCount).toBeGreaterThanOrEqual(2);
   });
 });
 

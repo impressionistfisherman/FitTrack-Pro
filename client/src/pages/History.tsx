@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line
 } from "recharts";
 import { toast } from "sonner";
 
@@ -595,7 +595,8 @@ export default function History() {
       : source;
     return filtered.slice(0, 12);
   }, [exercises, exerciseSearch]);
-  const shouldShowExerciseOptions = exerciseSearchOpen || (!chartExerciseId && exerciseSearch.trim().length > 0);
+  const hasExerciseSearch = exerciseSearch.trim().length > 0;
+  const shouldShowExerciseOptions = exerciseSearchOpen && hasExerciseSearch;
 
   const closeExerciseSearchIfLeaving = (nextFocus: EventTarget | null) => {
     if (nextFocus instanceof Node && exerciseSearchBoxRef.current?.contains(nextFocus)) return;
@@ -657,9 +658,18 @@ export default function History() {
     .reverse()
     .map((h: any, index: number) => ({
       date: formatChartDateLabel(h.date, index),
+      평균무게: h.averageWeight ?? h.maxWeight,
       최대무게: h.maxWeight,
+      세트: h.setCount ?? h.logs?.length ?? 0,
       볼륨: Math.round(h.totalVolume),
     }));
+  const latestProgressPoint = progressChartData?.[progressChartData.length - 1] ?? null;
+  const previousProgressPoint = progressChartData && progressChartData.length > 1
+    ? progressChartData[progressChartData.length - 2]
+    : null;
+  const averageWeightDiff = latestProgressPoint && previousProgressPoint
+    ? Math.round((Number(latestProgressPoint.평균무게) - Number(previousProgressPoint.평균무게)) * 10) / 10
+    : null;
 
   return (
     <div className="page-shell animate-fade-in">
@@ -787,12 +797,7 @@ export default function History() {
         <div className="space-y-4">
           {/* Exercise Progress Chart */}
           <Card className="bg-card border-border">
-            <CardContent className={cn(
-              "p-5 transition-all duration-300",
-              !shouldShowExerciseOptions && !chartExerciseId && "min-h-0",
-              shouldShowExerciseOptions && !chartExerciseId && "min-h-[18rem]",
-              chartExerciseId && "min-h-[24rem]"
-            )}>
+            <CardContent className="p-4 sm:p-5">
               <div className="flex items-center gap-2 mb-3">
                 <Activity size={16} className="text-primary" />
                 <span className="font-semibold text-foreground text-sm">운동별 무게 추이</span>
@@ -800,7 +805,7 @@ export default function History() {
               <div
                 ref={exerciseSearchBoxRef}
                 onBlur={(event) => closeExerciseSearchIfLeaving(event.relatedTarget)}
-                className={cn("space-y-2", (shouldShowExerciseOptions || chartExerciseId) && "mb-3")}
+                className={cn("space-y-2", (shouldShowExerciseOptions || chartExerciseId) && "mb-4")}
               >
                 <input
                   value={exerciseSearch}
@@ -810,10 +815,10 @@ export default function History() {
                     setExerciseSearchOpen(true);
                   }}
                   placeholder={selectedChartExercise ? selectedChartExercise.nameKo : "운동 이름 검색..."}
-                  className="h-10 w-full rounded-lg border border-border bg-accent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/60"
+                  className="h-11 w-full rounded-xl border border-border bg-accent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/70"
                 />
                 {shouldShowExerciseOptions && (
-                  <div className="max-h-44 overflow-y-auto rounded-lg border border-border bg-background/40 p-1">
+                  <div className="max-h-48 overflow-y-auto rounded-xl border border-border bg-background/95 p-1 shadow-lg">
                     {filteredExerciseOptions.length > 0 ? filteredExerciseOptions.map((ex: any) => (
                       <button
                         key={ex.id}
@@ -842,17 +847,40 @@ export default function History() {
               </div>
 
               {chartExerciseId && progressChartData && progressChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={160}>
-                  <BarChart data={progressChartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.22 0.01 260)" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: "oklch(0.55 0.01 260)" }} />
-                    <YAxis tick={{ fontSize: 10, fill: "oklch(0.55 0.01 260)" }} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="최대무게" fill="oklch(0.72 0.18 160)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-accent/25 px-3 py-2 text-xs">
+                    <span className="font-semibold text-foreground">{selectedChartExercise?.nameKo ?? "선택 운동"}</span>
+                    {latestProgressPoint ? (
+                      <span className="text-muted-foreground">최근 평균 {latestProgressPoint.평균무게}kg</span>
+                    ) : null}
+                    {averageWeightDiff !== null ? (
+                      <span className={cn(
+                        "rounded-full px-2 py-0.5 font-semibold",
+                        averageWeightDiff > 0 ? "bg-primary/15 text-primary" : averageWeightDiff < 0 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"
+                      )}>
+                        {averageWeightDiff > 0 ? "+" : ""}{averageWeightDiff}kg
+                      </span>
+                    ) : null}
+                  </div>
+                  <ResponsiveContainer width="100%" height={190}>
+                    <LineChart data={progressChartData} margin={{ top: 8, right: 12, left: -10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.22 0.01 260)" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: "oklch(0.55 0.01 260)" }} />
+                      <YAxis domain={["auto", "auto"]} tick={{ fontSize: 10, fill: "oklch(0.55 0.01 260)" }} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Line
+                        type="monotone"
+                        dataKey="평균무게"
+                        stroke="oklch(0.72 0.18 160)"
+                        strokeWidth={2.5}
+                        dot={{ r: 4, fill: "oklch(0.72 0.18 160)", strokeWidth: 0 }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               ) : chartExerciseId ? (
-                <div className="h-40 flex items-center justify-center text-muted-foreground text-sm">
+                <div className="flex min-h-28 items-center justify-center rounded-xl border border-dashed border-border text-muted-foreground text-sm">
                   기록이 없습니다
                 </div>
               ) : null}
