@@ -12,6 +12,40 @@
 
 ## 최근 완료 작업
 
+### 무게 추이 날짜 표시 및 운동 검색 정렬 수정
+
+요청:
+
+- 기록 > 운동별 무게 추이 검색 결과 차트에서 날짜가 `?`로 표시됨.
+- 운동 검색 시 완전 일치가 최상단에 오고, 이후 단어 일치와 가나다순 정렬이 되어야 함.
+
+수정:
+
+- `server/db.ts`
+  - 운동 검색 결과를 완전 일치, 시작 일치, 단어 일치, 부분 일치, 가나다/영문 순으로 정렬.
+  - 운동별 히스토리 날짜를 `workoutDate`, `startedAt`, `completedAt`, `createdAt` 순서로 fallback해 반환.
+- `shared/exerciseSearch.ts`
+  - 검색 일치 점수 함수 `scoreExerciseSearchMatch` 추가.
+- `client/src/pages/History.tsx`
+  - 무게 추이 차트 날짜가 유효하지 않을 때 `?` 대신 회차 fallback을 표시.
+  - 무게 추이 운동 검색 후보에도 같은 검색 점수 정렬 적용.
+- `server/exerciseSearch.test.ts`, `server/fittrack.test.ts`
+  - 완전 일치 검색 결과가 부분 일치보다 우선되는 회귀 테스트 추가.
+
+검증:
+
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 테스트 수: `54 passed`
+- 로컬 서버 응답 확인:
+  - `http://localhost:3000/history` 200 응답
+
+커밋/푸시:
+
+- 기능 커밋/푸시 완료: `Fix exercise trend dates and search ranking`
+
 ### 인바디 이미지 기반 체성분 기록
 
 요청:

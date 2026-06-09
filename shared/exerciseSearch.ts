@@ -145,3 +145,33 @@ export function matchesExerciseSearchText(query: string, ...values: Array<string
   if (!tokenGroups.length) return true;
   return tokenGroups.every((group) => group.some((token) => haystack.includes(token)));
 }
+
+export function scoreExerciseSearchMatch(query: string, ...values: Array<string | null | undefined>) {
+  const normalizedQuery = normalizeExerciseSearchText(query);
+  if (!normalizedQuery) return 0;
+
+  const compactQuery = compactSearchText(query);
+  const normalizedValues = values
+    .filter(Boolean)
+    .map((value) => normalizeExerciseSearchText(String(value)));
+  const compactValues = normalizedValues.map((value) => compactSearchText(value));
+
+  if (compactValues.some((value) => value === compactQuery)) return 1000;
+  if (normalizedValues.some((value) => value === normalizedQuery)) return 980;
+  if (compactValues.some((value) => value.startsWith(compactQuery))) return 850;
+  if (normalizedValues.some((value) => value.startsWith(normalizedQuery))) return 820;
+
+  const queryTokens = tokenizeExerciseSearchText(query);
+  const haystackTokens = new Set(tokenizeExerciseSearchText(values.filter(Boolean).join(" ")));
+  if (queryTokens.length && queryTokens.every((token) => haystackTokens.has(token))) return 720;
+
+  const haystack = compactSearchText(values.filter(Boolean).join(" "));
+  if (haystack.includes(compactQuery)) return 620;
+
+  const tokenGroups = getExerciseSearchTokenGroups(query);
+  if (tokenGroups.length && tokenGroups.every((group) => group.some((token) => haystack.includes(token)))) {
+    return 520;
+  }
+
+  return matchesExerciseSearchText(query, ...values) ? 400 : 0;
+}

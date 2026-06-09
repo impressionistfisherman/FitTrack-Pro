@@ -5,7 +5,7 @@ import mysql from "mysql2/promise";
 import { Pool as PgPool } from "pg";
 import bulkExercises from "./data/bulk-exercises.json";
 import { ENV } from "./_core/env";
-import { expandExerciseSearchTerms, getExerciseSearchTokenGroups, matchesExerciseSearchText } from "../shared/exerciseSearch";
+import { expandExerciseSearchTerms, getExerciseSearchTokenGroups, matchesExerciseSearchText, scoreExerciseSearchMatch } from "../shared/exerciseSearch";
 
 const databaseUrl = process.env.DATABASE_URL?.trim();
 const sqlitePath = process.env.SQLITE_DB_PATH
@@ -704,9 +704,20 @@ export async function getExercises(filters?: {
   const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
   const rows = await all(`SELECT * FROM exercises ${whereClause} ORDER BY nameKo`, ...params);
   const normalizedRows = uniqueExercisesByName(rows).map((row) => normalizeExercise(row));
-  return filters?.search
-    ? normalizedRows.filter((row) => matchesExerciseSearchText(filters.search!, row.nameKo, row.name))
-    : normalizedRows;
+  if (!filters?.search) return normalizedRows;
+
+  return normalizedRows
+    .map((row) => ({
+      row,
+      score: scoreExerciseSearchMatch(filters.search!, row.nameKo, row.name),
+    }))
+    .filter((item) => item.score > 0 || matchesExerciseSearchText(filters.search!, item.row.nameKo, item.row.name))
+    .sort((a, b) => (
+      b.score - a.score
+      || String(a.row.nameKo ?? "").localeCompare(String(b.row.nameKo ?? ""), "ko-KR")
+      || String(a.row.name ?? "").localeCompare(String(b.row.name ?? ""), "en")
+    ))
+    .map((item) => item.row);
 }
 
 export async function getExerciseById(id: number): Promise<Row | null> {
@@ -2540,11 +2551,11 @@ export async function getWeeklyStats(userId: number): Promise<Row> {
 export async function getExerciseHistory(userId: number, exerciseId: number, limit = 10): Promise<Row[]> {
   const rows = await all(
     `SELECT
-       wl.*, ws.workoutDate AS sessionWorkoutDate, ws.startedAt AS sessionStartedAt, ws.id AS sessionId
+       wl.*, COALESCE(ws.workoutDate, ws.startedAt, ws.completedAt, ws.createdAt) AS sessionDate, ws.id AS sessionId
      FROM workout_logs wl
      JOIN workout_sessions ws ON wl.sessionId = ws.id
      WHERE ws.userId = ? AND wl.exerciseId = ?
-     ORDER BY COALESCE(ws.workoutDate, ws.startedAt) DESC, wl.setNumber`,
+     ORDER BY COALESCE(ws.workoutDate, ws.startedAt, ws.completedAt, ws.createdAt) DESC, wl.setNumber`,
     userId,
     exerciseId,
   );
@@ -2555,7 +2566,7 @@ export async function getExerciseHistory(userId: number, exerciseId: number, lim
   }
 
   return Array.from(grouped.values()).slice(0, limit).map((logs) => ({
-    date: logs[0].sessionWorkoutDate ?? logs[0].sessionStartedAt,
+    date: logs[0].sessionDate,
     logs,
     maxWeight: Math.max(...logs.map((log) => log.weightKg ?? 0)),
     maxReps: Math.max(...logs.map((log) => log.reps ?? 0)),

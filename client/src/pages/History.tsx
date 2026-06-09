@@ -6,7 +6,7 @@ import FreeWorkoutDialog from "@/components/FreeWorkoutDialog";
 import { cn } from "@/lib/utils";
 import { Activity, Calendar, ChevronDown, ChevronLeft, ChevronRight, Clock, Dumbbell, Eye, LogIn, TrendingUp, Plus, Trash2, Pencil } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
-import { matchesExerciseSearchText } from "@shared/exerciseSearch";
+import { matchesExerciseSearchText, scoreExerciseSearchMatch } from "@shared/exerciseSearch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,6 +34,13 @@ function getSessionDateKey(session: any) {
 
 function getMonthDateKey(year: number, month: number, day: number) {
   return toDateKey(new Date(year, month - 1, day, 12, 0, 0));
+}
+
+function formatChartDateLabel(value: unknown, fallbackIndex: number) {
+  if (!value) return `${fallbackIndex + 1}회`;
+  const date = new Date(String(value));
+  if (Number.isNaN(date.getTime())) return `${fallbackIndex + 1}회`;
+  return date.toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" });
 }
 
 function WorkoutCalendar({
@@ -570,12 +577,21 @@ export default function History() {
   }, [exercises, chartExerciseId]);
 
   const filteredExerciseOptions = useMemo(() => {
-    const query = exerciseSearch.trim().toLowerCase();
+    const query = exerciseSearch.trim();
     const source = exercises ?? [];
     const filtered = query
-      ? source.filter((exercise: any) => {
-          return matchesExerciseSearchText(query, exercise.nameKo, exercise.name);
-        })
+      ? source
+        .map((exercise: any) => ({
+          exercise,
+          score: scoreExerciseSearchMatch(query, exercise.nameKo, exercise.name),
+        }))
+        .filter((item) => item.score > 0 || matchesExerciseSearchText(query, item.exercise.nameKo, item.exercise.name))
+        .sort((a, b) => (
+          b.score - a.score
+          || String(a.exercise.nameKo ?? "").localeCompare(String(b.exercise.nameKo ?? ""), "ko-KR")
+          || String(a.exercise.name ?? "").localeCompare(String(b.exercise.name ?? ""), "en")
+        ))
+        .map((item) => item.exercise)
       : source;
     return filtered.slice(0, 12);
   }, [exercises, exerciseSearch]);
@@ -639,8 +655,8 @@ export default function History() {
   const progressChartData = exerciseProgress
     ?.slice()
     .reverse()
-    .map((h: any) => ({
-      date: h.date ? new Date(h.date).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" }) : "?",
+    .map((h: any, index: number) => ({
+      date: formatChartDateLabel(h.date, index),
       최대무게: h.maxWeight,
       볼륨: Math.round(h.totalVolume),
     }));

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { expandExerciseSearchTerms, matchesExerciseSearchText } from "../shared/exerciseSearch";
+import { expandExerciseSearchTerms, matchesExerciseSearchText, scoreExerciseSearchMatch } from "../shared/exerciseSearch";
 
 describe("exercise search aliases", () => {
   it("matches machine curl aliases to preacher curl names", () => {
@@ -35,5 +35,11 @@ describe("exercise search aliases", () => {
   it("matches assisted exercise wording in Korean and English", () => {
     expect(matchesExerciseSearchText("어시스트 풀업", "어시스트 풀업", "Assisted Pull-up")).toBe(true);
     expect(matchesExerciseSearchText("보조 풀업", "어시스트 풀업", "Assisted Pull-up")).toBe(true);
+  });
+
+  it("scores exact exercise name matches above partial matches", () => {
+    const exact = scoreExerciseSearchMatch("바벨 로우", "바벨 로우", "Bent Over Barbell Row");
+    const partial = scoreExerciseSearchMatch("바벨 로우", "덤벨 로우", "Bent Over Two-Dumbbell Row");
+    expect(exact).toBeGreaterThan(partial);
   });
 });

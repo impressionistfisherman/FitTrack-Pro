@@ -181,6 +181,15 @@ describe("exercises.list", () => {
     expect(weightedDips.filter((exercise) => exercise.name === "Weighted Three Bench Dips")).toHaveLength(1);
     expect(weightedDips.find((exercise) => exercise.name === "Weighted Three Bench Dips")?.nameKo).toBe("웨이티드 쓰리 벤치 딥스");
   });
+
+  it("sorts exact exercise search matches before partial matches", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.exercises.list({ search: "바벨 로우" });
+    expect(result.length).toBeGreaterThan(1);
+    expect(result[0].nameKo).toBe("바벨 로우");
+  });
 });
 
 describe("exercises.detail", () => {
