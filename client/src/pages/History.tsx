@@ -502,6 +502,7 @@ export default function History() {
   const [freeWorkoutOpen, setFreeWorkoutOpen] = useState(false);
   const [editingSession, setEditingSession] = useState<any | null>(null);
   const [viewingSession, setViewingSession] = useState<any | null>(null);
+  const [recentSessionsOpen, setRecentSessionsOpen] = useState(false);
   const exerciseSearchBoxRef = useRef<HTMLDivElement | null>(null);
 
   const { data: sessions } = trpc.history.calendar.useQuery({ year, month }, { enabled: isAuthenticated });
@@ -847,22 +848,36 @@ export default function History() {
 
           {/* Recent Sessions */}
           <div>
-            <div className="flex items-center gap-2 mb-3">
+            <button
+              type="button"
+              className="mb-3 flex w-full items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-left transition-colors hover:border-primary/30 hover:bg-accent/30"
+              onClick={() => setRecentSessionsOpen((value) => !value)}
+              aria-expanded={recentSessionsOpen}
+            >
               <Dumbbell size={16} className="text-primary" />
               <span className="font-semibold text-foreground text-sm">최근 운동 기록</span>
-            </div>
-            <div className="space-y-3">
-              {recentWorkouts && recentWorkouts.length > 0 ? (
-                recentWorkouts.slice(0, 5).map((session: any) => (
-                  <SessionCard key={session.id} session={session} onDelete={handleDeleteSession} onEdit={openEditWorkout} onView={setViewingSession} />
-                ))
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Activity size={32} className="mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">아직 운동 기록이 없습니다</p>
-                </div>
-              )}
-            </div>
+              <Badge variant="outline" className="ml-auto border-border text-muted-foreground">
+                {recentWorkouts?.length ?? 0}개
+              </Badge>
+              <ChevronDown
+                size={16}
+                className={cn("text-muted-foreground transition-transform", recentSessionsOpen && "rotate-180")}
+              />
+            </button>
+            {recentSessionsOpen ? (
+              <div className="space-y-3">
+                {recentWorkouts && recentWorkouts.length > 0 ? (
+                  recentWorkouts.slice(0, 5).map((session: any) => (
+                    <SessionCard key={session.id} session={session} onDelete={handleDeleteSession} onEdit={openEditWorkout} onView={setViewingSession} />
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Activity size={32} className="mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">아직 운동 기록이 없습니다</p>
+                  </div>
+                )}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

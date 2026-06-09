@@ -6,11 +6,32 @@
 
 - 작업 디렉터리: `C:\Users\Hyeonil-Choi\Desktop\fittrack-pro`
 - 기본 브랜치: `master`
-- 최근 작업 커밋: `20c6124 Make coaching PT card action reliable`
+- 최근 작업 커밋: `c69f26d Reflect exercise durations in workout time`
 - 검증 규칙은 `AGENTS.md`에 정리되어 있음.
 - `pnpm`은 PATH에 없을 수 있으므로 Windows에서는 `.\node_modules\.bin\pnpm.CMD`로 실행.
 
 ## 최근 완료 작업
+
+### 최근 운동 기록 접기/펼치기
+
+요청:
+
+- 기록 > 최근 운동 기록도 운동이 많아지면 너무 길어질 수 있어 열고 닫을 수 있어야 함.
+
+수정:
+
+- `client/src/pages/History.tsx`
+  - 최근 운동 기록 섹션을 접기/펼치기 가능한 헤더형 UI로 변경.
+  - 기본은 접힌 상태로 표시하고, 헤더에 최근 기록 개수와 펼침 chevron을 표시.
+  - 펼쳤을 때만 최근 운동 카드 목록을 렌더링.
+
+검증:
+
+- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
+
+커밋/푸시:
+
+- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
 
 ### 운동별 시간 기록을 세션 시간에 반영
 
