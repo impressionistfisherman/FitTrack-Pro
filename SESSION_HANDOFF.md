@@ -12,6 +12,33 @@
 
 ## 최근 완료 작업
 
+### 모바일 운동 검색 sticky 처리
+
+요청:
+
+- 운동을 추가하려고 계속 아래로 내리는 것도 불편하므로 운동 검색이 계속 떠있게 만들 수 있어야 함.
+
+수정:
+
+- `client/src/components/FreeWorkoutDialog.tsx`
+  - 모바일에서 운동 검색 영역을 모달 본문 하단 sticky 패널로 변경.
+  - 저장/취소 하단 영역과 겹치지 않도록 본문 하단 여백 보강.
+  - 데스크톱에서는 기존 좌측/상단 배치를 유지.
+
+검증:
+
+- `.\node_modules\.bin\pnpm.CMD run check` 통과
+- `.\node_modules\.bin\pnpm.CMD run test` 통과
+- `.\node_modules\.bin\pnpm.CMD run build` 통과
+- `git diff --check` 통과
+- 테스트 수: `55 passed`
+- 로컬 서버 응답 확인:
+  - `http://localhost:3000/history` 200 응답
+
+커밋/푸시:
+
+- 기능 커밋/푸시 완료: `Keep mobile exercise search sticky`
+
 ### 자유 운동 기록 이름 입력 및 모바일 운동 추가 UX 개선
 
 요청:

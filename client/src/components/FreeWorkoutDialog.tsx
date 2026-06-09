@@ -668,7 +668,7 @@ export default function FreeWorkoutDialog({
         </DialogHeader>
 
         <div className={cn(
-          "grid min-h-0 flex-1 gap-4 overflow-y-auto px-5 py-4",
+          "grid min-h-0 flex-1 gap-4 overflow-y-auto px-5 pb-24 pt-4 lg:pb-4",
           selected.length > 0 && "lg:grid-cols-[300px_minmax(0,1fr)] lg:items-stretch"
         )}>
           <div className="order-1 min-w-0 space-y-3 lg:order-1">
@@ -780,7 +780,7 @@ export default function FreeWorkoutDialog({
           <div
             ref={exerciseSearchRef}
             onBlur={(event) => closeExerciseSearchIfLeaving(event.relatedTarget)}
-            className="order-3 min-w-0 space-y-1.5 lg:order-2"
+            className="sticky bottom-0 z-20 order-3 -mx-1 min-w-0 space-y-1.5 rounded-2xl border border-border bg-card/95 p-3 shadow-[0_-14px_28px_rgba(0,0,0,0.32)] backdrop-blur lg:static lg:order-2 lg:mx-0 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-0"
           >
             <Label className="text-xs text-muted-foreground">운동 검색</Label>
             <div className="relative">
