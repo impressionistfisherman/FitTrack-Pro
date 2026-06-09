@@ -6,11 +6,34 @@
 
 - 작업 디렉터리: `C:\Users\Hyeonil-Choi\Desktop\fittrack-pro`
 - 기본 브랜치: `master`
-- 최근 작업 커밋: `a14d1ff Fix coaching badge and PT detail view`
+- 최근 작업 커밋: `20c6124 Make coaching PT card action reliable`
 - 검증 규칙은 `AGENTS.md`에 정리되어 있음.
 - `pnpm`은 PATH에 없을 수 있으므로 Windows에서는 `.\node_modules\.bin\pnpm.CMD`로 실행.
 
 ## 최근 완료 작업
+
+### 운동별 시간 기록을 세션 시간에 반영
+
+요청:
+
+- 운동 기록 시 각 운동에 시간을 기록할 수 있으면 실제 운동 시간에도 해당 운동 시간이 반영되어야 함.
+
+수정:
+
+- `client/src/components/FreeWorkoutDialog.tsx`
+  - 자유 운동 기록 저장/수정 시 세션 `durationMinutes`를 `직접 입력한 실제 운동 시간`과 `운동별 시간/세트 기반 합계` 중 큰 값으로 저장.
+  - 하단 요약의 예상 시간/칼로리 계산도 같은 기준을 사용하도록 변경.
+  - 실제 운동 시간 안내 문구를 운동별 시간 합계 반영 기준으로 수정.
+- `client/src/pages/TrainerClientDetail.tsx`
+  - 트레이너 PT 기록 저장 시 진행 시간과 운동별 시간/세트 기반 합계 중 큰 값을 PT 세션 시간으로 저장.
+
+검증:
+
+- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
+
+커밋/푸시:
+
+- 현재 세션에서 전체 검증 후 커밋/푸시 예정.
 
 ### 사용자 코칭 알림 해소 및 PT 상세 재보강
 

@@ -235,6 +235,14 @@ function inputMode(exercise: any) {
   return "strength";
 }
 
+function estimatePtExerciseDuration(item: PtExercise) {
+  const mode = inputMode(item.exercise);
+  if (mode === "strength") {
+    return Math.ceil(item.sets.filter(set => set.weightKg.trim() || set.reps.trim()).length * 4);
+  }
+  return Number(item.durationMinutes) || 0;
+}
+
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -650,11 +658,15 @@ export default function TrainerClientDetail() {
       toast.error("저장할 운동 기록을 입력해주세요.");
       return;
     }
+    const estimatedDuration = selectedExercises.reduce(
+      (sum, item) => sum + estimatePtExerciseDuration(item),
+      0
+    );
     createPtRecord.mutate({
       clientUserId,
       title: ptTitle.trim() || "PT 운동 기록",
       workoutDate: new Date(`${ptDate}T12:00:00`),
-      durationMinutes: Math.max(0, Number(ptDuration) || 0),
+      durationMinutes: Math.max(0, Number(ptDuration) || 0, estimatedDuration),
       notes: ptNotes,
       feedbackMessage: ptFeedback,
       logs,

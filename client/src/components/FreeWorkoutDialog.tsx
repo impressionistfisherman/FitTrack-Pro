@@ -575,7 +575,7 @@ export default function FreeWorkoutDialog({
     try {
       const date = new Date(`${workoutDate}T12:00:00`);
       const logs = buildWorkoutLogs();
-      const durationMinutes = Math.max(0, enteredWorkoutDuration || selected.reduce((sum, item) => sum + estimateExerciseDuration(item), 0));
+      const durationMinutes = Math.max(0, enteredWorkoutDuration, selected.reduce((sum, item) => sum + estimateExerciseDuration(item), 0));
       const notes = `예상 소모 칼로리: ${totalCalories}kcal`;
       if (editSession?.id) {
         await updateSession.mutateAsync({
@@ -625,15 +625,15 @@ export default function FreeWorkoutDialog({
   const bodyWeightKg = weights?.[0]?.weightKg ?? 70;
   const enteredWorkoutDuration = Math.max(0, Number(workoutDurationMinutes) || 0);
   const estimatedDuration = selected.reduce((sum, item) => sum + estimateExerciseDuration(item), 0);
-  const totalDuration = enteredWorkoutDuration || estimatedDuration;
+  const totalDuration = Math.max(enteredWorkoutDuration, estimatedDuration);
   const timedDuration = selected.reduce((sum, item) => (
     getExerciseInputMode(item.exercise) === "strength" ? sum : sum + estimateExerciseDuration(item)
   ), 0);
   const estimatedStrengthDuration = selected.reduce((sum, item) => (
     getExerciseInputMode(item.exercise) === "strength" ? sum + estimateExerciseDuration(item) : sum
   ), 0);
-  const actualStrengthDuration = enteredWorkoutDuration
-    ? Math.max(0, enteredWorkoutDuration - timedDuration)
+  const actualStrengthDuration = totalDuration
+    ? Math.max(0, totalDuration - timedDuration)
     : estimatedStrengthDuration;
   const getAllocatedDuration = (item: SelectedExercise) => {
     if (getExerciseInputMode(item.exercise) !== "strength") return estimateExerciseDuration(item);
@@ -713,7 +713,7 @@ export default function FreeWorkoutDialog({
                 </span>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                입력하면 칼로리와 저장 시간이 이 값 기준으로 계산됩니다.
+                운동별 시간 합계가 더 크면 그 시간이 저장 시간에 반영됩니다.
               </p>
             </div>
 
