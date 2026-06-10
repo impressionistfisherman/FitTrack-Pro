@@ -57,6 +57,7 @@ export type ToolChoice =
 
 export type InvokeParams = {
   messages: Message[];
+  provider?: LlmProvider;
   tools?: Tool[];
   toolChoice?: ToolChoice;
   tool_choice?: ToolChoice;
@@ -67,6 +68,8 @@ export type InvokeParams = {
   responseFormat?: ResponseFormat;
   response_format?: ResponseFormat;
 };
+
+export type LlmProvider = "auto" | "gemini" | "openai";
 
 export type ToolCall = {
   id: string;
@@ -228,8 +231,19 @@ const resolveApiUrl = () =>
     ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
     : "https://forge.manus.im/v1/chat/completions";
 
+const resolveOpenAIApiUrl = () =>
+  ENV.openaiApiUrl && ENV.openaiApiUrl.trim().length > 0
+    ? ENV.openaiApiUrl.replace(/\/$/, "")
+    : "https://api.openai.com/v1/chat/completions";
+
 const assertApiKey = () => {
   if (!ENV.forgeApiKey) {
+    throw new Error("OPENAI_API_KEY is not configured");
+  }
+};
+
+const assertOpenAIApiKey = () => {
+  if (!ENV.openaiApiKey) {
     throw new Error("OPENAI_API_KEY is not configured");
   }
 };
@@ -545,7 +559,78 @@ async function invokeForgeLLM(params: InvokeParams): Promise<InvokeResult> {
   return (await response.json()) as InvokeResult;
 }
 
+async function invokeOpenAILLM(params: InvokeParams): Promise<InvokeResult> {
+  assertOpenAIApiKey();
+
+  const {
+    messages,
+    tools,
+    toolChoice,
+    tool_choice,
+    outputSchema,
+    output_schema,
+    responseFormat,
+    response_format,
+  } = params;
+
+  const payload: Record<string, unknown> = {
+    model: ENV.openaiModel || "gpt-5.5",
+    messages: messages.map(normalizeMessage),
+  };
+
+  if (tools && tools.length > 0) {
+    payload.tools = tools;
+  }
+
+  const normalizedToolChoice = normalizeToolChoice(
+    toolChoice || tool_choice,
+    tools
+  );
+  if (normalizedToolChoice) {
+    payload.tool_choice = normalizedToolChoice;
+  }
+
+  payload.max_completion_tokens = params.maxTokens ?? params.max_tokens ?? 8192;
+
+  const normalizedResponseFormat = normalizeResponseFormat({
+    responseFormat,
+    response_format,
+    outputSchema,
+    output_schema,
+  });
+
+  if (normalizedResponseFormat) {
+    payload.response_format = normalizedResponseFormat;
+  }
+
+  const response = await fetch(resolveOpenAIApiUrl(), {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${ENV.openaiApiKey}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `OpenAI invoke failed: ${response.status} ${response.statusText} – ${errorText}`
+    );
+  }
+
+  return (await response.json()) as InvokeResult;
+}
+
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
+  if (params.provider === "gemini") {
+    return invokeGemini(params);
+  }
+
+  if (params.provider === "openai") {
+    return invokeOpenAILLM(params);
+  }
+
   if (ENV.geminiApiKey) {
     return invokeGemini(params);
   }

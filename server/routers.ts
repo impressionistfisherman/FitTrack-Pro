@@ -1705,6 +1705,7 @@ export const appRouter = router({
         const sessions = await getLinkedClientWorkoutSessions(ctx.user.id, input.clientUserId, 5);
         const report = await getTrainerClientReport(ctx.user.id, input.clientUserId);
         const response = await invokeLLM({
+          provider: "openai",
           messages: [
             {
               role: "system",
@@ -2000,6 +2001,7 @@ export const appRouter = router({
 
         try {
           const response = await invokeLLM({
+            provider: "openai",
             messages: [
               {
                 role: "system",
@@ -2098,6 +2100,7 @@ ${exerciseSummary.slice(0, 80).join("\n")}
 
         try {
           const response = await invokeLLM({
+            provider: "gemini",
             messages: [
               {
                 role: "system",
@@ -2425,6 +2428,7 @@ ${exerciseSummary.slice(0, 80).join("\n")}
 
         const exercises = await getExercises();
         const response = await invokeLLM({
+          provider: "gemini",
           messages: [
             {
               role: "system",
@@ -2530,6 +2534,7 @@ exerciseId는 항상 0으로 반환하세요. 서버가 운동 DB와 별도로 �
         }
 
         const response = await invokeLLM({
+          provider: "gemini",
           messages: [
             {
               role: "system",
@@ -2618,6 +2623,7 @@ exerciseId는 항상 0으로 반환하세요. 서버가 운동 DB와 별도로 �
 
         try {
           const response = await invokeLLM({
+            provider: "gemini",
             messages: [
               {
                 role: "system",
@@ -2701,6 +2707,7 @@ exerciseId는 항상 0으로 반환하세요. 서버가 운동 DB와 별도로 �
           : goal ? `사용자 목표: ${goal.goal}` : "목표 미설정";
 
         const response = await invokeLLM({
+          provider: "openai",
           messages: [
             {
               role: "system",
@@ -2829,6 +2836,7 @@ ${historyText}
         }[input.intensity];
 
         const response = await invokeLLM({
+          provider: "openai",
           messages: [
             {
               role: "system",
@@ -3079,6 +3087,7 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
         : "운동 기록 없음";
 
       const response = await invokeLLM({
+        provider: "openai",
         messages: [
           {
             role: "system",
@@ -3357,6 +3366,7 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
       ].join("\n");
 
       const response = await invokeLLM({
+        provider: "openai",
         messages: [
           {
             role: "system",
@@ -3462,6 +3472,7 @@ ${mealPreferenceText}
         if (!exercise) return null;
 
         const response = await invokeLLM({
+          provider: "gemini",
           messages: [
             {
               role: "system",

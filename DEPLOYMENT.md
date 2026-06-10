@@ -40,7 +40,9 @@ GOOGLE_CLIENT_SECRET=<Google OAuth client secret>
 GITHUB_CLIENT_ID=<GitHub OAuth client id>
 GITHUB_CLIENT_SECRET=<GitHub OAuth client secret>
 GEMINI_API_KEY=<Google AI Studio API key>
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=gemini-2.5-flash
+OPENAI_API_KEY=<OpenAI API key>
+OPENAI_MODEL=gpt-5.5
 ```
 
 ## Free hosting alternative
@@ -84,6 +86,10 @@ GOOGLE_CLIENT_ID=<Google OAuth client id>
 GOOGLE_CLIENT_SECRET=<Google OAuth client secret>
 GITHUB_CLIENT_ID=<GitHub OAuth client id>
 GITHUB_CLIENT_SECRET=<GitHub OAuth client secret>
+GEMINI_API_KEY=<Google AI Studio API key>
+GEMINI_MODEL=gemini-2.5-flash
+OPENAI_API_KEY=<OpenAI API key>
+OPENAI_MODEL=gpt-5.5
 ```
 
 Make sure the Supabase database schema is created before using the app. The backend currently supports raw SQL against Postgres via `DATABASE_URL`.
