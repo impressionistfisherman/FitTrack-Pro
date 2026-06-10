@@ -75,4 +75,41 @@ describe("LLM provider routing", () => {
       maxOutputTokens: 123,
     });
   });
+
+  it("falls back to Gemini when explicit OpenAI invocation fails", async () => {
+    process.env.OPENAI_API_KEY = "test-openai-key";
+    process.env.OPENAI_MODEL = "gpt-test-model";
+    process.env.GEMINI_API_KEY = "test-gemini-key";
+    process.env.GEMINI_MODEL = "gemini-test-model";
+    vi.resetModules();
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        statusText: "Too Many Requests",
+        text: async () => JSON.stringify({ error: { code: "insufficient_quota" } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          candidates: [{ content: { parts: [{ text: "{}" }] }, finishReason: "STOP" }],
+          usageMetadata: { promptTokenCount: 1, candidatesTokenCount: 1, totalTokenCount: 2 },
+        }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { invokeLLM } = await import("./_core/llm");
+    const result = await invokeLLM({
+      provider: "openai",
+      messages: [{ role: "user", content: "hello" }],
+      maxTokens: 123,
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0][0]).toBe("https://api.openai.com/v1/chat/completions");
+    expect(fetchMock.mock.calls[1][0]).toContain("https://generativelanguage.googleapis.com/v1beta/models/gemini-test-model:generateContent");
+    expect(result.model).toBe("gemini-test-model");
+  });
 });

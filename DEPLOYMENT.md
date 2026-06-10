@@ -45,6 +45,8 @@ OPENAI_API_KEY=<OpenAI API key>
 OPENAI_MODEL=gpt-5.5
 ```
 
+AI routing: image recognition and short coaching copy use Gemini. Reports, feedback, workout recommendations, and diet recommendations try OpenAI first, then fall back to Gemini when OpenAI fails and `GEMINI_API_KEY` is configured.
+
 ## Free hosting alternative
 
 The backend now supports `DATABASE_URL`, so you can use a free MySQL-compatible hosted database instead of SQLite.
@@ -91,6 +93,8 @@ GEMINI_MODEL=gemini-2.5-flash
 OPENAI_API_KEY=<OpenAI API key>
 OPENAI_MODEL=gpt-5.5
 ```
+
+OpenAI API billing/credits are separate from ChatGPT subscriptions. If OpenAI is unavailable, keep `GEMINI_API_KEY` configured so recommendation generation can fall back to Gemini.
 
 Make sure the Supabase database schema is created before using the app. The backend currently supports raw SQL against Postgres via `DATABASE_URL`.
 

@@ -272,6 +272,20 @@ export default function DietRecommendation() {
         </CardContent>
       </Card>
 
+      {isFetching && data && (
+        <Card className="border-primary/25 bg-primary/5">
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-primary">
+              <RefreshCw size={18} className="animate-spin" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-foreground">식단 추천을 다시 생성하는 중입니다</div>
+              <div className="text-xs leading-relaxed text-muted-foreground">입력한 식사 방식과 제약 조건을 반영하고 있습니다.</div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* 현재 데이터 요약 */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <div className="p-3 bg-card border border-border rounded-xl text-center">

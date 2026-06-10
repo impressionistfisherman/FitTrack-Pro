@@ -82,6 +82,22 @@ function getAiErrorMessage(error: unknown) {
   return "서버 로그에서 AI provider 호출 오류를 확인하세요.";
 }
 
+function AiGeneratingCard({ title, description }: { title: string; description: string }) {
+  return (
+    <Card className="border-primary/25 bg-primary/5">
+      <CardContent className="flex items-center gap-3 p-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-primary">
+          <RefreshCw size={18} className="animate-spin" />
+        </div>
+        <div>
+          <div className="text-sm font-semibold text-foreground">{title}</div>
+          <div className="text-xs leading-relaxed text-muted-foreground">{description}</div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function ProgramRecommendation() {
   const [location, setLocation] = useState<"gym" | "home" | "outdoor">("gym");
   const [sessionDuration, setSessionDuration] = useState("60");
@@ -254,7 +270,7 @@ function ProgramRecommendation() {
           <span className="font-semibold text-foreground">AI 맞춤 운동 추천</span>
         </div>
         <Button size="sm" className="gap-2 bg-primary text-primary-foreground" onClick={requestProgram} disabled={programMutation.isPending}>
-          <RefreshCw size={13} />
+          <RefreshCw size={13} className={programMutation.isPending ? "animate-spin" : undefined} />
           {programMutation.isPending ? "생성 중" : "추천 받기"}
         </Button>
       </div>
@@ -533,6 +549,13 @@ function ProgramRecommendation() {
         </Card>
       )}
 
+      {programMutation.isPending && (
+        <AiGeneratingCard
+          title="운동 루틴을 생성하는 중입니다"
+          description="운동 기록, 목표, 선택한 기구와 추가 조건을 반영하고 있습니다. 완료되면 아래에 추천 루틴이 표시됩니다."
+        />
+      )}
+
       {program && (
         <div className="space-y-3">
           <Card className="bg-card border-border">
@@ -718,7 +741,7 @@ function DailyWorkoutRecommendation() {
           <span className="font-semibold text-foreground">AI 오늘 운동 추천</span>
         </div>
         <Button size="sm" className="gap-2 bg-primary text-primary-foreground" onClick={requestDailyWorkout} disabled={dailyMutation.isPending}>
-          <RefreshCw size={13} />
+          <RefreshCw size={13} className={dailyMutation.isPending ? "animate-spin" : undefined} />
           {dailyMutation.isPending ? "생성 중" : "오늘 추천"}
         </Button>
       </div>
@@ -890,6 +913,13 @@ function DailyWorkoutRecommendation() {
             오늘 운동 추천 생성에 실패했습니다. {getAiErrorMessage(dailyMutation.error)}
           </CardContent>
         </Card>
+      )}
+
+      {dailyMutation.isPending && (
+        <AiGeneratingCard
+          title="오늘 운동을 생성하는 중입니다"
+          description="최근 운동 기록, 선택한 타겟 부위, 기구와 컨디션 요청을 반영하고 있습니다."
+        />
       )}
 
       {workout && (

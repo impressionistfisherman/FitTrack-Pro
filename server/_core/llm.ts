@@ -628,7 +628,12 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   }
 
   if (params.provider === "openai") {
-    return invokeOpenAILLM(params);
+    try {
+      return await invokeOpenAILLM(params);
+    } catch (error) {
+      if (!ENV.geminiApiKey) throw error;
+      return invokeGemini({ ...params, provider: "gemini" });
+    }
   }
 
   if (ENV.geminiApiKey) {

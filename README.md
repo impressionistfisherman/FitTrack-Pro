@@ -66,6 +66,7 @@ VITE_API_BASE_URL=
 
 `DATABASE_URL`이 있으면 원격 DB를 사용하고, 없으면 로컬 SQLite를 사용합니다.
 이미지 인식과 짧은 코칭 문장은 Gemini를 사용하고, 리포트/피드백/운동 추천/식단 추천은 OpenAI를 사용합니다.
+OpenAI 호출이 실패하거나 크레딧/한도 문제로 응답하지 않으면 `GEMINI_API_KEY`가 있는 경우 Gemini로 자동 대체합니다.
 
 ## 주요 기능
 
@@ -81,5 +82,5 @@ VITE_API_BASE_URL=
 
 - 로그인 후 유지가 안 되면 `APP_ORIGIN`, `APP_REDIRECT_URL`, OAuth callback URL을 확인하세요.
 - 배포 새로고침 404가 나면 `vercel.json`의 SPA rewrite가 배포에 반영됐는지 확인하세요.
-- AI 추천 실패 시 `GEMINI_API_KEY`, `OPENAI_API_KEY`, `GEMINI_MODEL`, `OPENAI_MODEL` 값을 확인하세요.
+- AI 추천 실패 시 `GEMINI_API_KEY`, `OPENAI_API_KEY`, `GEMINI_MODEL`, `OPENAI_MODEL` 값을 확인하세요. OpenAI 크레딧이 없어도 Gemini 키가 있으면 추천은 Gemini로 대체됩니다.
 - DB 데이터가 비어 있으면 `pnpm run seed`와 `pnpm run status`를 실행하세요.
