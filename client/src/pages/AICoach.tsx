@@ -86,12 +86,12 @@ function ProgramRecommendation() {
   const [location, setLocation] = useState<"gym" | "home" | "outdoor">("gym");
   const [sessionDuration, setSessionDuration] = useState("60");
   const [daysPerWeek, setDaysPerWeek] = useState("3");
-  const [equipment, setEquipment] = useState<string[]>(["dumbbell", "barbell", "machine", "cable"]);
+  const [equipment, setEquipment] = useState<string[]>([]);
   const [splitPreference, setSplitPreference] = useState("auto");
   const [excludedBodyParts, setExcludedBodyParts] = useState<string[]>([]);
-  const [includeCardio, setIncludeCardio] = useState(true);
-  const [avoidCardioOnLegDay, setAvoidCardioOnLegDay] = useState(true);
-  const [includeCore, setIncludeCore] = useState(true);
+  const [includeCardio, setIncludeCardio] = useState(false);
+  const [avoidCardioOnLegDay, setAvoidCardioOnLegDay] = useState(false);
+  const [includeCore, setIncludeCore] = useState(false);
   const [warmupStretchMinutes, setWarmupStretchMinutes] = useState("20");
   const [cooldownStretchMinutes, setCooldownStretchMinutes] = useState("20");
   const [cardioMinutes, setCardioMinutes] = useState("20");
@@ -153,9 +153,6 @@ function ProgramRecommendation() {
     if (!preferencesQuery.data || environmentInitialized) return;
     setEnvironmentInitialized(true);
     setLocation(preferencesQuery.data.gymLocation ?? "gym");
-    if (preferencesQuery.data.gymEquipment?.length) {
-      setEquipment(preferencesQuery.data.gymEquipment);
-    }
   }, [environmentInitialized, preferencesQuery.data]);
 
   const toggleEquipment = (value: string) => {
@@ -614,10 +611,10 @@ function ProgramRecommendation() {
 function DailyWorkoutRecommendation() {
   const [location, setLocation] = useState<"gym" | "home" | "outdoor">("gym");
   const [sessionDuration, setSessionDuration] = useState("60");
-  const [equipment, setEquipment] = useState<string[]>(["dumbbell", "machine", "cable"]);
-  const [targetBodyParts, setTargetBodyParts] = useState<string[]>(["back"]);
+  const [equipment, setEquipment] = useState<string[]>([]);
+  const [targetBodyParts, setTargetBodyParts] = useState<string[]>([]);
   const [includeCardio, setIncludeCardio] = useState(false);
-  const [includeCore, setIncludeCore] = useState(true);
+  const [includeCore, setIncludeCore] = useState(false);
   const [warmupStretchMinutes, setWarmupStretchMinutes] = useState("10");
   const [cooldownStretchMinutes, setCooldownStretchMinutes] = useState("10");
   const [cardioMinutes, setCardioMinutes] = useState("20");
@@ -641,9 +638,6 @@ function DailyWorkoutRecommendation() {
     if (!preferencesQuery.data || environmentInitialized) return;
     setEnvironmentInitialized(true);
     setLocation(preferencesQuery.data.gymLocation ?? "gym");
-    if (preferencesQuery.data.gymEquipment?.length) {
-      setEquipment(preferencesQuery.data.gymEquipment);
-    }
   }, [environmentInitialized, preferencesQuery.data]);
 
   const toggleEquipment = (value: string) => {
