@@ -107,6 +107,13 @@ temp/
 *.sqlite3
 local-db/mysql-data/
 
+# Local one-off deployment experiments and source images
+logo.png
+render-openapi.json
+scripts/render_create_service.py
+scripts/render_create_service_minimal.py
+scripts/render_service_payload.json
+
 # Webdev artifacts (checkpoint zips, migrations, etc.)
 .webdev/
 
