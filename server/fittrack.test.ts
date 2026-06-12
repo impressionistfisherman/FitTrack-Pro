@@ -11,6 +11,7 @@ import {
   getUserByEmail,
   linkTrainerByCode,
   markCoachingRead,
+  markTrainerWorkRead,
   preparePostgresSql,
   reviewTrainerClientLink,
   upsertUser,
@@ -349,6 +350,41 @@ describe("trainer notifications", () => {
       feedback: 1,
       ptSessions: 0,
       coachingUnreadCount: 1,
+    });
+  });
+
+  it("marks trainer client request notifications read separately from client coaching", async () => {
+    const unique = Date.now();
+    const trainerId = await upsertUser({
+      openId: `trainer-request-notification-${unique}`,
+      email: `trainer-request-notification-${unique}@fittrack.local`,
+      name: "Request Notification Trainer",
+      loginMethod: "test",
+      role: "user",
+    });
+    const clientId = await upsertUser({
+      openId: `client-request-notification-${unique}`,
+      email: `client-request-notification-${unique}@fittrack.local`,
+      name: "Request Notification Client",
+      loginMethod: "test",
+      role: "user",
+    });
+
+    const code = await ensureTrainerCode(trainerId);
+    await linkTrainerByCode(clientId, code);
+
+    expect(await getCoachingNotificationSummary(trainerId)).toMatchObject({
+      requests: 1,
+      trainerUnreadCount: 1,
+      coachingUnreadCount: 0,
+    });
+
+    await markTrainerWorkRead(trainerId);
+
+    expect(await getCoachingNotificationSummary(trainerId)).toMatchObject({
+      requests: 0,
+      trainerUnreadCount: 0,
+      coachingUnreadCount: 0,
     });
   });
 });

@@ -1512,6 +1512,10 @@ export async function markCoachingRead(userId: number, scope = COACHING_CLIENT_S
   }
 }
 
+export async function markTrainerWorkRead(userId: number): Promise<void> {
+  await markCoachingRead(userId, COACHING_TRAINER_SCOPE);
+}
+
 export async function getCoachingNotificationSummary(userId: number): Promise<Row> {
   await ensureTrainerTables();
   const clientSince = await getCoachingLastReadAt(userId, COACHING_CLIENT_SCOPE);

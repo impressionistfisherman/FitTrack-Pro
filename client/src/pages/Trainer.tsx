@@ -18,7 +18,7 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Link } from "wouter";
 
@@ -93,6 +93,7 @@ export default function Trainer() {
   const hashView = useHashView();
   const utils = trpc.useUtils();
   const [feedbackDrafts, setFeedbackDrafts] = useState<Record<number, string>>({});
+  const trainerRequestsReadMarkedRef = useRef(false);
   const { data: trainerStatus, isLoading } = trpc.trainer.status.useQuery(undefined, {
     enabled: isAuthenticated,
   });
@@ -110,8 +111,26 @@ export default function Trainer() {
     onSuccess: (_data, variables) => {
       toast.success(variables.status === "active" ? "회원 연결을 승인했습니다." : "회원 요청을 거절했습니다.");
       utils.trainer.status.invalidate();
+      utils.trainer.notifications.invalidate();
     },
     onError: (error) => toast.error(error.message || "요청 처리에 실패했습니다."),
+  });
+
+  const markTrainerRequestsReadMutation = trpc.trainer.markTrainerWorkRead.useMutation({
+    onMutate: () => {
+      utils.trainer.notifications.setData(undefined, (current: any) =>
+        current ? {
+          ...current,
+          requests: 0,
+          trainerUnreadCount: 0,
+          unreadCount: Number(current.coachingUnreadCount ?? 0),
+        } : current
+      );
+    },
+    onSuccess: (summary: any) => {
+      if (summary) utils.trainer.notifications.setData(undefined, summary);
+      utils.trainer.notifications.invalidate();
+    },
   });
 
   const addTrainerFeedbackMutation = trpc.trainer.addFeedback.useMutation({
@@ -122,6 +141,28 @@ export default function Trainer() {
     },
     onError: (error) => toast.error(error.message || "피드백 저장에 실패했습니다."),
   });
+
+  const appRole = (trainerStatus as any)?.appRole ?? (user as any)?.appRole ?? "user";
+  const view = hashView === "#requests" ? "requests" : hashView === "#clients" ? "clients" : "dashboard";
+
+  useEffect(() => {
+    if (view === "clients") {
+      trainerRequestsReadMarkedRef.current = false;
+      return;
+    }
+    if (
+      !isAuthenticated ||
+      loading ||
+      isLoading ||
+      appRole !== "trainer" ||
+      trainerRequestsReadMarkedRef.current ||
+      markTrainerRequestsReadMutation.isPending
+    ) {
+      return;
+    }
+    trainerRequestsReadMarkedRef.current = true;
+    markTrainerRequestsReadMutation.mutate();
+  }, [appRole, isAuthenticated, isLoading, loading, markTrainerRequestsReadMutation, view]);
 
   if (loading || isLoading) {
     return (
@@ -150,7 +191,6 @@ export default function Trainer() {
     );
   }
 
-  const appRole = (trainerStatus as any)?.appRole ?? (user as any)?.appRole ?? "user";
   if (appRole !== "trainer") {
     return (
       <div className="page-shell page-shell-narrow">
@@ -178,7 +218,6 @@ export default function Trainer() {
   const activeClientCount = clients.length;
   const totalSessions = clients.reduce((sum: number, client: any) => sum + Number(client.sessionCount ?? 0), 0);
   const clientsWithRecentWorkout = clients.filter((client: any) => client.lastWorkoutAt).length;
-  const view = hashView === "#requests" ? "requests" : hashView === "#clients" ? "clients" : "dashboard";
   const pageMeta = {
     dashboard: {
       title: "트레이너 대시보드",

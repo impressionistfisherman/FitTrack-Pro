@@ -70,6 +70,7 @@ import {
   listUserFeedback,
   linkTrainerByCode,
   markCoachingRead,
+  markTrainerWorkRead,
   reviewTrainerApplication,
   reviewTrainerClientLink,
   removeExerciseFromRoutine,
@@ -1514,6 +1515,10 @@ export const appRouter = router({
     }),
     markCoachingRead: protectedProcedure.mutation(async ({ ctx }) => {
       await markCoachingRead(ctx.user.id);
+      return await getCoachingNotificationSummary(ctx.user.id);
+    }),
+    markTrainerWorkRead: protectedProcedure.mutation(async ({ ctx }) => {
+      await markTrainerWorkRead(ctx.user.id);
       return await getCoachingNotificationSummary(ctx.user.id);
     }),
     issueCode: protectedProcedure.mutation(async ({ ctx }) => {
