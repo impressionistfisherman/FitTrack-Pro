@@ -288,6 +288,7 @@ function BodyWeightSummaryCard() {
 
 function MonthlyStatsCard() {
   const { data: stats, isLoading } = trpc.monthlyStats.get.useQuery({ months: 6 }, { retry: false });
+  const volumeKey = "볼륨(kg)";
 
   if (isLoading) {
     return (
@@ -320,7 +321,7 @@ function MonthlyStatsCard() {
   const chartData = stats.slice(-6).map((item) => ({
     month: item.month,
     운동횟수: item.count,
-    볼륨: Math.round(item.totalVolume / 1000),
+    [volumeKey]: Math.round(item.totalVolume),
   }));
 
   return (
@@ -328,10 +329,18 @@ function MonthlyStatsCard() {
       <CardContent className="p-4">
         <h3 className="font-semibold text-foreground mb-3">월별 요약</h3>
         <ResponsiveContainer width="100%" height={150}>
-          <BarChart data={chartData}>
+          <BarChart data={chartData} margin={{ top: 6, right: 8, left: -18, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
             <XAxis dataKey="month" stroke="var(--color-muted-foreground)" style={{ fontSize: "12px" }} />
-            <YAxis stroke="var(--color-muted-foreground)" style={{ fontSize: "12px" }} />
+            <YAxis yAxisId="count" stroke="var(--color-muted-foreground)" style={{ fontSize: "12px" }} />
+            <YAxis
+              yAxisId="volume"
+              orientation="right"
+              width={48}
+              stroke="var(--color-blue-400)"
+              style={{ fontSize: "12px" }}
+              tickFormatter={(value) => Number(value).toLocaleString()}
+            />
             <Tooltip
               contentStyle={{
                 backgroundColor: "var(--color-card)",
@@ -339,10 +348,16 @@ function MonthlyStatsCard() {
                 borderRadius: "8px",
               }}
               labelStyle={{ color: "var(--color-foreground)" }}
+              formatter={(value, name) => {
+                const numericValue = Number(value) || 0;
+                return name === volumeKey
+                  ? [`${numericValue.toLocaleString()}kg`, "볼륨"]
+                  : [`${numericValue.toLocaleString()}회`, "운동횟수"];
+              }}
             />
             <Legend />
-            <Bar dataKey="운동횟수" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="볼륨" fill="var(--color-blue-400)" radius={[4, 4, 0, 0]} />
+            <Bar yAxisId="count" dataKey="운동횟수" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
+            <Bar yAxisId="volume" dataKey={volumeKey} name="볼륨" fill="var(--color-blue-400)" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

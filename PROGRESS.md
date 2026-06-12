@@ -1,21 +1,19 @@
 # PROGRESS
 
-- Date: 2026-06-12 13:28:53 +09:00
-- Summary: Improved loading responsiveness by removing per-request authenticated user write amplification.
-- Current Status: Authenticated requests now update `users.lastSignedIn` only when the previous timestamp is stale by 15 minutes or more.
+- Date: 2026-06-12 14:39:46 +09:00
+- Summary: Fixed missing monthly volume numbers in the home summary chart.
+- Current Status: The chart now displays actual kg volume values instead of rounded tons.
 
 ## Changed Structure
 
-- `server/_core/sdk.ts`: Added `shouldTouchLastSignedIn` and throttled activity touch calls in `authenticateRequest`.
-- `server/db.ts`: Added `touchUserLastSignedIn` for a narrow timestamp-only update.
-- `server/fittrack.test.ts`: Added coverage for activity timestamp updates and throttling decisions.
-- `TEST_RESULT.md`: Recorded verification results.
+- `client/src/pages/Home.tsx`: Changed monthly chart data from rounded tons to kg.
+- `client/src/pages/Home.tsx`: Added a right-side volume axis and tooltip formatting for `kg` / workout count units.
+- `TEST_RESULT.md`: Recorded validation and browser smoke results.
 
 ## Remaining Issues
 
-- This reduces Supabase write latency during normal page/API loading, but it does not prove every production route is below the desired threshold.
-- If a deployed page still exceeds 7 seconds, production route timing should be collected next.
+- None identified for this display bug.
 
 ## Next Session
 
-- Profile production API calls and identify slow read queries if the deployed app remains slow.
+- If chart readability becomes crowded with very large volumes, consider compact tick formatting such as `30k`.
