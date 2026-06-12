@@ -9,6 +9,7 @@ import {
   ensureTrainerCode,
   getCoachingNotificationSummary,
   getExerciseHistory,
+  getMonthlyStats,
   getUserByEmail,
   linkTrainerByCode,
   markCoachingRead,
@@ -294,6 +295,30 @@ describe("goals (protected)", () => {
     const result = await caller.goals.get();
     // Just check it doesn't throw
     expect(result === null || result !== undefined).toBe(true);
+  });
+});
+
+describe("monthlyStats.get", () => {
+  it("returns kg volume for sub-ton monthly workout logs", async () => {
+    const unique = Date.now();
+    const userId = await upsertUser({
+      openId: `monthly-volume-${unique}`,
+      email: `monthly-volume-${unique}@fittrack.local`,
+      name: "Monthly Volume",
+      loginMethod: "test",
+      role: "user",
+    });
+    const sessionId = await createWorkoutSession(userId, {
+      name: "월별 볼륨 테스트",
+      workoutDate: new Date(),
+    });
+    await addWorkoutLog({ sessionId, exerciseId: 1, setNumber: 1, weightKg: 40, reps: 10 });
+
+    const stats = await getMonthlyStats(userId, 1);
+
+    expect(stats).toHaveLength(1);
+    expect(stats[0].count).toBe(1);
+    expect(stats[0].totalVolume).toBe(400);
   });
 });
 

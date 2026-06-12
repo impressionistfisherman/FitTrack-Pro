@@ -1,18 +1,19 @@
 # PROGRESS
 
-- Date: 2026-06-12 15:03:00 +09:00
-- Summary: Fixed the home monthly chart tooltip that mislabeled volume as workout count.
-- Current Status: Tooltip now separates workout count and volume units correctly.
+- Date: 2026-06-12 15:09:06 +09:00
+- Summary: Hardened monthly stats volume calculation.
+- Current Status: Monthly stats now return kg volume from session totals when available and fall back to log aggregation.
 
 ## Changed Structure
 
-- `client/src/pages/Home.tsx`: Updated Recharts tooltip formatter to identify the volume series by visible name or data key.
-- `TEST_RESULT.md`: Recorded validation and browser smoke results.
+- `server/db.ts`: Updated `getMonthlyStats` to prefer `workout_sessions.totalVolume`.
+- `server/fittrack.test.ts`: Added regression coverage for sub-ton monthly volume.
+- `TEST_RESULT.md`: Recorded validation results.
 
 ## Remaining Issues
 
-- None identified for this tooltip display bug.
+- None identified for monthly volume retrieval.
 
 ## Next Session
 
-- Review other Recharts tooltips if additional unit mismatches are reported.
+- If production data still shows `0`, inspect the affected user's workout session rows and log rows for missing weight or reps values.

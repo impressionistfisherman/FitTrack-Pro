@@ -2852,11 +2852,14 @@ export async function getMonthlyStats(userId: number, months = 6): Promise<Row[]
   const rows = await all(
     `SELECT
        COALESCE(ws.workoutDate, ws.startedAt) AS sessionDate,
-       COALESCE(SUM(COALESCE(wl.reps, 0) * COALESCE(wl.weightKg, 0)), 0) AS totalVolume
+       CASE
+         WHEN COALESCE(ws.totalVolume, 0) > 0 THEN ws.totalVolume
+         ELSE COALESCE(SUM(COALESCE(wl.reps, 0) * COALESCE(wl.weightKg, 0)), 0)
+       END AS totalVolume
      FROM workout_sessions ws
      LEFT JOIN workout_logs wl ON wl.sessionId = ws.id
      WHERE ws.userId = ?
-     GROUP BY ws.id, COALESCE(ws.workoutDate, ws.startedAt)`,
+     GROUP BY ws.id, ws.totalVolume, COALESCE(ws.workoutDate, ws.startedAt)`,
     userId,
   );
   for (const row of rows) {
