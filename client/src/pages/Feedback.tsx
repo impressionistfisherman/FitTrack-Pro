@@ -46,6 +46,7 @@ export default function Feedback() {
   const utils = trpc.useUtils();
   const [category, setCategory] = useState<FeedbackCategory>("idea");
   const [message, setMessage] = useState("");
+  const [showAllFeedback, setShowAllFeedback] = useState(false);
   const remaining = 2000 - message.length;
   const canSubmit = message.trim().length >= 5 && remaining >= 0;
   const { data: feedbackItems, isLoading } = trpc.feedback.mine.useQuery(undefined, {
@@ -62,6 +63,8 @@ export default function Feedback() {
     onError: (error) => toast.error(error.message || "의견 접수에 실패했습니다."),
   });
   const recentItems = useMemo(() => feedbackItems ?? [], [feedbackItems]);
+  const visibleItems = showAllFeedback ? recentItems : recentItems.slice(0, 5);
+  const hiddenItemCount = Math.max(recentItems.length - visibleItems.length, 0);
 
   if (loading) {
     return (
@@ -180,7 +183,7 @@ export default function Feedback() {
               </div>
             ) : (
               <div className="space-y-3">
-                {recentItems.map((item: any) => (
+                {visibleItems.map((item: any) => (
                   <div key={item.id} className="rounded-xl border border-border bg-background/40 p-4">
                     <div className="mb-3 flex items-start justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-2">
@@ -208,6 +211,16 @@ export default function Feedback() {
                     </div>
                   </div>
                 ))}
+                {hiddenItemCount > 0 || showAllFeedback ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full border-border bg-background text-foreground"
+                    onClick={() => setShowAllFeedback((value) => !value)}
+                  >
+                    {showAllFeedback ? "최근 5건만 보기" : `이전 의견 ${hiddenItemCount}건 더 보기`}
+                  </Button>
+                ) : null}
               </div>
             )}
           </div>
