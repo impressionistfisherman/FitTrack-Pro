@@ -2851,11 +2851,11 @@ export async function getMonthlyStats(userId: number, months = 6): Promise<Row[]
 
   const rows = await all(
     `SELECT
-       COALESCE(ws.workoutDate, ws.startedAt) AS sessionDate,
+       COALESCE(ws.workoutDate, ws.startedAt) AS session_date,
        CASE
          WHEN COALESCE(ws.totalVolume, 0) > 0 THEN ws.totalVolume
          ELSE COALESCE(SUM(COALESCE(wl.reps, 0) * COALESCE(wl.weightKg, 0)), 0)
-       END AS totalVolume
+       END AS total_volume
      FROM workout_sessions ws
      LEFT JOIN workout_logs wl ON wl.sessionId = ws.id
      WHERE ws.userId = ?
@@ -2863,10 +2863,10 @@ export async function getMonthlyStats(userId: number, months = 6): Promise<Row[]
     userId,
   );
   for (const row of rows) {
-    const date = new Date(row.sessionDate);
+    const date = new Date(aliasValue(row, "session_date"));
     const key = `${date.getFullYear()}-${date.getMonth()}`;
     const bucket = buckets.get(key);
-    if (bucket) bucket.totalVolume += Number(row.totalVolume) || 0;
+    if (bucket) bucket.totalVolume += Number(aliasValue(row, "total_volume")) || 0;
   }
 
   return Array.from(buckets.values());

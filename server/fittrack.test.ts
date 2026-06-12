@@ -299,6 +299,18 @@ describe("goals (protected)", () => {
 });
 
 describe("monthlyStats.get", () => {
+  it("does not rely on camelCase SQL aliases for monthly volume rows", () => {
+    const sql = preparePostgresSql(
+      `SELECT COALESCE(ws.workoutDate, ws.startedAt) AS session_date,
+              ws.totalVolume AS total_volume
+       FROM workout_sessions ws`,
+    );
+
+    expect(sql).toContain("AS session_date");
+    expect(sql).toContain("AS total_volume");
+    expect(sql).not.toContain("AS sessionDate");
+  });
+
   it("returns kg volume for sub-ton monthly workout logs", async () => {
     const unique = Date.now();
     const userId = await upsertUser({
