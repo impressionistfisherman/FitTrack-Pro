@@ -1,19 +1,18 @@
 # PROGRESS
 
-- Date: 2026-06-12 14:39:46 +09:00
-- Summary: Fixed missing monthly volume numbers in the home summary chart.
-- Current Status: The chart now displays actual kg volume values instead of rounded tons.
+- Date: 2026-06-12 15:03:00 +09:00
+- Summary: Fixed the home monthly chart tooltip that mislabeled volume as workout count.
+- Current Status: Tooltip now separates workout count and volume units correctly.
 
 ## Changed Structure
 
-- `client/src/pages/Home.tsx`: Changed monthly chart data from rounded tons to kg.
-- `client/src/pages/Home.tsx`: Added a right-side volume axis and tooltip formatting for `kg` / workout count units.
+- `client/src/pages/Home.tsx`: Updated Recharts tooltip formatter to identify the volume series by visible name or data key.
 - `TEST_RESULT.md`: Recorded validation and browser smoke results.
 
 ## Remaining Issues
 
-- None identified for this display bug.
+- None identified for this tooltip display bug.
 
 ## Next Session
 
-- If chart readability becomes crowded with very large volumes, consider compact tick formatting such as `30k`.
+- Review other Recharts tooltips if additional unit mismatches are reported.

@@ -348,9 +348,10 @@ function MonthlyStatsCard() {
                 borderRadius: "8px",
               }}
               labelStyle={{ color: "var(--color-foreground)" }}
-              formatter={(value, name) => {
+              formatter={(value, name, item) => {
                 const numericValue = Number(value) || 0;
-                return name === volumeKey
+                const isVolume = name === "볼륨" || item.dataKey === volumeKey;
+                return isVolume
                   ? [`${numericValue.toLocaleString()}kg`, "볼륨"]
                   : [`${numericValue.toLocaleString()}회`, "운동횟수"];
               }}
