@@ -1,4 +1,4 @@
-import { clearStoredSessionToken, getLoginUrl } from "@/const";
+import { clearCachedUserInfo, clearStoredSessionToken, getCachedUserInfo, getLoginUrl, setCachedUserInfo } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
 import { useCallback, useEffect, useMemo } from "react";
@@ -15,8 +15,10 @@ export function useAuth(options?: UseAuthOptions) {
 
   const meQuery = trpc.auth.me.useQuery(undefined, {
     retry: false,
+    initialData: getCachedUserInfo,
+    initialDataUpdatedAt: 0,
     staleTime: 1000 * 60 * 5,
-    refetchOnMount: false,
+    refetchOnMount: true,
     refetchOnWindowFocus: false,
   });
 
@@ -39,21 +41,23 @@ export function useAuth(options?: UseAuthOptions) {
       throw error;
     } finally {
       clearStoredSessionToken();
+      clearCachedUserInfo();
       utils.auth.me.setData(undefined, null);
       await utils.auth.me.invalidate();
     }
   }, [logoutMutation, utils]);
 
   useEffect(() => {
-    if (!meQuery.data) return;
-    localStorage.setItem("manus-runtime-user-info", JSON.stringify(meQuery.data));
-  }, [meQuery.data]);
+    if (meQuery.data) {
+      setCachedUserInfo(meQuery.data);
+      return;
+    }
+    if (meQuery.isFetched) clearCachedUserInfo();
+  }, [meQuery.data, meQuery.isFetched]);
 
   const state = useMemo(() => {
-    const isVerifyingCachedUser =
-      meQuery.fetchStatus === "fetching" && !meQuery.isFetchedAfterMount;
-    const isInitialAuthCheck = (meQuery.isPending && !meQuery.data) || isVerifyingCachedUser;
-    const verifiedUser = isInitialAuthCheck ? null : meQuery.data ?? null;
+    const isInitialAuthCheck = meQuery.isPending && !meQuery.data;
+    const verifiedUser = meQuery.data ?? null;
     return {
       user: verifiedUser,
       loading: isInitialAuthCheck || logoutMutation.isPending,
@@ -63,8 +67,6 @@ export function useAuth(options?: UseAuthOptions) {
   }, [
     meQuery.data,
     meQuery.error,
-    meQuery.fetchStatus,
-    meQuery.isFetchedAfterMount,
     meQuery.isPending,
     logoutMutation.error,
     logoutMutation.isPending,

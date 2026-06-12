@@ -1,11 +1,11 @@
 import { trpc } from "@/lib/trpc";
 import { UNAUTHED_ERR_MSG } from '@shared/const';
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { keepPreviousData, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
-import { clearStoredSessionToken, consumeSessionTokenFromHash, getApiBaseUrl, getLoginUrl, getStoredSessionToken } from "./const";
+import { clearCachedUserInfo, clearStoredSessionToken, consumeSessionTokenFromHash, getApiBaseUrl, getLoginUrl, getStoredSessionToken } from "./const";
 import "./index.css";
 
 consumeSessionTokenFromHash();
@@ -16,6 +16,7 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60,
       gcTime: 1000 * 60 * 10,
       refetchOnWindowFocus: false,
+      placeholderData: keepPreviousData,
       retry: 1,
     },
   },
@@ -30,6 +31,7 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!isUnauthorized) return;
 
   clearStoredSessionToken();
+  clearCachedUserInfo();
   queryClient.clear();
   window.location.href = getLoginUrl();
 };

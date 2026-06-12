@@ -1,6 +1,7 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
 const SESSION_TOKEN_STORAGE_KEY = "fittrack.sessionToken";
+const CACHED_USER_STORAGE_KEY = "manus-runtime-user-info";
 
 export const getStoredSessionToken = () => {
   if (typeof globalThis === "undefined" || !globalThis.localStorage) return null;
@@ -15,6 +16,28 @@ export const setStoredSessionToken = (token: string) => {
 export const clearStoredSessionToken = () => {
   if (typeof globalThis === "undefined" || !globalThis.localStorage) return;
   globalThis.localStorage.removeItem(SESSION_TOKEN_STORAGE_KEY);
+};
+
+export const getCachedUserInfo = () => {
+  if (typeof globalThis === "undefined" || !globalThis.localStorage) return null;
+  const value = globalThis.localStorage.getItem(CACHED_USER_STORAGE_KEY);
+  if (!value) return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    globalThis.localStorage.removeItem(CACHED_USER_STORAGE_KEY);
+    return null;
+  }
+};
+
+export const setCachedUserInfo = (user: unknown) => {
+  if (typeof globalThis === "undefined" || !globalThis.localStorage) return;
+  globalThis.localStorage.setItem(CACHED_USER_STORAGE_KEY, JSON.stringify(user));
+};
+
+export const clearCachedUserInfo = () => {
+  if (typeof globalThis === "undefined" || !globalThis.localStorage) return;
+  globalThis.localStorage.removeItem(CACHED_USER_STORAGE_KEY);
 };
 
 export const consumeSessionTokenFromHash = () => {
