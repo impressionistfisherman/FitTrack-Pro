@@ -27,6 +27,19 @@ export type SessionPayload = {
 const EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
 const GET_USER_INFO_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfo`;
 const GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt`;
+const LAST_SIGNED_IN_TOUCH_INTERVAL_MS = 15 * 60 * 1000;
+
+export function shouldTouchLastSignedIn(
+  lastSignedIn: Date | string | null | undefined,
+  now = new Date()
+): boolean {
+  if (!lastSignedIn) return true;
+  const lastSignedInTime = lastSignedIn instanceof Date
+    ? lastSignedIn.getTime()
+    : new Date(lastSignedIn).getTime();
+  if (!Number.isFinite(lastSignedInTime)) return true;
+  return now.getTime() - lastSignedInTime >= LAST_SIGNED_IN_TOUCH_INTERVAL_MS;
+}
 
 class OAuthService {
   constructor(private client: ReturnType<typeof axios.create>) {}
@@ -300,10 +313,10 @@ class SDKServer {
       throw ForbiddenError("User not found");
     }
 
-    await db.upsertUser({
-      openId: user.openId,
-      lastSignedIn: signedInAt,
-    });
+    if (shouldTouchLastSignedIn(user.lastSignedIn as Date | string | null, signedInAt)) {
+      await db.touchUserLastSignedIn(Number(user.id), signedInAt);
+      user = { ...user, lastSignedIn: signedInAt };
+    }
 
     return user;
   }

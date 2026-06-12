@@ -15,10 +15,12 @@ import {
   markTrainerWorkRead,
   preparePostgresSql,
   reviewTrainerClientLink,
+  touchUserLastSignedIn,
   upsertUser,
 } from "./db";
 import { COOKIE_NAME } from "../shared/const";
 import type { TrpcContext } from "./_core/context";
+import { shouldTouchLastSignedIn } from "./_core/sdk";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
@@ -107,6 +109,36 @@ describe("users.upsertUser", () => {
     expect(secondId).toBe(firstId);
     expect(byEmail.id).toBe(firstId);
     expect(byEmail.openId).toBe("google:duplicate-login");
+  });
+});
+
+describe("users.touchUserLastSignedIn", () => {
+  it("updates only the activity timestamp for an existing user", async () => {
+    const userId = await upsertUser({
+      openId: "activity-touch-user",
+      email: "activity-touch@fittrack.local",
+      name: "Activity Touch",
+      loginMethod: "email",
+      role: "user",
+      lastSignedIn: new Date("2026-01-01T00:00:00.000Z"),
+    });
+    const touchedAt = new Date("2026-01-01T00:20:00.000Z");
+
+    await touchUserLastSignedIn(userId, touchedAt);
+    const updated = await getUserByEmail("activity-touch@fittrack.local");
+
+    expect(new Date(updated.lastSignedIn).toISOString()).toBe(touchedAt.toISOString());
+    expect(updated.openId).toBe("activity-touch-user");
+  });
+});
+
+describe("auth.shouldTouchLastSignedIn", () => {
+  it("skips recent activity touches and allows stale timestamps", () => {
+    const now = new Date("2026-01-01T00:20:00.000Z");
+
+    expect(shouldTouchLastSignedIn("2026-01-01T00:10:01.000Z", now)).toBe(false);
+    expect(shouldTouchLastSignedIn("2026-01-01T00:05:00.000Z", now)).toBe(true);
+    expect(shouldTouchLastSignedIn(null, now)).toBe(true);
   });
 });
 

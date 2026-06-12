@@ -628,6 +628,17 @@ export async function upsertUser(input: InsertUser): Promise<any> {
   return getInsertId(result);
 }
 
+export async function touchUserLastSignedIn(userId: number, signedInAt = new Date()): Promise<void> {
+  await ensureUserProfileImageColumn();
+  const timestamp = signedInAt.toISOString();
+  await run(
+    "UPDATE users SET lastSignedIn = ?, updatedAt = ? WHERE id = ?",
+    timestamp,
+    timestamp,
+    userId,
+  );
+}
+
 export async function updateUserProfileName(userId: number, name: string): Promise<void> {
   await ensureUserProfileImageColumn();
   await run(
