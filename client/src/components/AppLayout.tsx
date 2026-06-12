@@ -87,6 +87,12 @@ function getVisibleNavItems({
         label: "승인 트레이너",
       },
       {
+        id: "admin-members",
+        href: "/admin#members",
+        icon: Users,
+        label: "회원 관리",
+      },
+      {
         id: "admin-user-feedback",
         href: "/admin#feedback",
         icon: Megaphone,

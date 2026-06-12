@@ -4,9 +4,10 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Megaphone, ShieldCheck, UserCheck, Users, UserX } from "lucide-react";
+import { Megaphone, Save, Search, ShieldCheck, UserCheck, Users, UserX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -30,6 +31,23 @@ const feedbackStatusLabels: Record<string, string> = {
   resolved: "완료",
   closed: "보류",
 };
+
+const roleLabels: Record<string, string> = {
+  user: "일반",
+  admin: "관리자",
+};
+
+const appRoleLabels: Record<string, string> = {
+  member: "회원",
+  trainer: "트레이너",
+};
+
+function formatDateTime(value?: string | Date | null) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" });
+}
 
 function useHashView() {
   const [hash, setHash] = useState(() => (typeof window === "undefined" ? "" : window.location.hash));
@@ -55,15 +73,28 @@ export default function Admin() {
   const utils = trpc.useUtils();
   const [status, setStatus] = useState<"pending" | "approved" | "rejected" | "all">("pending");
   const [feedbackStatus, setFeedbackStatus] = useState<"open" | "reviewing" | "resolved" | "closed" | "all">("open");
+  const [memberSearch, setMemberSearch] = useState("");
+  const [memberRole, setMemberRole] = useState<"user" | "admin" | "all">("all");
+  const [memberAppRole, setMemberAppRole] = useState<"member" | "trainer" | "all">("all");
   const [reviewNotes, setReviewNotes] = useState<Record<number, string>>({});
   const [feedbackNotes, setFeedbackNotes] = useState<Record<number, string>>({});
   const [feedbackStatuses, setFeedbackStatuses] = useState<Record<number, "open" | "reviewing" | "resolved" | "closed">>({});
+  const [memberNames, setMemberNames] = useState<Record<number, string>>({});
+  const [memberRoles, setMemberRoles] = useState<Record<number, "user" | "admin">>({});
   const { data: applications, isLoading } = trpc.admin.trainerApplications.useQuery(
     { status },
     { enabled: user?.role === "admin" }
   );
   const { data: approvedTrainers, isLoading: approvedTrainersLoading } = trpc.admin.approvedTrainers.useQuery(
     undefined,
+    { enabled: user?.role === "admin" }
+  );
+  const { data: memberSummary } = trpc.admin.memberSummary.useQuery(
+    undefined,
+    { enabled: user?.role === "admin" }
+  );
+  const { data: members, isLoading: membersLoading } = trpc.admin.members.useQuery(
+    { search: memberSearch, role: memberRole, appRole: memberAppRole },
     { enabled: user?.role === "admin" }
   );
   const { data: userFeedback, isLoading: userFeedbackLoading } = trpc.admin.userFeedback.useQuery(
@@ -85,13 +116,24 @@ export default function Admin() {
     },
     onError: (error) => toast.error(error.message || "의견 상태 저장에 실패했습니다."),
   });
+  const memberMutation = trpc.admin.updateMember.useMutation({
+    onSuccess: () => {
+      toast.success("회원 정보를 저장했습니다.");
+      utils.admin.members.invalidate();
+      utils.admin.memberSummary.invalidate();
+      utils.auth.me.invalidate();
+    },
+    onError: (error) => toast.error(error.message || "회원 정보 저장에 실패했습니다."),
+  });
   const view = hashView === "#applications"
     ? "applications"
     : hashView === "#trainers"
       ? "trainers"
-      : hashView === "#feedback"
-        ? "feedback"
-        : "dashboard";
+      : hashView === "#members"
+        ? "members"
+        : hashView === "#feedback"
+          ? "feedback"
+          : "dashboard";
   const pageMeta = {
     dashboard: {
       title: "관리자",
@@ -104,6 +146,10 @@ export default function Admin() {
     trainers: {
       title: "승인 트레이너",
       description: "승인된 트레이너와 발급된 코드를 확인하세요",
+    },
+    members: {
+      title: "회원 관리",
+      description: "가입 회원, 권한, 활동 요약과 연결 상태를 관리하세요",
     },
     feedback: {
       title: "사용자 의견",
@@ -135,7 +181,7 @@ export default function Admin() {
   }
 
   return (
-    <div className="page-shell page-shell-narrow animate-fade-in">
+    <div className="page-shell page-shell-wide animate-fade-in">
       <div className="page-header">
         <div>
           <h1 className="page-title">{pageMeta.title}</h1>
@@ -159,8 +205,8 @@ export default function Admin() {
         </Card>
         <Card className="border-border bg-card">
           <CardContent className="p-4">
-            <div className="text-xs text-muted-foreground">관리 기준</div>
-            <div className="mt-1 text-sm font-semibold text-foreground">신청 검토 후 코드 발급</div>
+            <div className="text-xs text-muted-foreground">전체 회원</div>
+            <div className="mt-1 text-2xl font-bold text-foreground">{memberSummary?.totalMembers ?? 0}</div>
           </CardContent>
         </Card>
         <Card className="border-border bg-card">
@@ -172,7 +218,7 @@ export default function Admin() {
       </div>
       ) : null}
 
-      {view !== "trainers" && view !== "feedback" ? (
+      {view !== "trainers" && view !== "members" && view !== "feedback" ? (
       <Card id="applications" className="scroll-mt-24 border-border bg-card">
         <CardContent className="p-5">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -296,7 +342,7 @@ export default function Admin() {
       </Card>
       ) : null}
 
-      {view !== "applications" && view !== "feedback" ? (
+      {view !== "applications" && view !== "members" && view !== "feedback" ? (
       <Card id="trainers" className="mt-4 scroll-mt-24 border-border bg-card">
         <CardContent className="p-5">
           <div className="mb-4 flex items-center gap-2">
@@ -331,6 +377,195 @@ export default function Admin() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      ) : null}
+
+      {view === "dashboard" || view === "members" ? (
+      <Card id="members" className="mt-4 scroll-mt-24 border-border bg-card">
+        <CardContent className="p-5">
+          <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <Users size={17} className="text-primary" />
+                <span className="font-semibold text-foreground">회원 관리</span>
+                <Badge className="border border-border bg-accent text-muted-foreground">{members?.length ?? 0}명</Badge>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                최근 접속, 운동 기록, 트레이너 연결과 관리자 권한을 한 화면에서 확인합니다.
+              </p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-[minmax(180px,1fr)_140px_140px] xl:w-[620px]">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={memberSearch}
+                  onChange={(event) => setMemberSearch(event.target.value)}
+                  placeholder="이름, 이메일, 회원 ID 검색"
+                  className="border-border bg-background pl-9 text-foreground"
+                />
+              </div>
+              <Select value={memberRole} onValueChange={(value) => setMemberRole(value as any)}>
+                <SelectTrigger className="border-border bg-background text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="border-border bg-card">
+                  <SelectItem value="all">전체 권한</SelectItem>
+                  <SelectItem value="user">일반</SelectItem>
+                  <SelectItem value="admin">관리자</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={memberAppRole} onValueChange={(value) => setMemberAppRole(value as any)}>
+                <SelectTrigger className="border-border bg-background text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="border-border bg-card">
+                  <SelectItem value="all">전체 유형</SelectItem>
+                  <SelectItem value="member">회원</SelectItem>
+                  <SelectItem value="trainer">트레이너</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {view === "members" ? (
+            <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-xl border border-border bg-accent/25 p-3">
+                <div className="text-xs text-muted-foreground">전체 회원</div>
+                <div className="mt-1 text-xl font-bold text-foreground">{memberSummary?.totalMembers ?? 0}</div>
+              </div>
+              <div className="rounded-xl border border-border bg-accent/25 p-3">
+                <div className="text-xs text-muted-foreground">최근 30일 접속</div>
+                <div className="mt-1 text-xl font-bold text-primary">{memberSummary?.active30dMembers ?? 0}</div>
+              </div>
+              <div className="rounded-xl border border-border bg-accent/25 p-3">
+                <div className="text-xs text-muted-foreground">트레이너 권한</div>
+                <div className="mt-1 text-xl font-bold text-foreground">{memberSummary?.trainerMembers ?? 0}</div>
+              </div>
+              <div className="rounded-xl border border-border bg-accent/25 p-3">
+                <div className="text-xs text-muted-foreground">관리자</div>
+                <div className="mt-1 text-xl font-bold text-foreground">{memberSummary?.adminMembers ?? 0}</div>
+              </div>
+            </div>
+          ) : null}
+
+          {membersLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="h-36 skeleton rounded-xl" />
+              ))}
+            </div>
+          ) : !members?.length ? (
+            <div className="rounded-xl border border-dashed border-border bg-accent/20 p-8 text-center text-sm text-muted-foreground">
+              조건에 맞는 회원이 없습니다.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {members.map((member: any) => {
+                const memberId = Number(member.id);
+                const draftName = memberNames[memberId] ?? member.name ?? "";
+                const draftRole = memberRoles[memberId] ?? member.role ?? "user";
+                const isCurrentUser = user?.id === memberId;
+                const hasChanges = draftName.trim() !== (member.name ?? "") || draftRole !== member.role;
+                return (
+                  <div key={memberId} className="rounded-xl border border-border bg-accent/25 p-4">
+                    <div className="grid gap-4 xl:grid-cols-[minmax(260px,1fr)_minmax(320px,1.2fr)_220px] xl:items-start">
+                      <div className="min-w-0">
+                        <div className="mb-2 flex flex-wrap items-center gap-2">
+                          <Badge className="border border-border bg-background text-muted-foreground">ID {memberId}</Badge>
+                          <Badge className={cn(
+                            "border",
+                            member.role === "admin"
+                              ? "border-primary/30 bg-primary/10 text-primary"
+                              : "border-border bg-background text-muted-foreground"
+                          )}>
+                            {roleLabels[member.role] ?? member.role}
+                          </Badge>
+                          <Badge className={cn(
+                            "border",
+                            member.appRole === "trainer"
+                              ? "border-yellow-400/30 bg-yellow-400/10 text-yellow-300"
+                              : "border-border bg-background text-muted-foreground"
+                          )}>
+                            {appRoleLabels[member.appRole] ?? "회원"}
+                          </Badge>
+                        </div>
+                        <div className="truncate text-base font-semibold text-foreground">{member.name}</div>
+                        <div className="truncate text-xs text-muted-foreground">{member.email || "이메일 없음"}</div>
+                        <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                          <span>가입 {formatDateTime(member.createdAt)}</span>
+                          <span>최근 접속 {formatDateTime(member.lastSignedIn)}</span>
+                          <span>로그인 {member.loginMethod || "-"}</span>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        <div className="rounded-lg bg-background/40 p-3">
+                          <div className="text-xs text-muted-foreground">운동 기록</div>
+                          <div className="mt-1 text-lg font-bold text-foreground">{member.workoutCount ?? 0}</div>
+                          <div className="mt-1 truncate text-[11px] text-muted-foreground">
+                            최근 {formatDateTime(member.lastWorkoutAt)}
+                          </div>
+                        </div>
+                        <div className="rounded-lg bg-background/40 p-3">
+                          <div className="text-xs text-muted-foreground">루틴 / 체성분</div>
+                          <div className="mt-1 text-lg font-bold text-foreground">
+                            {member.routineCount ?? 0} / {member.bodyWeightCount ?? 0}
+                          </div>
+                          <div className="mt-1 text-[11px] text-muted-foreground">루틴과 인바디 기록</div>
+                        </div>
+                        <div className="rounded-lg bg-background/40 p-3">
+                          <div className="text-xs text-muted-foreground">연결</div>
+                          <div className="mt-1 text-lg font-bold text-foreground">
+                            {member.trainerClientCount ?? 0} / {member.linkedTrainerCount ?? 0}
+                          </div>
+                          <div className="mt-1 text-[11px] text-muted-foreground">담당 회원 / 내 트레이너</div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Input
+                          value={draftName}
+                          onChange={(event) => setMemberNames((items) => ({ ...items, [memberId]: event.target.value }))}
+                          className="border-border bg-background text-foreground"
+                          aria-label="회원 이름"
+                        />
+                        <Select
+                          value={draftRole}
+                          onValueChange={(value) => setMemberRoles((items) => ({ ...items, [memberId]: value as any }))}
+                        >
+                          <SelectTrigger className="border-border bg-background text-foreground">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="border-border bg-card">
+                            <SelectItem value="user">일반</SelectItem>
+                            <SelectItem value="admin" disabled={isCurrentUser}>관리자</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {member.appRole === "trainer" && member.trainerCode ? (
+                          <div className="rounded-lg bg-background/40 px-3 py-2 font-mono text-xs text-foreground">
+                            {member.trainerCode}
+                          </div>
+                        ) : null}
+                        <Button
+                          className="w-full bg-primary text-primary-foreground"
+                          disabled={!hasChanges || memberMutation.isPending || (isCurrentUser && draftRole !== "admin")}
+                          onClick={() => memberMutation.mutate({
+                            userId: memberId,
+                            name: draftName,
+                            role: draftRole,
+                          })}
+                        >
+                          <Save size={14} />
+                          저장
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>

@@ -658,6 +658,149 @@ export async function updateUserRole(userId: number, role: "user" | "admin"): Pr
   );
 }
 
+export async function listAdminMembers(filters?: {
+  search?: string;
+  role?: "user" | "admin" | "all";
+  appRole?: "trainer" | "member" | "all";
+  limit?: number;
+}): Promise<Row[]> {
+  await ensureTrainerTables();
+  await ensureUserProfileImageColumn();
+  const where: string[] = [];
+  const params: any[] = [];
+  const search = filters?.search?.trim();
+  const role = filters?.role && filters.role !== "all" ? filters.role : undefined;
+  const appRole = filters?.appRole && filters.appRole !== "all" ? filters.appRole : undefined;
+  const limit = Math.min(Math.max(Number(filters?.limit ?? 100), 1), 200);
+
+  if (search) {
+    const term = `%${search.toLowerCase()}%`;
+    const searchParts = ["lower(u.name) LIKE ?", "lower(u.email) LIKE ?"];
+    params.push(term, term);
+    if (/^\d+$/.test(search)) {
+      searchParts.push("u.id = ?");
+      params.push(Number(search));
+    }
+    where.push(`(${searchParts.join(" OR ")})`);
+  }
+  if (role) {
+    where.push("u.role = ?");
+    params.push(role);
+  }
+  if (appRole === "trainer") {
+    where.push("up.pref_value = ?");
+    params.push("trainer");
+  } else if (appRole === "member") {
+    where.push("COALESCE(up.pref_value, 'member') != ?");
+    params.push("trainer");
+  }
+
+  const rows = await all(
+    `SELECT
+       u.id,
+       u.openId,
+       u.name,
+       u.email,
+       u.profileImageUrl,
+       u.loginMethod,
+       u.role,
+       u.createdAt,
+       u.updatedAt,
+       u.lastSignedIn,
+       up.pref_value AS app_role,
+       tc.code AS trainer_code,
+       COUNT(DISTINCT ws.id) AS workout_count,
+       COUNT(DISTINCT r.id) AS routine_count,
+       COUNT(DISTINCT bw.id) AS body_weight_count,
+       COUNT(DISTINCT uf.id) AS feedback_count,
+       COUNT(DISTINCT active_clients.id) AS trainer_client_count,
+       COUNT(DISTINCT active_trainers.id) AS linked_trainer_count,
+       MAX(ws.workoutDate) AS last_workout_at
+     FROM users u
+     LEFT JOIN user_preferences up ON up.user_id = u.id AND up.pref_key = 'appRole'
+     LEFT JOIN trainer_codes tc ON tc.trainer_user_id = u.id AND tc.is_active = ?
+     LEFT JOIN workout_sessions ws ON ws.userId = u.id
+     LEFT JOIN routines r ON r.userId = u.id
+     LEFT JOIN body_weights bw ON bw.userId = u.id
+     LEFT JOIN user_feedback uf ON uf.user_id = u.id
+     LEFT JOIN trainer_client_links active_clients
+       ON active_clients.trainer_user_id = u.id AND active_clients.status = 'active'
+     LEFT JOIN trainer_client_links active_trainers
+       ON active_trainers.client_user_id = u.id AND active_trainers.status = 'active'
+     ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
+     GROUP BY
+       u.id, u.openId, u.name, u.email, u.profileImageUrl, u.loginMethod, u.role,
+       u.createdAt, u.updatedAt, u.lastSignedIn, up.pref_value, tc.code
+     ORDER BY u.lastSignedIn DESC, u.updatedAt DESC, u.id DESC
+     LIMIT ?`,
+    true,
+    ...params,
+    limit,
+  );
+
+  return rows.map((row) => ({
+    ...normalizeUser(row),
+    appRole: aliasValue(row, "app_role") === "trainer" ? "trainer" : "member",
+    trainerCode: aliasValue(row, "trainer_code") ?? null,
+    workoutCount: Number(aliasValue(row, "workout_count")) || 0,
+    routineCount: Number(aliasValue(row, "routine_count")) || 0,
+    bodyWeightCount: Number(aliasValue(row, "body_weight_count")) || 0,
+    feedbackCount: Number(aliasValue(row, "feedback_count")) || 0,
+    trainerClientCount: Number(aliasValue(row, "trainer_client_count")) || 0,
+    linkedTrainerCount: Number(aliasValue(row, "linked_trainer_count")) || 0,
+    lastWorkoutAt: aliasValue(row, "last_workout_at") ?? null,
+  }));
+}
+
+export async function getAdminMemberSummary(): Promise<Row> {
+  await ensureTrainerTables();
+  await ensureUserProfileImageColumn();
+  const row = await get(
+    `SELECT
+       COUNT(*) AS total_members,
+       SUM(CASE WHEN u.role = 'admin' THEN 1 ELSE 0 END) AS admin_members,
+       SUM(CASE WHEN up.pref_value = 'trainer' THEN 1 ELSE 0 END) AS trainer_members,
+       SUM(CASE WHEN u.lastSignedIn >= ? THEN 1 ELSE 0 END) AS active_30d_members
+     FROM users u
+     LEFT JOIN user_preferences up ON up.user_id = u.id AND up.pref_key = 'appRole'`,
+    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+  );
+  return {
+    totalMembers: Number(aliasValue(row ?? {}, "total_members")) || 0,
+    adminMembers: Number(aliasValue(row ?? {}, "admin_members")) || 0,
+    trainerMembers: Number(aliasValue(row ?? {}, "trainer_members")) || 0,
+    active30dMembers: Number(aliasValue(row ?? {}, "active_30d_members")) || 0,
+  };
+}
+
+export async function updateAdminMember(userId: number, input: {
+  name?: string;
+  role?: "user" | "admin";
+}): Promise<Row> {
+  await ensureUserProfileImageColumn();
+  const user = await getUserById(userId);
+  if (!user) throw new Error("회원을 찾을 수 없습니다.");
+
+  const assignments: string[] = [];
+  const params: any[] = [];
+  if (typeof input.name === "string") {
+    const name = input.name.trim();
+    if (!name) throw new Error("회원 이름을 입력해주세요.");
+    assignments.push("name = ?");
+    params.push(name);
+  }
+  if (input.role) {
+    assignments.push("role = ?");
+    params.push(input.role);
+  }
+  if (!assignments.length) return user;
+
+  assignments.push("updatedAt = ?");
+  params.push(new Date().toISOString(), userId);
+  await run(`UPDATE users SET ${assignments.join(", ")} WHERE id = ?`, ...params);
+  return await getUserById(userId);
+}
+
 export async function getExercises(filters?: {
   bodyPart?: string;
   equipment?: string;

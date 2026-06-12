@@ -44,6 +44,7 @@ import {
   getUserGoal,
   getUserGoals,
   getUserById,
+  getAdminMemberSummary,
   getTrainerClients,
   getTrainerClientRequests,
   getTrainerCode,
@@ -67,6 +68,7 @@ import {
   isFavorite,
   listTrainerApplications,
   listApprovedTrainers,
+  listAdminMembers,
   listUserFeedback,
   linkTrainerByCode,
   markCoachingRead,
@@ -87,6 +89,7 @@ import {
   updateUserProfileImage,
   updateUserProfileName,
   updateUserFeedbackStatus,
+  updateAdminMember,
   updateWorkoutSession,
   upsertUserGoal,
 } from "./db";
@@ -1758,6 +1761,39 @@ export const appRouter = router({
     approvedTrainers: adminProcedure.query(async () => {
       return await listApprovedTrainers();
     }),
+    memberSummary: adminProcedure.query(async () => {
+      return await getAdminMemberSummary();
+    }),
+    members: adminProcedure
+      .input(z.object({
+        search: z.string().trim().max(120).optional(),
+        role: z.enum(["user", "admin", "all"]).default("all"),
+        appRole: z.enum(["member", "trainer", "all"]).default("all"),
+      }).optional())
+      .query(async ({ input }) => {
+        return await listAdminMembers({
+          search: input?.search,
+          role: input?.role ?? "all",
+          appRole: input?.appRole ?? "all",
+          limit: 120,
+        });
+      }),
+    updateMember: adminProcedure
+      .input(z.object({
+        userId: z.number(),
+        name: z.string().trim().min(1).max(120).optional(),
+        role: z.enum(["user", "admin"]).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.id === input.userId && input.role === "user") {
+          throw new Error("본인의 관리자 권한은 직접 해제할 수 없습니다.");
+        }
+        const member = await updateAdminMember(input.userId, {
+          name: input.name,
+          role: input.role,
+        });
+        return { success: true, member };
+      }),
     reviewTrainerApplication: adminProcedure
       .input(z.object({
         applicationId: z.number(),

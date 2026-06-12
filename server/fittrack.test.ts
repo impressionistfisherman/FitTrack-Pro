@@ -4,6 +4,7 @@ import {
   addTrainerFeedback,
   addTrainerPtSession,
   addWorkoutLog,
+  createRoutine,
   createWorkoutSession,
   ensureTrainerCode,
   getCoachingNotificationSummary,
@@ -415,5 +416,62 @@ describe("feedback", () => {
     expect(updated.success).toBe(true);
     expect(updated.feedback?.status).toBe("resolved");
     expect(updated.feedback?.adminNote).toBe("테스트 확인 완료");
+  });
+});
+
+describe("admin member management", () => {
+  it("lists members with activity summary and updates member profile fields", async () => {
+    const unique = Date.now();
+    const memberId = await upsertUser({
+      openId: `admin-member-${unique}`,
+      email: `admin-member-${unique}@fittrack.local`,
+      name: "Admin Managed Member",
+      loginMethod: "test",
+      role: "user",
+    });
+    await createRoutine(memberId, {
+      name: "관리자 회원 테스트 루틴",
+      goal: "general",
+      daysPerWeek: 3,
+    });
+    await createWorkoutSession(memberId, {
+      name: "관리자 회원 테스트 운동",
+      workoutDate: new Date(),
+    });
+
+    const adminCaller = appRouter.createCaller(createAuthContext("admin").ctx);
+    const members = await adminCaller.admin.members({
+      search: `admin-member-${unique}`,
+      role: "all",
+      appRole: "all",
+    });
+
+    expect(members).toHaveLength(1);
+    expect(members[0]).toMatchObject({
+      id: memberId,
+      email: `admin-member-${unique}@fittrack.local`,
+      role: "user",
+      workoutCount: 1,
+      routineCount: 1,
+    });
+
+    await expect(adminCaller.admin.updateMember({
+      userId: memberId,
+      name: "관리자가 수정한 회원",
+      role: "admin",
+    })).resolves.toMatchObject({
+      success: true,
+      member: {
+        name: "관리자가 수정한 회원",
+        role: "admin",
+      },
+    });
+
+    const admins = await adminCaller.admin.members({
+      search: "관리자가 수정한 회원",
+      role: "admin",
+      appRole: "all",
+    });
+    expect(admins.some((member: any) => member.id === memberId)).toBe(true);
   });
 });
