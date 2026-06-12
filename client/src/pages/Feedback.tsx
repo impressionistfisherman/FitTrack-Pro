@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Lightbulb, Loader2, MessageSquare, Send } from "lucide-react";
+import { CheckCircle2, Clock3, Lightbulb, Loader2, MessageSquare, Send } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -98,18 +98,25 @@ export default function Feedback() {
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(280px,0.55fr)]">
-        <Card className="border-border bg-card">
-          <CardContent className="space-y-4 p-5">
-            <div className="flex items-center gap-2">
-              <Lightbulb size={18} className="text-primary" />
-              <h2 className="text-lg font-semibold text-foreground">새 의견</h2>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <section className="rounded-xl border border-border bg-card">
+          <div className="border-b border-border px-5 py-4">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Lightbulb size={18} />
+              </span>
+              <div>
+                <h2 className="text-base font-semibold text-foreground">새 의견 작성</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">문제 상황과 기대 동작을 짧게 남겨주세요.</p>
+              </div>
             </div>
-            <div className="grid gap-3 sm:grid-cols-[180px_minmax(0,1fr)]">
+          </div>
+          <div className="space-y-4 p-5">
+            <div className="grid gap-4 md:grid-cols-[180px_minmax(0,1fr)]">
               <div>
                 <label className="mb-2 block text-sm text-muted-foreground">유형</label>
                 <Select value={category} onValueChange={(value) => setCategory(value as FeedbackCategory)}>
-                  <SelectTrigger className="border-border bg-accent text-foreground">
+                  <SelectTrigger className="h-11 border-border bg-background text-foreground">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="border-border bg-card">
@@ -130,17 +137,17 @@ export default function Feedback() {
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
                   placeholder="예: 모바일에서 운동 기록 버튼이 잘려요. 기록 후 그래프가 바로 갱신되면 좋겠어요."
-                  className="min-h-44 resize-none border-border bg-background text-foreground"
+                  className="min-h-52 resize-none border-border bg-background text-foreground"
                   maxLength={2100}
                 />
               </div>
             </div>
-            <div className="flex flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                접수된 의견은 관리자만 확인하며, 처리 상태가 내역에 표시됩니다.
-              </p>
+            <div className="rounded-lg border border-border bg-accent/25 px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+              접수된 의견은 관리자만 확인하며, 처리 상태와 관리자 메모가 내 의견에 표시됩니다.
+            </div>
+            <div className="flex justify-end">
               <Button
-                className="bg-primary text-primary-foreground"
+                className="h-11 min-w-36 bg-primary text-primary-foreground"
                 disabled={!canSubmit || createMutation.isPending}
                 onClick={() => createMutation.mutate({ category, message })}
               >
@@ -148,52 +155,70 @@ export default function Feedback() {
                 의견 보내기
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        <Card className="border-border bg-card">
-          <CardContent className="p-5">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-foreground">내 의견</h2>
+        <section className="rounded-xl border border-border bg-card">
+          <div className="border-b border-border px-5 py-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold text-foreground">내 의견</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">최근 접수 내역</p>
+              </div>
               <Badge className="border border-border bg-accent text-muted-foreground">{recentItems.length}건</Badge>
             </div>
+          </div>
+          <div className="p-5">
             {isLoading ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="h-20 skeleton rounded-xl" />
+                  <div key={index} className="h-24 skeleton rounded-xl" />
                 ))}
               </div>
             ) : recentItems.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border bg-accent/20 p-6 text-center text-sm text-muted-foreground">
-                아직 남긴 의견이 없습니다.
+              <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-background/35 px-5 py-8 text-center">
+                <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <MessageSquare size={20} />
+                </span>
+                <div className="text-sm font-semibold text-foreground">아직 남긴 의견이 없습니다</div>
+                <p className="mt-2 max-w-56 text-xs leading-relaxed text-muted-foreground">
+                  첫 의견을 보내면 접수 상태와 관리자 답변을 이곳에서 확인할 수 있습니다.
+                </p>
               </div>
             ) : (
-              <div className="max-h-[520px] space-y-3 overflow-y-auto pr-1">
+              <div className="max-h-[560px] space-y-3 overflow-y-auto pr-1">
                 {recentItems.map((item: any) => (
-                  <div key={item.id} className="rounded-xl border border-border bg-accent/25 p-4">
-                    <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <Badge className="border border-primary/25 bg-primary/10 text-primary">
-                        {feedbackCategoryLabel(item.category)}
-                      </Badge>
-                      <Badge className={cn("border", statusStyles[item.status] ?? statusStyles.open)}>
-                        {statusLabels[item.status] ?? item.status}
-                      </Badge>
+                  <div key={item.id} className="rounded-xl border border-border bg-background/40 p-4">
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge className="border border-primary/25 bg-primary/10 text-primary">
+                          {feedbackCategoryLabel(item.category)}
+                        </Badge>
+                        <Badge className={cn("border", statusStyles[item.status] ?? statusStyles.open)}>
+                          {statusLabels[item.status] ?? item.status}
+                        </Badge>
+                      </div>
+                      {item.status === "resolved" ? (
+                        <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-300" />
+                      ) : (
+                        <Clock3 size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
+                      )}
                     </div>
                     <p className="line-clamp-4 whitespace-pre-wrap text-sm leading-relaxed text-foreground">{item.message}</p>
                     {item.adminNote ? (
-                      <div className="mt-3 rounded-lg bg-background/50 p-3 text-xs leading-relaxed text-muted-foreground">
+                      <div className="mt-3 rounded-lg border border-border bg-accent/25 p-3 text-xs leading-relaxed text-muted-foreground">
                         관리자 메모: {item.adminNote}
                       </div>
                     ) : null}
-                    <div className="mt-3 text-xs text-muted-foreground">
+                    <div className="mt-3 border-t border-border pt-3 text-xs text-muted-foreground">
                       {new Date(item.createdAt).toLocaleString("ko-KR")}
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       </div>
     </div>
   );
