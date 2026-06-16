@@ -1,7 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
-  Calculator, ChevronDown, ChevronUp, Clock, Dumbbell, MessageSquare,
+  AlertTriangle, Calculator, ChevronDown, ChevronUp, Clock, Dumbbell, MessageSquare,
   Flame, Minus, MonitorOff, MonitorUp, Plus, RefreshCw, Save, Sparkles, X, CheckCircle, Timer, Trophy
 } from "lucide-react";
 import OneRMCalculator from "@/components/OneRMCalculator";
@@ -394,17 +394,17 @@ function ExerciseBlock({ entry, sessionId, onUpdate, onRemove, onSetComplete, ro
                       type="number"
                       value={entry.sets[0]?.reps ?? 20}
                       onChange={e => updateSet(0, "reps", parseInt(e.target.value) || 0)}
-                      className="h-8 text-center bg-card border-border text-foreground"
+                      className="h-10 text-center bg-card border-border text-foreground sm:h-8"
                       min="1"
                     />
                     <button onClick={() => updateSet(0, "reps", (entry.sets[0]?.reps ?? 20) + 5)}
-                      className="h-8 w-8 rounded-md bg-card flex items-center justify-center text-muted-foreground hover:text-foreground">
+                      className="h-10 w-10 rounded-md bg-card flex items-center justify-center text-muted-foreground hover:text-foreground sm:h-8 sm:w-8">
                       <Plus size={12} />
                     </button>
                     <span className="text-xs text-muted-foreground">분</span>
                   </div>
                   <button onClick={() => completeSet(0)}
-                    className={cn("h-8 rounded-lg px-3 text-xs font-semibold transition-all",
+                    className={cn("h-10 rounded-lg px-4 text-xs font-semibold transition-all sm:h-8 sm:px-3",
                       entry.sets[0]?.completed ? "bg-primary text-primary-foreground" : "bg-accent border border-border text-muted-foreground hover:border-primary/40")}
                     disabled={addLog.isPending}>
                     {entry.sets[0]?.completed ? "완료됨" : "완료"}
@@ -434,35 +434,35 @@ function ExerciseBlock({ entry, sessionId, onUpdate, onRemove, onSetComplete, ro
                   {/* 무게 */}
                   <div className="col-span-4 flex items-center gap-0.5">
                     <button onClick={() => updateSet(idx, "weightKg", Math.max(0, set.weightKg - 2.5))}
-                      className="w-5 h-5 rounded-md bg-card flex items-center justify-center text-muted-foreground hover:text-foreground flex-shrink-0">
+                      className="h-8 w-8 rounded-md bg-card flex items-center justify-center text-muted-foreground hover:text-foreground flex-shrink-0 sm:h-5 sm:w-5">
                       <Minus size={9} />
                     </button>
                     <Input type="number" value={set.weightKg}
                       onChange={e => updateSet(idx, "weightKg", parseFloat(e.target.value) || 0)}
-                      className="h-6 text-center text-xs bg-card border-border text-foreground p-0.5" step="2.5" min="0" />
+                      className="h-9 text-center text-xs bg-card border-border text-foreground p-0.5 sm:h-6" step="2.5" min="0" />
                     <button onClick={() => updateSet(idx, "weightKg", set.weightKg + 2.5)}
-                      className="w-5 h-5 rounded-md bg-card flex items-center justify-center text-muted-foreground hover:text-foreground flex-shrink-0">
+                      className="h-8 w-8 rounded-md bg-card flex items-center justify-center text-muted-foreground hover:text-foreground flex-shrink-0 sm:h-5 sm:w-5">
                       <Plus size={9} />
                     </button>
                   </div>
                   {/* 횟수 */}
                   <div className="col-span-4 flex items-center gap-0.5">
                     <button onClick={() => updateSet(idx, "reps", Math.max(1, set.reps - 1))}
-                      className="w-5 h-5 rounded-md bg-card flex items-center justify-center text-muted-foreground hover:text-foreground flex-shrink-0">
+                      className="h-8 w-8 rounded-md bg-card flex items-center justify-center text-muted-foreground hover:text-foreground flex-shrink-0 sm:h-5 sm:w-5">
                       <Minus size={9} />
                     </button>
                     <Input type="number" value={set.reps}
                       onChange={e => updateSet(idx, "reps", parseInt(e.target.value) || 0)}
-                      className="h-6 text-center text-xs bg-card border-border text-foreground p-0.5" min="1" />
+                      className="h-9 text-center text-xs bg-card border-border text-foreground p-0.5 sm:h-6" min="1" />
                     <button onClick={() => updateSet(idx, "reps", set.reps + 1)}
-                      className="w-5 h-5 rounded-md bg-card flex items-center justify-center text-muted-foreground hover:text-foreground flex-shrink-0">
+                      className="h-8 w-8 rounded-md bg-card flex items-center justify-center text-muted-foreground hover:text-foreground flex-shrink-0 sm:h-5 sm:w-5">
                       <Plus size={9} />
                     </button>
                   </div>
                   {/* 완료 */}
                   <div className="col-span-2 flex justify-center">
                     <button onClick={() => completeSet(idx)}
-                      className={cn("w-7 h-7 rounded-full flex items-center justify-center transition-all",
+                      className={cn("h-9 w-9 rounded-full flex items-center justify-center transition-all sm:h-7 sm:w-7",
                         set.completed ? "bg-primary text-primary-foreground" : "bg-accent border border-border text-muted-foreground hover:border-primary/40")}
                       disabled={addLog.isPending}>
                       <CheckCircle size={14} />
@@ -717,6 +717,19 @@ export default function WorkoutSession() {
       : 0), 0);
   const totalVolume = exercises.reduce((s, ex) =>
     s + (ex.inputMode === "duration" ? 0 : ex.sets.filter(set => set.completed).reduce((s2, set) => s2 + set.reps * set.weightKg, 0)), 0);
+  const completedStrengthLogs = exercises.flatMap((ex) =>
+    ex.inputMode === "duration"
+      ? []
+      : ex.sets.filter((set) => set.completed).map((set) => ({ exercise: ex.nameKo, set }))
+  );
+  const missingVolumeLogs = completedStrengthLogs.filter(({ set }) => (Number(set.weightKg) || 0) === 0 || (Number(set.reps) || 0) === 0);
+  const heaviestSet = completedStrengthLogs.reduce<{ exercise: string; weight: number; reps: number } | null>((best, item) => {
+    const weight = Number(item.set.weightKg) || 0;
+    const reps = Number(item.set.reps) || 0;
+    if (!best || weight > best.weight) return { exercise: item.exercise, weight, reps };
+    return best;
+  }, null);
+  const averageVolumePerSet = completedStrengthSets ? Math.round(totalVolume / completedStrengthSets) : 0;
   const currentDurationMinutes = Math.max(1, Math.floor((Date.now() - startTime.current.getTime()) / 60000));
   const displayDurationMinutes = finishedDuration || currentDurationMinutes;
   const bodyWeightKg = weights?.[0]?.weightKg ?? 70;
@@ -750,7 +763,7 @@ export default function WorkoutSession() {
   };
 
   return (
-    <div className="page-shell page-shell-narrow animate-fade-in">
+    <div className="page-shell page-shell-narrow pb-24 animate-fade-in sm:pb-0">
       {/* 헤더 */}
       <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -823,6 +836,12 @@ export default function WorkoutSession() {
             <div className="mt-3 h-1.5 bg-accent rounded-full overflow-hidden">
               <div className="h-full bg-primary rounded-full transition-all duration-500"
                 style={{ width: `${(completedSets / totalSets) * 100}%` }} />
+            </div>
+          )}
+          {missingVolumeLogs.length > 0 && (
+            <div className="mt-3 flex items-start gap-2 rounded-xl border border-orange-400/20 bg-orange-400/10 px-3 py-2 text-xs text-orange-200">
+              <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+              <span>무게 또는 횟수가 비어 있는 완료 세트 {missingVolumeLogs.length}개는 볼륨이 낮게 계산됩니다.</span>
             </div>
           )}
         </CardContent>
@@ -923,6 +942,22 @@ export default function WorkoutSession() {
         />
       )}
 
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 p-3 backdrop-blur sm:hidden">
+        <div className="mx-auto flex max-w-md items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-xs text-muted-foreground">
+              완료 {completedSets}/{totalSets} · {Math.round(totalVolume).toLocaleString()}kg
+            </div>
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-accent">
+              <div className="h-full rounded-full bg-primary" style={{ width: `${totalSets ? (completedSets / totalSets) * 100 : 0}%` }} />
+            </div>
+          </div>
+          <Button className="h-11 shrink-0 bg-primary px-5 text-primary-foreground" onClick={() => setShowFinish(true)}>
+            종료
+          </Button>
+        </div>
+      </div>
+
       {/* 완료 다이얼로그 */}
       <Dialog open={showFinish} onOpenChange={setShowFinish}>
         <DialogContent className="bg-card border-border text-foreground max-w-sm">
@@ -955,6 +990,25 @@ export default function WorkoutSession() {
                 총 <span className="font-semibold text-primary">{completedTimedMinutes}분</span>을 기록했습니다.
               </div>
             )}
+            <div className="rounded-xl border border-border bg-accent/35 p-3">
+              <div className="mb-2 text-sm font-semibold text-foreground">오늘 운동 요약</div>
+              <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
+                <div>
+                  <div className="font-semibold text-foreground">{averageVolumePerSet.toLocaleString()}kg</div>
+                  <div>세트당 평균 볼륨</div>
+                </div>
+                <div>
+                  <div className="font-semibold text-foreground">{heaviestSet ? `${heaviestSet.weight}kg x ${heaviestSet.reps}` : "-"}</div>
+                  <div>{heaviestSet?.exercise ?? "최고 중량 세트"}</div>
+                </div>
+                <div>
+                  <div className={cn("font-semibold", missingVolumeLogs.length ? "text-orange-300" : "text-primary")}>
+                    {missingVolumeLogs.length ? `${missingVolumeLogs.length}개 확인` : "정상"}
+                  </div>
+                  <div>기록 품질</div>
+                </div>
+              </div>
+            </div>
 
             {!sessionCompleted ? (
               <div className="space-y-3">

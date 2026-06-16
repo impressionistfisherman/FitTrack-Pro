@@ -7,6 +7,7 @@ import {
   createRoutine,
   createWorkoutSession,
   ensureTrainerCode,
+  getAdminDataDiagnostics,
   getCoachingNotificationSummary,
   getExerciseHistory,
   getMonthlyStats,
@@ -489,6 +490,29 @@ describe("feedback", () => {
 });
 
 describe("admin member management", () => {
+  it("returns data diagnostics for admin quality checks", async () => {
+    const unique = Date.now();
+    const userId = await upsertUser({
+      openId: `admin-diagnostics-${unique}`,
+      email: `admin-diagnostics-${unique}@fittrack.local`,
+      name: "Admin Diagnostics",
+      loginMethod: "test",
+      role: "user",
+    });
+    const sessionId = await createWorkoutSession(userId, {
+      name: "진단 테스트",
+      workoutDate: new Date(),
+    });
+    await addWorkoutLog({ sessionId, exerciseId: 1, setNumber: 1, weightKg: 0, reps: 0 });
+
+    const diagnostics = await getAdminDataDiagnostics();
+
+    expect(diagnostics.totalSessions).toBeGreaterThan(0);
+    expect(diagnostics.zeroVolumeSessions).toBeGreaterThan(0);
+    expect(diagnostics.missingWeightLogs).toBeGreaterThan(0);
+    expect(diagnostics.missingRepsLogs).toBeGreaterThan(0);
+  });
+
   it("lists members with activity summary and updates member profile fields", async () => {
     const unique = Date.now();
     const memberId = await upsertUser({

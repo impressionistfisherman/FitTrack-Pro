@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Megaphone, Save, Search, ShieldCheck, UserCheck, Users, UserX } from "lucide-react";
+import { AlertTriangle, Database, Megaphone, Save, Search, ShieldCheck, UserCheck, Users, UserX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -90,6 +90,10 @@ export default function Admin() {
     { enabled: user?.role === "admin" }
   );
   const { data: memberSummary } = trpc.admin.memberSummary.useQuery(
+    undefined,
+    { enabled: user?.role === "admin" }
+  );
+  const { data: dataDiagnostics } = trpc.admin.dataDiagnostics.useQuery(
     undefined,
     { enabled: user?.role === "admin" }
   );
@@ -190,32 +194,64 @@ export default function Admin() {
       </div>
 
       {view === "dashboard" ? (
-      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-border bg-card">
-          <CardContent className="p-4">
-            <div className="text-xs text-muted-foreground">현재 필터 신청</div>
-            <div className="mt-1 text-2xl font-bold text-foreground">{applications?.length ?? 0}</div>
+      <>
+        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Card className="border-border bg-card">
+            <CardContent className="p-4">
+              <div className="text-xs text-muted-foreground">현재 필터 신청</div>
+              <div className="mt-1 text-2xl font-bold text-foreground">{applications?.length ?? 0}</div>
+            </CardContent>
+          </Card>
+          <Card className="border-border bg-card">
+            <CardContent className="p-4">
+              <div className="text-xs text-muted-foreground">승인된 트레이너</div>
+              <div className="mt-1 text-2xl font-bold text-primary">{approvedTrainers?.length ?? 0}</div>
+            </CardContent>
+          </Card>
+          <Card className="border-border bg-card">
+            <CardContent className="p-4">
+              <div className="text-xs text-muted-foreground">전체 회원</div>
+              <div className="mt-1 text-2xl font-bold text-foreground">{memberSummary?.totalMembers ?? 0}</div>
+            </CardContent>
+          </Card>
+          <Card className="border-border bg-card">
+            <CardContent className="p-4">
+              <div className="text-xs text-muted-foreground">진단 필요 항목</div>
+              <div className="mt-1 text-2xl font-bold text-orange-400">{dataDiagnostics?.issueCount ?? 0}</div>
+            </CardContent>
+          </Card>
+        </div>
+        <Card className="mb-4 border-border bg-card">
+          <CardContent className="p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <Database size={17} className="text-primary" />
+              <span className="font-semibold text-foreground">데이터 진단</span>
+              {(dataDiagnostics?.issueCount ?? 0) > 0 ? (
+                <Badge className="border border-orange-400/30 bg-orange-400/10 text-orange-300">
+                  <AlertTriangle size={12} className="mr-1" />
+                  확인 필요
+                </Badge>
+              ) : (
+                <Badge className="border border-primary/25 bg-primary/10 text-primary">정상</Badge>
+              )}
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                ["최근 30일 세션", dataDiagnostics?.recentSessions ?? 0, "전체 운동 기록 중 최근 활동"],
+                ["0kg 세션", dataDiagnostics?.zeroVolumeSessions ?? 0, "볼륨 계산 누락 가능"],
+                ["무게 누락 세트", dataDiagnostics?.missingWeightLogs ?? 0, "근력 세트 입력 점검"],
+                ["처리 대기 의견", dataDiagnostics?.openFeedback ?? 0, "접수/검토 중 의견"],
+              ].map(([label, value, desc]) => (
+                <div key={String(label)} className="rounded-xl border border-border bg-accent/25 p-3">
+                  <div className="text-xs text-muted-foreground">{label}</div>
+                  <div className="mt-1 text-xl font-bold text-foreground">{Number(value).toLocaleString()}</div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">{desc}</div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
-        <Card className="border-border bg-card">
-          <CardContent className="p-4">
-            <div className="text-xs text-muted-foreground">승인된 트레이너</div>
-            <div className="mt-1 text-2xl font-bold text-primary">{approvedTrainers?.length ?? 0}</div>
-          </CardContent>
-        </Card>
-        <Card className="border-border bg-card">
-          <CardContent className="p-4">
-            <div className="text-xs text-muted-foreground">전체 회원</div>
-            <div className="mt-1 text-2xl font-bold text-foreground">{memberSummary?.totalMembers ?? 0}</div>
-          </CardContent>
-        </Card>
-        <Card className="border-border bg-card">
-          <CardContent className="p-4">
-            <div className="text-xs text-muted-foreground">접수된 사용자 의견</div>
-            <div className="mt-1 text-2xl font-bold text-primary">{userFeedback?.length ?? 0}</div>
-          </CardContent>
-        </Card>
-      </div>
+      </>
       ) : null}
 
       {view !== "trainers" && view !== "members" && view !== "feedback" ? (

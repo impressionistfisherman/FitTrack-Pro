@@ -1,20 +1,23 @@
 # PROGRESS
 
-- Date: 2026-06-12 15:14:31 +09:00
-- Summary: Fixed Supabase-safe alias handling for monthly volume retrieval.
-- Current Status: Monthly stats no longer depend on camelCase SQL aliases when matching volume rows to month buckets.
+- Date: 2026-06-16 09:48:47 +09:00
+- Summary: Implemented the requested 1-5 final feature pass.
+- Current Status: Report, quality, completion, admin diagnostic, and mobile workout UX changes are implemented and verified.
 
 ## Changed Structure
 
-- `server/db.ts`: Changed monthly volume row aliases from `sessionDate` / `totalVolume` to `session_date` / `total_volume`.
-- `server/db.ts`: Reads monthly volume aliases through `aliasValue`.
-- `server/fittrack.test.ts`: Added regression coverage for alias-safe monthly volume SQL.
-- `TEST_RESULT.md`: Recorded validation results.
+- `client/src/pages/Home.tsx`: Added weekly/monthly report and workout record quality cards.
+- `client/src/pages/WorkoutSession.tsx`: Added record quality warnings, richer completion summary, larger mobile controls, and mobile sticky finish bar.
+- `client/src/pages/Admin.tsx`: Added data diagnostics dashboard cards.
+- `server/db.ts`: Added admin data diagnostics aggregation.
+- `server/routers.ts`: Exposed `admin.dataDiagnostics`.
+- `server/fittrack.test.ts`: Added admin diagnostics regression coverage.
+- `TEST_RESULT.md`: Recorded validation and browser smoke results.
 
 ## Remaining Issues
 
-- None identified for the monthly chart volume retrieval path.
+- Local SQLite files changed during browser QA because a temporary workout session was created for mobile testing; these files are intentionally not staged.
 
 ## Next Session
 
-- After deployment, confirm the 6월 tooltip displays the expected kg value instead of `0kg`.
+- After deployment, verify the new home report and admin diagnostics against production Supabase data.

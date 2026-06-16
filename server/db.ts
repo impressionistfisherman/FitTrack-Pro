@@ -784,6 +784,61 @@ export async function getAdminMemberSummary(): Promise<Row> {
   };
 }
 
+export async function getAdminDataDiagnostics(): Promise<Row> {
+  await ensureTrainerTables();
+  await ensureUserFeedbackTable();
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const sessionRow = await get(
+    `SELECT
+       COUNT(*) AS total_sessions,
+       SUM(CASE WHEN COALESCE(ws.totalVolume, 0) = 0 THEN 1 ELSE 0 END) AS zero_volume_sessions,
+       SUM(CASE WHEN ws.createdAt >= ? THEN 1 ELSE 0 END) AS recent_sessions
+     FROM workout_sessions ws`,
+    thirtyDaysAgo,
+  );
+  const logRow = await get(
+    `SELECT
+       COUNT(*) AS total_logs,
+       SUM(CASE WHEN COALESCE(wl.weightKg, 0) = 0 AND COALESCE(wl.durationSeconds, 0) = 0 THEN 1 ELSE 0 END) AS missing_weight_logs,
+       SUM(CASE WHEN COALESCE(wl.reps, 0) = 0 AND COALESCE(wl.durationSeconds, 0) = 0 THEN 1 ELSE 0 END) AS missing_reps_logs
+     FROM workout_logs wl`,
+  );
+  const inactiveRow = await get(
+    `SELECT COUNT(*) AS active_users_without_workouts
+     FROM (
+       SELECT u.id
+       FROM users u
+       LEFT JOIN workout_sessions ws ON ws.userId = u.id
+       WHERE u.lastSignedIn >= ?
+       GROUP BY u.id
+       HAVING COUNT(ws.id) = 0
+     ) active_without_workouts`,
+    thirtyDaysAgo,
+  );
+  const feedbackRow = await get(
+    `SELECT COUNT(*) AS open_feedback
+     FROM user_feedback
+     WHERE status IN ('open', 'reviewing')`,
+  );
+
+  const zeroVolumeSessions = Number(aliasValue(sessionRow ?? {}, "zero_volume_sessions")) || 0;
+  const missingWeightLogs = Number(aliasValue(logRow ?? {}, "missing_weight_logs")) || 0;
+  const missingRepsLogs = Number(aliasValue(logRow ?? {}, "missing_reps_logs")) || 0;
+  const openFeedback = Number(aliasValue(feedbackRow ?? {}, "open_feedback")) || 0;
+
+  return {
+    totalSessions: Number(aliasValue(sessionRow ?? {}, "total_sessions")) || 0,
+    recentSessions: Number(aliasValue(sessionRow ?? {}, "recent_sessions")) || 0,
+    zeroVolumeSessions,
+    totalLogs: Number(aliasValue(logRow ?? {}, "total_logs")) || 0,
+    missingWeightLogs,
+    missingRepsLogs,
+    activeUsersWithoutWorkouts: Number(aliasValue(inactiveRow ?? {}, "active_users_without_workouts")) || 0,
+    openFeedback,
+    issueCount: zeroVolumeSessions + missingWeightLogs + missingRepsLogs + openFeedback,
+  };
+}
+
 export async function updateAdminMember(userId: number, input: {
   name?: string;
   role?: "user" | "admin";

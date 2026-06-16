@@ -5,9 +5,12 @@ import { cn } from "@/lib/utils";
 import { WeeklyGoalDashboard } from "@/components/WeeklyGoalDashboard";
 import {
   Activity,
+  AlertTriangle,
   ArrowRight,
+  BarChart3,
   Bot,
   Calendar,
+  CheckCircle2,
   ChevronRight,
   Dumbbell,
   Flame,
@@ -366,6 +369,123 @@ function MonthlyStatsCard() {
   );
 }
 
+function formatDelta(value: number, unit = "") {
+  if (value === 0) return `변화 없음`;
+  return `${value > 0 ? "+" : ""}${value.toLocaleString()}${unit}`;
+}
+
+function ProgressReportCard() {
+  const { data: monthlyStats, isLoading: monthlyLoading } = trpc.monthlyStats.get.useQuery({ months: 7 }, { retry: false, staleTime: 1000 * 60 * 2 });
+  const { data: weeklyStats, isLoading: weeklyLoading } = trpc.weeklyGoals.get.useQuery(undefined, { retry: false, staleTime: 1000 * 60 * 2 });
+  const current = monthlyStats?.[monthlyStats.length - 1];
+  const previous = monthlyStats?.[monthlyStats.length - 2];
+  const volumeDelta = Math.round((current?.totalVolume ?? 0) - (previous?.totalVolume ?? 0));
+  const countDelta = (current?.count ?? 0) - (previous?.count ?? 0);
+  const isLoading = monthlyLoading || weeklyLoading;
+
+  return (
+    <Card className="bg-card border-border">
+      <CardContent className="p-4">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <BarChart3 size={17} className="text-primary" />
+            <h3 className="font-semibold text-foreground">주간·월간 리포트</h3>
+          </div>
+          {current ? <Badge className="border border-border bg-accent text-muted-foreground">{current.month}</Badge> : null}
+        </div>
+        {isLoading ? (
+          <div className="grid gap-2 sm:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-16 skeleton rounded-xl" />)}
+          </div>
+        ) : (
+          <div className="grid gap-2 sm:grid-cols-3">
+            <div className="rounded-xl border border-border bg-accent/25 p-3">
+              <div className="text-xs text-muted-foreground">이번 달 운동</div>
+              <div className="mt-1 text-xl font-bold text-foreground">{current?.count ?? 0}회</div>
+              <div className={cn("mt-1 text-[11px]", countDelta >= 0 ? "text-primary" : "text-orange-400")}>
+                전월 대비 {formatDelta(countDelta, "회")}
+              </div>
+            </div>
+            <div className="rounded-xl border border-border bg-accent/25 p-3">
+              <div className="text-xs text-muted-foreground">이번 달 볼륨</div>
+              <div className="mt-1 text-xl font-bold text-foreground">{Math.round(current?.totalVolume ?? 0).toLocaleString()}kg</div>
+              <div className={cn("mt-1 text-[11px]", volumeDelta >= 0 ? "text-primary" : "text-orange-400")}>
+                전월 대비 {formatDelta(volumeDelta, "kg")}
+              </div>
+            </div>
+            <div className="rounded-xl border border-border bg-accent/25 p-3">
+              <div className="text-xs text-muted-foreground">주간 목표</div>
+              <div className="mt-1 text-xl font-bold text-foreground">
+                {weeklyStats?.completedDays ?? 0}/{weeklyStats?.weeklyTarget ?? 0}일
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">
+                {Math.round(weeklyStats?.totalDuration ?? 0)}분 · {Math.round(weeklyStats?.totalVolume ?? 0).toLocaleString()}kg
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function WorkoutQualityCard() {
+  const { data: sessions, isLoading } = trpc.history.recentWorkouts.useQuery(
+    { limit: 8 },
+    { retry: false, staleTime: 1000 * 60 * 2 }
+  );
+  const quality = useMemo(() => {
+    const issues: string[] = [];
+    let zeroVolumeSessions = 0;
+    let missingLogs = 0;
+    for (const session of sessions ?? []) {
+      const logs = session.logs ?? [];
+      const computedVolume = logs.reduce((sum: number, item: any) => {
+        const log = item.log ?? {};
+        return sum + (Number(log.weightKg) || 0) * (Number(log.reps) || 0);
+      }, 0);
+      if (logs.length > 0 && Math.max(computedVolume, Number(session.totalVolume) || 0) === 0) {
+        zeroVolumeSessions += 1;
+      }
+      missingLogs += logs.filter((item: any) => {
+        const log = item.log ?? {};
+        const isTimed = Number(log.durationSeconds) > 0;
+        return !isTimed && ((Number(log.weightKg) || 0) === 0 || (Number(log.reps) || 0) === 0);
+      }).length;
+    }
+    if (zeroVolumeSessions) issues.push(`볼륨 0 세션 ${zeroVolumeSessions}건`);
+    if (missingLogs) issues.push(`무게/횟수 누락 세트 ${missingLogs}개`);
+    return { issues, zeroVolumeSessions, missingLogs };
+  }, [sessions]);
+
+  return (
+    <Card className="bg-card border-border">
+      <CardContent className="p-4">
+        <div className="mb-3 flex items-center gap-2">
+          {quality.issues.length ? <AlertTriangle size={17} className="text-orange-400" /> : <CheckCircle2 size={17} className="text-primary" />}
+          <h3 className="font-semibold text-foreground">운동 기록 품질</h3>
+        </div>
+        {isLoading ? (
+          <div className="h-16 skeleton rounded-xl" />
+        ) : quality.issues.length ? (
+          <div className="space-y-2">
+            {quality.issues.map((issue) => (
+              <div key={issue} className="rounded-xl border border-orange-400/20 bg-orange-400/10 px-3 py-2 text-sm text-orange-200">
+                {issue}
+              </div>
+            ))}
+            <p className="text-xs text-muted-foreground">0kg로 보이는 통계는 무게 또는 횟수 누락 여부를 먼저 확인하세요.</p>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-primary/20 bg-primary/10 px-3 py-3 text-sm text-primary">
+            최근 기록의 볼륨 계산 상태가 정상입니다.
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function RecentWorkouts() {
   const { data: sessions, isLoading } = trpc.history.recentWorkouts.useQuery(
     { limit: 3 },
@@ -703,7 +823,9 @@ export default function Home() {
               <StatCard icon={Calendar} label="운동 시간" value={`${Math.round(stats.totalDurationMinutes / 60)}h`} color="bg-purple-400/10 text-purple-400" />
             </div>
           )}
+          <ProgressReportCard />
           <MonthlyStatsCard />
+          <WorkoutQualityCard />
           <RecentWorkouts />
         </div>
 

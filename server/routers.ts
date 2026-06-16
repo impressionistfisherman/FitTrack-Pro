@@ -44,6 +44,7 @@ import {
   getUserGoal,
   getUserGoals,
   getUserById,
+  getAdminDataDiagnostics,
   getAdminMemberSummary,
   getTrainerClients,
   getTrainerClientRequests,
@@ -1763,6 +1764,9 @@ export const appRouter = router({
     }),
     memberSummary: adminProcedure.query(async () => {
       return await getAdminMemberSummary();
+    }),
+    dataDiagnostics: adminProcedure.query(async () => {
+      return await getAdminDataDiagnostics();
     }),
     members: adminProcedure
       .input(z.object({
