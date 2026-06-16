@@ -83,11 +83,7 @@ function StatCard({ icon: Icon, label, value, color }: { icon: any; label: strin
   );
 }
 
-function QuickStartCard() {
-  const { data: routines, isLoading } = trpc.routines.list.useQuery(undefined, {
-    retry: false,
-    staleTime: 1000 * 60 * 5,
-  });
+function QuickStartCard({ routines, isLoading }: { routines?: any[]; isLoading: boolean }) {
   const startSession = trpc.workout.startSession.useMutation();
 
   const handleQuickStart = async (routineId?: number) => {
@@ -160,9 +156,7 @@ function QuickStartCard() {
   );
 }
 
-function StreakCard() {
-  const { data: streak, isLoading } = trpc.streak.get.useQuery(undefined, { retry: false });
-
+function StreakCard({ streak, isLoading }: { streak?: any; isLoading: boolean }) {
   if (isLoading) {
     return (
       <Card className="bg-card border-border">
@@ -199,10 +193,7 @@ function StreakCard() {
   );
 }
 
-function BodyWeightSummaryCard() {
-  const { data: weights, isLoading } = trpc.bodyWeight.list.useQuery({ limit: 8 }, { retry: false });
-  const { data: goal } = trpc.goals.get.useQuery(undefined, { retry: false });
-
+function BodyWeightSummaryCard({ weights, goal, isLoading }: { weights?: any[]; goal?: any; isLoading: boolean }) {
   if (isLoading) {
     return (
       <Card className="bg-card border-border">
@@ -289,8 +280,7 @@ function BodyWeightSummaryCard() {
   );
 }
 
-function MonthlyStatsCard() {
-  const { data: stats, isLoading } = trpc.monthlyStats.get.useQuery({ months: 6 }, { retry: false });
+function MonthlyStatsCard({ stats, isLoading }: { stats?: any[]; isLoading: boolean }) {
   const volumeKey = "볼륨(kg)";
 
   if (isLoading) {
@@ -374,14 +364,11 @@ function formatDelta(value: number, unit = "") {
   return `${value > 0 ? "+" : ""}${value.toLocaleString()}${unit}`;
 }
 
-function ProgressReportCard() {
-  const { data: monthlyStats, isLoading: monthlyLoading } = trpc.monthlyStats.get.useQuery({ months: 7 }, { retry: false, staleTime: 1000 * 60 * 2 });
-  const { data: weeklyStats, isLoading: weeklyLoading } = trpc.weeklyGoals.get.useQuery(undefined, { retry: false, staleTime: 1000 * 60 * 2 });
+function ProgressReportCard({ monthlyStats, weeklyStats, isLoading }: { monthlyStats?: any[]; weeklyStats?: any; isLoading: boolean }) {
   const current = monthlyStats?.[monthlyStats.length - 1];
   const previous = monthlyStats?.[monthlyStats.length - 2];
   const volumeDelta = Math.round((current?.totalVolume ?? 0) - (previous?.totalVolume ?? 0));
   const countDelta = (current?.count ?? 0) - (previous?.count ?? 0);
-  const isLoading = monthlyLoading || weeklyLoading;
 
   return (
     <Card className="bg-card border-border">
@@ -690,34 +677,11 @@ function FeatureCards() {
 
 export default function Home() {
   const { user, isAuthenticated, loading } = useAuth();
-  const { data: stats, isLoading: statsLoading } = trpc.history.stats.useQuery(undefined, {
+  const { data: homeSummary, isLoading: homeSummaryLoading } = trpc.home.summary.useQuery(undefined, {
     enabled: isAuthenticated,
     retry: false,
     staleTime: 1000 * 60 * 2,
   });
-  const { data: goal, isLoading: goalLoading } = trpc.goals.get.useQuery(undefined, {
-    enabled: isAuthenticated,
-    retry: false,
-    staleTime: 1000 * 60 * 5,
-  });
-  const { data: goals, isLoading: goalsLoading } = trpc.goals.list.useQuery(undefined, {
-    enabled: isAuthenticated,
-    retry: false,
-    staleTime: 1000 * 60 * 5,
-  });
-  const { data: preferences, isLoading: preferencesLoading } = trpc.preferences.get.useQuery(undefined, {
-    enabled: isAuthenticated,
-    retry: false,
-    staleTime: 1000 * 60 * 5,
-  });
-  const { data: recentWorkoutSessions, isLoading: recentWorkoutsLoading } = trpc.history.recentWorkouts.useQuery(
-    { limit: 20 },
-    {
-      enabled: isAuthenticated,
-      retry: false,
-      staleTime: 1000 * 60 * 2,
-    }
-  );
 
   if (loading) {
     return (
@@ -798,11 +762,11 @@ export default function Home() {
     return "수고하셨어요";
   };
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
-  const activeGoals = goals?.length ? goals : goal ? [goal] : [];
-  const profileLoading = preferencesLoading || goalLoading || goalsLoading;
-  const experienceLabel = preferences?.experienceLevel === "advanced"
+  const activeGoals = homeSummary?.goals?.length ? homeSummary.goals : homeSummary?.goal ? [homeSummary.goal] : [];
+  const profileLoading = homeSummaryLoading;
+  const experienceLabel = homeSummary?.preferences?.experienceLevel === "advanced"
     ? "헬창"
-    : preferences?.experienceLevel === "intermediate"
+    : homeSummary?.preferences?.experienceLevel === "intermediate"
       ? "운동러"
       : "헬린이";
 
@@ -846,32 +810,32 @@ export default function Home() {
 
       <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
         <div className="min-w-0 space-y-3">
-          <WeeklyGoalDashboard />
-          {statsLoading ? (
+          <WeeklyGoalDashboard weeklyStats={homeSummary?.weeklyStats} isLoading={homeSummaryLoading} />
+          {homeSummaryLoading ? (
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 xl:grid-cols-2">
               {Array.from({ length: 4 }).map((_, index) => <div key={index} className="h-[70px] skeleton rounded-xl" />)}
             </div>
-          ) : stats && (
+          ) : homeSummary?.stats && (
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 xl:grid-cols-2">
-              <StatCard icon={Trophy} label="총 운동" value={`${stats.totalSessions}회`} color="bg-primary/10 text-primary" />
-              <StatCard icon={Flame} label="이번 주" value={`${stats.recentSessionCount}회`} color="bg-orange-400/10 text-orange-400" />
-              <StatCard icon={TrendingUp} label="총 볼륨" value={`${(stats.totalVolume / 1000).toFixed(1)}t`} color="bg-blue-400/10 text-blue-400" />
-              <StatCard icon={Calendar} label="운동 시간" value={`${Math.round(stats.totalDurationMinutes / 60)}h`} color="bg-purple-400/10 text-purple-400" />
+              <StatCard icon={Trophy} label="총 운동" value={`${homeSummary.stats.totalSessions}회`} color="bg-primary/10 text-primary" />
+              <StatCard icon={Flame} label="이번 주" value={`${homeSummary.stats.recentSessionCount}회`} color="bg-orange-400/10 text-orange-400" />
+              <StatCard icon={TrendingUp} label="총 볼륨" value={`${(homeSummary.stats.totalVolume / 1000).toFixed(1)}t`} color="bg-blue-400/10 text-blue-400" />
+              <StatCard icon={Calendar} label="운동 시간" value={`${Math.round(homeSummary.stats.totalDurationMinutes / 60)}h`} color="bg-purple-400/10 text-purple-400" />
             </div>
           )}
-          <ProgressReportCard />
-          <MonthlyStatsCard />
-          <WorkoutQualityCard sessions={recentWorkoutSessions} isLoading={recentWorkoutsLoading} />
-          <RecentWorkouts sessions={recentWorkoutSessions} isLoading={recentWorkoutsLoading} />
+          <ProgressReportCard monthlyStats={homeSummary?.monthlyStats} weeklyStats={homeSummary?.weeklyStats} isLoading={homeSummaryLoading} />
+          <MonthlyStatsCard stats={homeSummary?.monthlyStats} isLoading={homeSummaryLoading} />
+          <WorkoutQualityCard sessions={homeSummary?.recentWorkouts} isLoading={homeSummaryLoading} />
+          <RecentWorkouts sessions={homeSummary?.recentWorkouts} isLoading={homeSummaryLoading} />
         </div>
 
         <div className="min-w-0 space-y-3">
-          <QuickStartCard />
+          <QuickStartCard routines={homeSummary?.routines} isLoading={homeSummaryLoading} />
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-            <StreakCard />
-            <BodyWeightSummaryCard />
+            <StreakCard streak={homeSummary?.streak} isLoading={homeSummaryLoading} />
+            <BodyWeightSummaryCard weights={homeSummary?.bodyWeights} goal={homeSummary?.goal} isLoading={homeSummaryLoading} />
           </div>
-          <BodyPartBalanceCard sessions={recentWorkoutSessions} isLoading={recentWorkoutsLoading} />
+          <BodyPartBalanceCard sessions={homeSummary?.recentWorkouts} isLoading={homeSummaryLoading} />
           <FeatureCards />
           <Link href="/ai-coach">
             <Card className="bg-gradient-to-br from-primary/10 to-blue-500/10 border-primary/20 cursor-pointer hover:border-primary/40 transition-all duration-200">

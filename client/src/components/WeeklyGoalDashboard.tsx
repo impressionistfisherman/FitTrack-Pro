@@ -1,4 +1,3 @@
-import { trpc } from "@/lib/trpc";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Circle } from "lucide-react";
@@ -24,8 +23,7 @@ function getProgressTextColor(progress: number): string {
   return "text-red-400";
 }
 
-export function WeeklyGoalDashboard() {
-  const { data: weeklyStats, isLoading } = trpc.weeklyGoals.get.useQuery(undefined, { retry: false });
+export function WeeklyGoalDashboard({ weeklyStats, isLoading }: { weeklyStats?: any; isLoading: boolean }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [hasShownToday, setHasShownToday] = useState(false);
   const completedCount = useMemo(

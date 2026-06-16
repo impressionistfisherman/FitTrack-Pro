@@ -2867,6 +2867,25 @@ async function getWorkoutVolumeInDateRange(userId: number, from?: Date, to?: Dat
   return Number(row?.totalVolume) || 0;
 }
 
+export async function getWorkoutSessionVolumeRows(userId: number): Promise<Row[]> {
+  return await all(
+    `SELECT
+       ws.id,
+       COALESCE(ws.workoutDate, ws.startedAt) AS session_date,
+       ws.durationMinutes AS duration_minutes,
+       CASE
+         WHEN COALESCE(ws.totalVolume, 0) > 0 THEN ws.totalVolume
+         ELSE COALESCE(SUM(COALESCE(wl.reps, 0) * COALESCE(wl.weightKg, 0)), 0)
+       END AS total_volume
+     FROM workout_sessions ws
+     LEFT JOIN workout_logs wl ON wl.sessionId = ws.id
+     WHERE ws.userId = ?
+     GROUP BY ws.id, ws.workoutDate, ws.startedAt, ws.durationMinutes, ws.totalVolume
+     ORDER BY COALESCE(ws.workoutDate, ws.startedAt) DESC, ws.startedAt DESC`,
+    userId,
+  );
+}
+
 export async function getUserStats(userId: number): Promise<Row> {
   const sessions = await getWorkoutSessionsByUser(userId, 1000);
   const weekStart = getWeekStart(new Date());

@@ -63,6 +63,7 @@ import {
   getWorkoutLogsBySession,
   getWorkoutLogsBySessionIds,
   getWorkoutSessionById,
+  getWorkoutSessionVolumeRows,
   getWorkoutSessionsByUser,
   getWorkoutStreak,
   ensureTrainerCode,
@@ -1275,6 +1276,127 @@ function normalizeWorkoutCaptureResult(parsed: any, exercises: any[]) {
   };
 }
 
+function stripHomeTime(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function getHomeWeekStart(date: Date) {
+  const start = stripHomeTime(date);
+  start.setDate(start.getDate() - start.getDay());
+  return start;
+}
+
+function getHomeSessionDate(row: any) {
+  return new Date(row.session_date ?? row.sessionDate ?? row.workoutDate ?? row.startedAt);
+}
+
+function getHomeSessionVolume(row: any) {
+  return Number(row.total_volume ?? row.totalVolume) || 0;
+}
+
+function getHomeSessionDuration(row: any) {
+  return Number(row.duration_minutes ?? row.durationMinutes) || 0;
+}
+
+function buildHomeStats(volumeRows: any[]) {
+  const weekStart = getHomeWeekStart(new Date());
+  const recentSessionCount = new Set(
+    volumeRows
+      .filter((row) => getHomeSessionDate(row) >= weekStart)
+      .map((row) => getHomeSessionDate(row).toDateString()),
+  ).size;
+
+  return {
+    totalSessions: volumeRows.length,
+    recentSessionCount,
+    totalVolume: volumeRows.reduce((sum, row) => sum + getHomeSessionVolume(row), 0),
+    totalDurationMinutes: volumeRows.reduce((sum, row) => sum + getHomeSessionDuration(row), 0),
+  };
+}
+
+function buildHomeMonthlyStats(volumeRows: any[], months = 7) {
+  const buckets = new Map<string, { month: string; count: number; totalVolume: number }>();
+  const now = new Date();
+  for (let i = months - 1; i >= 0; i--) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    buckets.set(`${date.getFullYear()}-${date.getMonth()}`, { month: `${date.getMonth() + 1}월`, count: 0, totalVolume: 0 });
+  }
+
+  for (const row of volumeRows) {
+    const date = getHomeSessionDate(row);
+    const bucket = buckets.get(`${date.getFullYear()}-${date.getMonth()}`);
+    if (!bucket) continue;
+    bucket.count += 1;
+    bucket.totalVolume += getHomeSessionVolume(row);
+  }
+
+  return Array.from(buckets.values());
+}
+
+function buildHomeWeeklyStats(volumeRows: any[], goal: any) {
+  const weeklyTarget = goal?.weeklyWorkouts ?? 3;
+  const from = getHomeWeekStart(new Date());
+  const to = new Date(from);
+  to.setDate(to.getDate() + 7);
+  to.setMilliseconds(to.getMilliseconds() - 1);
+  const workoutsByDay = new Array<boolean>(7).fill(false);
+  const completedDates = new Set<string>();
+  let totalVolume = 0;
+  let totalDuration = 0;
+
+  for (const row of volumeRows) {
+    const date = getHomeSessionDate(row);
+    if (date < from || date > to) continue;
+    workoutsByDay[date.getDay()] = true;
+    completedDates.add(date.toDateString());
+    totalVolume += getHomeSessionVolume(row);
+    totalDuration += getHomeSessionDuration(row);
+  }
+
+  const completedDays = completedDates.size;
+  return {
+    weeklyTarget,
+    completedDays,
+    progress: Math.min(100, Math.round((completedDays / weeklyTarget) * 100)),
+    totalVolume,
+    totalDuration,
+    workoutsByDay,
+  };
+}
+
+function buildHomeStreak(volumeRows: any[]) {
+  const days = Array.from(new Set(
+    volumeRows.map((row) => getHomeSessionDate(row).toDateString()),
+  )).map((day) => new Date(day)).sort((a, b) => b.getTime() - a.getTime());
+
+  let current = 0;
+  const cursor = stripHomeTime(new Date());
+  const latestDay = days[0];
+  if (latestDay?.getTime() !== undefined && latestDay.getTime() !== cursor.getTime()) {
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  for (const day of days) {
+    if (day.getTime() === cursor.getTime()) {
+      current += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    } else if (day < cursor) {
+      break;
+    }
+  }
+
+  let longest = 0;
+  let run = 0;
+  let previous: Date | null = null;
+  for (const day of [...days].reverse()) {
+    if (!previous || day.getTime() - previous.getTime() === 86400000) run += 1;
+    else run = 1;
+    longest = Math.max(longest, run);
+    previous = day;
+  }
+
+  return { current, longest, lastWorkoutDate: days[0] ?? null };
+}
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -1309,6 +1431,87 @@ export const appRouter = router({
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
+    }),
+  }),
+
+  home: router({
+    summary: protectedProcedure.query(async ({ ctx }) => {
+      const userId = ctx.user.id;
+      const preferencesPromise = Promise.all([
+        getUserPreference(userId, "experienceLevel"),
+        getUserPreference(userId, "displayName"),
+        getUserPreference(userId, "gymName"),
+        getUserPreference(userId, "gymLocation"),
+        getUserPreference(userId, "gymEquipment"),
+        getUserPreference(userId, "gymEquipmentDetails"),
+        getUserPreference(userId, "injuryNotes"),
+        getUserPreference(userId, "avoidExercises"),
+        getUserPreference(userId, "preferredExercises"),
+        getUserPreference(userId, "availableWorkoutTimes"),
+        getUserPreference(userId, "customSplitPresets"),
+      ]).then(([
+        experienceLevel,
+        displayName,
+        gymName,
+        gymLocation,
+        gymEquipment,
+        gymEquipmentDetails,
+        injuryNotes,
+        avoidExercises,
+        preferredExercises,
+        availableWorkoutTimes,
+        customSplitPresets,
+      ]) => ({
+        experienceLevel: experienceLevel ?? "beginner",
+        displayName: displayName ?? ctx.user.name ?? "",
+        gymName: gymName ?? "",
+        gymLocation: workoutLocationSchema.safeParse(gymLocation).data ?? "gym",
+        gymEquipment: parseEquipmentPreference(gymEquipment),
+        gymEquipmentDetails: parseStringListPreference(gymEquipmentDetails),
+        injuryNotes: injuryNotes ?? "",
+        avoidExercises: avoidExercises ?? "",
+        preferredExercises: preferredExercises ?? "",
+        availableWorkoutTimes: availableWorkoutTimes ?? "",
+        customSplitPresets: parseCustomSplitPresets(customSplitPresets),
+      }));
+      const recentWorkoutsPromise = getWorkoutSessionsByUser(userId, 20).then(async (sessions) => {
+        const logsBySessionId = await getWorkoutLogsBySessionIds(sessions.map((session: any) => Number(session.id)));
+        return sessions.map((session: any) => ({
+          ...session,
+          logs: logsBySessionId.get(Number(session.id)) ?? [],
+        }));
+      });
+
+      const [
+        goal,
+        goals,
+        preferences,
+        recentWorkouts,
+        routines,
+        bodyWeights,
+        volumeRows,
+      ] = await Promise.all([
+        getUserGoal(userId),
+        getUserGoals(userId),
+        preferencesPromise,
+        recentWorkoutsPromise,
+        getRoutinesByUser(userId),
+        getBodyWeights(userId, 8),
+        getWorkoutSessionVolumeRows(userId),
+      ]);
+
+      return {
+        stats: buildHomeStats(volumeRows),
+        goal,
+        goals,
+        preferences,
+        recentWorkouts,
+        routines,
+        streak: buildHomeStreak(volumeRows),
+        bodyWeights,
+        monthlyStats: buildHomeMonthlyStats(volumeRows, 7),
+        weeklyStats: buildHomeWeeklyStats(volumeRows, goal),
+      };
     }),
   }),
 
