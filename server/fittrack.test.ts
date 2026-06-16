@@ -491,6 +491,9 @@ describe("feedback", () => {
 
 describe("admin member management", () => {
   it("returns data diagnostics for admin quality checks", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    const weightedExercises = await caller.exercises.list({ search: "바벨 로우" });
+    const exerciseId = weightedExercises[0].id;
     const unique = Date.now();
     const userId = await upsertUser({
       openId: `admin-diagnostics-${unique}`,
@@ -503,7 +506,7 @@ describe("admin member management", () => {
       name: "진단 테스트",
       workoutDate: new Date(),
     });
-    await addWorkoutLog({ sessionId, exerciseId: 1, setNumber: 1, weightKg: 0, reps: 0 });
+    await addWorkoutLog({ sessionId, exerciseId, setNumber: 1, weightKg: 0, reps: 0 });
 
     const diagnostics = await getAdminDataDiagnostics();
 
@@ -511,6 +514,30 @@ describe("admin member management", () => {
     expect(diagnostics.zeroVolumeSessions).toBeGreaterThan(0);
     expect(diagnostics.missingWeightLogs).toBeGreaterThan(0);
     expect(diagnostics.missingRepsLogs).toBeGreaterThan(0);
+  });
+
+  it("does not flag bodyweight ab logs as missing weight", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    const bodyweightExercises = await caller.exercises.list({ search: "크런치" });
+    const exerciseId = bodyweightExercises[0].id;
+    const before = await getAdminDataDiagnostics();
+    const unique = Date.now();
+    const userId = await upsertUser({
+      openId: `bodyweight-diagnostics-${unique}`,
+      email: `bodyweight-diagnostics-${unique}@fittrack.local`,
+      name: "Bodyweight Diagnostics",
+      loginMethod: "test",
+      role: "user",
+    });
+    const sessionId = await createWorkoutSession(userId, {
+      name: "맨몸 복근 진단 테스트",
+      workoutDate: new Date(),
+    });
+    await addWorkoutLog({ sessionId, exerciseId, setNumber: 1, weightKg: 0, reps: 20 });
+
+    const after = await getAdminDataDiagnostics();
+
+    expect(after.missingWeightLogs).toBe(before.missingWeightLogs);
   });
 
   it("lists members with activity summary and updates member profile fields", async () => {

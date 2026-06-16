@@ -791,7 +791,16 @@ export async function getAdminDataDiagnostics(): Promise<Row> {
   const sessionRow = await get(
     `SELECT
        COUNT(*) AS total_sessions,
-       SUM(CASE WHEN COALESCE(ws.totalVolume, 0) = 0 THEN 1 ELSE 0 END) AS zero_volume_sessions,
+       SUM(CASE WHEN COALESCE(ws.totalVolume, 0) = 0 AND EXISTS (
+         SELECT 1
+         FROM workout_logs zwl
+         JOIN exercises ze ON ze.id = zwl.exerciseId
+         WHERE zwl.sessionId = ws.id
+           AND COALESCE(zwl.durationSeconds, 0) = 0
+           AND COALESCE(ze.equipment, '') <> 'bodyweight'
+           AND COALESCE(ze.bodyPart, '') NOT IN ('abs', 'cardio', 'stretching')
+           AND COALESCE(ze.category, '') NOT IN ('cardio', 'flexibility')
+       ) THEN 1 ELSE 0 END) AS zero_volume_sessions,
        SUM(CASE WHEN ws.createdAt >= ? THEN 1 ELSE 0 END) AS recent_sessions
      FROM workout_sessions ws`,
     thirtyDaysAgo,
@@ -799,9 +808,15 @@ export async function getAdminDataDiagnostics(): Promise<Row> {
   const logRow = await get(
     `SELECT
        COUNT(*) AS total_logs,
-       SUM(CASE WHEN COALESCE(wl.weightKg, 0) = 0 AND COALESCE(wl.durationSeconds, 0) = 0 THEN 1 ELSE 0 END) AS missing_weight_logs,
+       SUM(CASE WHEN COALESCE(wl.weightKg, 0) = 0
+          AND COALESCE(wl.durationSeconds, 0) = 0
+          AND COALESCE(e.equipment, '') <> 'bodyweight'
+          AND COALESCE(e.bodyPart, '') NOT IN ('abs', 'cardio', 'stretching')
+          AND COALESCE(e.category, '') NOT IN ('cardio', 'flexibility')
+        THEN 1 ELSE 0 END) AS missing_weight_logs,
        SUM(CASE WHEN COALESCE(wl.reps, 0) = 0 AND COALESCE(wl.durationSeconds, 0) = 0 THEN 1 ELSE 0 END) AS missing_reps_logs
-     FROM workout_logs wl`,
+     FROM workout_logs wl
+     JOIN exercises e ON e.id = wl.exerciseId`,
   );
   const inactiveRow = await get(
     `SELECT COUNT(*) AS active_users_without_workouts

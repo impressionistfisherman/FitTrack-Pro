@@ -435,7 +435,7 @@ function WorkoutQualityCard() {
     { retry: false, staleTime: 1000 * 60 * 2 }
   );
   const quality = useMemo(() => {
-    const issues: string[] = [];
+    const issueItems: { key: string; title: string; detail: string }[] = [];
     let zeroVolumeSessions = 0;
     let missingLogs = 0;
     for (const session of sessions ?? []) {
@@ -444,37 +444,73 @@ function WorkoutQualityCard() {
         const log = item.log ?? {};
         return sum + (Number(log.weightKg) || 0) * (Number(log.reps) || 0);
       }, 0);
-      if (logs.length > 0 && Math.max(computedVolume, Number(session.totalVolume) || 0) === 0) {
-        zeroVolumeSessions += 1;
-      }
-      missingLogs += logs.filter((item: any) => {
+      const weightedLogs = logs.filter((item: any) => {
+        const exercise = item.exercise ?? {};
         const log = item.log ?? {};
         const isTimed = Number(log.durationSeconds) > 0;
-        return !isTimed && ((Number(log.weightKg) || 0) === 0 || (Number(log.reps) || 0) === 0);
-      }).length;
+        const isBodyweight = exercise.equipment === "bodyweight" || exercise.bodyPart === "abs";
+        const isBodyControl = ["cardio", "stretching"].includes(exercise.bodyPart) || ["cardio", "flexibility"].includes(exercise.category);
+        return !isTimed && !isBodyweight && !isBodyControl;
+      });
+      const sessionDate = new Date(session.workoutDate ?? session.startedAt).toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
+      if (weightedLogs.length > 0 && Math.max(computedVolume, Number(session.totalVolume) || 0) === 0) {
+        zeroVolumeSessions += 1;
+        issueItems.push({
+          key: `zero-${session.id}`,
+          title: `${session.name || "운동 세션"} · ${sessionDate}`,
+          detail: "중량 운동이 있지만 세션 볼륨이 0kg입니다.",
+        });
+      }
+      const missingItems = logs.filter((item: any) => {
+        const exercise = item.exercise ?? {};
+        const log = item.log ?? {};
+        const isTimed = Number(log.durationSeconds) > 0;
+        const isBodyweight = exercise.equipment === "bodyweight" || exercise.bodyPart === "abs";
+        const isBodyControl = ["cardio", "stretching"].includes(exercise.bodyPart) || ["cardio", "flexibility"].includes(exercise.category);
+        const missingWeight = !isTimed && !isBodyweight && !isBodyControl && (Number(log.weightKg) || 0) === 0;
+        const missingReps = !isTimed && (Number(log.reps) || 0) === 0;
+        return missingWeight || missingReps;
+      });
+      missingLogs += missingItems.length;
+      for (const item of missingItems.slice(0, 2)) {
+        const exercise = item.exercise ?? {};
+        const log = item.log ?? {};
+        const missingParts = [
+          (Number(log.weightKg) || 0) === 0 && exercise.equipment !== "bodyweight" && exercise.bodyPart !== "abs" ? "무게" : "",
+          (Number(log.reps) || 0) === 0 ? "횟수" : "",
+        ].filter(Boolean).join("/");
+        issueItems.push({
+          key: `log-${session.id}-${log.id ?? `${exercise.id}-${log.setNumber}`}`,
+          title: `${session.name || "운동 세션"} · ${sessionDate}`,
+          detail: `${exercise.nameKo ?? exercise.name ?? "운동"} ${log.setNumber ?? "-"}세트 ${missingParts} 확인`,
+        });
+      }
     }
-    if (zeroVolumeSessions) issues.push(`볼륨 0 세션 ${zeroVolumeSessions}건`);
-    if (missingLogs) issues.push(`무게/횟수 누락 세트 ${missingLogs}개`);
-    return { issues, zeroVolumeSessions, missingLogs };
+    return { issueItems, zeroVolumeSessions, missingLogs };
   }, [sessions]);
 
   return (
     <Card className="bg-card border-border">
       <CardContent className="p-4">
         <div className="mb-3 flex items-center gap-2">
-          {quality.issues.length ? <AlertTriangle size={17} className="text-orange-400" /> : <CheckCircle2 size={17} className="text-primary" />}
+          {quality.issueItems.length ? <AlertTriangle size={17} className="text-orange-400" /> : <CheckCircle2 size={17} className="text-primary" />}
           <h3 className="font-semibold text-foreground">운동 기록 품질</h3>
         </div>
         {isLoading ? (
           <div className="h-16 skeleton rounded-xl" />
-        ) : quality.issues.length ? (
+        ) : quality.issueItems.length ? (
           <div className="space-y-2">
-            {quality.issues.map((issue) => (
-              <div key={issue} className="rounded-xl border border-orange-400/20 bg-orange-400/10 px-3 py-2 text-sm text-orange-200">
-                {issue}
+            <div className="flex flex-wrap gap-2">
+              {quality.zeroVolumeSessions > 0 && <Badge className="border border-orange-400/30 bg-orange-400/10 text-orange-200">볼륨 0 세션 {quality.zeroVolumeSessions}건</Badge>}
+              {quality.missingLogs > 0 && <Badge className="border border-orange-400/30 bg-orange-400/10 text-orange-200">입력 확인 세트 {quality.missingLogs}개</Badge>}
+            </div>
+            {quality.issueItems.slice(0, 4).map((issue) => (
+              <div key={issue.key} className="rounded-xl border border-orange-400/20 bg-orange-400/10 px-3 py-2">
+                <div className="text-sm font-semibold text-orange-100">{issue.title}</div>
+                <div className="mt-0.5 text-xs text-orange-200/90">{issue.detail}</div>
               </div>
             ))}
-            <p className="text-xs text-muted-foreground">0kg로 보이는 통계는 무게 또는 횟수 누락 여부를 먼저 확인하세요.</p>
+            <p className="text-xs text-muted-foreground">맨몸·복근·유산소·스트레칭은 무게 0kg이어도 정상으로 처리합니다.</p>
           </div>
         ) : (
           <div className="rounded-xl border border-primary/20 bg-primary/10 px-3 py-3 text-sm text-primary">
