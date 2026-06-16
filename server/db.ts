@@ -2773,6 +2773,57 @@ export async function getWorkoutLogsBySession(sessionId: number): Promise<Row[]>
   }));
 }
 
+function normalizeWorkoutLogRow(row: Row): Row {
+  return {
+    log: {
+      id: aliasValue(row, "wl_id"),
+      sessionId: aliasValue(row, "wl_sessionId"),
+      exerciseId: aliasValue(row, "wl_exerciseId"),
+      setNumber: aliasValue(row, "wl_setNumber"),
+      reps: aliasValue(row, "wl_reps"),
+      weightKg: aliasValue(row, "wl_weightKg"),
+      durationSeconds: aliasValue(row, "wl_durationSeconds"),
+      distanceM: aliasValue(row, "wl_distanceM"),
+      isWarmup: Boolean(aliasValue(row, "wl_isWarmup")),
+      rpe: aliasValue(row, "wl_rpe"),
+      memo: aliasValue(row, "wl_memo"),
+      notes: aliasValue(row, "wl_notes"),
+      createdAt: aliasValue(row, "wl_createdAt"),
+    },
+    exercise: normalizeExercise(row),
+  };
+}
+
+export async function getWorkoutLogsBySessionIds(sessionIds: number[]): Promise<Map<number, Row[]>> {
+  const uniqueIds = Array.from(new Set(sessionIds.filter((id) => Number.isFinite(id))));
+  const grouped = new Map<number, Row[]>();
+  for (const id of uniqueIds) grouped.set(id, []);
+  if (uniqueIds.length === 0) return grouped;
+
+  const placeholders = uniqueIds.map(() => "?").join(", ");
+  const rows = await all(
+    `SELECT
+       wl.id AS wl_id, wl.sessionId AS wl_sessionId, wl.exerciseId AS wl_exerciseId, wl.setNumber AS wl_setNumber,
+       wl.reps AS wl_reps, wl.weightKg AS wl_weightKg, wl.durationSeconds AS wl_durationSeconds,
+       wl.distanceM AS wl_distanceM, wl.isWarmup AS wl_isWarmup, wl.rpe AS wl_rpe, wl.memo AS wl_memo,
+       wl.notes AS wl_notes, wl.createdAt AS wl_createdAt,
+       e.*
+     FROM workout_logs wl
+     JOIN exercises e ON wl.exerciseId = e.id
+     WHERE wl.sessionId IN (${placeholders})
+     ORDER BY wl.sessionId, wl.exerciseId, wl.setNumber`,
+    ...uniqueIds,
+  );
+
+  for (const row of rows) {
+    const sessionId = Number(aliasValue(row, "wl_sessionId"));
+    const logs = grouped.get(sessionId) ?? [];
+    logs.push(normalizeWorkoutLogRow(row));
+    grouped.set(sessionId, logs);
+  }
+  return grouped;
+}
+
 export async function getWorkoutSessionsByUser(userId: number, limit = 20): Promise<Row[]> {
   return await all(
     `SELECT * FROM workout_sessions

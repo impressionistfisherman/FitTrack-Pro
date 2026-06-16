@@ -61,6 +61,7 @@ import {
   getUserAppRole,
   getWeeklyStats,
   getWorkoutLogsBySession,
+  getWorkoutLogsBySessionIds,
   getWorkoutSessionById,
   getWorkoutSessionsByUser,
   getWorkoutStreak,
@@ -2344,12 +2345,11 @@ ${exerciseSummary.slice(0, 80).join("\n")}
       .input(z.object({ limit: z.number().default(10) }))
       .query(async ({ ctx, input }) => {
         const sessions = await getWorkoutSessionsByUser(ctx.user.id, input.limit);
-        const result: any[] = [];
-        for (const session of sessions) {
-          const logs = await getWorkoutLogsBySession(session.id);
-          result.push({ ...session, logs });
-        }
-        return result;
+        const logsBySessionId = await getWorkoutLogsBySessionIds(sessions.map((session: any) => Number(session.id)));
+        return sessions.map((session: any) => ({
+          ...session,
+          logs: logsBySessionId.get(Number(session.id)) ?? [],
+        }));
       }),
   }),
 

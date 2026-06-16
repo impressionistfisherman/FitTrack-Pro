@@ -429,16 +429,12 @@ function ProgressReportCard() {
   );
 }
 
-function WorkoutQualityCard() {
-  const { data: sessions, isLoading } = trpc.history.recentWorkouts.useQuery(
-    { limit: 8 },
-    { retry: false, staleTime: 1000 * 60 * 2 }
-  );
+function WorkoutQualityCard({ sessions, isLoading }: { sessions?: any[]; isLoading: boolean }) {
   const quality = useMemo(() => {
     const issueItems: { key: string; title: string; detail: string }[] = [];
     let zeroVolumeSessions = 0;
     let missingLogs = 0;
-    for (const session of sessions ?? []) {
+    for (const session of (sessions ?? []).slice(0, 8)) {
       const logs = session.logs ?? [];
       const computedVolume = logs.reduce((sum: number, item: any) => {
         const log = item.log ?? {};
@@ -522,12 +518,7 @@ function WorkoutQualityCard() {
   );
 }
 
-function RecentWorkouts() {
-  const { data: sessions, isLoading } = trpc.history.recentWorkouts.useQuery(
-    { limit: 3 },
-    { retry: false, staleTime: 1000 * 60 * 2 }
-  );
-
+function RecentWorkouts({ sessions, isLoading }: { sessions?: any[]; isLoading: boolean }) {
   if (isLoading) {
     return (
       <Card className="bg-card border-border">
@@ -546,7 +537,9 @@ function RecentWorkouts() {
     );
   }
 
-  if (!sessions || sessions.length === 0) {
+  const recentSessions = (sessions ?? []).slice(0, 3);
+
+  if (recentSessions.length === 0) {
     return (
       <Card className="bg-card border-border">
         <CardContent className="p-4">
@@ -569,7 +562,7 @@ function RecentWorkouts() {
         </div>
 
         <div className="grid gap-3">
-          {sessions.map((session) => {
+          {recentSessions.map((session) => {
             const exerciseNames = Array.from(
               new Map((session.logs || []).map((item: any) => [
                 item.log?.exerciseId ?? item.exercise?.id ?? item.exercise?.nameKo,
@@ -613,8 +606,7 @@ function RecentWorkouts() {
   );
 }
 
-function BodyPartBalanceCard() {
-  const { data: sessions, isLoading } = trpc.history.recentWorkouts.useQuery({ limit: 20 }, { retry: false });
+function BodyPartBalanceCard({ sessions, isLoading }: { sessions?: any[]; isLoading: boolean }) {
   const balance = useMemo(() => {
     const buckets = new Map<string, { label: string; count: number; volume: number }>();
     for (const session of sessions ?? []) {
@@ -718,6 +710,14 @@ export default function Home() {
     retry: false,
     staleTime: 1000 * 60 * 5,
   });
+  const { data: recentWorkoutSessions, isLoading: recentWorkoutsLoading } = trpc.history.recentWorkouts.useQuery(
+    { limit: 20 },
+    {
+      enabled: isAuthenticated,
+      retry: false,
+      staleTime: 1000 * 60 * 2,
+    }
+  );
 
   if (loading) {
     return (
@@ -861,8 +861,8 @@ export default function Home() {
           )}
           <ProgressReportCard />
           <MonthlyStatsCard />
-          <WorkoutQualityCard />
-          <RecentWorkouts />
+          <WorkoutQualityCard sessions={recentWorkoutSessions} isLoading={recentWorkoutsLoading} />
+          <RecentWorkouts sessions={recentWorkoutSessions} isLoading={recentWorkoutsLoading} />
         </div>
 
         <div className="min-w-0 space-y-3">
@@ -871,7 +871,7 @@ export default function Home() {
             <StreakCard />
             <BodyWeightSummaryCard />
           </div>
-          <BodyPartBalanceCard />
+          <BodyPartBalanceCard sessions={recentWorkoutSessions} isLoading={recentWorkoutsLoading} />
           <FeatureCards />
           <Link href="/ai-coach">
             <Card className="bg-gradient-to-br from-primary/10 to-blue-500/10 border-primary/20 cursor-pointer hover:border-primary/40 transition-all duration-200">
