@@ -38,6 +38,7 @@ function Routes() {
         <Route path="/routines" component={Routines} />
         <Route path="/routines/:id" component={RoutineDetail} />
         <Route path="/workout/:sessionId" component={WorkoutSession} />
+        <Route path="/history/:id" component={History} />
         <Route path="/history" component={History} />
         <Route path="/ai-coach" component={AICoach} />
         <Route path="/coaching" component={Coaching} />

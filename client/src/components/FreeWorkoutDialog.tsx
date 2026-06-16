@@ -165,7 +165,7 @@ function loadImage(dataUrl: string) {
 async function prepareCaptureImageDataUrl(file: File) {
   const dataUrl = await readFileAsDataUrl(file);
   const image = await loadImage(dataUrl);
-  const maxSide = 1600;
+  const maxSide = 2200;
   const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
   const width = Math.max(1, Math.round(image.width * scale));
   const height = Math.max(1, Math.round(image.height * scale));
@@ -177,7 +177,7 @@ async function prepareCaptureImageDataUrl(file: File) {
   if (!context) return dataUrl;
 
   context.drawImage(image, 0, 0, width, height);
-  return canvas.toDataURL("image/jpeg", 0.84);
+  return canvas.toDataURL("image/jpeg", 0.9);
 }
 
 export default function FreeWorkoutDialog({

@@ -5,7 +5,7 @@ import BodyWeightTracker from "@/components/BodyWeightTracker";
 import FreeWorkoutDialog from "@/components/FreeWorkoutDialog";
 import { cn } from "@/lib/utils";
 import { Activity, Calendar, ChevronDown, ChevronLeft, ChevronRight, Clock, Dumbbell, Eye, LogIn, TrendingUp, Plus, Trash2, Pencil } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { matchesExerciseSearchText, scoreExerciseSearchMatch } from "@shared/exerciseSearch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -528,6 +528,11 @@ export default function History() {
   const [editingSession, setEditingSession] = useState<any | null>(null);
   const [viewingSession, setViewingSession] = useState<any | null>(null);
   const [recentSessionsOpen, setRecentSessionsOpen] = useState(false);
+  const routeSessionId = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    const match = window.location.pathname.match(/\/history\/(\d+)$/);
+    return match ? Number(match[1]) : null;
+  }, []);
   const exerciseSearchBoxRef = useRef<HTMLDivElement | null>(null);
 
   const { data: sessions } = trpc.history.calendar.useQuery({ year, month }, { enabled: isAuthenticated });
@@ -589,6 +594,16 @@ export default function History() {
       .filter((session: any) => getSessionDateKey(session) === selectedDate)
       .sort((a: any, b: any) => getSessionDate(b).getTime() - getSessionDate(a).getTime());
   }, [sessions, selectedDate]);
+
+  useEffect(() => {
+    if (!routeSessionId || viewingSession) return;
+    const target = [...(sessions ?? []), ...(recentWorkouts ?? [])].find((session: any) => Number(session.id) === routeSessionId);
+    if (!target) return;
+    setSelectedDate(getSessionDateKey(target));
+    setYear(getSessionDate(target).getFullYear());
+    setMonth(getSessionDate(target).getMonth() + 1);
+    setViewingSession(target);
+  }, [recentWorkouts, routeSessionId, sessions, viewingSession]);
 
   const selectedChartExercise = useMemo(() => {
     return exercises?.find((exercise: any) => exercise.id === chartExerciseId) ?? null;

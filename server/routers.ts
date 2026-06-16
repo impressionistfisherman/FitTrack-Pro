@@ -1229,6 +1229,29 @@ function normalizeInBodyCaptureResult(parsed: any) {
   };
 }
 
+function parseJsonObjectContent(content: string) {
+  const trimmed = content.trim();
+  if (!trimmed) return null;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1]?.trim();
+    if (fenced) {
+      try {
+        return JSON.parse(fenced);
+      } catch {
+        // Fall through to object extraction.
+      }
+    }
+    const start = trimmed.indexOf("{");
+    const end = trimmed.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      return JSON.parse(trimmed.slice(start, end + 1));
+    }
+    throw new Error("LLM response did not contain JSON.");
+  }
+}
+
 function normalizeWorkoutCaptureResult(parsed: any, exercises: any[]) {
   const parsedExercises = Array.isArray(parsed?.exercises) ? parsed.exercises.slice(0, 30) : [];
   const matched: any[] = [];
@@ -2676,7 +2699,7 @@ ${exerciseSummary.slice(0, 80).join("\n")}
 
         const exercises = await getExercises();
         const response = await invokeLLM({
-          provider: "gemini",
+          provider: "openai",
           messages: [
             {
               role: "system",
@@ -2703,7 +2726,7 @@ exerciseId는 항상 0으로 반환하세요. 서버가 운동 DB와 별도로 �
                 },
                 {
                   type: "image_url",
-                  image_url: { url: input.imageDataUrl },
+                  image_url: { url: input.imageDataUrl, detail: "high" },
                 },
               ],
             },
@@ -2762,14 +2785,11 @@ exerciseId는 항상 0으로 반환하세요. 서버가 운동 DB와 별도로 �
 
         const rawContent = response.choices[0]?.message?.content;
         const content = typeof rawContent === "string" ? rawContent : "";
-        let parsed: any = null;
         try {
-          parsed = content ? JSON.parse(content) : null;
+          return normalizeWorkoutCaptureResult(parseJsonObjectContent(content), exercises);
         } catch {
           throw new Error("캡처 분석 결과를 읽지 못했습니다. 글자가 선명한 캡처로 다시 시도해주세요.");
         }
-
-        return normalizeWorkoutCaptureResult(parsed, exercises);
       }),
 
     parseInBodyCapture: protectedProcedure
@@ -2782,7 +2802,7 @@ exerciseId는 항상 0으로 반환하세요. 서버가 운동 DB와 별도로 �
         }
 
         const response = await invokeLLM({
-          provider: "gemini",
+          provider: "openai",
           messages: [
             {
               role: "system",
@@ -2808,7 +2828,7 @@ exerciseId는 항상 0으로 반환하세요. 서버가 운동 DB와 별도로 �
                 },
                 {
                   type: "image_url",
-                  image_url: { url: input.imageDataUrl },
+                  image_url: { url: input.imageDataUrl, detail: "high" },
                 },
               ],
             },
@@ -2839,7 +2859,7 @@ exerciseId는 항상 0으로 반환하세요. 서버가 운동 DB와 별도로 �
         const rawContent = response.choices[0]?.message?.content;
         const content = typeof rawContent === "string" ? rawContent : "";
         try {
-          return normalizeInBodyCaptureResult(content ? JSON.parse(content) : null);
+          return normalizeInBodyCaptureResult(parseJsonObjectContent(content));
         } catch {
           throw new Error("인바디 분석 결과를 읽지 못했습니다. 글자가 선명한 이미지로 다시 시도해주세요.");
         }
