@@ -3,6 +3,7 @@ import { getAppPath, startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { WeeklyGoalDashboard } from "@/components/WeeklyGoalDashboard";
+import { useIsMobile } from "@/hooks/useMobile";
 import {
   Activity,
   AlertTriangle,
@@ -29,8 +30,9 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { useMemo } from "react";
+import { lazy, Suspense, useMemo } from "react";
+
+const HomeMonthlyChart = lazy(() => import("@/components/HomeMonthlyChart").then((module) => ({ default: module.HomeMonthlyChart })));
 
 const goalLabels: Record<string, string> = {
   hypertrophy: "근비대",
@@ -281,7 +283,7 @@ function BodyWeightSummaryCard({ weights, goal, isLoading }: { weights?: any[]; 
 }
 
 function MonthlyStatsCard({ stats, isLoading }: { stats?: any[]; isLoading: boolean }) {
-  const volumeKey = "볼륨(kg)";
+  const isMobile = useIsMobile();
 
   if (isLoading) {
     return (
@@ -310,50 +312,38 @@ function MonthlyStatsCard({ stats, isLoading }: { stats?: any[]; isLoading: bool
     );
   }
 
-  // 최근 6개월 데이터 (역순 정렬)
-  const chartData = stats.slice(-6).map((item) => ({
-    month: item.month,
-    운동횟수: item.count,
-    [volumeKey]: Math.round(item.totalVolume),
-  }));
+  const recentStats = stats.slice(-6);
+  const maxVolume = Math.max(1, ...recentStats.map((item) => Number(item.totalVolume) || 0));
+  const maxCount = Math.max(1, ...recentStats.map((item) => Number(item.count) || 0));
 
   return (
     <Card className="bg-card border-border">
       <CardContent className="p-4">
         <h3 className="font-semibold text-foreground mb-3">월별 요약</h3>
-        <ResponsiveContainer width="100%" height={150}>
-          <BarChart data={chartData} margin={{ top: 6, right: 8, left: -18, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis dataKey="month" stroke="var(--color-muted-foreground)" style={{ fontSize: "12px" }} />
-            <YAxis yAxisId="count" stroke="var(--color-muted-foreground)" style={{ fontSize: "12px" }} />
-            <YAxis
-              yAxisId="volume"
-              orientation="right"
-              width={48}
-              stroke="var(--color-blue-400)"
-              style={{ fontSize: "12px" }}
-              tickFormatter={(value) => Number(value).toLocaleString()}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "var(--color-card)",
-                border: "1px solid var(--color-border)",
-                borderRadius: "8px",
-              }}
-              labelStyle={{ color: "var(--color-foreground)" }}
-              formatter={(value, name, item) => {
-                const numericValue = Number(value) || 0;
-                const isVolume = name === "볼륨" || item.dataKey === volumeKey;
-                return isVolume
-                  ? [`${numericValue.toLocaleString()}kg`, "볼륨"]
-                  : [`${numericValue.toLocaleString()}회`, "운동횟수"];
-              }}
-            />
-            <Legend />
-            <Bar yAxisId="count" dataKey="운동횟수" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
-            <Bar yAxisId="volume" dataKey={volumeKey} name="볼륨" fill="var(--color-blue-400)" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+        {isMobile ? (
+          <div className="space-y-2">
+            {recentStats.slice(-4).map((item) => (
+              <div key={item.month} className="rounded-xl border border-border bg-accent/25 p-3">
+                <div className="mb-2 flex items-center justify-between text-xs">
+                  <span className="font-semibold text-foreground">{item.month}</span>
+                  <span className="text-muted-foreground">{Number(item.count) || 0}회 · {Math.round(Number(item.totalVolume) || 0).toLocaleString()}kg</span>
+                </div>
+                <div className="grid gap-1.5">
+                  <div className="h-2 overflow-hidden rounded-full bg-accent">
+                    <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(8, ((Number(item.count) || 0) / maxCount) * 100)}%` }} />
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-accent">
+                    <div className="h-full rounded-full bg-blue-400" style={{ width: `${Math.max(8, ((Number(item.totalVolume) || 0) / maxVolume) * 100)}%` }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <Suspense fallback={<div className="h-[150px] skeleton rounded-xl" />}>
+            <HomeMonthlyChart stats={stats} />
+          </Suspense>
+        )}
       </CardContent>
     </Card>
   );

@@ -1,22 +1,21 @@
 # PROGRESS
 
-- Date: 2026-06-16 23:41:57 +09:00
-- Summary: Fixed history detail navigation and hardened AI image recognition.
-- Current Status: Home recent workout links now open the matching history detail dialog, and AI image parsing is more tolerant of provider response formatting.
+- Date: 2026-06-17 09:46:29 +09:00
+- Summary: Improved mobile Home responsiveness by removing the chart dependency from the initial mobile render path.
+- Current Status: Mobile Home renders the monthly summary with lightweight native UI, while desktop keeps the Recharts chart behind a lazy-loaded component.
 
 ## Changed Structure
 
-- `client/src/App.tsx`: Added `/history/:id` route.
-- `client/src/pages/History.tsx`: Opens the matching session detail dialog when entering through `/history/:id`.
-- `client/src/components/FreeWorkoutDialog.tsx`: Increased workout capture preprocessing size and JPEG quality for better OCR.
-- `server/routers.ts`: Added tolerant JSON extraction for AI responses and requested high-detail vision parsing.
-- `TEST_RESULT.md`: Recorded validation and browser smoke results.
+- `client/src/pages/Home.tsx`: Uses `useIsMobile` to render a compact mobile monthly summary and lazy-loads the desktop chart.
+- `client/src/components/HomeMonthlyChart.tsx`: Extracted the Recharts monthly chart into a desktop-only lazy chunk.
+- `client/src/hooks/useMobile.tsx`: Initializes mobile state from `window.innerWidth` before the first render.
+- `TEST_RESULT.md`: Recorded check, test, build, and mobile browser QA results.
 
 ## Remaining Issues
 
-- Actual AI recognition quality still depends on the model provider, API key status, and input image clarity; production should be checked with a real user capture after deployment.
+- Detailed in-page data latency can still come from API/database request time; this change reduces frontend render cost for mobile Home.
 - Local SQLite files and `SESSION_HANDOFF.md` have unrelated working-tree changes and were intentionally not staged.
 
 ## Next Session
 
-- Test image recognition on deployed production with the exact capture that previously failed and inspect provider error details if it still fails.
+- If mobile still feels slow after deployment, capture endpoint timings for Home summary and recent workout queries on a throttled mobile network profile.

@@ -1,7 +1,7 @@
 # TEST_RESULT
 
-- Date: 2026-06-16 23:41:57 +09:00
-- Scope: History detail 404 fix and AI image recognition hardening
+- Date: 2026-06-17 09:46:29 +09:00
+- Scope: Mobile Home responsiveness improvement
 
 ## Results
 
@@ -10,16 +10,18 @@
 | `pnpm run check` | Pass | TypeScript compile check completed. |
 | `pnpm run test` | Pass | 6 files, 68 tests passed. |
 | `pnpm run build` | Pass | Vite and server bundle build completed. |
-| Browser history detail smoke | Pass | `/history/180026` opened the history page and session detail dialog instead of the NotFound screen. |
-| Browser console errors | Pass | No captured browser console errors during history detail smoke. |
+| Mobile Home browser QA | Pass | Chrome headless at 390x844 had no horizontal overflow. |
+| Mobile monthly summary render | Pass | Monthly summary used the lightweight mobile layout and did not render Recharts nodes. |
+| Browser console errors | Pass | No runtime errors captured during mobile Home QA. |
 
 ## Failure Cause
 
-- Home recent workout cards linked to `/history/:id`, but the app only registered `/history`.
-- AI image recognition returned user-visible errors when provider output was wrapped or not plain JSON.
+- Mobile Home still paid part of the desktop chart cost because the monthly chart implementation and Recharts import lived in the Home page path.
+- `useIsMobile` initially returned `false` until the effect ran, so mobile could briefly take the desktop render branch on first paint.
 
 ## Action / Next Action
 
-- Added the `/history/:id` route and auto-opened the matching session detail dialog.
-- Improved workout capture image quality before upload.
-- Requested high-detail vision parsing and made JSON parsing tolerant of fenced or wrapped JSON responses.
+- Moved the desktop Recharts monthly chart into a lazy-loaded component.
+- Added a mobile-only monthly summary layout using compact text and CSS bars.
+- Initialized mobile detection from `window.innerWidth` so the first mobile render chooses the mobile branch.
+- Continue profiling API latency separately if detailed in-page data still arrives slowly after the shell renders.
