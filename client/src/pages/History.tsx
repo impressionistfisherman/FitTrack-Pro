@@ -3,6 +3,7 @@ import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import BodyWeightTracker from "@/components/BodyWeightTracker";
 import FreeWorkoutDialog from "@/components/FreeWorkoutDialog";
+import { AuthRequiredState, PageLoadingState } from "@/components/PageState";
 import { cn } from "@/lib/utils";
 import { Activity, Calendar, ChevronDown, ChevronLeft, ChevronRight, Clock, Dumbbell, Eye, LogIn, TrendingUp, Plus, Trash2, Pencil } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -662,28 +663,9 @@ export default function History() {
       .map((item) => ({ ...item, 볼륨: Math.round(item.볼륨) }));
   }, [recentWorkouts]);
 
-  if (loading) {
-    return (
-      <div className="page-shell space-y-4">
-        <div className="h-12 skeleton rounded-xl" />
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="h-72 skeleton rounded-xl" />
-          <div className="h-72 skeleton rounded-xl" />
-        </div>
-      </div>
-    );
-  }
-
+  if (loading) return <PageLoadingState wide />;
   if (!isAuthenticated) {
-    return (
-      <div className="page-shell flex min-h-[calc(100dvh-9rem)] flex-col items-center justify-center">
-        <Calendar size={40} className="text-muted-foreground opacity-30 mb-4" />
-        <h2 className="text-lg font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
-        <Button className="gap-2 bg-primary text-primary-foreground" onClick={() => startLogin()}>
-          <LogIn size={16} />로그인
-        </Button>
-      </div>
-    );
+    return <AuthRequiredState icon={Calendar} description="운동 기록과 변화 추이를 확인하려면 로그인하세요." />;
   }
 
   const progressChartData = exerciseProgress

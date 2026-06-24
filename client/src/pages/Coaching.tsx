@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { AuthRequiredState, PageLoadingState } from "@/components/PageState";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -227,29 +228,9 @@ export default function Coaching() {
     markReadMutation.mutate();
   }, [isAuthenticated, loading, markReadMutation]);
 
-  if (loading || isLoading) {
-    return (
-      <div className="page-shell page-shell-wide space-y-4">
-        <div className="h-20 skeleton rounded-xl" />
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-          <div className="h-72 skeleton rounded-2xl" />
-          <div className="h-72 skeleton rounded-2xl" />
-        </div>
-      </div>
-    );
-  }
-
+  if (loading || isLoading) return <PageLoadingState wide />;
   if (!isAuthenticated) {
-    return (
-      <div className="page-shell flex min-h-[calc(100dvh-9rem)] flex-col items-center justify-center">
-        <MessageSquare size={40} className="mb-4 text-muted-foreground opacity-30" />
-        <h2 className="mb-2 text-lg font-semibold text-foreground">로그인이 필요합니다</h2>
-        <Button className="gap-2 bg-primary text-primary-foreground" onClick={() => startLogin()}>
-          <LogIn size={16} />
-          로그인
-        </Button>
-      </div>
-    );
+    return <AuthRequiredState icon={MessageSquare} description="트레이너 피드백과 PT 일정을 확인하려면 로그인하세요." />;
   }
 
   const linkedTrainers = (trainerStatus as any)?.trainers ?? [];

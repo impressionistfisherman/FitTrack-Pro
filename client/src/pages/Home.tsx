@@ -19,6 +19,7 @@ import {
   LogIn,
   Play,
   Plus,
+  Search,
   Scale,
   Target,
   TrendingDown,
@@ -690,55 +691,75 @@ export default function Home() {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex min-h-[calc(100dvh-8.5rem)] flex-col items-center justify-center px-4 relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl" />
-        </div>
-
-        <div className="text-center max-w-md relative z-10 animate-slide-up">
-          <div className="w-20 h-20 flex items-center justify-center mx-auto mb-6">
-            <img src="/brand-mark.png" alt="FitTrack" className="h-full w-full object-contain" />
+      <div className="page-shell page-shell-wide animate-fade-in">
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-card px-5 py-8 sm:px-8 sm:py-10">
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
+            <div className="absolute bottom-0 right-0 h-52 w-52 rounded-full bg-blue-500/10 blur-3xl" />
           </div>
-          <h1 className="text-4xl font-display tracking-wider text-foreground mb-2">FITTRACK PRO</h1>
-          <p className="text-muted-foreground mb-2 text-sm font-medium">스마트 운동 관리 플랫폼</p>
-          <p className="text-muted-foreground/70 text-xs mb-8 leading-relaxed">
-            구기종목 포함 운동 데이터베이스 · AI 맞춤 추천<br />
-            루틴 관리 · 운동 기록 · 진행 분석
-          </p>
 
-          <div className="grid grid-cols-3 gap-4 mb-8">
-            {[
-              { icon: Dumbbell, label: "운동 DB" },
-              { icon: Bot, label: "AI 추천" },
-              { icon: TrendingUp, label: "진행 분석" },
-            ].map((item) => (
-              <div key={item.label} className="flex flex-col items-center gap-2 p-3 rounded-xl bg-card border border-border">
-                <item.icon size={20} className="text-primary" />
-                <span className="text-xs text-muted-foreground">{item.label}</span>
+          <div className="relative z-10 grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.75fr)]">
+            <div>
+              <img src="/brand-mark.png" alt="" className="mb-5 h-16 w-16 object-contain" />
+              <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-primary">FITTRACK PRO</p>
+              <h1 className="max-w-2xl text-3xl font-bold leading-tight text-foreground sm:text-5xl">
+                운동 탐색부터 기록 분석까지 한 흐름으로 관리하세요
+              </h1>
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+                2,000개 이상 운동을 먼저 둘러보고, 로그인 후 루틴·운동 기록·AI 추천을 이어서 사용할 수 있습니다.
+              </p>
+
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <Button
+                  size="lg"
+                  className="min-h-12 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                  onClick={() => startLogin("google")}
+                >
+                  <LogIn size={18} />
+                  Google로 시작
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="min-h-12 gap-2 border-border bg-background/60 text-foreground hover:bg-accent"
+                  onClick={() => startLogin("github")}
+                >
+                  <Github size={18} />
+                  GitHub로 시작
+                </Button>
+                <Button asChild size="lg" variant="ghost" className="min-h-12 gap-2 text-primary">
+                  <Link href="/exercises">
+                    로그인 없이 운동 보기 <ArrowRight size={17} />
+                  </Link>
+                </Button>
               </div>
-            ))}
-          </div>
+            </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              size="lg"
-              className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-base font-semibold"
-              onClick={() => startLogin("google")}
-            >
-              <LogIn size={18} />
-              Google
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="gap-2 border-border bg-card text-foreground hover:bg-accent h-12 text-base font-semibold"
-              onClick={() => startLogin("github")}
-            >
-              <Github size={18} />
-              GitHub
-            </Button>
+            <div className="grid gap-3">
+              {[
+                { icon: Search, title: "1. 운동 찾기", desc: "부위·기구·난이도로 빠르게 탐색", href: "/exercises" },
+                { icon: Play, title: "2. 루틴 실행", desc: "자유 운동 또는 저장한 루틴 시작", href: "/routines" },
+                { icon: BarChart3, title: "3. 변화 확인", desc: "운동량·체중·수행 기록 분석", href: "/history" },
+              ].map((item) => (
+                <Link key={item.title} href={item.href} className="group block">
+                  <Card className="border-border bg-background/60 transition-colors group-hover:border-primary/40">
+                    <CardContent className="flex items-center gap-4 p-4">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <item.icon size={20} />
+                      </div>
+                      <div>
+                        <h2 className="font-semibold text-foreground">{item.title}</h2>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{item.desc}</p>
+                      </div>
+                      <ChevronRight size={17} className="ml-auto text-muted-foreground transition-transform group-hover:translate-x-1" />
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+              <p className="px-1 text-xs leading-relaxed text-muted-foreground">
+                AI 코치·루틴 저장·기록 분석은 개인 운동 데이터 보호를 위해 로그인 후 제공됩니다.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -754,6 +775,8 @@ export default function Home() {
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
   const activeGoals = homeSummary?.goals?.length ? homeSummary.goals : homeSummary?.goal ? [homeSummary.goal] : [];
   const profileLoading = homeSummaryLoading;
+  const appRole = (user as any)?.appRole ?? "user";
+  const isAdmin = user?.role === "admin";
   const experienceLabel = homeSummary?.preferences?.experienceLevel === "advanced"
     ? "헬창"
     : homeSummary?.preferences?.experienceLevel === "intermediate"
@@ -789,8 +812,24 @@ export default function Home() {
           </div>
         </div>
         <div className="flex flex-wrap justify-end gap-2">
+          {appRole === "trainer" && (
+            <Button asChild variant="outline" className="min-h-11 gap-2 border-border">
+              <Link href="/trainer">
+                <Activity size={16} />
+                <span className="hidden sm:inline">회원 관리</span>
+              </Link>
+            </Button>
+          )}
+          {isAdmin && (
+            <Button asChild variant="outline" className="min-h-11 gap-2 border-border">
+              <Link href="/admin">
+                <BarChart3 size={16} />
+                <span className="hidden sm:inline">관리자</span>
+              </Link>
+            </Button>
+          )}
           <Link href="/ai-coach">
-            <Button className="gap-2 bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20" variant="outline">
+            <Button className="min-h-11 gap-2 bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20" variant="outline">
               <Zap size={16} />
               <span className="hidden sm:inline">AI 추천</span>
             </Button>

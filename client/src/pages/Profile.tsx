@@ -1,9 +1,11 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { AuthRequiredState, PageLoadingState } from "@/components/PageState";
+import { ProfileSummaryCard } from "@/components/profile/ProfileSummaryCard";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
-  Activity, Calendar, Camera, Copy, Dumbbell, Flame, LogIn, LogOut, MapPin, MessageSquare, Ruler, Scale, Settings, ShieldCheck, Target, Trash2, TrendingDown, TrendingUp, Trophy, User, Users
+  Activity, Calendar, Copy, Dumbbell, Flame, LogIn, LogOut, MapPin, MessageSquare, Ruler, Scale, Settings, ShieldCheck, Target, TrendingDown, TrendingUp, Trophy, User, Users
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -331,25 +333,9 @@ export default function Profile() {
     updateProfileImageMutation.mutate({ profileImageUrl: null });
   };
 
-  if (loading) {
-    return (
-      <div className="page-shell page-shell-narrow space-y-4">
-        <div className="h-20 skeleton rounded-xl" />
-        <div className="h-72 skeleton rounded-xl" />
-      </div>
-    );
-  }
-
+  if (loading) return <PageLoadingState />;
   if (!isAuthenticated) {
-    return (
-      <div className="page-shell flex min-h-[calc(100dvh-9rem)] flex-col items-center justify-center">
-        <User size={40} className="text-muted-foreground opacity-30 mb-4" />
-        <h2 className="text-lg font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
-        <Button className="gap-2 bg-primary text-primary-foreground" onClick={() => startLogin()}>
-          <LogIn size={16} />로그인
-        </Button>
-      </div>
-    );
+    return <AuthRequiredState icon={User} description="목표, 신체 정보, 트레이너 연결을 관리하려면 로그인하세요." />;
   }
 
   const currentGoalConfig = goal ? goalOptions.find((g) => g.value === goal.goal) : null;
@@ -407,101 +393,18 @@ export default function Profile() {
         <p className="page-description">목표, 숙련도, 신체 정보를 관리하세요</p>
       </div>
 
-      {/* User Card */}
-      <Card className="bg-gradient-to-br from-primary/10 to-card border-primary/20 mb-6">
-        <CardContent className="p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <input
-              ref={profileImageInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              className="hidden"
-              onChange={handleProfileImageFile}
-            />
-            <div className="flex items-center gap-3">
-              <Avatar className="h-16 w-16 rounded-2xl border border-primary/30 bg-primary/10">
-                {profileImagePreview ? (
-                  <AvatarImage src={profileImagePreview} alt="내 프로필 이미지" className="rounded-2xl object-cover" />
-                ) : null}
-                <AvatarFallback className="rounded-2xl bg-primary/10 text-xl font-bold text-primary">
-                  {getUserInitial(displayName, user?.email)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col gap-2 sm:hidden">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-8 border-border bg-background text-foreground"
-                  disabled={updateProfileImageMutation.isPending}
-                  onClick={() => profileImageInputRef.current?.click()}
-                >
-                  <Camera size={14} />
-                  변경
-                </Button>
-                {profileImagePreview ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 text-muted-foreground hover:text-destructive"
-                    disabled={updateProfileImageMutation.isPending}
-                    onClick={removeProfileImage}
-                  >
-                    삭제
-                  </Button>
-                ) : null}
-              </div>
-            </div>
-            <div className="flex-1">
-              <h2 className="text-xl font-bold text-foreground">{displayName}</h2>
-              <p className="text-sm text-muted-foreground">{user?.email || ""}</p>
-              {currentGoalConfig && (
-                <Badge className={cn("mt-2 text-xs border", currentGoalConfig.color)}>
-                  <Target size={10} className="mr-1" />
-                  {currentGoalConfig.label}
-                </Badge>
-              )}
-            </div>
-            <div className="w-full sm:max-w-xs">
-              <Label className="mb-1.5 block text-xs text-muted-foreground">표시 이름</Label>
-              <Input
-                value={displayNameInput}
-                onChange={(event) => setDisplayNameInput(event.target.value)}
-                placeholder="앱에서 사용할 이름"
-                className="bg-accent border-border text-foreground"
-                maxLength={40}
-              />
-              <div className="mt-2 hidden gap-2 sm:flex">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-8 border-border bg-background text-foreground"
-                  disabled={updateProfileImageMutation.isPending}
-                  onClick={() => profileImageInputRef.current?.click()}
-                >
-                  <Camera size={14} />
-                  프로필 이미지 변경
-                </Button>
-                {profileImagePreview ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2 text-muted-foreground hover:text-destructive"
-                    disabled={updateProfileImageMutation.isPending}
-                    onClick={removeProfileImage}
-                    aria-label="프로필 이미지 삭제"
-                  >
-                    <Trash2 size={14} />
-                  </Button>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <ProfileSummaryCard
+        displayName={displayName}
+        email={user?.email}
+        displayNameInput={displayNameInput}
+        onDisplayNameChange={setDisplayNameInput}
+        profileImagePreview={profileImagePreview}
+        profileImageInputRef={profileImageInputRef}
+        onProfileImageFile={handleProfileImageFile}
+        onRemoveProfileImage={removeProfileImage}
+        imagePending={updateProfileImageMutation.isPending}
+        currentGoal={currentGoalConfig}
+      />
 
       <Card className="bg-card border-border mb-6">
         <CardContent className="p-5">
