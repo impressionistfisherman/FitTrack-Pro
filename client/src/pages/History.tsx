@@ -16,6 +16,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line
 } from "recharts";
 import { toast } from "sonner";
+import { useLocation } from "wouter";
 
 const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const MONTHS = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
@@ -519,6 +520,7 @@ function SessionCard({
 
 export default function History() {
   const { isAuthenticated, loading } = useAuth();
+  const [location, navigate] = useLocation();
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [chartExerciseId, setChartExerciseId] = useState<number | null>(null);
@@ -530,10 +532,9 @@ export default function History() {
   const [viewingSession, setViewingSession] = useState<any | null>(null);
   const [recentSessionsOpen, setRecentSessionsOpen] = useState(false);
   const routeSessionId = useMemo(() => {
-    if (typeof window === "undefined") return null;
-    const match = window.location.pathname.match(/\/history\/(\d+)$/);
+    const match = location.match(/^\/history\/(\d+)$/);
     return match ? Number(match[1]) : null;
-  }, []);
+  }, [location]);
   const exerciseSearchBoxRef = useRef<HTMLDivElement | null>(null);
 
   const { data: sessions } = trpc.history.calendar.useQuery({ year, month }, { enabled: isAuthenticated });
@@ -570,8 +571,13 @@ export default function History() {
     setFreeWorkoutOpen(true);
   };
 
-  const openEditFromDetail = (session: any) => {
+  const closeSessionDetail = () => {
     setViewingSession(null);
+    if (routeSessionId) navigate("/history", { replace: true });
+  };
+
+  const openEditFromDetail = (session: any) => {
+    closeSessionDetail();
     openEditWorkout(session);
   };
 
@@ -702,7 +708,7 @@ export default function History() {
         session={viewingSession}
         open={Boolean(viewingSession)}
         onOpenChange={(nextOpen) => {
-          if (!nextOpen) setViewingSession(null);
+          if (!nextOpen) closeSessionDetail();
         }}
         onEdit={openEditFromDetail}
       />

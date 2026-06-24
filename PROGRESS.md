@@ -2,7 +2,7 @@
 
 ## 날짜/시간
 
-2026-06-24 14:19:42 +09:00
+2026-06-24 14:47:03 +09:00
 
 ## 작업 요약
 
@@ -17,12 +17,14 @@
 - 프로필 상단 영역을 `ProfileSummaryCard`로 분리
 - 사용처 없는 `DashboardLayout.tsx`, `DashboardLayoutSkeleton.tsx` 삭제
 - 로컬 자동 로그인 환경에서 루틴 Create·Read·Update UI와 Delete API CRUD QA 완료
+- 홈 최근 운동에서 `/history/:id` 진입 후 상세 닫기 시 재오픈되는 라우트 상태 버그 수정
 
 ## 현재 상태
 
 - TypeScript 검사, Unit 테스트, Production build 통과
 - 데스크톱 및 390×844 모바일 브라우저 QA 통과
-- 커밋·푸시 미실행
+- 홈 → 최근 운동 상세 → 닫기 및 수정 전환 회귀 QA 통과
+- UX 개선 커밋 후 기록 상세 재오픈 수정 커밋·푸시 진행
 - 기존 사용자 변경 `SESSION_HANDOFF.md`, `local-db/fittrack_local.sqlite*` 유지
 
 ## 변경 구조
