@@ -3,6 +3,7 @@ import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import BodyWeightTracker from "@/components/BodyWeightTracker";
 import FreeWorkoutDialog from "@/components/FreeWorkoutDialog";
+import { AuthRequiredState, PageLoadingState } from "@/components/PageState";
 import { cn } from "@/lib/utils";
 import { Activity, Calendar, ChevronDown, ChevronLeft, ChevronRight, Clock, Dumbbell, Eye, LogIn, TrendingUp, Plus, Trash2, Pencil } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -15,6 +16,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line
 } from "recharts";
 import { toast } from "sonner";
+import { useLocation } from "wouter";
 
 const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const MONTHS = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
@@ -518,6 +520,7 @@ function SessionCard({
 
 export default function History() {
   const { isAuthenticated, loading } = useAuth();
+  const [location, navigate] = useLocation();
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [chartExerciseId, setChartExerciseId] = useState<number | null>(null);
@@ -528,11 +531,11 @@ export default function History() {
   const [editingSession, setEditingSession] = useState<any | null>(null);
   const [viewingSession, setViewingSession] = useState<any | null>(null);
   const [recentSessionsOpen, setRecentSessionsOpen] = useState(false);
+  const dismissedRouteSessionIdRef = useRef<number | null>(null);
   const routeSessionId = useMemo(() => {
-    if (typeof window === "undefined") return null;
-    const match = window.location.pathname.match(/\/history\/(\d+)$/);
+    const match = location.match(/^\/history\/(\d+)$/);
     return match ? Number(match[1]) : null;
-  }, []);
+  }, [location]);
   const exerciseSearchBoxRef = useRef<HTMLDivElement | null>(null);
 
   const { data: sessions } = trpc.history.calendar.useQuery({ year, month }, { enabled: isAuthenticated });
@@ -569,8 +572,14 @@ export default function History() {
     setFreeWorkoutOpen(true);
   };
 
-  const openEditFromDetail = (session: any) => {
+  const closeSessionDetail = () => {
+    if (routeSessionId) dismissedRouteSessionIdRef.current = routeSessionId;
     setViewingSession(null);
+    if (routeSessionId) navigate("/history", { replace: true });
+  };
+
+  const openEditFromDetail = (session: any) => {
+    closeSessionDetail();
     openEditWorkout(session);
   };
 
@@ -596,7 +605,11 @@ export default function History() {
   }, [sessions, selectedDate]);
 
   useEffect(() => {
-    if (!routeSessionId || viewingSession) return;
+    if (!routeSessionId) {
+      dismissedRouteSessionIdRef.current = null;
+      return;
+    }
+    if (dismissedRouteSessionIdRef.current === routeSessionId || viewingSession) return;
     const target = [...(sessions ?? []), ...(recentWorkouts ?? [])].find((session: any) => Number(session.id) === routeSessionId);
     if (!target) return;
     setSelectedDate(getSessionDateKey(target));
@@ -662,28 +675,9 @@ export default function History() {
       .map((item) => ({ ...item, 볼륨: Math.round(item.볼륨) }));
   }, [recentWorkouts]);
 
-  if (loading) {
-    return (
-      <div className="page-shell space-y-4">
-        <div className="h-12 skeleton rounded-xl" />
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="h-72 skeleton rounded-xl" />
-          <div className="h-72 skeleton rounded-xl" />
-        </div>
-      </div>
-    );
-  }
-
+  if (loading) return <PageLoadingState wide />;
   if (!isAuthenticated) {
-    return (
-      <div className="page-shell flex min-h-[calc(100dvh-9rem)] flex-col items-center justify-center">
-        <Calendar size={40} className="text-muted-foreground opacity-30 mb-4" />
-        <h2 className="text-lg font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
-        <Button className="gap-2 bg-primary text-primary-foreground" onClick={() => startLogin()}>
-          <LogIn size={16} />로그인
-        </Button>
-      </div>
-    );
+    return <AuthRequiredState icon={Calendar} description="운동 기록과 변화 추이를 확인하려면 로그인하세요." />;
   }
 
   const progressChartData = exerciseProgress
@@ -720,7 +714,7 @@ export default function History() {
         session={viewingSession}
         open={Boolean(viewingSession)}
         onOpenChange={(nextOpen) => {
-          if (!nextOpen) setViewingSession(null);
+          if (!nextOpen) closeSessionDetail();
         }}
         onEdit={openEditFromDetail}
       />

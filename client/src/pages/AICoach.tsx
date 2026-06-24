@@ -1,5 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { AuthRequiredState, PageLoadingState } from "@/components/PageState";
 import DietRecommendation from "@/components/DietRecommendation";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { getAppPath } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { CalendarDays, Dumbbell, Play, RefreshCw, Save, Sparkles, Utensils } from "lucide-react";
@@ -988,6 +990,13 @@ function DailyWorkoutRecommendation() {
 }
 
 export default function AICoach() {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) return <PageLoadingState />;
+  if (!isAuthenticated) {
+    return <AuthRequiredState icon={Sparkles} description="AI 추천은 운동 목표와 기록을 사용하는 로그인 전용 기능입니다." />;
+  }
+
   return (
     <div className="page-shell space-y-4 animate-fade-in">
       <div className="page-header">

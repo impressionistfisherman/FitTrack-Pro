@@ -1,9 +1,12 @@
-import { trpc } from "@/lib/trpc";
-import { Filter, Heart, Search, X } from "lucide-react";
-import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useLocation } from "wouter";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { trpc } from "@/lib/trpc";
 import { matchesExerciseSearchText } from "@shared/exerciseSearch";
+import { ChevronLeft, ChevronRight, Filter, Heart, Search, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "wouter";
+
+const PAGE_SIZE = 50;
 
 const bodyParts = [
   { value: "all", label: "전체" },
@@ -39,21 +42,40 @@ const difficulties = [
 ];
 
 const bodyPartColors: Record<string, string> = {
-  chest: "#ef4444", back: "#3b82f6", shoulders: "#eab308",
-  arms: "#f97316", legs: "#22c55e", abs: "#a855f7",
-  glutes: "#ec4899", cardio: "#06b6d4", stretching: "#14b8a6",
+  chest: "#ef4444",
+  back: "#3b82f6",
+  shoulders: "#eab308",
+  arms: "#f97316",
+  legs: "#22c55e",
+  abs: "#a855f7",
+  glutes: "#ec4899",
+  cardio: "#06b6d4",
+  stretching: "#14b8a6",
   full_body: "#10b981",
 };
 
 const bodyPartLabels: Record<string, string> = {
-  chest: "가슴", back: "등", shoulders: "어깨", arms: "팔",
-  legs: "하체", abs: "복근", glutes: "둔근", cardio: "유산소",
-  stretching: "스트레칭", full_body: "전신",
+  chest: "가슴",
+  back: "등",
+  shoulders: "어깨",
+  arms: "팔",
+  legs: "하체",
+  abs: "복근",
+  glutes: "둔근",
+  cardio: "유산소",
+  stretching: "스트레칭",
+  full_body: "전신",
 };
 
 const equipmentLabels: Record<string, string> = {
-  barbell: "바벨", dumbbell: "덤벨", machine: "머신", cable: "케이블",
-  bodyweight: "맨몸", kettlebell: "케틀벨", resistance_band: "밴드", none: "기구 없음",
+  barbell: "바벨",
+  dumbbell: "덤벨",
+  machine: "머신",
+  cable: "케이블",
+  bodyweight: "맨몸",
+  kettlebell: "케틀벨",
+  resistance_band: "밴드",
+  none: "기구 없음",
 };
 
 const difficultyConfig: Record<string, { label: string; color: string }> = {
@@ -62,171 +84,137 @@ const difficultyConfig: Record<string, { label: string; color: string }> = {
   advanced: { label: "고급", color: "#ef4444" },
 };
 
-// ── 운동 리스트 아이템 (가로 레이아웃) ──
-function ExerciseListItem({ exercise, isFav, onToggleFav }: { exercise: any; isFav?: boolean; onToggleFav?: () => void }) {
+function getInitialFilters() {
+  if (typeof window === "undefined") {
+    return { bodyPart: "all", equipment: "all", difficulty: "all", search: "", favorites: false, page: 1 };
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const page = Number(params.get("page"));
+  return {
+    bodyPart: params.get("bodyPart") || "all",
+    equipment: params.get("equipment") || "all",
+    difficulty: params.get("difficulty") || "all",
+    search: params.get("q") || "",
+    favorites: params.get("favorites") === "1",
+    page: Number.isInteger(page) && page > 0 ? page : 1,
+  };
+}
+
+function ExerciseListItem({
+  exercise,
+  isFav,
+  onToggleFav,
+}: {
+  exercise: any;
+  isFav?: boolean;
+  onToggleFav?: () => void;
+}) {
   const [imgError, setImgError] = useState(false);
-  const [, navigate] = useLocation();
   const bpColor = bodyPartColors[exercise.bodyPart] || "#10b981";
   const diff = difficultyConfig[exercise.difficulty];
 
   return (
-    <div
-      onClick={() => navigate(`/exercises/${exercise.id}`)}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        padding: '10px 12px',
-        background: 'var(--card)',
-        border: '1px solid var(--border)',
-        borderRadius: '12px',
-        cursor: 'pointer',
-        width: '100%',
-        boxSizing: 'border-box',
-        overflow: 'hidden',
-      }}
-    >
-      {/* 왼쪽: 썸네일 이미지 (정사각형 고정) */}
-      <div style={{
-        width: '72px',
-        height: '72px',
-        borderRadius: '10px',
-        overflow: 'hidden',
-        flexShrink: 0,
-        background: bpColor + '20',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-      }}>
-        {exercise.gifUrl && !imgError ? (
-          <img
-            src={exercise.gifUrl}
-            alt={exercise.nameKo}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <svg viewBox="0 0 24 24" style={{ width: '32px', height: '32px' }} fill="none">
-            <path d="M6 4v16M18 4v16M3 8h4M17 8h4M3 16h4M17 16h4" stroke={bpColor} strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        )}
-      </div>
-
-      {/* 오른쪽: 텍스트 정보 */}
-      <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-        {/* 운동명 */}
-        <div style={{
-          fontSize: '14px',
-          fontWeight: 600,
-          color: 'var(--foreground)',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          marginBottom: '3px',
-        }}>
-          {exercise.nameKo}
-        </div>
-        {/* 영문명 */}
-        <div style={{
-          fontSize: '11px',
-          color: 'var(--muted-foreground)',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          marginBottom: '5px',
-        }}>
-          {exercise.name}
-        </div>
-        {/* 뱃지 행 */}
-        <div style={{ display: 'flex', gap: '5px', flexWrap: 'nowrap', overflow: 'hidden' }}>
-          {/* 부위 */}
-          <span style={{
-            fontSize: '10px', fontWeight: 600,
-            padding: '2px 7px', borderRadius: '999px',
-            background: bpColor + '25', color: bpColor,
-            border: `1px solid ${bpColor}40`,
-            whiteSpace: 'nowrap', flexShrink: 0,
-          }}>
-            {bodyPartLabels[exercise.bodyPart] || exercise.bodyPart}
-          </span>
-          {/* 기구 */}
-          <span style={{
-            fontSize: '10px', fontWeight: 500,
-            padding: '2px 7px', borderRadius: '999px',
-            background: 'var(--accent)', color: 'var(--muted-foreground)',
-            border: '1px solid var(--border)',
-            whiteSpace: 'nowrap', flexShrink: 0,
-          }}>
-            {equipmentLabels[exercise.equipment] || exercise.equipment}
-          </span>
-          {/* 난이도 */}
-          {diff && (
-            <span style={{
-              fontSize: '10px', fontWeight: 600,
-              padding: '2px 7px', borderRadius: '999px',
-              background: diff.color + '20', color: diff.color,
-              border: `1px solid ${diff.color}40`,
-              whiteSpace: 'nowrap', flexShrink: 0,
-            }}>
-              {diff.label}
-            </span>
+    <article className="exercise-list-item">
+      <Link
+        href={`/exercises/${exercise.id}`}
+        className="exercise-list-link"
+        aria-label={`${exercise.nameKo} 상세 보기`}
+      >
+        <div className="exercise-list-thumbnail" style={{ background: `${bpColor}20` }}>
+          {exercise.gifUrl && !imgError ? (
+            <img
+              src={exercise.gifUrl}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none">
+              <path
+                d="M6 4v16M18 4v16M3 8h4M17 8h4M3 16h4M17 16h4"
+                stroke={bpColor}
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
           )}
         </div>
-      </div>
 
-      {/* 오른쪽: 즐겨찾기 + 화살표 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-        {onToggleFav && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onToggleFav(); }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}
-          >
-            <Heart
-              size={18}
-              fill={isFav ? '#ef4444' : 'none'}
-              color={isFav ? '#ef4444' : 'var(--muted-foreground)'}
-            />
-          </button>
-        )}
-        <div style={{ color: 'var(--muted-foreground)', fontSize: '16px' }}>›</div>
-      </div>
-    </div>
+        <div className="exercise-list-copy">
+          <div className="exercise-list-title">{exercise.nameKo}</div>
+          <div className="exercise-list-subtitle">{exercise.name}</div>
+          <div className="exercise-list-badges">
+            <span
+              className="exercise-list-badge"
+              style={{ background: `${bpColor}25`, color: bpColor, borderColor: `${bpColor}40` }}
+            >
+              {bodyPartLabels[exercise.bodyPart] || exercise.bodyPart}
+            </span>
+            <span className="exercise-list-badge exercise-list-badge-muted">
+              {equipmentLabels[exercise.equipment] || exercise.equipment}
+            </span>
+            {diff && (
+              <span
+                className="exercise-list-badge"
+                style={{ background: `${diff.color}20`, color: diff.color, borderColor: `${diff.color}40` }}
+              >
+                {diff.label}
+              </span>
+            )}
+          </div>
+        </div>
+        <ChevronRight className="exercise-list-chevron" size={18} aria-hidden="true" />
+      </Link>
+
+      {onToggleFav && (
+        <button
+          type="button"
+          className="exercise-favorite-button"
+          onClick={onToggleFav}
+          aria-label={isFav ? `${exercise.nameKo} 즐겨찾기 해제` : `${exercise.nameKo} 즐겨찾기 추가`}
+          aria-pressed={isFav}
+        >
+          <Heart size={18} fill={isFav ? "#ef4444" : "none"} color={isFav ? "#ef4444" : "currentColor"} />
+        </button>
+      )}
+    </article>
   );
 }
 
-// ── 필터 칩 ──
-function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function FilterChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      style={{
-        padding: '6px 14px',
-        borderRadius: '999px',
-        fontSize: '13px',
-        fontWeight: 500,
-        whiteSpace: 'nowrap',
-        border: active ? '1px solid var(--primary)' : '1px solid var(--border)',
-        background: active ? 'var(--primary)' : 'var(--card)',
-        color: active ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
-        cursor: 'pointer',
-        flexShrink: 0,
-      }}
+      className={`filter-chip${active ? " filter-chip-active" : ""}`}
+      aria-pressed={active}
     >
       {label}
     </button>
   );
 }
 
-// ── 메인 페이지 ──
 export default function Exercises() {
   const { isAuthenticated } = useAuth();
-  const [bodyPart, setBodyPart] = useState("all");
-  const [equipment, setEquipment] = useState("all");
-  const [difficulty, setDifficulty] = useState("all");
-  const [search, setSearch] = useState("");
+  const initial = useMemo(getInitialFilters, []);
+  const [bodyPart, setBodyPart] = useState(initial.bodyPart);
+  const [equipment, setEquipment] = useState(initial.equipment);
+  const [difficulty, setDifficulty] = useState(initial.difficulty);
+  const [search, setSearch] = useState(initial.search);
+  const [page, setPage] = useState(initial.page);
   const [showFilters, setShowFilters] = useState(false);
-  const [showFavOnly, setShowFavOnly] = useState(false);
+  const [showFavOnly, setShowFavOnly] = useState(initial.favorites);
+  const debouncedSearch = useDebouncedValue(search.trim(), 250);
 
   const utils = trpc.useUtils();
   const { data: exercises, isLoading, isFetching } = trpc.exercises.list.useQuery(
@@ -236,194 +224,210 @@ export default function Exercises() {
     },
     { staleTime: 1000 * 60 * 5 }
   );
-
   const { data: favorites } = trpc.favorites.list.useQuery(undefined, { enabled: isAuthenticated });
-  const favIds = new Set(favorites?.map((f: any) => f.ex.id) || []);
+  const favIds = useMemo(() => new Set(favorites?.map((favorite: any) => favorite.ex.id) || []), [favorites]);
 
   const toggleFav = trpc.favorites.toggle.useMutation({
     onSuccess: () => utils.favorites.list.invalidate(),
   });
 
-  const filtered = exercises?.filter((ex) => {
-    if (showFavOnly && !favIds.has(ex.id)) return false;
-    if (difficulty !== "all" && ex.difficulty !== difficulty) return false;
-    if (search) {
-      return matchesExerciseSearchText(search, ex.nameKo, ex.name);
-    }
-    return true;
-  });
+  const filtered = useMemo(
+    () =>
+      exercises?.filter((exercise) => {
+        if (showFavOnly && !favIds.has(exercise.id)) return false;
+        if (difficulty !== "all" && exercise.difficulty !== difficulty) return false;
+        return !debouncedSearch || matchesExerciseSearchText(debouncedSearch, exercise.nameKo, exercise.name);
+      }) ?? [],
+    [debouncedSearch, difficulty, exercises, favIds, showFavOnly]
+  );
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const visibleExercises = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   const activeFilterCount = [bodyPart !== "all", equipment !== "all", difficulty !== "all"].filter(Boolean).length;
 
-  return (
-    <div className="page-shell page-shell-wide animate-fade-in" style={{ overflowX: 'hidden' }}>
+  useEffect(() => {
+    setPage(1);
+  }, [bodyPart, equipment, difficulty, debouncedSearch, showFavOnly]);
 
-      {/* 헤더 */}
-      <div style={{ marginBottom: '14px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (bodyPart !== "all") params.set("bodyPart", bodyPart);
+    if (equipment !== "all") params.set("equipment", equipment);
+    if (difficulty !== "all") params.set("difficulty", difficulty);
+    if (debouncedSearch) params.set("q", debouncedSearch);
+    if (showFavOnly) params.set("favorites", "1");
+    if (currentPage > 1) params.set("page", String(currentPage));
+
+    const query = params.toString();
+    const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}`;
+    window.history.replaceState(window.history.state, "", nextUrl);
+  }, [bodyPart, currentPage, debouncedSearch, difficulty, equipment, showFavOnly]);
+
+  const resetFilters = () => {
+    setBodyPart("all");
+    setEquipment("all");
+    setDifficulty("all");
+    setSearch("");
+    setShowFavOnly(false);
+  };
+
+  const movePage = (nextPage: number) => {
+    setPage(nextPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  return (
+    <div className="page-shell page-shell-wide animate-fade-in overflow-x-hidden">
+      <header className="page-header flex items-start justify-between gap-3">
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--foreground)', margin: 0 }}>운동 탐색</h1>
-          <p style={{ fontSize: '13px', color: 'var(--muted-foreground)', marginTop: '4px' }}>
-            구기종목 포함 · 부위별 · 기구별 분류
-          </p>
+          <h1 className="page-title">운동 탐색</h1>
+          <p className="page-description">구기종목 포함 · 부위별 · 기구별 분류</p>
         </div>
         {isAuthenticated && (
           <button
-            onClick={() => setShowFavOnly(!showFavOnly)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '5px',
-              padding: '7px 12px', borderRadius: '10px',
-              border: showFavOnly ? '1px solid #ef4444' : '1px solid var(--border)',
-              background: showFavOnly ? '#ef444420' : 'var(--card)',
-              color: showFavOnly ? '#ef4444' : 'var(--muted-foreground)',
-              cursor: 'pointer', fontSize: '12px', fontWeight: 600,
-              flexShrink: 0,
-            }}
+            type="button"
+            onClick={() => setShowFavOnly((current) => !current)}
+            className={`exercise-toolbar-button${showFavOnly ? " exercise-toolbar-button-favorite" : ""}`}
+            aria-pressed={showFavOnly}
           >
-            <Heart size={14} fill={showFavOnly ? '#ef4444' : 'none'} color={showFavOnly ? '#ef4444' : 'var(--muted-foreground)'} />
+            <Heart size={16} fill={showFavOnly ? "#ef4444" : "none"} />
             즐겨찾기
           </button>
         )}
-      </div>
+      </header>
 
-      {/* 검색 + 필터 */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', width: '100%', boxSizing: 'border-box' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
-          <Search size={15} style={{
-            position: 'absolute', left: '10px', top: '50%',
-            transform: 'translateY(-50%)', color: 'var(--muted-foreground)',
-            pointerEvents: 'none',
-          }} />
+      <div className="flex w-full gap-2 mb-3">
+        <label className="exercise-search">
+          <span className="sr-only">운동 이름 검색</span>
+          <Search size={16} aria-hidden="true" />
           <input
+            type="search"
             placeholder="운동 이름 검색..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{
-              width: '100%', boxSizing: 'border-box',
-              paddingLeft: '34px', paddingRight: search ? '34px' : '12px',
-              paddingTop: '9px', paddingBottom: '9px',
-              borderRadius: '10px',
-              background: 'var(--card)', border: '1px solid var(--border)',
-              color: 'var(--foreground)', fontSize: '14px', outline: 'none',
-            }}
+            onChange={(event) => setSearch(event.target.value)}
           />
           {search && (
-            <button
-              onClick={() => setSearch("")}
-              style={{
-                position: 'absolute', right: '10px', top: '50%',
-                transform: 'translateY(-50%)', background: 'none',
-                border: 'none', cursor: 'pointer', color: 'var(--muted-foreground)',
-                padding: 0, display: 'flex', alignItems: 'center',
-              }}
-            >
-              <X size={14} />
+            <button type="button" onClick={() => setSearch("")} aria-label="검색어 초기화">
+              <X size={16} />
             </button>
           )}
-        </div>
+        </label>
         <button
-          onClick={() => setShowFilters(!showFilters)}
-          style={{
-            padding: '9px 14px', borderRadius: '10px',
-            border: showFilters ? '1px solid var(--primary)' : '1px solid var(--border)',
-            background: showFilters ? 'var(--primary)' : 'var(--card)',
-            color: showFilters ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px',
-            flexShrink: 0, position: 'relative', fontSize: '13px',
-          }}
+          type="button"
+          onClick={() => setShowFilters((current) => !current)}
+          className={`exercise-filter-button${showFilters ? " exercise-filter-button-active" : ""}`}
+          aria-expanded={showFilters}
+          aria-controls="exercise-extra-filters"
+          aria-label="상세 필터"
         >
-          <Filter size={15} />
-          {activeFilterCount > 0 && (
-            <span style={{
-              position: 'absolute', top: '-6px', right: '-6px',
-              width: '17px', height: '17px',
-              background: 'var(--primary)', color: 'var(--primary-foreground)',
-              borderRadius: '999px', fontSize: '10px', fontWeight: 700,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              {activeFilterCount}
-            </span>
-          )}
+          <Filter size={16} />
+          <span className="hidden sm:inline">필터</span>
+          {activeFilterCount > 0 && <span className="exercise-filter-count">{activeFilterCount}</span>}
         </button>
       </div>
 
-      {/* 부위 필터 (가로 스크롤) */}
-      <div style={{ overflowX: 'auto', marginBottom: '12px', paddingBottom: '4px', width: '100%' }}>
-        <div style={{ display: 'flex', gap: '8px', width: 'max-content' }}>
-          {bodyParts.map((bp) => (
-            <FilterChip key={bp.value} label={bp.label} active={bodyPart === bp.value} onClick={() => setBodyPart(bp.value)} />
-          ))}
-        </div>
+      <div className="exercise-filter-scroll" aria-label="운동 부위 필터">
+        {bodyParts.map((bodyPartOption) => (
+          <FilterChip
+            key={bodyPartOption.value}
+            label={bodyPartOption.label}
+            active={bodyPart === bodyPartOption.value}
+            onClick={() => setBodyPart(bodyPartOption.value)}
+          />
+        ))}
       </div>
 
-      {/* 확장 필터 */}
       {showFilters && (
-        <div style={{
-          background: 'var(--card)', border: '1px solid var(--border)',
-          borderRadius: '12px', padding: '14px', marginBottom: '12px',
-        }}>
-          <div style={{ marginBottom: '12px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--muted-foreground)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>기구</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {equipments.map((eq) => (
-                <FilterChip key={eq.value} label={eq.label} active={equipment === eq.value} onClick={() => setEquipment(eq.value)} />
+        <section id="exercise-extra-filters" className="exercise-extra-filters" aria-label="상세 운동 필터">
+          <div>
+            <h2>기구</h2>
+            <div className="flex flex-wrap gap-2">
+              {equipments.map((equipmentOption) => (
+                <FilterChip
+                  key={equipmentOption.value}
+                  label={equipmentOption.label}
+                  active={equipment === equipmentOption.value}
+                  onClick={() => setEquipment(equipmentOption.value)}
+                />
               ))}
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--muted-foreground)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>난이도</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {difficulties.map((d) => (
-                <FilterChip key={d.value} label={d.label} active={difficulty === d.value} onClick={() => setDifficulty(d.value)} />
+            <h2>난이도</h2>
+            <div className="flex flex-wrap gap-2">
+              {difficulties.map((difficultyOption) => (
+                <FilterChip
+                  key={difficultyOption.value}
+                  label={difficultyOption.label}
+                  active={difficulty === difficultyOption.value}
+                  onClick={() => setDifficulty(difficultyOption.value)}
+                />
               ))}
             </div>
           </div>
-          {activeFilterCount > 0 && (
-            <button
-              onClick={() => { setBodyPart("all"); setEquipment("all"); setDifficulty("all"); }}
-              style={{ marginTop: '10px', background: 'none', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}
-            >
-              <X size={12} /> 필터 초기화
+          {(activeFilterCount > 0 || search || showFavOnly) && (
+            <button type="button" onClick={resetFilters} className="exercise-reset-button">
+              <X size={14} /> 전체 초기화
             </button>
           )}
-        </div>
+        </section>
       )}
 
-      {/* 결과 수 */}
-      <div style={{ fontSize: '12px', color: 'var(--muted-foreground)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span>{isLoading && !exercises ? "로딩 중..." : `${filtered?.length || 0}개 운동`}</span>
-        {isFetching && exercises && <span style={{ color: 'var(--primary)' }}>업데이트 중</span>}
+      <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground" aria-live="polite">
+        <span>{isLoading && !exercises ? "로딩 중..." : `${filtered.length}개 운동`}</span>
+        {filtered.length > PAGE_SIZE && <span>· {currentPage}/{totalPages} 페이지</span>}
+        {isFetching && exercises && <span className="text-primary">업데이트 중</span>}
       </div>
 
-      {/* ── 세로 리스트 ── */}
       {isLoading && !exercises ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} style={{
-              height: '92px', borderRadius: '12px',
-              background: 'var(--accent)',
-              animation: 'shimmer 1.5s infinite',
-            }} />
+        <div className="space-y-2" aria-label="운동 목록 로딩 중" aria-busy="true">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <div key={index} className="h-[94px] skeleton rounded-xl" />
           ))}
         </div>
-      ) : filtered && filtered.length > 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-          {filtered.map((exercise) => (
-            <ExerciseListItem
-              key={exercise.id}
-              exercise={exercise}
-              isFav={favIds.has(exercise.id)}
-              onToggleFav={isAuthenticated ? () => toggleFav.mutate({ exerciseId: exercise.id }) : undefined}
-            />
-          ))}
-        </div>
+      ) : visibleExercises.length > 0 ? (
+        <>
+          <div className="space-y-2">
+            {visibleExercises.map((exercise) => (
+              <ExerciseListItem
+                key={exercise.id}
+                exercise={exercise}
+                isFav={favIds.has(exercise.id)}
+                onToggleFav={
+                  isAuthenticated ? () => toggleFav.mutate({ exerciseId: exercise.id }) : undefined
+                }
+              />
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <nav className="exercise-pagination" aria-label="운동 목록 페이지">
+              <button
+                type="button"
+                onClick={() => movePage(currentPage - 1)}
+                disabled={currentPage === 1}
+                aria-label="이전 페이지"
+              >
+                <ChevronLeft size={18} /> 이전
+              </button>
+              <span>{currentPage} / {totalPages}</span>
+              <button
+                type="button"
+                onClick={() => movePage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                aria-label="다음 페이지"
+              >
+                다음 <ChevronRight size={18} />
+              </button>
+            </nav>
+          )}
+        </>
       ) : (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--muted-foreground)' }}>
-          <p style={{ marginBottom: '8px' }}>검색 결과가 없습니다</p>
-          <button
-            onClick={() => { setBodyPart("all"); setEquipment("all"); setDifficulty("all"); setSearch(""); }}
-            style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '13px' }}
-          >
-            필터 초기화
+        <div className="empty-state-panel">
+          <p className="font-medium text-foreground">검색 결과가 없습니다</p>
+          <p className="mt-1 text-sm">검색어나 필터를 바꿔보세요.</p>
+          <button type="button" onClick={resetFilters} className="mt-4 min-h-11 text-sm font-semibold text-primary">
+            전체 초기화
           </button>
         </div>
       )}

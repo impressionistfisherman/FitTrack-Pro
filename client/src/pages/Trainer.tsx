@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { AuthRequiredState, PageLoadingState } from "@/components/PageState";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -164,31 +165,9 @@ export default function Trainer() {
     markTrainerRequestsReadMutation.mutate();
   }, [appRole, isAuthenticated, isLoading, loading, markTrainerRequestsReadMutation, view]);
 
-  if (loading || isLoading) {
-    return (
-      <div className="page-shell page-shell-wide space-y-4">
-        <div className="h-20 skeleton rounded-xl" />
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="h-24 skeleton rounded-xl" />
-          <div className="h-24 skeleton rounded-xl" />
-          <div className="h-24 skeleton rounded-xl" />
-        </div>
-        <div className="h-80 skeleton rounded-2xl" />
-      </div>
-    );
-  }
-
+  if (loading || isLoading) return <PageLoadingState wide cards={3} />;
   if (!isAuthenticated) {
-    return (
-      <div className="page-shell flex min-h-[calc(100dvh-9rem)] flex-col items-center justify-center">
-        <ShieldCheck size={40} className="mb-4 text-muted-foreground opacity-30" />
-        <h2 className="mb-2 text-lg font-semibold text-foreground">로그인이 필요합니다</h2>
-        <Button className="gap-2 bg-primary text-primary-foreground" onClick={() => startLogin()}>
-          <LogIn size={16} />
-          로그인
-        </Button>
-      </div>
-    );
+    return <AuthRequiredState icon={ShieldCheck} description="트레이너 대시보드는 승인된 로그인 계정에서 사용할 수 있습니다." />;
   }
 
   if (appRole !== "trainer") {

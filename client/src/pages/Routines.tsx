@@ -8,6 +8,7 @@ import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { AuthRequiredState, PageLoadingState } from "@/components/PageState";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -315,28 +316,9 @@ export default function Routines() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="page-shell space-y-4">
-        <div className="h-12 skeleton rounded-xl" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-36 skeleton rounded-xl" />)}
-        </div>
-      </div>
-    );
-  }
-
+  if (loading) return <PageLoadingState wide cards={3} />;
   if (!isAuthenticated) {
-    return (
-      <div className="page-shell flex min-h-[calc(100dvh-9rem)] flex-col items-center justify-center">
-        <Dumbbell size={40} className="text-muted-foreground opacity-30 mb-4" />
-        <h2 className="text-lg font-semibold text-foreground mb-2">로그인이 필요합니다</h2>
-        <p className="text-sm text-muted-foreground mb-4">루틴을 관리하려면 로그인하세요.</p>
-        <Button className="gap-2 bg-primary text-primary-foreground" onClick={() => startLogin()}>
-          <LogIn size={16} />로그인
-        </Button>
-      </div>
-    );
+    return <AuthRequiredState icon={Dumbbell} description="맞춤 루틴을 만들고 관리하려면 로그인하세요." />;
   }
 
   return (

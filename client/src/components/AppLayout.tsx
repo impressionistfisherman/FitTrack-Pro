@@ -606,7 +606,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* ── 데스크톱 사이드바 ── */}
       <aside className="app-sidebar bg-sidebar border-r border-sidebar-border">
         <div className="p-6 border-b border-sidebar-border">
-          <Link href="/" className="block">
+          <Link href="/" className="flex min-h-11 items-center rounded-lg">
             <div className="flex items-center gap-3 cursor-pointer">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center">
                 <BrandLogo className="h-10 w-10" />
@@ -703,13 +703,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {loading ? (
               <div className="h-8 w-8 skeleton rounded-full" />
             ) : isAuthenticated ? (
-              <Link href="/profile" className="block">
+              <Link href="/profile" className="flex h-11 w-11 items-center justify-center rounded-full" aria-label="프로필 열기">
                 <UserAvatar user={user} className="h-8 w-8 cursor-pointer" />
               </Link>
             ) : (
               <Button
                 size="sm"
-                className="gap-1.5 bg-primary text-primary-foreground text-xs"
+                className="min-h-11 gap-1.5 bg-primary text-primary-foreground text-xs"
                 onClick={() => startLogin()}
               >
                 <LogIn size={12} />
@@ -719,8 +719,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Button
               variant="ghost"
               size="icon"
-              className="w-8 h-8"
+              className="h-11 w-11"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </Button>
