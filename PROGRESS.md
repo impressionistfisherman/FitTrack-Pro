@@ -2,7 +2,7 @@
 
 ## 날짜/시간
 
-2026-06-24 14:47:03 +09:00
+2026-06-24 14:51:45 +09:00
 
 ## 작업 요약
 
@@ -18,6 +18,7 @@
 - 사용처 없는 `DashboardLayout.tsx`, `DashboardLayoutSkeleton.tsx` 삭제
 - 로컬 자동 로그인 환경에서 루틴 Create·Read·Update UI와 Delete API CRUD QA 완료
 - 홈 최근 운동에서 `/history/:id` 진입 후 상세 닫기 시 재오픈되는 라우트 상태 버그 수정
+- 닫기 state와 라우트 변경 사이 race를 막기 위해 닫힌 route session ID 재오픈 차단 추가
 
 ## 현재 상태
 

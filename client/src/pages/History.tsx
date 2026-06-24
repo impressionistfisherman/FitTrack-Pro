@@ -531,6 +531,7 @@ export default function History() {
   const [editingSession, setEditingSession] = useState<any | null>(null);
   const [viewingSession, setViewingSession] = useState<any | null>(null);
   const [recentSessionsOpen, setRecentSessionsOpen] = useState(false);
+  const dismissedRouteSessionIdRef = useRef<number | null>(null);
   const routeSessionId = useMemo(() => {
     const match = location.match(/^\/history\/(\d+)$/);
     return match ? Number(match[1]) : null;
@@ -572,6 +573,7 @@ export default function History() {
   };
 
   const closeSessionDetail = () => {
+    if (routeSessionId) dismissedRouteSessionIdRef.current = routeSessionId;
     setViewingSession(null);
     if (routeSessionId) navigate("/history", { replace: true });
   };
@@ -603,7 +605,11 @@ export default function History() {
   }, [sessions, selectedDate]);
 
   useEffect(() => {
-    if (!routeSessionId || viewingSession) return;
+    if (!routeSessionId) {
+      dismissedRouteSessionIdRef.current = null;
+      return;
+    }
+    if (dismissedRouteSessionIdRef.current === routeSessionId || viewingSession) return;
     const target = [...(sessions ?? []), ...(recentWorkouts ?? [])].find((session: any) => Number(session.id) === routeSessionId);
     if (!target) return;
     setSelectedDate(getSessionDateKey(target));
