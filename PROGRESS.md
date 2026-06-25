@@ -2,36 +2,44 @@
 
 ## 날짜/시간
 
-2026-06-25 09:41:50 +09:00
+2026-06-25 13:10:00 +09:00
 
 ## 작업 요약
 
-- 기존 운동 기록 상세 모달에 `AI 운동 피드백` 영역 추가
-- 기록을 열면 세션 이름·시간·운동 종류·세트·볼륨·사용자 목표·숙련도를 기반으로 자동 분석
-- 요약, 주요 기록, 다음 운동 팁, 다음 방향, 주의점 표시
-- 같은 페이지에서 분석 결과를 세션별 캐시하여 상세 재진입 시 중복 호출 방지
-- AI 응답 실패 시 기본 분석 표시 및 `다시 분석`·`다시 시도` 기능 제공
-- 모바일 재분석 버튼 터치 영역 44px 적용
+- Figma `Fitness - Workout App UI Kit | 3D Effect`의 23개 주요 모바일 화면과 디자인 스타일 분석
+- Figma 색상, 그라데이션, 타이포그래피, 간격, 모서리, 그림자 체계를 전역 디자인 토큰에 반영
+- `Button`, `Card`, `Input`, `Badge` 공통 컴포넌트를 3D 다크 UI 기준으로 정비
+- 기존 페이지와 라우팅을 유지하면서 데스크톱 사이드바와 모바일 헤더 시각 개선
+- 모바일 핵심 페이지용 하단 내비게이션 추가
+- 홈 환영 영역, 빈 상태, 운동 필터, 로딩 표면을 Figma 스타일에 맞게 보정
+- 기존 다중 테마 기능을 유지하고 기본 다크 테마를 `Helios 3D`로 변경
 
 ## 현재 상태
 
 - TypeScript 검사, Unit 테스트, Production build 통과
-- 기존 기록 `/history/180026` 상세에서 자동 피드백 표시 확인
-- 데스크톱 및 390×844 모바일에서 가로 넘침 없음
+- 모바일 390×844 및 데스크톱 1440×900에서 가로 오버플로 없음
+- 모바일 홈·운동 탐색, 데스크톱 홈, 라이트 테마 전환 확인
 - 기존 사용자 변경 `SESSION_HANDOFF.md`, `local-db/fittrack_local.sqlite*` 유지
 
 ## 변경 파일
 
-- `client/src/pages/History.tsx`
+- `client/src/index.css`
+- `client/src/components/AppLayout.tsx`
+- `client/src/components/ui/button.tsx`
+- `client/src/components/ui/card.tsx`
+- `client/src/components/ui/input.tsx`
+- `client/src/components/ui/badge.tsx`
+- `client/src/contexts/ThemeContext.tsx`
+- `client/src/pages/Home.tsx`
 - `PROGRESS.md`
 - `TEST_RESULT.md`
 
 ## 남은 문제
 
-- AI 제공자 응답 실패 시 기본 분석 결과가 표시됨
-- 분석 결과는 현재 페이지 수명 동안 캐시되며 DB에는 영구 저장하지 않음
+- 로컬 OAuth 환경 변수 부재로 로그인 사용자·트레이너·관리자 실데이터 화면 브라우저 검증 제한
+- Figma 원본의 유료/전용 이미지와 `TT Commons` 폰트는 프로젝트 자산으로 포함하지 않고 시스템 폰트 fallback 사용
 
 ## 다음 세션
 
-1. 필요 시 AI 피드백 영구 저장 및 변경 이력 기능 추가
-2. 트레이너가 회원 기록에 남긴 피드백과 AI 피드백 통합 검토
+1. 배포 환경에서 역할별 로그인 화면과 실제 데이터 카드 회귀 확인
+2. 필요 시 Figma 라이선스가 허용하는 이미지·폰트 자산을 프로젝트 자산으로 추가

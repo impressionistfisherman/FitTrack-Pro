@@ -19,9 +19,9 @@ export interface ThemeConfig {
 export const THEMES: ThemeConfig[] = [
   {
     id: "dark",
-    label: "다크",
-    description: "에메랄드 포인트의 클래식 다크",
-    previewColors: ["#0d1117", "#10b981", "#1a2332"],
+    label: "Helios 3D",
+    description: "Figma 기반 오렌지 3D 다크",
+    previewColors: ["#121416", "#ff8a3d", "#2b3036"],
     isDark: true,
   },
   {

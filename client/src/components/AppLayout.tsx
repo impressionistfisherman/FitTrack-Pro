@@ -345,10 +345,10 @@ function NavItem({
     <a href={href} onClick={handleClick} className="block">
       <div
         className={cn(
-          "flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200",
+          "flex min-h-11 items-center gap-3 rounded-xl px-4 py-3 cursor-pointer transition-all duration-200",
           isActive
-            ? "bg-primary/15 text-primary border border-primary/30"
-            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+            ? "border border-primary/25 bg-[radial-gradient(circle_at_20%_0%,rgba(255,160,92,0.18),transparent_65%),linear-gradient(145deg,rgba(50,56,62,0.95),rgba(23,25,28,0.95))] text-primary shadow-[0_12px_28px_rgba(0,0,0,0.22)]"
+            : "border border-transparent text-muted-foreground hover:border-white/5 hover:bg-white/[0.035] hover:text-foreground"
         )}
       >
         <Icon size={20} className="flex-shrink-0" />
@@ -604,7 +604,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-layout-root">
       {/* ── 데스크톱 사이드바 ── */}
-      <aside className="app-sidebar bg-sidebar border-r border-sidebar-border">
+      <aside className="app-sidebar border-r border-sidebar-border bg-sidebar">
         <div className="p-6 border-b border-sidebar-border">
           <Link href="/" className="flex min-h-11 items-center rounded-lg">
             <div className="flex items-center gap-3 cursor-pointer">
@@ -686,7 +686,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* ── 모바일 헤더 ── */}
-      <header className="app-mobile-header bg-card/90 backdrop-blur-md border-b border-border">
+      <header className="app-mobile-header border-b border-white/5 bg-background/80 backdrop-blur-xl">
         <div className="flex items-center justify-between px-4 h-14">
           <Link href="/" className="block">
             <div className="flex items-center gap-2 cursor-pointer">
@@ -809,6 +809,32 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {loading ? <AppContentSkeleton /> : children}
         </div>
       </main>
+      <nav className="app-mobile-bottom-nav" aria-label="모바일 주요 메뉴">
+        {[
+          { id: "mobile-home", href: "/", icon: Home, label: "홈" },
+          { id: "mobile-exercises", href: "/exercises", icon: Dumbbell, label: "운동" },
+          { id: "mobile-routines", href: "/routines", icon: Activity, label: "루틴" },
+          { id: "mobile-history", href: "/history", icon: Calendar, label: "기록" },
+          { id: "mobile-profile", href: "/profile", icon: Users, label: "프로필" },
+        ].map(item => {
+          const Icon = item.icon;
+          const active =
+            item.href === "/"
+              ? currentPath === "/"
+              : currentPath === item.href || currentPath.startsWith(`${item.href}/`);
+          return (
+            <Link
+              key={item.id}
+              href={item.href}
+              className={cn("app-mobile-bottom-link", active && "is-active")}
+              aria-current={active ? "page" : undefined}
+            >
+              <Icon size={19} />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }

@@ -43,46 +43,52 @@
 }
 
 :root {
-  /* FitTrack Pro - Default (Dark Emerald, 가독성 개선) */
-  --radius: 0.75rem;
-  --background: oklch(0.13 0.008 260);
-  --foreground: oklch(0.97 0.004 260);
-  --card: oklch(0.18 0.010 260);
-  --card-foreground: oklch(0.97 0.004 260);
-  --popover: oklch(0.16 0.010 260);
-  --popover-foreground: oklch(0.97 0.004 260);
-  --primary: oklch(0.74 0.18 160);
-  --primary-foreground: oklch(0.10 0.005 260);
-  --secondary: oklch(0.24 0.012 260);
-  --secondary-foreground: oklch(0.90 0.005 260);
-  --muted: oklch(0.22 0.010 260);
-  --muted-foreground: oklch(0.68 0.010 260);
-  --accent: oklch(0.28 0.014 260);
-  --accent-foreground: oklch(0.95 0.005 260);
+  /* Fitness 3D UI Kit 기반 기본 토큰 */
+  --radius: 1rem;
+  --background: #121416;
+  --foreground: #ffffff;
+  --card: #17191c;
+  --card-foreground: #ffffff;
+  --popover: #1b1e22;
+  --popover-foreground: #ffffff;
+  --primary: #ff8a3d;
+  --primary-foreground: #0e1216;
+  --secondary: #25292e;
+  --secondary-foreground: #f4f4f5;
+  --muted: #24282d;
+  --muted-foreground: #a1a1aa;
+  --accent: #2c3137;
+  --accent-foreground: #ffffff;
   --destructive: oklch(0.65 0.22 25);
   --destructive-foreground: oklch(0.98 0.005 260);
-  --border: oklch(0.32 0.012 260);
-  --input: oklch(0.24 0.010 260);
-  --ring: oklch(0.74 0.18 160);
-  --chart-1: oklch(0.74 0.18 160);
-  --chart-2: oklch(0.80 0.16 85);
-  --chart-3: oklch(0.68 0.18 240);
-  --chart-4: oklch(0.68 0.18 290);
-  --chart-5: oklch(0.74 0.18 55);
-  --sidebar: oklch(0.15 0.010 260);
-  --sidebar-foreground: oklch(0.97 0.004 260);
-  --sidebar-primary: oklch(0.74 0.18 160);
-  --sidebar-primary-foreground: oklch(0.10 0.005 260);
-  --sidebar-accent: oklch(0.24 0.012 260);
-  --sidebar-accent-foreground: oklch(0.95 0.005 260);
-  --sidebar-border: oklch(0.30 0.012 260);
-  --sidebar-ring: oklch(0.74 0.18 160);
+  --border: #353a40;
+  --input: #20242a;
+  --ring: #ffa05c;
+  --chart-1: #ff8a3d;
+  --chart-2: #6471f1;
+  --chart-3: #1ed6ff;
+  --chart-4: #d8dbf8;
+  --chart-5: #bd7744;
+  --sidebar: #15181b;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ff8a3d;
+  --sidebar-primary-foreground: #0e1216;
+  --sidebar-accent: #252a30;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #2e3339;
+  --sidebar-ring: #ffa05c;
   /* Custom */
-  --emerald: oklch(0.74 0.18 160);
-  --gold: oklch(0.80 0.16 85);
-  --surface-1: oklch(0.18 0.010 260);
-  --surface-2: oklch(0.22 0.012 260);
-  --surface-3: oklch(0.28 0.014 260);
+  --emerald: #ff8a3d;
+  --gold: #ffa05c;
+  --surface-1: #17191c;
+  --surface-2: #20242a;
+  --surface-3: #2c3137;
+  --fitness-orange-start: #ffa05c;
+  --fitness-orange-end: #f06500;
+  --fitness-surface-start: #32383e;
+  --fitness-surface-end: #17191c;
+  --fitness-bg-start: #353a40;
+  --fitness-bg-end: #121416;
 }
 
 /* Dark mode same as root since we use dark theme by default */
@@ -99,6 +105,14 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    font-family: "TT Commons", "SF Pro Display", "Segoe UI", sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+    background:
+      radial-gradient(circle at 14% -10%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 28rem),
+      var(--background);
+    background-attachment: fixed;
     min-height: 100vh;
     max-width: 100vw;
     overflow-x: hidden;
@@ -148,7 +162,7 @@
     max-width: 72rem;
     margin-left: auto;
     margin-right: auto;
-    padding: 1rem;
+    padding: 1.25rem;
   }
 
   .page-shell-narrow {
@@ -164,14 +178,15 @@
   }
 
   .page-title {
-    font-size: 1.375rem;
-    line-height: 1.2;
+    font-size: 1.5rem;
+    line-height: 1.25;
     font-weight: 700;
+    letter-spacing: -0.025em;
     color: var(--foreground);
   }
 
   .page-description {
-    margin-top: 0.125rem;
+    margin-top: 0.25rem;
     font-size: 0.875rem;
     color: var(--muted-foreground);
   }
@@ -182,9 +197,11 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 0.875rem;
-    border: 1px dashed var(--border);
-    background: color-mix(in oklch, var(--card) 70%, transparent);
+    border-radius: 1rem;
+    border: 1px dashed color-mix(in srgb, var(--primary) 35%, var(--border));
+    background:
+      radial-gradient(circle at 85% 0%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 50%),
+      linear-gradient(145deg, color-mix(in srgb, var(--card) 84%, white 16%), var(--card));
     padding: 1.5rem;
     text-align: center;
     color: var(--muted-foreground);
@@ -307,7 +324,11 @@
     overflow-x: auto;
     margin-bottom: 0.75rem;
     padding-bottom: 0.25rem;
-    scrollbar-width: thin;
+    scrollbar-width: none;
+  }
+
+  .exercise-filter-scroll::-webkit-scrollbar {
+    display: none;
   }
 
   .exercise-extra-filters {
@@ -532,19 +553,19 @@
 /* FitTrack Custom Utilities */
 @layer utilities {
   .glass {
-    background: oklch(0.14 0.01 260 / 0.8);
-    backdrop-filter: blur(12px);
-    border: 1px solid oklch(0.30 0.01 260 / 0.5);
+    background: color-mix(in srgb, var(--card) 82%, transparent);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
   }
 
   .gradient-text {
-    background: linear-gradient(135deg, oklch(0.72 0.18 160), oklch(0.78 0.16 85));
+    background: linear-gradient(135deg, var(--fitness-orange-start), var(--fitness-orange-end));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  .font-display { font-family: 'Bebas Neue', sans-serif; }
+  .font-display { font-family: "TT Commons", "SF Pro Display", "Segoe UI", sans-serif; font-weight: 700; }
 
   .exercise-card-hover {
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -610,38 +631,38 @@
 
 /* ── 1. DARK (다크 에메랄드 - 가독성 개선) ── */
 .theme-dark {
-  --background: oklch(0.13 0.008 260);
-  --foreground: oklch(0.97 0.004 260);
-  --card: oklch(0.18 0.010 260);
-  --card-foreground: oklch(0.97 0.004 260);
-  --popover: oklch(0.16 0.010 260);
-  --popover-foreground: oklch(0.97 0.004 260);
-  --primary: oklch(0.74 0.18 160);
-  --primary-foreground: oklch(0.10 0.005 260);
-  --secondary: oklch(0.24 0.012 260);
-  --secondary-foreground: oklch(0.90 0.005 260);
-  --muted: oklch(0.22 0.010 260);
-  --muted-foreground: oklch(0.68 0.010 260);
-  --accent: oklch(0.28 0.014 260);
-  --accent-foreground: oklch(0.95 0.005 260);
+  --background: #121416;
+  --foreground: #ffffff;
+  --card: #17191c;
+  --card-foreground: #ffffff;
+  --popover: #1b1e22;
+  --popover-foreground: #ffffff;
+  --primary: #ff8a3d;
+  --primary-foreground: #0e1216;
+  --secondary: #25292e;
+  --secondary-foreground: #f4f4f5;
+  --muted: #24282d;
+  --muted-foreground: #a1a1aa;
+  --accent: #2c3137;
+  --accent-foreground: #ffffff;
   --destructive: oklch(0.65 0.22 25);
   --destructive-foreground: oklch(0.98 0.005 260);
-  --border: oklch(0.32 0.012 260);
-  --input: oklch(0.24 0.010 260);
-  --ring: oklch(0.74 0.18 160);
-  --sidebar: oklch(0.15 0.010 260);
-  --sidebar-foreground: oklch(0.97 0.004 260);
-  --sidebar-primary: oklch(0.74 0.18 160);
-  --sidebar-primary-foreground: oklch(0.10 0.005 260);
-  --sidebar-accent: oklch(0.24 0.012 260);
-  --sidebar-accent-foreground: oklch(0.95 0.005 260);
-  --sidebar-border: oklch(0.30 0.012 260);
-  --sidebar-ring: oklch(0.74 0.18 160);
-  --chart-1: oklch(0.74 0.18 160);
-  --chart-2: oklch(0.80 0.16 85);
-  --chart-3: oklch(0.68 0.18 240);
-  --chart-4: oklch(0.68 0.18 290);
-  --chart-5: oklch(0.74 0.18 55);
+  --border: #353a40;
+  --input: #20242a;
+  --ring: #ffa05c;
+  --sidebar: #15181b;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ff8a3d;
+  --sidebar-primary-foreground: #0e1216;
+  --sidebar-accent: #252a30;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #2e3339;
+  --sidebar-ring: #ffa05c;
+  --chart-1: #ff8a3d;
+  --chart-2: #6471f1;
+  --chart-3: #1ed6ff;
+  --chart-4: #d8dbf8;
+  --chart-5: #bd7744;
 }
 
 /* ── 2. LIGHT (밝고 깔끔한 라이트) ── */
@@ -853,7 +874,9 @@
 /* 기본값: 모바일 */
 .app-layout-root {
   min-height: 100vh;
-  background: var(--background);
+  background:
+    radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 26rem),
+    var(--background);
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
@@ -897,12 +920,80 @@
 
 .app-main-inner {
   padding-top: 56px;
-  padding-bottom: 1rem;
+  padding-bottom: 6.5rem;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   overflow-x: hidden;
   box-sizing: border-box;
+}
+
+[data-slot="card"] {
+  background:
+    radial-gradient(circle at 88% 0%, color-mix(in srgb, var(--primary) 18%, transparent), transparent 48%),
+    linear-gradient(145deg, color-mix(in srgb, var(--card) 84%, white 16%), var(--card) 56%);
+}
+
+[data-slot="card"]:hover {
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.home-welcome-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 82% 12%, color-mix(in srgb, var(--primary) 24%, transparent), transparent 42%),
+    linear-gradient(145deg, color-mix(in srgb, var(--card) 78%, white 22%), var(--card) 62%);
+  padding: 1rem;
+  box-shadow: 12px 20px 56px rgba(0, 0, 0, 0.22);
+}
+
+.app-sidebar {
+  background:
+    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--primary) 9%, transparent), transparent 24rem),
+    linear-gradient(180deg, color-mix(in srgb, var(--sidebar) 88%, white 12%), var(--sidebar));
+  box-shadow: 24px 0 60px rgba(0, 0, 0, 0.2);
+}
+
+.app-mobile-bottom-nav {
+  position: fixed;
+  left: 1rem;
+  right: 1rem;
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  z-index: 45;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.125rem;
+  min-height: 4rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sidebar) 92%, transparent);
+  padding: 0.4rem;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(20px);
+}
+
+.app-mobile-bottom-link {
+  display: flex;
+  min-width: 0;
+  min-height: 3rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  font-size: 0.625rem;
+  font-weight: 600;
+  transition: color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.app-mobile-bottom-link.is-active {
+  background: rgba(255, 138, 61, 0.12);
+  color: var(--primary);
+  transform: translateY(-1px);
 }
 
 .app-main-inner > * {
@@ -937,6 +1028,9 @@
     padding-bottom: 0;
   }
 
+  .app-mobile-bottom-nav {
+    display: none;
+  }
 }
 
 @media (max-width: 640px) {

@@ -786,7 +786,7 @@ export default function Home() {
   return (
     <div className="page-shell page-shell-wide space-y-3 animate-fade-in">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="home-welcome-panel flex items-start justify-between gap-3">
         <div>
           <p className="text-xs text-muted-foreground">{greeting()},</p>
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">{displayName} 님 👋</h1>
