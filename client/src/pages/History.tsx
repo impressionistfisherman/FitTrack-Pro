@@ -5,7 +5,7 @@ import BodyWeightTracker from "@/components/BodyWeightTracker";
 import FreeWorkoutDialog from "@/components/FreeWorkoutDialog";
 import { AuthRequiredState, PageLoadingState } from "@/components/PageState";
 import { cn } from "@/lib/utils";
-import { Activity, Calendar, ChevronDown, ChevronLeft, ChevronRight, Clock, Dumbbell, Eye, LogIn, TrendingUp, Plus, Trash2, Pencil } from "lucide-react";
+import { Activity, Calendar, ChevronDown, ChevronLeft, ChevronRight, Clock, Dumbbell, Eye, Loader2, LogIn, TrendingUp, Plus, RefreshCw, Sparkles, Trash2, Pencil } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { matchesExerciseSearchText, scoreExerciseSearchMatch } from "@shared/exerciseSearch";
 import { Badge } from "@/components/ui/badge";
@@ -290,6 +290,14 @@ function SessionDetailDialog({
   onOpenChange: (open: boolean) => void;
   onEdit: (session: any) => void;
 }) {
+  const [feedbackBySession, setFeedbackBySession] = useState<Record<number, any>>({});
+  const autoRequestedFeedbackRef = useRef<Set<number>>(new Set());
+  const aiSessionSummary = trpc.workout.aiSessionSummary.useMutation({
+    onSuccess: (data, variables) => {
+      setFeedbackBySession((current) => ({ ...current, [variables.sessionId]: data }));
+    },
+    onError: () => toast.error("AI 운동 피드백을 불러오지 못했습니다."),
+  });
   const logs = session?.logs ?? [];
   const strengthLogs = logs.filter((item: any) => item.log?.reps || item.log?.weightKg);
   const timedLogs = logs.filter((item: any) => item.log?.durationSeconds);
@@ -298,6 +306,13 @@ function SessionDetailDialog({
   ), 0);
   const totalVolume = Math.max(computedVolume, Number(session?.totalVolume) || 0);
   const durationMinutes = Number(session?.durationMinutes) || Math.round(timedLogs.reduce((sum: number, item: any) => sum + (Number(item.log?.durationSeconds) || 0), 0) / 60) || 0;
+  const sessionFeedback = session?.id ? feedbackBySession[session.id] : null;
+
+  useEffect(() => {
+    if (!open || !session?.id || feedbackBySession[session.id] || autoRequestedFeedbackRef.current.has(session.id)) return;
+    autoRequestedFeedbackRef.current.add(session.id);
+    aiSessionSummary.mutate({ sessionId: session.id });
+  }, [open, session?.id, feedbackBySession]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -323,6 +338,69 @@ function SessionDetailDialog({
                 <div className="text-base font-bold text-primary">{Math.round(totalVolume).toLocaleString()}</div>
                 <div className="text-[11px] text-muted-foreground">볼륨 kg</div>
               </div>
+            </div>
+            <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                  <Sparkles size={16} />
+                  AI 운동 피드백
+                </div>
+                {sessionFeedback ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-11 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground sm:h-9"
+                    onClick={() => aiSessionSummary.mutate({ sessionId: session.id })}
+                    disabled={aiSessionSummary.isPending}
+                  >
+                    {aiSessionSummary.isPending ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
+                    다시 분석
+                  </Button>
+                ) : null}
+              </div>
+
+              {aiSessionSummary.isPending && !sessionFeedback ? (
+                <div className="mt-4 flex min-h-24 items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 size={16} className="animate-spin text-primary" />
+                  기록을 분석하고 있습니다.
+                </div>
+              ) : sessionFeedback ? (
+                <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground">
+                  <p className="font-medium text-foreground">{sessionFeedback.summary}</p>
+                  {Array.isArray(sessionFeedback.highlights) && sessionFeedback.highlights.length > 0 ? (
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {sessionFeedback.highlights.map((item: string, index: number) => (
+                        <div key={`${item}-${index}`} className="rounded-lg border border-primary/10 bg-background/40 px-3 py-2 text-xs">
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                  <div className="space-y-2 text-xs sm:text-sm">
+                    <p><span className="font-semibold text-foreground">다음 팁:</span> {sessionFeedback.advice}</p>
+                    <p><span className="font-semibold text-foreground">다음 방향:</span> {sessionFeedback.nextFocus}</p>
+                    <p><span className="font-semibold text-foreground">주의:</span> {sessionFeedback.caution}</p>
+                  </div>
+                  {sessionFeedback.source === "fallback" ? (
+                    <p className="text-[11px] text-muted-foreground/80">기본 분석 결과입니다. 다시 분석하면 AI 응답을 재시도합니다.</p>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="mt-4 flex min-h-24 flex-col items-center justify-center gap-2 text-center">
+                  <p className="text-sm text-muted-foreground">피드백을 불러오지 못했습니다.</p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-10 gap-2"
+                    onClick={() => aiSessionSummary.mutate({ sessionId: session.id })}
+                  >
+                    <RefreshCw size={14} />
+                    다시 시도
+                  </Button>
+                </div>
+              )}
             </div>
             <div className="mt-4">
               <WorkoutLogDetailList logs={logs} />
