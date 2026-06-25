@@ -219,10 +219,8 @@ export default function FreeWorkoutDialog({
     { search: replaceSearch || undefined },
     { enabled: open && replacingExerciseId !== null && replaceSearch.trim().length > 0, staleTime: 1000 * 60 * 5 }
   );
-  const startSession = trpc.workout.startSession.useMutation();
-  const addLog = trpc.workout.addLog.useMutation();
-  const completeSession = trpc.workout.completeSession.useMutation();
   const updateSession = trpc.workout.updateSession.useMutation();
+  const saveSession = trpc.workout.saveSession.useMutation();
   const parseWorkoutCapture = trpc.ai.parseWorkoutCapture.useMutation();
   const exerciseSelectionFeedback = trpc.ai.exerciseSelectionFeedback.useMutation({
     onSuccess: (data) => setExerciseFeedback(data as ExerciseAiFeedback),
@@ -597,22 +595,12 @@ export default function FreeWorkoutDialog({
         return;
       }
 
-      const session = await startSession.mutateAsync({
+      await saveSession.mutateAsync({
         name: sessionName,
         workoutDate: date,
-      });
-
-      for (const log of logs) {
-        await addLog.mutateAsync({
-          sessionId: session.sessionId,
-          ...log,
-        });
-      }
-
-      await completeSession.mutateAsync({
-        sessionId: session.sessionId,
         durationMinutes,
         notes,
+        logs,
       });
 
       toast.success("운동 기록을 저장했습니다.");
@@ -625,7 +613,7 @@ export default function FreeWorkoutDialog({
     }
   };
 
-  const isSaving = startSession.isPending || addLog.isPending || completeSession.isPending || updateSession.isPending;
+  const isSaving = saveSession.isPending || updateSession.isPending;
   const isParsingCapture = parseWorkoutCapture.isPending;
   const bodyWeightKg = weights?.[0]?.weightKg ?? 70;
   const enteredWorkoutDuration = Math.max(0, Number(workoutDurationMinutes) || 0);

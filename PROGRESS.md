@@ -2,44 +2,42 @@
 
 ## 날짜/시간
 
-2026-06-25 13:10:00 +09:00
+2026-06-25 13:44:00 +09:00
 
 ## 작업 요약
 
-- Figma `Fitness - Workout App UI Kit | 3D Effect`의 23개 주요 모바일 화면과 디자인 스타일 분석
-- Figma 색상, 그라데이션, 타이포그래피, 간격, 모서리, 그림자 체계를 전역 디자인 토큰에 반영
-- `Button`, `Card`, `Input`, `Badge` 공통 컴포넌트를 3D 다크 UI 기준으로 정비
-- 기존 페이지와 라우팅을 유지하면서 데스크톱 사이드바와 모바일 헤더 시각 개선
-- 모바일 핵심 페이지용 하단 내비게이션 추가
-- 홈 환영 영역, 빈 상태, 운동 필터, 로딩 표면을 Figma 스타일에 맞게 보정
-- 기존 다중 테마 기능을 유지하고 기본 다크 테마를 `Helios 3D`로 변경
+- 자유 운동 신규 저장을 `startSession → 세트별 addLog → completeSession` 흐름에서 단일 `saveSession` mutation으로 통합
+- 홈 사용자 설정 11개 개별 조회를 단일 `getUserPreferences` 조회로 통합
+- 인증 사용자 이름과 앱 역할 조회를 단일 설정 조회로 통합
+- 코칭 알림 집계 쿼리를 직렬 실행에서 병렬 실행으로 변경
+- 운동 로그 추가/삭제 시 세션 전체 로그 재조회 대신 볼륨 증분 갱신
+- 운동 기록 수정 시 로그 INSERT 병렬화 및 입력값에서 총 볼륨 즉시 계산
+- 운동 종료와 루틴 저장을 병렬 실행
+- 루틴 운동 INSERT 병렬화
+- 누적 로컬 DB에 영향을 받던 운동 기록 테스트를 고유 사용자로 격리
 
 ## 현재 상태
 
-- TypeScript 검사, Unit 테스트, Production build 통과
-- 모바일 390×844 및 데스크톱 1440×900에서 가로 오버플로 없음
-- 모바일 홈·운동 탐색, 데스크톱 홈, 라이트 테마 전환 확인
+- TypeScript 검사, 69개 Unit 테스트, Production build 통과
+- 기존 페이지와 API 입력 구조 유지
 - 기존 사용자 변경 `SESSION_HANDOFF.md`, `local-db/fittrack_local.sqlite*` 유지
 
 ## 변경 파일
 
-- `client/src/index.css`
-- `client/src/components/AppLayout.tsx`
-- `client/src/components/ui/button.tsx`
-- `client/src/components/ui/card.tsx`
-- `client/src/components/ui/input.tsx`
-- `client/src/components/ui/badge.tsx`
-- `client/src/contexts/ThemeContext.tsx`
-- `client/src/pages/Home.tsx`
+- `client/src/components/FreeWorkoutDialog.tsx`
+- `client/src/pages/WorkoutSession.tsx`
+- `server/db.ts`
+- `server/routers.ts`
+- `server/fittrack.test.ts`
 - `PROGRESS.md`
 - `TEST_RESULT.md`
 
 ## 남은 문제
 
-- 로컬 OAuth 환경 변수 부재로 로그인 사용자·트레이너·관리자 실데이터 화면 브라우저 검증 제한
-- Figma 원본의 유료/전용 이미지와 `TT Commons` 폰트는 프로젝트 자산으로 포함하지 않고 시스템 폰트 fallback 사용
+- 운영 DB의 실제 p50/p95 응답시간 계측 미구현
+- 대규모 로그 저장의 원자성 강화를 위한 DB transaction은 후속 작업 필요
 
 ## 다음 세션
 
-1. 배포 환경에서 역할별 로그인 화면과 실제 데이터 카드 회귀 확인
-2. 필요 시 Figma 라이선스가 허용하는 이미지·폰트 자산을 프로젝트 자산으로 추가
+1. 운영 API timing 로그 또는 APM 추가
+2. 저장 mutation transaction 적용 검토

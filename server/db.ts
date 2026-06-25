@@ -1082,6 +1082,31 @@ export async function getUserPreference(userId: number, key: string): Promise<st
   return typeof row?.pref_value === "string" ? row.pref_value : null;
 }
 
+export async function getUserPreferences(
+  userId: number,
+  keys?: string[],
+): Promise<Record<string, string>> {
+  await ensureUserPreferencesTable();
+  const normalizedKeys = Array.from(new Set((keys ?? []).filter(Boolean)));
+  const rows = normalizedKeys.length
+    ? await all<{ pref_key: string; pref_value: string | null }>(
+        `SELECT pref_key, pref_value
+         FROM user_preferences
+         WHERE user_id = ? AND pref_key IN (${normalizedKeys.map(() => "?").join(", ")})`,
+        userId,
+        ...normalizedKeys,
+      )
+    : await all<{ pref_key: string; pref_value: string | null }>(
+        "SELECT pref_key, pref_value FROM user_preferences WHERE user_id = ?",
+        userId,
+      );
+  return Object.fromEntries(
+    rows
+      .filter((row) => typeof row.pref_value === "string")
+      .map((row) => [row.pref_key, row.pref_value as string]),
+  );
+}
+
 export async function setUserPreference(userId: number, key: string, value: string): Promise<void> {
   await ensureUserPreferencesTable();
   const now = new Date().toISOString();
@@ -1742,9 +1767,12 @@ export async function markTrainerWorkRead(userId: number): Promise<void> {
 
 export async function getCoachingNotificationSummary(userId: number): Promise<Row> {
   await ensureTrainerTables();
-  const clientSince = await getCoachingLastReadAt(userId, COACHING_CLIENT_SCOPE);
-  const trainerSince = await getCoachingLastReadAt(userId, COACHING_TRAINER_SCOPE);
-  const feedback = await get(
+  const [clientSince, trainerSince] = await Promise.all([
+    getCoachingLastReadAt(userId, COACHING_CLIENT_SCOPE),
+    getCoachingLastReadAt(userId, COACHING_TRAINER_SCOPE),
+  ]);
+  const [feedback, ptSessions, comments, tasks, requests] = await Promise.all([
+    get(
     `SELECT COUNT(*) AS count
      FROM trainer_feedback f
      JOIN trainer_client_links l
@@ -1754,8 +1782,8 @@ export async function getCoachingNotificationSummary(userId: number): Promise<Ro
      WHERE f.client_user_id = ? AND f.created_at > ?`,
     userId,
     clientSince,
-  );
-  const ptSessions = await get(
+    ),
+    get(
     `SELECT COUNT(*) AS count
      FROM trainer_pt_sessions p
      JOIN trainer_client_links l
@@ -1765,8 +1793,8 @@ export async function getCoachingNotificationSummary(userId: number): Promise<Ro
      WHERE p.client_user_id = ? AND p.created_at > ?`,
     userId,
     clientSince,
-  );
-  const comments = await get(
+    ),
+    get(
     `SELECT COUNT(*) AS count
      FROM coaching_comments c
      JOIN trainer_client_links l
@@ -1780,8 +1808,8 @@ export async function getCoachingNotificationSummary(userId: number): Promise<Ro
     userId,
     userId,
     clientSince,
-  );
-  const tasks = await get(
+    ),
+    get(
     `SELECT COUNT(*) AS count
      FROM coaching_tasks t
      JOIN trainer_client_links l
@@ -1791,8 +1819,8 @@ export async function getCoachingNotificationSummary(userId: number): Promise<Ro
      WHERE t.client_user_id = ? AND COALESCE(t.updated_at, t.created_at) > ?`,
     userId,
     clientSince,
-  );
-  const requests = await get(
+    ),
+    get(
     `SELECT COUNT(*) AS count
      FROM trainer_client_links
      WHERE trainer_user_id = ?
@@ -1800,7 +1828,8 @@ export async function getCoachingNotificationSummary(userId: number): Promise<Ro
        AND COALESCE(updated_at, created_at) > ?`,
     userId,
     trainerSince,
-  );
+    ),
+  ]);
   const counts = {
     feedback: Number(feedback?.count ?? 0),
     ptSessions: Number(ptSessions?.count ?? 0),
@@ -2648,15 +2677,13 @@ async function recalculateWorkoutSessionVolume(sessionId: number): Promise<numbe
 }
 
 export async function completeWorkoutSession(sessionId: number, durationMinutes: number, notes?: string): Promise<any> {
-  const totalVolume = await recalculateWorkoutSessionVolume(sessionId);
   await run(
     `UPDATE workout_sessions
-     SET completedAt = ?, durationMinutes = ?, notes = ?, totalVolume = ?
+     SET completedAt = ?, durationMinutes = ?, notes = ?
      WHERE id = ?`,
     new Date().toISOString(),
     durationMinutes,
     notes ?? null,
-    totalVolume,
     sessionId,
   );
 }
@@ -2670,8 +2697,9 @@ export async function updateWorkoutSession(sessionId: number, input: {
 }): Promise<void> {
   const workoutDate = toDbDate(input.workoutDate);
   await run("DELETE FROM workout_logs WHERE sessionId = ?", sessionId);
-  for (const log of input.logs) {
-    await run(
+  const createdAt = new Date().toISOString();
+  await Promise.all(input.logs.map((log) =>
+    run(
       `INSERT INTO workout_logs
        (sessionId, exerciseId, setNumber, reps, weightKg, durationSeconds, distanceM, isWarmup, rpe, memo, notes, createdAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -2686,10 +2714,13 @@ export async function updateWorkoutSession(sessionId: number, input: {
       log.rpe ?? null,
       log.memo ?? null,
       log.notes ?? null,
-      new Date().toISOString(),
-    );
-  }
-  const totalVolume = await recalculateWorkoutSessionVolume(sessionId);
+      createdAt,
+    )
+  ));
+  const totalVolume = input.logs.reduce(
+    (sum, log) => sum + (Number(log.reps) || 0) * (Number(log.weightKg) || 0),
+    0,
+  );
   await run(
     `UPDATE workout_sessions
      SET name = COALESCE(?, name),
@@ -2713,6 +2744,7 @@ export async function deleteWorkoutSession(sessionId: number): Promise<void> {
 }
 
 export async function addWorkoutLog(input: Row): Promise<any> {
+  const volumeDelta = (Number(input.reps) || 0) * (Number(input.weightKg) || 0);
   const result = await run(
     `INSERT INTO workout_logs
      (sessionId, exerciseId, setNumber, reps, weightKg, durationSeconds, distanceM, isWarmup, rpe, memo, notes, createdAt)
@@ -2730,14 +2762,35 @@ export async function addWorkoutLog(input: Row): Promise<any> {
     input.notes ?? null,
     new Date().toISOString(),
   );
-  await recalculateWorkoutSessionVolume(input.sessionId);
+  if (volumeDelta) {
+    await run(
+      "UPDATE workout_sessions SET totalVolume = COALESCE(totalVolume, 0) + ? WHERE id = ?",
+      volumeDelta,
+      input.sessionId,
+    );
+  }
   return getInsertId(result);
 }
 
 export async function deleteWorkoutLog(logId: number): Promise<any> {
-  const log = await get("SELECT sessionId FROM workout_logs WHERE id = ? LIMIT 1", logId);
+  const log = await get("SELECT sessionId, reps, weightKg FROM workout_logs WHERE id = ? LIMIT 1", logId);
   await run("DELETE FROM workout_logs WHERE id = ?", logId);
-  if (log?.sessionId) await recalculateWorkoutSessionVolume(log.sessionId);
+  if (log?.sessionId) {
+    const volumeDelta = (Number(log.reps) || 0) * (Number(log.weightKg) || 0);
+    if (volumeDelta) {
+      await run(
+        `UPDATE workout_sessions
+         SET totalVolume = CASE
+           WHEN COALESCE(totalVolume, 0) - ? < 0 THEN 0
+           ELSE COALESCE(totalVolume, 0) - ?
+         END
+         WHERE id = ?`,
+        volumeDelta,
+        volumeDelta,
+        log.sessionId,
+      );
+    }
+  }
 }
 
 export async function getWorkoutLogsBySession(sessionId: number): Promise<Row[]> {

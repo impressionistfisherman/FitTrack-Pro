@@ -270,11 +270,19 @@ describe("exercises.detail", () => {
 
 describe("exercise history", () => {
   it("returns date-level average weight for trend charts", async () => {
+    const unique = Date.now();
+    const userId = await upsertUser({
+      openId: `exercise-history-${unique}`,
+      email: `exercise-history-${unique}@fittrack.local`,
+      name: "Exercise History",
+      loginMethod: "test",
+      role: "user",
+    });
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
     const exercises = await caller.exercises.list({ search: "바벨 로우" });
     const exerciseId = exercises[0].id;
-    const sessionId = await createWorkoutSession(ctx.user!.id, {
+    const sessionId = await createWorkoutSession(userId, {
       name: "평균 무게 테스트",
       workoutDate: new Date("2026-06-08T12:00:00.000Z"),
     });
@@ -282,9 +290,34 @@ describe("exercise history", () => {
     await addWorkoutLog({ sessionId, exerciseId, setNumber: 1, weightKg: 80, reps: 10 });
     await addWorkoutLog({ sessionId, exerciseId, setNumber: 2, weightKg: 100, reps: 8 });
 
-    const history = await getExerciseHistory(ctx.user!.id, exerciseId, 1);
+    const history = await getExerciseHistory(userId, exerciseId, 1);
     expect(history[0].averageWeight).toBe(90);
     expect(history[0].setCount).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("workout.saveSession", () => {
+  it("saves session and logs in one mutation", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const exercises = await caller.exercises.list({ search: "바벨 로우" });
+    const exerciseId = exercises[0].id;
+
+    const saved = await caller.workout.saveSession({
+      name: "일괄 저장 테스트",
+      workoutDate: new Date("2026-06-25T12:00:00.000Z"),
+      durationMinutes: 35,
+      notes: "single mutation",
+      logs: [
+        { exerciseId, setNumber: 1, weightKg: 50, reps: 10 },
+        { exerciseId, setNumber: 2, weightKg: 60, reps: 8 },
+      ],
+    });
+    const session = await caller.workout.getSession({ sessionId: saved.sessionId });
+
+    expect(session?.logs).toHaveLength(2);
+    expect(Number(session?.totalVolume)).toBe(980);
+    expect(Number(session?.durationMinutes)).toBe(35);
   });
 });
 

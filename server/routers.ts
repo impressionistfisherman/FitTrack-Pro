@@ -57,6 +57,7 @@ import {
   getTrainerPtSessionsForClient,
   getTrainerPtSessionsForPair,
   getUserPreference,
+  getUserPreferences,
   getUserStats,
   getUserAppRole,
   getWeeklyStats,
@@ -1425,8 +1426,9 @@ export const appRouter = router({
   auth: router({
     me: publicProcedure.query(async (opts) => {
       if (!opts.ctx.user) return null;
-      const displayName = await getUserPreference(opts.ctx.user.id, "displayName");
-      const appRole = await getUserAppRole(opts.ctx.user.id);
+      const preferences = await getUserPreferences(opts.ctx.user.id, ["displayName", "appRole"]);
+      const displayName = preferences.displayName ?? null;
+      const appRole = preferences.appRole === "trainer" ? "trainer" : "user";
       const user = displayName ? { ...opts.ctx.user, name: displayName } : opts.ctx.user;
       return { ...user, appRole };
     }),
@@ -1460,42 +1462,23 @@ export const appRouter = router({
   home: router({
     summary: protectedProcedure.query(async ({ ctx }) => {
       const userId = ctx.user.id;
-      const preferencesPromise = Promise.all([
-        getUserPreference(userId, "experienceLevel"),
-        getUserPreference(userId, "displayName"),
-        getUserPreference(userId, "gymName"),
-        getUserPreference(userId, "gymLocation"),
-        getUserPreference(userId, "gymEquipment"),
-        getUserPreference(userId, "gymEquipmentDetails"),
-        getUserPreference(userId, "injuryNotes"),
-        getUserPreference(userId, "avoidExercises"),
-        getUserPreference(userId, "preferredExercises"),
-        getUserPreference(userId, "availableWorkoutTimes"),
-        getUserPreference(userId, "customSplitPresets"),
-      ]).then(([
-        experienceLevel,
-        displayName,
-        gymName,
-        gymLocation,
-        gymEquipment,
-        gymEquipmentDetails,
-        injuryNotes,
-        avoidExercises,
-        preferredExercises,
-        availableWorkoutTimes,
-        customSplitPresets,
-      ]) => ({
-        experienceLevel: experienceLevel ?? "beginner",
-        displayName: displayName ?? ctx.user.name ?? "",
-        gymName: gymName ?? "",
-        gymLocation: workoutLocationSchema.safeParse(gymLocation).data ?? "gym",
-        gymEquipment: parseEquipmentPreference(gymEquipment),
-        gymEquipmentDetails: parseStringListPreference(gymEquipmentDetails),
-        injuryNotes: injuryNotes ?? "",
-        avoidExercises: avoidExercises ?? "",
-        preferredExercises: preferredExercises ?? "",
-        availableWorkoutTimes: availableWorkoutTimes ?? "",
-        customSplitPresets: parseCustomSplitPresets(customSplitPresets),
+      const preferenceKeys = [
+        "experienceLevel", "displayName", "gymName", "gymLocation",
+        "gymEquipment", "gymEquipmentDetails", "injuryNotes", "avoidExercises",
+        "preferredExercises", "availableWorkoutTimes", "customSplitPresets",
+      ];
+      const preferencesPromise = getUserPreferences(userId, preferenceKeys).then((preferences) => ({
+        experienceLevel: preferences.experienceLevel ?? "beginner",
+        displayName: preferences.displayName ?? ctx.user.name ?? "",
+        gymName: preferences.gymName ?? "",
+        gymLocation: workoutLocationSchema.safeParse(preferences.gymLocation).data ?? "gym",
+        gymEquipment: parseEquipmentPreference(preferences.gymEquipment),
+        gymEquipmentDetails: parseStringListPreference(preferences.gymEquipmentDetails),
+        injuryNotes: preferences.injuryNotes ?? "",
+        avoidExercises: preferences.avoidExercises ?? "",
+        preferredExercises: preferences.preferredExercises ?? "",
+        availableWorkoutTimes: preferences.availableWorkoutTimes ?? "",
+        customSplitPresets: parseCustomSplitPresets(preferences.customSplitPresets),
       }));
       const recentWorkoutsPromise = getWorkoutSessionsByUser(userId, 20).then(async (sessions) => {
         const logsBySessionId = await getWorkoutLogsBySessionIds(sessions.map((session: any) => Number(session.id)));
@@ -1504,9 +1487,9 @@ export const appRouter = router({
           logs: logsBySessionId.get(Number(session.id)) ?? [],
         }));
       });
+      const goalsPromise = getUserGoals(userId);
 
       const [
-        goal,
         goals,
         preferences,
         recentWorkouts,
@@ -1514,8 +1497,7 @@ export const appRouter = router({
         bodyWeights,
         volumeRows,
       ] = await Promise.all([
-        getUserGoal(userId),
-        getUserGoals(userId),
+        goalsPromise,
         preferencesPromise,
         recentWorkoutsPromise,
         getRoutinesByUser(userId),
@@ -1525,7 +1507,7 @@ export const appRouter = router({
 
       return {
         stats: buildHomeStats(volumeRows),
-        goal,
+        goal: goals[0] ?? null,
         goals,
         preferences,
         recentWorkouts,
@@ -1533,7 +1515,7 @@ export const appRouter = router({
         streak: buildHomeStreak(volumeRows),
         bodyWeights,
         monthlyStats: buildHomeMonthlyStats(volumeRows, 7),
-        weeklyStats: buildHomeWeeklyStats(volumeRows, goal),
+        weeklyStats: buildHomeWeeklyStats(volumeRows, goals[0] ?? null),
       };
     }),
   }),
@@ -2464,6 +2446,23 @@ ${exerciseSummary.slice(0, 80).join("\n")}
         return { success: true };
       }),
 
+    saveSession: protectedProcedure
+      .input(z.object({
+        name: z.string().trim().min(1).max(200),
+        workoutDate: z.date().optional(),
+        durationMinutes: z.number().min(0).max(24 * 60),
+        notes: z.string().max(500).optional(),
+        logs: z.array(workoutLogInputSchema).min(1).max(500),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const sessionId = await createWorkoutSession(ctx.user.id, {
+          name: input.name,
+          workoutDate: input.workoutDate,
+        });
+        await updateWorkoutSession(sessionId, input);
+        return { success: true, sessionId };
+      }),
+
     deleteLog: protectedProcedure
       .input(z.object({ logId: z.number() }))
       .mutation(async ({ input }) => {
@@ -2513,13 +2512,12 @@ ${exerciseSummary.slice(0, 80).join("\n")}
           daysPerWeek: 1,
         });
 
-        let order = 1;
-        for (const [exerciseId, sets] of grouped.entries()) {
+        await Promise.all(Array.from(grouped.entries()).map(async ([exerciseId, sets], index) => {
           const sortedSets = sets.sort((a, b) => (a.setNumber ?? 0) - (b.setNumber ?? 0));
           await addExerciseToRoutine(
             routineId,
             exerciseId,
-            order,
+            index + 1,
             sortedSets.length,
             sortedSets[0]?.reps ?? 10,
             90,
@@ -2529,8 +2527,7 @@ ${exerciseSummary.slice(0, 80).join("\n")}
               reps: set.reps ?? undefined,
             })),
           );
-          order += 1;
-        }
+        }));
 
         return { success: true, routineId };
       }),

@@ -748,14 +748,16 @@ export default function WorkoutSession() {
       deleteSession.mutate({ sessionId: sid });
       return;
     }
+    const completePromise = completeSession.mutateAsync({ sessionId: sid, durationMinutes, notes });
     if (saveAsRoutine) {
-      await saveSessionAsRoutine.mutateAsync({
+      await Promise.all([completePromise, saveSessionAsRoutine.mutateAsync({
         sessionId: sid,
         name: newRoutineName.trim() || `${new Date().toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" })} 진행 루틴`,
         description: `${completedSets}세트 · ${Math.round(totalVolume).toLocaleString()}kg · 예상 ${estimateWorkoutCalories(durationMinutes, completedSets, bodyWeightKg)}kcal`,
-      });
+      })]);
+      return;
     }
-    completeSession.mutate({ sessionId: sid, durationMinutes, notes });
+    await completePromise;
   };
 
   const handlePRClose = () => {
