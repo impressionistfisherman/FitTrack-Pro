@@ -656,16 +656,13 @@ export default function FreeWorkoutDialog({
   }, 0);
   const selectedWorkoutDate = parseDateInputValue(workoutDate);
   const canSave = selected.some(hasExerciseInput);
-  const renderExerciseSearchPanel = (variant: "sidebar" | "dock") => (
+  const renderExerciseSearchPanel = () => (
     <div
       ref={(node) => {
-        exerciseSearchRefs.current[variant === "sidebar" ? 0 : 1] = node;
+        exerciseSearchRefs.current[0] = node;
       }}
       onBlur={(event) => closeExerciseSearchIfLeaving(event.relatedTarget)}
-      className={cn(
-        "min-w-0 space-y-1.5",
-        variant === "dock" && "rounded-none bg-card"
-      )}
+      className="min-w-0 space-y-1.5"
     >
       <Label className="text-xs text-muted-foreground">운동 검색</Label>
       <div className="relative">
@@ -683,10 +680,7 @@ export default function FreeWorkoutDialog({
       </div>
 
       {shouldShowExerciseList && (
-        <ScrollArea className={cn(
-          "rounded-xl border border-border bg-background/95 shadow-lg",
-          variant === "dock" ? "h-48" : "h-56 lg:h-[224px]"
-        )}>
+        <ScrollArea className="h-48 rounded-xl border border-border bg-background/95 shadow-lg sm:h-56">
           <div className="p-2 space-y-1">
             {exercisesLoading ? (
               Array.from({ length: 5 }).map((_, index) => (
@@ -728,22 +722,48 @@ export default function FreeWorkoutDialog({
       )}
     </div>
   );
+  const renderExerciseFeedback = () => {
+    if (!exerciseSelectionFeedback.isPending && !exerciseFeedback) return null;
+
+    return (
+      <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+        <div className="mb-2 flex items-center justify-between gap-2 text-xs font-semibold text-primary">
+          <span className="flex items-center gap-2">
+            <Sparkles size={14} />
+            AI 운동 추가 피드백
+          </span>
+          {exerciseSelectionFeedback.isPending && (
+            <span className="flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] text-primary">
+              <Loader2 size={10} className="animate-spin" />
+              AI 분석 중
+            </span>
+          )}
+        </div>
+        {exerciseFeedback ? (
+          <div className="space-y-2 text-xs leading-relaxed text-muted-foreground">
+            <p className="font-semibold text-foreground">{exerciseFeedback.title}</p>
+            <p>{exerciseFeedback.fit}</p>
+            <p><span className="font-semibold text-foreground">순서:</span> {exerciseFeedback.orderTip}</p>
+            <p><span className="font-semibold text-foreground">볼륨:</span> {exerciseFeedback.volumeTip}</p>
+            <p><span className="font-semibold text-foreground">주의:</span> {exerciseFeedback.caution}</p>
+          </div>
+        ) : (
+          <div className="text-xs text-muted-foreground">운동 구성 피드백을 준비하고 있습니다.</div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn(
-        "flex max-h-[90dvh] min-h-0 w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-hidden border-border bg-card p-0 text-foreground",
-        selected.length > 0 ? "sm:max-w-[min(100vw-2rem,54rem)]" : "sm:max-w-[26rem]"
-      )}>
+      <DialogContent className="flex max-h-[92dvh] min-h-0 w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-hidden border-border bg-card p-0 text-foreground sm:max-w-[min(100vw-2rem,68rem)]">
         <DialogHeader className="shrink-0 border-b border-border px-5 py-4">
           <DialogTitle className="text-foreground">{editSession ? "운동 기록 수정" : "운동 기록 추가"}</DialogTitle>
         </DialogHeader>
 
-        <div className={cn(
-          "grid min-h-0 flex-1 gap-4 overflow-y-auto px-5 py-4",
-          selected.length > 0 && "lg:grid-cols-[300px_minmax(0,1fr)] lg:items-stretch"
-        )}>
-          <div className="order-1 min-w-0 space-y-3 lg:order-1">
+        <div className="min-h-0 flex-1 overflow-y-auto lg:overflow-hidden">
+          <div className="grid gap-4 px-4 py-4 sm:px-5 lg:h-full lg:grid-cols-[minmax(280px,0.72fr)_minmax(0,1.45fr)] lg:items-stretch">
+          <div className="min-w-0 space-y-3 lg:overflow-y-auto lg:pr-1">
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">운동 기록 이름</Label>
               <Input
@@ -847,46 +867,19 @@ export default function FreeWorkoutDialog({
                 />
               </div>
             </label>
+
+            <div className="hidden lg:block">
+              {renderExerciseFeedback()}
+            </div>
           </div>
 
-          <div className="order-3 hidden min-w-0 lg:order-2 lg:block">
-            {renderExerciseSearchPanel("sidebar")}
+          <div className="min-w-0 space-y-3 lg:flex lg:min-h-0 lg:flex-col">
+          <div className="shrink-0">
+            {renderExerciseSearchPanel()}
           </div>
-
-          <div className={cn(
-            "order-2 min-w-0 lg:order-3",
-            selected.length > 0 && "lg:row-span-2"
-          )}>
           {selected.length > 0 ? (
-            <div className="min-h-0 min-w-0 rounded-xl border border-border bg-accent/10 p-3 lg:min-h-[360px] lg:max-h-[calc(90dvh-11rem)] lg:overflow-y-auto">
+            <div className="min-h-0 min-w-0 rounded-xl border border-border bg-accent/10 p-3 lg:flex-1 lg:overflow-y-auto">
               <div className="space-y-3">
-                {(exerciseSelectionFeedback.isPending || exerciseFeedback) && (
-                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-                    <div className="mb-2 flex items-center justify-between gap-2 text-xs font-semibold text-primary">
-                      <span className="flex items-center gap-2">
-                        <Sparkles size={14} />
-                        AI 운동 추가 피드백
-                      </span>
-                      {exerciseSelectionFeedback.isPending && (
-                        <span className="flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] text-primary">
-                          <Loader2 size={10} className="animate-spin" />
-                          AI 분석 중
-                        </span>
-                      )}
-                    </div>
-                    {exerciseFeedback ? (
-                      <div className="space-y-2 text-xs leading-relaxed text-muted-foreground">
-                        <p className="font-semibold text-foreground">{exerciseFeedback.title}</p>
-                        <p>{exerciseFeedback.fit}</p>
-                        <p><span className="font-semibold text-foreground">순서:</span> {exerciseFeedback.orderTip}</p>
-                        <p><span className="font-semibold text-foreground">볼륨:</span> {exerciseFeedback.volumeTip}</p>
-                        <p><span className="font-semibold text-foreground">주의:</span> {exerciseFeedback.caution}</p>
-                      </div>
-                    ) : exerciseSelectionFeedback.isPending ? (
-                      <div className="text-xs text-muted-foreground">운동 구성 피드백을 준비하고 있습니다.</div>
-                    ) : null}
-                  </div>
-                )}
                 {selected.map((item) => (
                   <div key={item.exercise.id} className="min-w-0 rounded-lg border border-border bg-card/70 p-3">
                     <div className="mb-3 flex items-start gap-2">
@@ -902,7 +895,7 @@ export default function FreeWorkoutDialog({
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
+                          className="h-11 w-11 shrink-0 text-muted-foreground hover:text-foreground sm:h-8 sm:w-8"
                           onClick={() => startReplacingExercise(item.exercise)}
                           aria-label="운동 변경"
                         >
@@ -912,8 +905,9 @@ export default function FreeWorkoutDialog({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                        className="h-11 w-11 shrink-0 text-muted-foreground hover:text-destructive sm:h-8 sm:w-8"
                         onClick={() => removeExercise(item.exercise.id)}
+                        aria-label={`${item.exercise.nameKo} 삭제`}
                       >
                         <Trash2 size={14} />
                       </Button>
@@ -984,9 +978,10 @@ export default function FreeWorkoutDialog({
                               type="button"
                               variant="ghost"
                               size="icon"
-                              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                              className="h-11 w-11 text-muted-foreground hover:text-foreground sm:h-8 sm:w-8"
                               onClick={() => removeSetFromExercise(item.exercise.id)}
                               disabled={item.sets.length <= 1}
+                              aria-label="세트 수 줄이기"
                             >
                               <Minus size={13} />
                             </Button>
@@ -1001,8 +996,9 @@ export default function FreeWorkoutDialog({
                               type="button"
                               variant="ghost"
                               size="icon"
-                              className="h-7 w-7 text-primary hover:bg-primary/10 hover:text-primary"
+                              className="h-11 w-11 text-primary hover:bg-primary/10 hover:text-primary sm:h-8 sm:w-8"
                               onClick={() => addSetToExercise(item.exercise.id)}
+                              aria-label="세트 수 늘리기"
                             >
                               <Plus size={13} />
                             </Button>
@@ -1093,12 +1089,18 @@ export default function FreeWorkoutDialog({
                 ))}
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div className="flex min-h-44 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-accent/10 px-5 text-center">
+              <Dumbbell size={24} className="mb-3 text-muted-foreground/70" />
+              <p className="text-sm font-medium text-foreground">추가한 운동이 없습니다</p>
+              <p className="mt-1 text-xs text-muted-foreground">위 검색창에서 운동을 찾아 추가해 주세요.</p>
+            </div>
+          )}
+          <div className="lg:hidden">
+            {renderExerciseFeedback()}
           </div>
-        </div>
-
-        <div className="shrink-0 border-t border-border bg-card px-5 py-3 lg:hidden">
-          {renderExerciseSearchPanel("dock")}
+          </div>
+          </div>
         </div>
 
         <div className="grid shrink-0 gap-3 border-t border-border bg-card/95 px-5 py-4 backdrop-blur sm:flex sm:items-center sm:justify-between">
@@ -1123,10 +1125,10 @@ export default function FreeWorkoutDialog({
             </div>
           ) : <div />}
           <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving || isParsingCapture} className="h-10 min-w-0">
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving || isParsingCapture} className="h-11 min-w-0 sm:h-10">
               취소
             </Button>
-            <Button onClick={handleComplete} disabled={isSaving || isParsingCapture || !canSave} className="h-10 min-w-0">
+            <Button onClick={handleComplete} disabled={isSaving || isParsingCapture || !canSave} className="h-11 min-w-0 sm:h-10">
               {isSaving ? "저장 중..." : editSession ? "수정 저장" : "운동 기록 저장"}
             </Button>
           </div>
