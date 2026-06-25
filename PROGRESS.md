@@ -26,7 +26,7 @@
 - TypeScript 검사, Unit 테스트, Production build 재검증 통과
 - 데스크톱 및 390×844 모바일 브라우저 QA 통과
 - 홈 → 최근 운동 상세 → 닫기 및 수정 전환 회귀 QA 통과
-- UX 개선과 기록 상세 수정 브랜치를 `master`에 반영하여 Render 자동 배포 진행
+- UX 개선과 기록 상세 수정 브랜치를 `master`에 반영하고 GitHub Pages 자동 배포 완료
 - 기존 사용자 변경 `SESSION_HANDOFF.md`, `local-db/fittrack_local.sqlite*` 유지
 
 ## 변경 구조

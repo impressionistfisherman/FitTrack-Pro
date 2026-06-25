@@ -32,6 +32,8 @@
 | 자동 배포 규칙 변경 후 `pnpm run check` | 통과 | TypeScript 오류 없음 |
 | 자동 배포 규칙 변경 후 `pnpm run test` | 통과 | 6 files, 68 tests |
 | 자동 배포 규칙 변경 후 `pnpm run build` | 통과 | Production client/server build 완료 |
+| GitHub Pages 자동 배포 | 통과 | workflow `28138068232`, 공개 자산 갱신 확인 |
+| 원격 `master` 반영 | 통과 | `65b64a9` 기준 push 완료 |
 
 ## 미실행
 
