@@ -815,13 +815,6 @@ export default function History() {
         </div>
       </div>
 
-      <nav className="content-section-nav" aria-label="운동 기록 빠른 이동">
-        <a href="#history-calendar">달력</a>
-        <a href="#history-progress">수행 추이</a>
-        <a href="#history-weight">체중</a>
-        <a href="#history-log">운동 로그</a>
-      </nav>
-
       <div className="figma-section-heading">
         <div>
           <span>상세 분석</span>

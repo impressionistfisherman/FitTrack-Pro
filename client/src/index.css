@@ -1247,8 +1247,7 @@
   font-size: 0.75rem;
 }
 
-.profile-section-nav,
-.content-section-nav {
+.profile-section-nav {
   position: sticky;
   top: 10px;
   z-index: 12;
@@ -1263,8 +1262,7 @@
   backdrop-filter: blur(16px);
 }
 
-.profile-section-nav a,
-.content-section-nav a {
+.profile-section-nav a {
   display: flex;
   min-height: 38px;
   align-items: center;
@@ -1276,8 +1274,7 @@
   text-align: center;
 }
 
-.profile-section-nav a:hover,
-.content-section-nav a:hover {
+.profile-section-nav a:hover {
   background: hsl(var(--accent));
   color: hsl(var(--foreground));
 }
@@ -1407,11 +1404,6 @@
     grid-template-columns: repeat(4, minmax(7rem, 1fr));
   }
 
-  .content-section-nav {
-    top: 62px;
-    overflow-x: auto;
-    grid-template-columns: repeat(4, minmax(7rem, 1fr));
-  }
 }
 
 @media (min-width: 768px) {
