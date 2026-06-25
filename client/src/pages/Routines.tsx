@@ -328,32 +328,12 @@ export default function Routines() {
 
   return (
     <div className="page-shell figma-page animate-fade-in">
-      <div className="figma-centered-header">
-        <h1 className="page-title">목표</h1>
-        <p className="page-description">운동 계획과 운동 라이브러리</p>
-      </div>
-
-      <nav className="figma-segmented" aria-label="목표 화면">
-        <Link href="/routines" className="is-active">플랜</Link>
-        <Link href="/exercises">운동</Link>
-      </nav>
-
-      <section className="figma-overall-progress" aria-label="전체 진행률">
-        <div className="flex items-end justify-between">
-          <div>
-            <span>전체 진행률</span>
-            <strong>{routines?.length ?? 0}개 플랜</strong>
-          </div>
-          <b>{routines?.length ? Math.min(100, routines.length * 12) : 0}%</b>
+      <div className="page-content-header">
+        <div>
+          <h1 className="page-title">내 루틴</h1>
+          <p className="page-description">목표별 운동 계획을 만들고 바로 실행하세요</p>
         </div>
-        <div className="figma-card-progress">
-          <span style={{ width: `${routines?.length ? Math.min(100, routines.length * 12) : 0}%` }} />
-        </div>
-      </section>
-
-      <div className="mb-4 flex flex-col gap-2">
-        <CreateRoutineDialog onCreated={() => utils.routines.list.invalidate()} />
-        <div className="flex flex-wrap gap-2">
+        <div className="page-header-actions">
           {routines && routines.length > 0 && (
             <Button
               variant={selectionMode ? "secondary" : "outline"}
@@ -363,8 +343,29 @@ export default function Routines() {
               {selectionMode ? "관리 완료" : "선택 관리"}
             </Button>
           )}
+          <CreateRoutineDialog onCreated={() => utils.routines.list.invalidate()} />
         </div>
       </div>
+
+      <section className="routine-overview" aria-label="루틴 요약">
+        <div>
+          <span>저장한 루틴</span>
+          <strong>{routines?.length ?? 0}<small>개</small></strong>
+        </div>
+        <div>
+          <span>평균 주간 계획</span>
+          <strong>
+            {routines?.length
+              ? Math.round(routines.reduce((sum: number, routine: any) => sum + Number(routine.daysPerWeek || 0), 0) / routines.length)
+              : 0}
+            <small>일</small>
+          </strong>
+        </div>
+        <div>
+          <span>운동 목표</span>
+          <strong>{new Set((routines ?? []).map((routine: any) => routine.goal)).size}<small>개</small></strong>
+        </div>
+      </section>
 
       {isLoading ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">

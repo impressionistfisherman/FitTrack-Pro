@@ -93,15 +93,15 @@ export default function Feedback() {
   }
 
   return (
-    <div className="page-shell page-shell-narrow animate-fade-in">
-      <div className="page-header">
+    <div className="page-shell page-shell-wide content-page animate-fade-in">
+      <div className="page-content-header">
         <div>
           <h1 className="page-title">의견 보내기</h1>
           <p className="page-description">불편한 점, 오류, 원하는 기능을 남겨주세요</p>
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <section className="rounded-xl border border-border bg-card">
           <div className="space-y-4 p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

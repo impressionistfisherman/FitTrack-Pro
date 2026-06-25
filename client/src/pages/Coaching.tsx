@@ -250,7 +250,7 @@ export default function Coaching() {
   ].sort((a, b) => new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime()).slice(0, 12);
 
   return (
-    <div className="page-shell page-shell-wide animate-fade-in">
+    <div className="page-shell page-shell-wide content-page animate-fade-in">
       <PtSessionDetailDialog
         session={selectedPtSession}
         open={Boolean(selectedPtSession)}
@@ -258,7 +258,7 @@ export default function Coaching() {
           if (!nextOpen) setSelectedPtSession(null);
         }}
       />
-      <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="page-content-header">
         <div>
           <h1 className="page-title">코칭 공간</h1>
           <p className="page-description">회원과 트레이너가 공유하는 피드백, PT 기록, 연결 상태를 확인하세요</p>

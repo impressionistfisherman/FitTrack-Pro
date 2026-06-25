@@ -387,7 +387,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="page-shell page-shell-narrow figma-page animate-fade-in">
+    <div className="page-shell page-shell-wide figma-page content-page animate-fade-in">
       <div className="figma-centered-header">
         <h1 className="page-title">프로필</h1>
         <p className="page-description">내 정보와 운동 설정</p>
@@ -406,7 +406,14 @@ export default function Profile() {
         currentGoal={currentGoalConfig}
       />
 
-      <Card className="bg-card border-border mb-6">
+      <nav className="profile-section-nav" aria-label="프로필 빠른 이동">
+        <a href="#profile-coaching">연결</a>
+        <a href="#profile-stats">운동 요약</a>
+        <a href="#profile-weight">체중</a>
+        <a href="#profile-goals">목표·신체 정보</a>
+      </nav>
+
+      <Card id="profile-coaching" className="scroll-mt-24 bg-card border-border mb-6">
         <CardContent className="p-5">
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
@@ -765,7 +772,7 @@ export default function Profile() {
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div id="profile-stats" className="scroll-mt-24 grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {[
             { icon: Trophy, label: "총 운동", value: `${stats.totalSessions}회`, color: "text-primary bg-primary/10" },
             { icon: Flame, label: "이번 주", value: `${stats.recentSessionCount}회`, color: "text-orange-400 bg-orange-400/10" },
@@ -786,7 +793,9 @@ export default function Profile() {
       )}
 
       {/* ── 체중 기록 (BodyWeightTracker) ── */}
-      <BodyWeightTracker />
+      <div id="profile-weight" className="scroll-mt-24">
+        <BodyWeightTracker />
+      </div>
 
       {/* ── 신체 정보 대시보드 ── */}
       {(() => {
@@ -1058,7 +1067,7 @@ export default function Profile() {
       })()}
 
       {/* Goal Setting */}
-      <Card className="bg-card border-border mb-4">
+      <Card id="profile-goals" className="scroll-mt-24 bg-card border-border mb-4">
         <CardContent className="p-5">
           <div className="flex items-center gap-2 mb-4">
             <Settings size={16} className="text-primary" />

@@ -292,7 +292,7 @@ export default function BodyWeightTracker() {
   const maxWeight = weights?.length ? Math.max(...weights.map(w => w.weightKg)) : 0;
 
   return (
-    <Card className="bg-card border-border">
+    <Card className="body-weight-panel bg-card border-border">
       <CardContent className="p-5">
         {/* 헤더 */}
         <div className="mb-4 flex items-center justify-between gap-3">
@@ -311,7 +311,7 @@ export default function BodyWeightTracker() {
         {weights && weights.length > 0 ? (
           <>
             {/* 현재 체중 */}
-            <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl bg-accent/40 p-3">
+            <div className="body-weight-summary mb-5">
               <div>
                 <div className="text-2xl font-bold text-foreground">{latest?.weightKg}kg</div>
                 <div className="text-xs text-muted-foreground">
@@ -339,7 +339,7 @@ export default function BodyWeightTracker() {
             {/* 차트 */}
             {chartData.length > 1 && (
               <div className="mb-4">
-                <ResponsiveContainer width="100%" height={140}>
+                <ResponsiveContainer width="100%" height={220}>
                   <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
@@ -358,7 +358,7 @@ export default function BodyWeightTracker() {
             )}
 
             {/* 최근 기록 목록 */}
-            <div className="space-y-2">
+            <div className="body-weight-list">
               {weights.slice(0, 5).map((w) => (
                 <div key={w.id} className="flex items-center justify-between p-2.5 bg-accent/30 rounded-lg group">
                   <div>
