@@ -795,19 +795,28 @@ export default function Home() {
             <p className="text-xs text-muted-foreground">{greeting()},</p>
             <h1 className="text-2xl font-bold text-foreground">{displayName} 님</h1>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
             {appRole === "trainer" && (
-              <Button asChild variant="outline" size="icon" className="border-border">
-                <Link href="/trainer" aria-label="회원 관리"><Activity size={16} /></Link>
+              <Button asChild variant="outline" className="h-10 gap-1.5 border-border px-3">
+                <Link href="/trainer">
+                  <Activity size={15} />
+                  <span>트레이너</span>
+                </Link>
               </Button>
             )}
             {isAdmin && (
-              <Button asChild variant="outline" size="icon" className="border-border">
-                <Link href="/admin" aria-label="관리자"><BarChart3 size={16} /></Link>
+              <Button asChild variant="outline" className="h-10 gap-1.5 border-border px-3">
+                <Link href="/admin">
+                  <BarChart3 size={15} />
+                  <span>관리자</span>
+                </Link>
               </Button>
             )}
-            <Button asChild variant="outline" size="icon" className="border-primary/30 bg-primary/10 text-primary">
-              <Link href="/ai-coach" aria-label="AI 코치"><Zap size={16} /></Link>
+            <Button asChild variant="outline" className="h-10 gap-1.5 border-primary/30 bg-primary/10 px-3 text-primary">
+              <Link href="/ai-coach">
+                <Zap size={15} />
+                <span>AI 코치</span>
+              </Link>
             </Button>
           </div>
         </div>
