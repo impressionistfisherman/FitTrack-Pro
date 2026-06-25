@@ -775,6 +775,8 @@ export default function Home() {
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
   const activeGoals = homeSummary?.goals?.length ? homeSummary.goals : homeSummary?.goal ? [homeSummary.goal] : [];
   const profileLoading = homeSummaryLoading;
+  const appRole = (user as any)?.appRole ?? "user";
+  const isAdmin = user?.role === "admin";
   const experienceLabel = homeSummary?.preferences?.experienceLevel === "advanced"
     ? "헬창"
     : homeSummary?.preferences?.experienceLevel === "intermediate"
@@ -788,9 +790,35 @@ export default function Home() {
   return (
     <div className="page-shell page-shell-wide figma-page space-y-4 animate-fade-in">
       <section className="figma-home-intro">
-        <div>
-          <p className="text-xs text-muted-foreground">{greeting()},</p>
-          <h1 className="text-2xl font-bold text-foreground">{displayName} 님</h1>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs text-muted-foreground">{greeting()},</p>
+            <h1 className="text-2xl font-bold text-foreground">{displayName} 님</h1>
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
+            {appRole === "trainer" && (
+              <Button asChild variant="outline" className="h-10 gap-1.5 border-border px-3">
+                <Link href="/trainer">
+                  <Activity size={15} />
+                  <span>트레이너</span>
+                </Link>
+              </Button>
+            )}
+            {isAdmin && (
+              <Button asChild variant="outline" className="h-10 gap-1.5 border-border px-3">
+                <Link href="/admin">
+                  <BarChart3 size={15} />
+                  <span>관리자</span>
+                </Link>
+              </Button>
+            )}
+            <Button asChild variant="outline" className="h-10 gap-1.5 border-primary/30 bg-primary/10 px-3 text-primary">
+              <Link href="/ai-coach">
+                <Zap size={15} />
+                <span>AI 코치</span>
+              </Link>
+            </Button>
+          </div>
         </div>
         <div className="mt-3 flex flex-wrap gap-1.5">
             {profileLoading ? (

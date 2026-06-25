@@ -329,9 +329,14 @@ export default function Routines() {
   return (
     <div className="page-shell figma-page animate-fade-in">
       <div className="figma-centered-header">
-        <h1 className="page-title">내 루틴</h1>
-        <p className="page-description">목표별 운동 계획을 만들고 실행하세요</p>
+        <h1 className="page-title">목표</h1>
+        <p className="page-description">운동 계획과 운동 라이브러리</p>
       </div>
+
+      <nav className="figma-segmented" aria-label="목표 화면">
+        <Link href="/routines" className="is-active">플랜</Link>
+        <Link href="/exercises">운동</Link>
+      </nav>
 
       <section className="figma-overall-progress" aria-label="전체 진행률">
         <div className="flex items-end justify-between">

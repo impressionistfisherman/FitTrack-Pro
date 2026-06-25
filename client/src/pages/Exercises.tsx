@@ -280,9 +280,14 @@ export default function Exercises() {
   return (
     <div className="page-shell figma-page animate-fade-in overflow-x-hidden">
       <header className="figma-centered-header">
-        <h1 className="page-title">운동 탐색</h1>
-        <p className="page-description">부위와 기구에 맞는 운동을 찾으세요</p>
+        <h1 className="page-title">목표</h1>
+        <p className="page-description">운동 계획과 운동 라이브러리</p>
       </header>
+
+      <nav className="figma-segmented" aria-label="목표 화면">
+        <Link href="/routines">플랜</Link>
+        <Link href="/exercises" className="is-active">운동</Link>
+      </nav>
 
       <div className="mb-3 flex justify-end">
         {isAuthenticated && (
