@@ -765,17 +765,18 @@ export default function WorkoutSession() {
   };
 
   return (
-    <div className="page-shell page-shell-narrow pb-24 animate-fade-in sm:pb-0">
+    <div className="page-shell page-shell-narrow figma-page pb-24 animate-fade-in sm:pb-0">
       {/* 헤더 */}
-      <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+      <div className="figma-workout-header">
+        <div className="text-center">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Workout</span>
           <h1 className="text-xl font-bold text-foreground">{session?.name || "운동 세션"}</h1>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="mt-1 flex items-center justify-center gap-2">
             <Clock size={12} className="text-muted-foreground" />
             <TimerDisplay startTime={startTime.current} />
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center">
+        <div className="mt-3 grid grid-cols-3 gap-2 sm:flex sm:items-center sm:justify-center">
           {wakeLockSupported && (
             <button onClick={toggleWakeLock}
               title={wakeLockActive ? "화면 꺼짐 방지 해제" : "화면 꺼짐 방지 켜기"}
@@ -818,8 +819,15 @@ export default function WorkoutSession() {
       )}
 
       {/* 진행 요약 */}
-      <Card className="bg-card border-border mb-4">
-        <CardContent className="p-4">
+      <Card className="figma-workout-summary mb-4">
+        <CardContent className="p-5">
+          <div className="mb-5 text-center">
+            <span className="text-xs text-muted-foreground">완료한 운동</span>
+            <div className="mt-1 text-4xl font-black tracking-tight text-foreground">
+              {completedSets}<span className="text-lg font-semibold text-muted-foreground"> / {totalSets}</span>
+            </div>
+            <span className="text-xs font-semibold uppercase tracking-widest text-primary">sets completed</span>
+          </div>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-xl font-bold text-primary">{completedStrengthSets}</div>
@@ -835,7 +843,7 @@ export default function WorkoutSession() {
             </div>
           </div>
           {totalSets > 0 && (
-            <div className="mt-3 h-1.5 bg-accent rounded-full overflow-hidden">
+            <div className="mt-5 h-1.5 bg-accent rounded-full overflow-hidden">
               <div className="h-full bg-primary rounded-full transition-all duration-500"
                 style={{ width: `${(completedSets / totalSets) * 100}%` }} />
             </div>
@@ -889,6 +897,11 @@ export default function WorkoutSession() {
           </CardContent>
         </Card>
       )}
+
+      <div className="figma-section-heading">
+        <div><span>운동 목록</span><h2>현재 세션</h2></div>
+        <b className="text-sm text-primary">{exercises.length}개</b>
+      </div>
 
       {/* 운동 블록 */}
       <div className="space-y-3 mb-4">

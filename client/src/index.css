@@ -1144,6 +1144,21 @@
     linear-gradient(120deg, #292e33, #151719);
 }
 
+.figma-workout-header {
+  margin-bottom: 18px;
+  padding-top: 2px;
+}
+
+.figma-workout-summary {
+  overflow: hidden;
+  border: 1px solid rgb(80 89 98 / 82%);
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 50% -15%, rgb(240 101 0 / 38%), transparent 46%),
+    linear-gradient(150deg, var(--fitness-surface-start), var(--fitness-surface-end));
+  box-shadow: 0 18px 42px rgb(0 0 0 / 22%);
+}
+
 @media (max-width: 767px) {
   .figma-page {
     padding-inline: 16px;
