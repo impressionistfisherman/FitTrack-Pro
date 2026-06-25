@@ -864,31 +864,47 @@ export default function Home() {
               <StatCard icon={Calendar} label="운동 시간" value={`${Math.round(homeSummary.stats.totalDurationMinutes / 60)}h`} color="bg-purple-400/10 text-purple-400" />
             </div>
           )}
-          <ProgressReportCard monthlyStats={homeSummary?.monthlyStats} weeklyStats={homeSummary?.weeklyStats} isLoading={homeSummaryLoading} />
-          <MonthlyStatsCard stats={homeSummary?.monthlyStats} isLoading={homeSummaryLoading} />
-          <WorkoutQualityCard sessions={homeSummary?.recentWorkouts} isLoading={homeSummaryLoading} />
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
             <StreakCard streak={homeSummary?.streak} isLoading={homeSummaryLoading} />
             <BodyWeightSummaryCard weights={homeSummary?.bodyWeights} goal={homeSummary?.goal} isLoading={homeSummaryLoading} />
           </div>
-          <BodyPartBalanceCard sessions={homeSummary?.recentWorkouts} isLoading={homeSummaryLoading} />
-          <FeatureCards />
-          <Link href="/ai-coach">
-            <Card className="bg-gradient-to-br from-primary/10 to-blue-500/10 border-primary/20 cursor-pointer hover:border-primary/40 transition-all duration-200">
-              <CardContent className="p-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                    <Bot size={18} className="text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-foreground">AI 코치에게 물어보세요</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">운동 분석 · 무게 추천 · 맞춤 프로그램</div>
-                  </div>
-                  <ArrowRight size={18} className="text-primary flex-shrink-0" />
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+          <details className="content-disclosure">
+            <summary>
+              <span>상세 분석 보기</span>
+              <small>월간 통계 · 운동 품질 · 부위 균형</small>
+            </summary>
+            <div className="space-y-3 pt-3">
+              <ProgressReportCard monthlyStats={homeSummary?.monthlyStats} weeklyStats={homeSummary?.weeklyStats} isLoading={homeSummaryLoading} />
+              <MonthlyStatsCard stats={homeSummary?.monthlyStats} isLoading={homeSummaryLoading} />
+              <WorkoutQualityCard sessions={homeSummary?.recentWorkouts} isLoading={homeSummaryLoading} />
+              <BodyPartBalanceCard sessions={homeSummary?.recentWorkouts} isLoading={homeSummaryLoading} />
+            </div>
+          </details>
+          <details className="content-disclosure">
+            <summary>
+              <span>추가 기능</span>
+              <small>AI 코치와 운동 도구</small>
+            </summary>
+            <div className="space-y-3 pt-3">
+              <FeatureCards />
+              <Link href="/ai-coach">
+                <Card className="bg-gradient-to-br from-primary/10 to-card border-primary/20 cursor-pointer hover:border-primary/40 transition-all duration-200">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
+                        <Bot size={18} className="text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-foreground">AI 코치에게 물어보세요</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">운동 분석 · 무게 추천 · 맞춤 프로그램</div>
+                      </div>
+                      <ArrowRight size={18} className="text-primary flex-shrink-0" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+          </details>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 ## 날짜/시간
 
-2026-06-25 14:53:50 +09:00
+2026-06-25 15:04:11 +09:00
 
 ## 작업 요약
 
@@ -17,6 +17,11 @@
 - 코칭과 프로필의 데스크톱 콘텐츠 폭·헤더 계층 개선
 - 프로필에 연결·운동 요약·체중·목표 설정 빠른 이동 추가
 - 기존 기능, 메뉴, 라우팅, 저장 처리 유지
+- 공통 기본 버튼의 고정 오렌지 그라데이션 제거
+- 버튼·선택 메뉴·진행률·주요 CTA·카드 광원을 현재 테마 `--primary` 색상에 연동
+- 홈 상세 통계와 추가 기능을 접이식 블록으로 분리해 초기 정보량 축소
+- 코칭 타임라인·과제·피드백·PT 기록을 데스크톱 2열 블록으로 재배치
+- 기록 화면에 최근 운동·달력·수행 추이·체중 빠른 이동 추가
 
 ## 현재 상태
 
@@ -27,6 +32,8 @@
 ## 변경 파일
 
 - `client/src/components/BodyWeightTracker.tsx`
+- `client/src/components/AppLayout.tsx`
+- `client/src/components/ui/button.tsx`
 - `client/src/index.css`
 - `client/src/pages/AICoach.tsx`
 - `client/src/pages/BodyWeight.tsx`

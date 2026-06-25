@@ -347,7 +347,7 @@ function NavItem({
         className={cn(
           "flex min-h-11 items-center gap-3 rounded-xl px-4 py-3 cursor-pointer transition-all duration-200",
           isActive
-            ? "border border-primary/25 bg-[radial-gradient(circle_at_20%_0%,rgba(255,160,92,0.18),transparent_65%),linear-gradient(145deg,rgba(50,56,62,0.95),rgba(23,25,28,0.95))] text-primary shadow-[0_12px_28px_rgba(0,0,0,0.22)]"
+            ? "border border-primary/35 bg-primary/10 text-primary shadow-[0_12px_28px_rgba(0,0,0,0.22)]"
             : "border border-transparent text-muted-foreground hover:border-white/5 hover:bg-white/[0.035] hover:text-foreground"
         )}
       >

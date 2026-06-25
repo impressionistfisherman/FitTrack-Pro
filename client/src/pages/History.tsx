@@ -815,7 +815,14 @@ export default function History() {
         </div>
       </div>
 
-      <section className="mb-5" aria-labelledby="history-recent-title">
+      <nav className="content-section-nav" aria-label="운동 기록 빠른 이동">
+        <a href="#history-recent">최근 운동</a>
+        <a href="#history-calendar">달력</a>
+        <a href="#history-progress">수행 추이</a>
+        <a href="#history-weight">체중</a>
+      </nav>
+
+      <section id="history-recent" className="scroll-mt-24 mb-5" aria-labelledby="history-recent-title">
         <div className="figma-section-heading">
           <div>
             <span>운동 로그</span>
@@ -846,7 +853,7 @@ export default function History() {
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Calendar */}
         <div className="space-y-4">
-          <Card className="bg-card border-border">
+          <Card id="history-calendar" className="scroll-mt-24 bg-card border-border">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-4">
                 <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground">
@@ -928,7 +935,7 @@ export default function History() {
         {/* Right Column */}
         <div className="space-y-4">
           {/* Exercise Progress Chart */}
-          <Card className="bg-card border-border">
+          <Card id="history-progress" className="scroll-mt-24 bg-card border-border">
             <CardContent className="p-4 sm:p-5">
               <div className="flex items-center gap-2 mb-3">
                 <Activity size={16} className="text-primary" />
@@ -1020,7 +1027,9 @@ export default function History() {
           </Card>
 
           {/* Body Weight Tracker */}
-          <BodyWeightTracker />
+          <div id="history-weight" className="scroll-mt-24">
+            <BodyWeightTracker />
+          </div>
 
         </div>
       </div>
