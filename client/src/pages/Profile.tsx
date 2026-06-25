@@ -387,10 +387,10 @@ export default function Profile() {
   };
 
   return (
-    <div className="page-shell page-shell-narrow animate-fade-in">
-      <div className="page-header">
+    <div className="page-shell page-shell-narrow figma-page animate-fade-in">
+      <div className="figma-centered-header">
         <h1 className="page-title">프로필</h1>
-        <p className="page-description">목표, 숙련도, 신체 정보를 관리하세요</p>
+        <p className="page-description">내 정보와 운동 설정</p>
       </div>
 
       <ProfileSummaryCard

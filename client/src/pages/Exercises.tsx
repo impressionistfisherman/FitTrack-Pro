@@ -278,12 +278,18 @@ export default function Exercises() {
   };
 
   return (
-    <div className="page-shell page-shell-wide animate-fade-in overflow-x-hidden">
-      <header className="page-header flex items-start justify-between gap-3">
-        <div>
-          <h1 className="page-title">운동 탐색</h1>
-          <p className="page-description">구기종목 포함 · 부위별 · 기구별 분류</p>
-        </div>
+    <div className="page-shell figma-page animate-fade-in overflow-x-hidden">
+      <header className="figma-centered-header">
+        <h1 className="page-title">목표</h1>
+        <p className="page-description">운동 계획과 운동 라이브러리</p>
+      </header>
+
+      <nav className="figma-segmented" aria-label="목표 화면">
+        <Link href="/routines">플랜</Link>
+        <Link href="/exercises" className="is-active">운동</Link>
+      </nav>
+
+      <div className="mb-3 flex justify-end">
         {isAuthenticated && (
           <button
             type="button"
@@ -295,7 +301,7 @@ export default function Exercises() {
             즐겨찾기
           </button>
         )}
-      </header>
+      </div>
 
       <div className="flex w-full gap-2 mb-3">
         <label className="exercise-search">

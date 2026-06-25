@@ -777,7 +777,7 @@ export default function History() {
     : null;
 
   return (
-    <div className="page-shell animate-fade-in">
+    <div className="page-shell figma-page animate-fade-in">
       <FreeWorkoutDialog
         open={freeWorkoutOpen}
         onOpenChange={(nextOpen) => {
@@ -797,11 +797,11 @@ export default function History() {
         onEdit={openEditFromDetail}
       />
 
-      <div className="page-header">
+      <div className="figma-centered-header">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="page-title">운동 기록</h1>
-            <p className="page-description">달력과 차트로 운동 진행 상황을 확인하세요</p>
+            <p className="page-description">완료한 운동을 시간순으로 확인하세요</p>
           </div>
           <Button
             onClick={() => {
@@ -813,6 +813,34 @@ export default function History() {
             <Plus size={16} />
             운동 기록 추가
           </Button>
+        </div>
+      </div>
+
+      <section className="mb-5" aria-labelledby="history-recent-title">
+        <div className="figma-section-heading">
+          <div>
+            <span>운동 로그</span>
+            <h2 id="history-recent-title">최근 운동</h2>
+          </div>
+          <Badge variant="outline" className="border-border text-muted-foreground">
+            {recentWorkouts?.length ?? 0}개
+          </Badge>
+        </div>
+        <div className="space-y-3">
+          {recentWorkouts && recentWorkouts.length > 0 ? (
+            recentWorkouts.slice(0, 4).map((session: any) => (
+              <SessionCard key={`featured-${session.id}`} session={session} onDelete={handleDeleteSession} onEdit={openEditWorkout} onView={setViewingSession} />
+            ))
+          ) : (
+            <div className="empty-state-panel">아직 완료한 운동이 없습니다.</div>
+          )}
+        </div>
+      </section>
+
+      <div className="figma-section-heading">
+        <div>
+          <span>상세 분석</span>
+          <h2>달력과 지표</h2>
         </div>
       </div>
 

@@ -996,6 +996,169 @@
   transform: translateY(-1px);
 }
 
+/* Figma fitness kit: screen composition, not only theme tokens */
+.figma-page {
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+.page-shell-wide.figma-page {
+  max-width: 1120px;
+}
+
+.figma-centered-header {
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.figma-centered-header .page-title {
+  font-size: 1.5rem;
+  letter-spacing: -0.03em;
+}
+
+.figma-centered-header .page-description {
+  margin-top: 3px;
+}
+
+.figma-segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 16px;
+  padding: 4px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+  background: rgb(18 20 22 / 72%);
+}
+
+.figma-segmented a {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.figma-segmented a.is-active {
+  background: linear-gradient(135deg, var(--fitness-orange-start), var(--fitness-orange-end));
+  color: #fff;
+  box-shadow: 0 8px 24px rgb(240 101 0 / 22%);
+}
+
+.figma-overall-progress {
+  margin-bottom: 18px;
+}
+
+.figma-overall-progress span,
+.figma-section-heading span {
+  display: block;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.figma-overall-progress strong {
+  display: block;
+  margin-top: 2px;
+  color: hsl(var(--foreground));
+  font-size: 0.95rem;
+}
+
+.figma-overall-progress b {
+  color: hsl(var(--primary));
+  font-size: 1.45rem;
+}
+
+.figma-card-progress {
+  height: 5px;
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(80 89 98 / 55%);
+}
+
+.figma-card-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--fitness-orange-start), var(--fitness-orange-end));
+}
+
+.figma-section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.figma-section-heading h2 {
+  margin-top: 1px;
+  color: hsl(var(--foreground));
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.figma-plan-card {
+  min-height: 148px;
+  overflow: hidden;
+  border: 1px solid rgb(80 89 98 / 78%);
+  border-radius: 9px;
+  background:
+    radial-gradient(circle at 92% 0%, rgb(240 101 0 / 28%), transparent 42%),
+    linear-gradient(140deg, var(--fitness-surface-start), var(--fitness-surface-end));
+  box-shadow: 0 12px 30px rgb(0 0 0 / 16%);
+}
+
+.figma-card-metrics {
+  display: flex;
+  min-height: 26px;
+  align-items: center;
+  gap: 8px;
+}
+
+.figma-primary-action {
+  min-height: 48px;
+  background: linear-gradient(135deg, var(--fitness-orange-start), var(--fitness-orange-end));
+  box-shadow: 0 10px 26px rgb(240 101 0 / 20%);
+}
+
+.figma-home-intro {
+  padding-top: 4px;
+}
+
+.figma-profile-hero {
+  background: linear-gradient(145deg, var(--fitness-surface-start), var(--fitness-surface-end));
+}
+
+.figma-profile-cover {
+  height: 92px;
+  background:
+    radial-gradient(circle at 22% 30%, rgb(255 160 92 / 55%), transparent 30%),
+    radial-gradient(circle at 78% 20%, rgb(240 101 0 / 48%), transparent 34%),
+    linear-gradient(120deg, #292e33, #151719);
+}
+
+@media (max-width: 767px) {
+  .figma-page {
+    padding-inline: 16px;
+  }
+
+  .figma-page .page-header {
+    margin-bottom: 14px;
+  }
+
+  .figma-page .card,
+  .figma-page [class*="rounded-xl"] {
+    border-radius: 9px;
+  }
+}
+
 .app-main-inner > * {
   min-width: 0;
 }

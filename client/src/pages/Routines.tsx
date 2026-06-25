@@ -198,13 +198,13 @@ function RoutineCard({
   return (
     <Card
       className={cn(
-        "bg-card border-border transition-all duration-200 group",
+        "figma-plan-card group",
         selectionMode ? "cursor-pointer hover:border-primary/40" : "hover:border-primary/30",
         selected && "border-primary/60 bg-primary/5"
       )}
       onClick={selectionMode ? onToggleSelected : undefined}
     >
-      <CardContent className="p-5">
+      <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
           {selectionMode && (
             <button
@@ -238,7 +238,7 @@ function RoutineCard({
           )}
         </div>
 
-        <div className="flex items-center gap-2 mb-4">
+        <div className="figma-card-metrics">
           <Badge className={cn("text-xs border", goalConfig.color)}>
             <Target size={9} className="mr-1" />
             {goalConfig.label}
@@ -246,9 +246,14 @@ function RoutineCard({
           <Badge variant="outline" className="text-xs border-border text-muted-foreground">
             주 {routine.daysPerWeek}회
           </Badge>
+          <span className="ml-auto text-xs text-muted-foreground">맞춤 플랜</span>
         </div>
 
-        <div className="flex gap-2">
+        <div className="figma-card-progress" aria-hidden="true">
+          <span style={{ width: `${Math.min(100, Math.max(18, Number(routine.daysPerWeek || 3) * 14))}%` }} />
+        </div>
+
+        <div className="mt-3 flex gap-2">
           <Button
             size="sm"
             className="h-9 min-w-0 flex-1 gap-1.5 whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90 text-xs"
@@ -322,12 +327,32 @@ export default function Routines() {
   }
 
   return (
-    <div className="page-shell animate-fade-in">
-      <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="page-title">내 루틴</h1>
-          <p className="page-description">목표별 맞춤 운동 루틴을 관리하세요</p>
+    <div className="page-shell figma-page animate-fade-in">
+      <div className="figma-centered-header">
+        <h1 className="page-title">목표</h1>
+        <p className="page-description">운동 계획과 운동 라이브러리</p>
+      </div>
+
+      <nav className="figma-segmented" aria-label="목표 화면">
+        <Link href="/routines" className="is-active">플랜</Link>
+        <Link href="/exercises">운동</Link>
+      </nav>
+
+      <section className="figma-overall-progress" aria-label="전체 진행률">
+        <div className="flex items-end justify-between">
+          <div>
+            <span>전체 진행률</span>
+            <strong>{routines?.length ?? 0}개 플랜</strong>
+          </div>
+          <b>{routines?.length ? Math.min(100, routines.length * 12) : 0}%</b>
         </div>
+        <div className="figma-card-progress">
+          <span style={{ width: `${routines?.length ? Math.min(100, routines.length * 12) : 0}%` }} />
+        </div>
+      </section>
+
+      <div className="mb-4 flex flex-col gap-2">
+        <CreateRoutineDialog onCreated={() => utils.routines.list.invalidate()} />
         <div className="flex flex-wrap gap-2">
           {routines && routines.length > 0 && (
             <Button
@@ -338,7 +363,6 @@ export default function Routines() {
               {selectionMode ? "관리 완료" : "선택 관리"}
             </Button>
           )}
-          <CreateRoutineDialog onCreated={() => utils.routines.list.invalidate()} />
         </div>
       </div>
 
@@ -375,7 +399,7 @@ export default function Routines() {
               </div>
             </div>
           )}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid gap-3 sm:grid-cols-2">
             {routines.map((routine) => (
               <RoutineCard
                 key={routine.id}

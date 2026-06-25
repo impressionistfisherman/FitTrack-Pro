@@ -2,42 +2,43 @@
 
 ## 날짜/시간
 
-2026-06-25 13:44:00 +09:00
+2026-06-25 14:31:27 +09:00
 
 ## 작업 요약
 
-- 자유 운동 신규 저장을 `startSession → 세트별 addLog → completeSession` 흐름에서 단일 `saveSession` mutation으로 통합
-- 홈 사용자 설정 11개 개별 조회를 단일 `getUserPreferences` 조회로 통합
-- 인증 사용자 이름과 앱 역할 조회를 단일 설정 조회로 통합
-- 코칭 알림 집계 쿼리를 직렬 실행에서 병렬 실행으로 변경
-- 운동 로그 추가/삭제 시 세션 전체 로그 재조회 대신 볼륨 증분 갱신
-- 운동 기록 수정 시 로그 INSERT 병렬화 및 입력값에서 총 볼륨 즉시 계산
-- 운동 종료와 루틴 저장을 병렬 실행
-- 루틴 운동 INSERT 병렬화
-- 누적 로컬 DB에 영향을 받던 운동 기록 테스트를 고유 사용자로 격리
+- Figma Fitness UI Kit의 화면 계층을 기준으로 색상 변경 수준이 아닌 구조 재설계 수행
+- 홈을 진행률, 다음 운동, 주요 CTA, 최근 운동, 상세 지표 순서로 재배치
+- 루틴과 운동 탐색에 `플랜 / 운동` 분할 탭과 Figma형 카드·진행률 구조 적용
+- 운동 기록에서 최근 운동 카드 목록을 최상단으로 이동하고 달력·차트를 상세 분석 영역으로 분리
+- 프로필을 커버 이미지, 중앙 원형 아바타, 상태 배지 구조로 변경
+- 체중 화면 포함 주요 페이지의 중앙 헤더와 모바일 간격 통일
+- 기존 기능, API 호출, 라우팅, 저장 처리 유지
 
 ## 현재 상태
 
 - TypeScript 검사, 69개 Unit 테스트, Production build 통과
-- 기존 페이지와 API 입력 구조 유지
+- 390x844 모바일 운동 탐색 화면 브라우저 QA 통과
 - 기존 사용자 변경 `SESSION_HANDOFF.md`, `local-db/fittrack_local.sqlite*` 유지
 
 ## 변경 파일
 
-- `client/src/components/FreeWorkoutDialog.tsx`
-- `client/src/pages/WorkoutSession.tsx`
-- `server/db.ts`
-- `server/routers.ts`
-- `server/fittrack.test.ts`
+- `client/src/components/profile/ProfileSummaryCard.tsx`
+- `client/src/index.css`
+- `client/src/pages/BodyWeight.tsx`
+- `client/src/pages/Exercises.tsx`
+- `client/src/pages/History.tsx`
+- `client/src/pages/Home.tsx`
+- `client/src/pages/Profile.tsx`
+- `client/src/pages/Routines.tsx`
 - `PROGRESS.md`
 - `TEST_RESULT.md`
 
 ## 남은 문제
 
-- 운영 DB의 실제 p50/p95 응답시간 계측 미구현
-- 대규모 로그 저장의 원자성 강화를 위한 DB transaction은 후속 작업 필요
+- 로그인 사용자 데이터가 필요한 홈·루틴·기록·프로필의 실제 데이터 시각 QA 필요
+- WorkoutSession의 운동 실행 화면은 기능 보존 우선으로 두었으며 Figma 재생 컨트롤 구조의 추가 정밀화 가능
 
 ## 다음 세션
 
-1. 운영 API timing 로그 또는 APM 추가
-2. 저장 mutation transaction 적용 검토
+1. 로그인 상태 모바일 화면 전체 회귀 확인
+2. 운동 실행 화면의 세트·반복·휴식 컨트롤을 Figma 카드 구조로 정밀화

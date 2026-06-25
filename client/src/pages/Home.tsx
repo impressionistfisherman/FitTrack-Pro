@@ -783,14 +783,35 @@ export default function Home() {
       ? "운동러"
       : "헬린이";
 
+  const weeklyCompleted = homeSummary?.weeklyStats?.completedDays ?? 0;
+  const weeklyTarget = homeSummary?.weeklyStats?.weeklyTarget ?? 0;
+  const weeklyPercent = weeklyTarget > 0 ? Math.min(100, Math.round((weeklyCompleted / weeklyTarget) * 100)) : 0;
+
   return (
-    <div className="page-shell page-shell-wide space-y-3 animate-fade-in">
-      {/* Header */}
-      <div className="home-welcome-panel flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs text-muted-foreground">{greeting()},</p>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">{displayName} 님 👋</h1>
-          <div className="mt-2 flex flex-wrap gap-1.5">
+    <div className="page-shell page-shell-wide figma-page space-y-4 animate-fade-in">
+      <section className="figma-home-intro">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs text-muted-foreground">{greeting()},</p>
+            <h1 className="text-2xl font-bold text-foreground">{displayName} 님</h1>
+          </div>
+          <div className="flex gap-2">
+            {appRole === "trainer" && (
+              <Button asChild variant="outline" size="icon" className="border-border">
+                <Link href="/trainer" aria-label="회원 관리"><Activity size={16} /></Link>
+              </Button>
+            )}
+            {isAdmin && (
+              <Button asChild variant="outline" size="icon" className="border-border">
+                <Link href="/admin" aria-label="관리자"><BarChart3 size={16} /></Link>
+              </Button>
+            )}
+            <Button asChild variant="outline" size="icon" className="border-primary/30 bg-primary/10 text-primary">
+              <Link href="/ai-coach" aria-label="AI 코치"><Zap size={16} /></Link>
+            </Button>
+          </div>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-1.5">
             {profileLoading ? (
               <>
                 <div className="h-6 w-14 skeleton rounded-full" />
@@ -809,36 +830,46 @@ export default function Home() {
                 ))}
               </>
             )}
-          </div>
         </div>
-        <div className="flex flex-wrap justify-end gap-2">
-          {appRole === "trainer" && (
-            <Button asChild variant="outline" className="min-h-11 gap-2 border-border">
-              <Link href="/trainer">
-                <Activity size={16} />
-                <span className="hidden sm:inline">회원 관리</span>
-              </Link>
-            </Button>
-          )}
-          {isAdmin && (
-            <Button asChild variant="outline" className="min-h-11 gap-2 border-border">
-              <Link href="/admin">
-                <BarChart3 size={16} />
-                <span className="hidden sm:inline">관리자</span>
-              </Link>
-            </Button>
-          )}
-          <Link href="/ai-coach">
-            <Button className="min-h-11 gap-2 bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20" variant="outline">
-              <Zap size={16} />
-              <span className="hidden sm:inline">AI 추천</span>
-            </Button>
-          </Link>
-        </div>
-      </div>
+      </section>
 
-      <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+      <section className="figma-overall-progress" aria-label="주간 운동 진행률">
+        <div className="flex items-end justify-between">
+          <div>
+            <span>전체 진행률</span>
+            <strong>{weeklyCompleted}/{weeklyTarget || "-"}일 완료</strong>
+          </div>
+          <b>{weeklyPercent}%</b>
+        </div>
+        <div className="figma-card-progress"><span style={{ width: `${weeklyPercent}%` }} /></div>
+      </section>
+
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.12fr)_minmax(320px,0.88fr)]">
+        <div className="min-w-0 space-y-4">
+          <div className="figma-section-heading">
+            <div><span>오늘의 운동</span><h2>다음 운동</h2></div>
+          </div>
+          <QuickStartCard routines={homeSummary?.routines} isLoading={homeSummaryLoading} />
+
+          <div className="grid grid-cols-2 gap-3">
+            <Button asChild className="figma-primary-action">
+              <Link href="/routines"><Plus size={16} /> 새 플랜</Link>
+            </Button>
+            <Button asChild variant="outline" className="min-h-12 border-border">
+              <Link href="/history"><BarChart3 size={16} /> 지표 보기</Link>
+            </Button>
+          </div>
+
+          <div className="figma-section-heading">
+            <div><span>최근 활동</span><h2>마지막 운동</h2></div>
+          </div>
+          <RecentWorkouts sessions={homeSummary?.recentWorkouts} isLoading={homeSummaryLoading} />
+        </div>
+
         <div className="min-w-0 space-y-3">
+          <div className="figma-section-heading">
+            <div><span>상세 지표</span><h2>이번 주 요약</h2></div>
+          </div>
           <WeeklyGoalDashboard weeklyStats={homeSummary?.weeklyStats} isLoading={homeSummaryLoading} />
           {homeSummaryLoading ? (
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 xl:grid-cols-2">
@@ -855,11 +886,6 @@ export default function Home() {
           <ProgressReportCard monthlyStats={homeSummary?.monthlyStats} weeklyStats={homeSummary?.weeklyStats} isLoading={homeSummaryLoading} />
           <MonthlyStatsCard stats={homeSummary?.monthlyStats} isLoading={homeSummaryLoading} />
           <WorkoutQualityCard sessions={homeSummary?.recentWorkouts} isLoading={homeSummaryLoading} />
-          <RecentWorkouts sessions={homeSummary?.recentWorkouts} isLoading={homeSummaryLoading} />
-        </div>
-
-        <div className="min-w-0 space-y-3">
-          <QuickStartCard routines={homeSummary?.routines} isLoading={homeSummaryLoading} />
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
             <StreakCard streak={homeSummary?.streak} isLoading={homeSummaryLoading} />
             <BodyWeightSummaryCard weights={homeSummary?.bodyWeights} goal={homeSummary?.goal} isLoading={homeSummaryLoading} />
