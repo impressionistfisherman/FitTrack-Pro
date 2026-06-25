@@ -998,7 +998,7 @@
 
 /* Figma fitness kit: screen composition, not only theme tokens */
 .figma-page {
-  max-width: 760px;
+  max-width: 960px;
   margin-inline: auto;
 }
 
@@ -1144,6 +1144,32 @@
     linear-gradient(120deg, #292e33, #151719);
 }
 
+.app-nav-section-label {
+  margin-bottom: 7px;
+  padding-inline: 12px;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.role-mode-switch {
+  width: 100%;
+}
+
+.role-mode-switch-list {
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  background: rgb(18 20 22 / 55%);
+  padding: 4px;
+}
+
+.role-mode-switch.is-compact a {
+  display: block;
+  width: 100%;
+}
+
 .figma-workout-header {
   margin-bottom: 18px;
   padding-top: 2px;
@@ -1171,6 +1197,16 @@
   .figma-page .card,
   .figma-page [class*="rounded-xl"] {
     border-radius: 9px;
+  }
+}
+
+@media (min-width: 768px) {
+  .figma-centered-header {
+    text-align: left;
+  }
+
+  .figma-centered-header .page-title {
+    font-size: 1.75rem;
   }
 }
 

@@ -368,14 +368,46 @@ function NavItem({
   );
 }
 
+function NavMenu({
+  items,
+  userMode,
+  onClick,
+}: {
+  items: SidebarNavItem[];
+  userMode: boolean;
+  onClick?: () => void;
+}) {
+  if (!userMode) {
+    return <>{items.map(item => <NavItem key={item.id} {...item} onClick={onClick} />)}</>;
+  }
+
+  const workoutItems = items.filter(item =>
+    ["user-home", "user-exercises", "user-routines", "user-history", "user-body-weight"].includes(item.id)
+  );
+  const supportItems = items.filter(item =>
+    ["user-coaching", "user-ai-coach", "user-feedback"].includes(item.id)
+  );
+
+  return (
+    <>
+      <div className="app-nav-section-label">운동 관리</div>
+      {workoutItems.map(item => <NavItem key={item.id} {...item} onClick={onClick} />)}
+      <div className="app-nav-section-label mt-5">지원</div>
+      {supportItems.map(item => <NavItem key={item.id} {...item} onClick={onClick} />)}
+    </>
+  );
+}
+
 function RoleModeSwitch({
   badge,
   showTrainer,
   showAdmin,
+  compact = false,
 }: {
   badge: number;
   showTrainer: boolean;
   showAdmin: boolean;
+  compact?: boolean;
 }) {
   const [location, navigate] = useLocation();
   const { path: currentPath } = useRouteState(location);
@@ -384,10 +416,13 @@ function RoleModeSwitch({
   const isUserView = !isAdminView && !isTrainerView;
 
   return (
-    <div className="mt-14 border-b border-border/70 bg-background/80 px-3 py-2 backdrop-blur-sm sm:px-6 xl:mt-0 xl:px-8">
-      <div className="mx-auto flex max-w-7xl items-center justify-center overflow-hidden">
+    <div className={cn("role-mode-switch", compact && "is-compact")}>
+      <div className="flex items-center justify-center overflow-hidden">
         <div
-          className="flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border bg-card/80 p-1 shadow-sm"
+          className={cn(
+            "role-mode-switch-list",
+            compact ? "grid w-full gap-1" : "flex max-w-full items-center gap-1 overflow-x-auto"
+          )}
           aria-label={
             showAdmin
               ? "사용자, 트레이너, 관리자 홈 전환"
@@ -404,7 +439,7 @@ function RoleModeSwitch({
               size="sm"
               variant={isUserView ? "default" : "ghost"}
               className={cn(
-                "h-8 shrink-0 rounded-full px-3 text-xs whitespace-nowrap",
+                "h-9 w-full shrink-0 justify-start rounded-lg px-3 text-xs whitespace-nowrap",
                 isUserView &&
                   "bg-primary text-primary-foreground hover:bg-primary/90",
                 !isUserView &&
@@ -425,8 +460,8 @@ function RoleModeSwitch({
               <Button
                 size="sm"
                 variant={isTrainerView ? "default" : "ghost"}
-                className={cn(
-                  "h-8 shrink-0 rounded-full px-3 text-xs whitespace-nowrap",
+                  className={cn(
+                  "h-9 w-full shrink-0 justify-start rounded-lg px-3 text-xs whitespace-nowrap",
                   isTrainerView &&
                     "bg-primary text-primary-foreground hover:bg-primary/90",
                   !isTrainerView &&
@@ -448,8 +483,8 @@ function RoleModeSwitch({
               <Button
                 size="sm"
                 variant={isAdminView ? "default" : "ghost"}
-                className={cn(
-                  "h-8 shrink-0 rounded-full px-3 text-xs whitespace-nowrap",
+                  className={cn(
+                  "h-9 w-full shrink-0 justify-start rounded-lg px-3 text-xs whitespace-nowrap",
                   isAdminView &&
                     "bg-primary text-primary-foreground hover:bg-primary/90",
                   !isAdminView &&
@@ -524,7 +559,7 @@ function BrandLogo({ className = "h-full w-full" }: { className?: string }) {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const [location] = useLocation();
-  const { path: currentPath } = useRouteState(location);
+  const { path: currentPath, hash: currentHash } = useRouteState(location);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const utils = trpc.useUtils();
   const coachingReadMarkedRef = useRef(false);
@@ -548,6 +583,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isTrainer = (user as any)?.appRole === "trainer";
   const isAdmin = user?.role === "admin";
   const showRoleSwitch = !loading && (isTrainer || isAdmin);
+  const isAdminView = isAdmin && currentPath.startsWith("/admin");
+  const isTrainerView = isTrainer && currentPath.startsWith("/trainer");
+  const isUserView = !isAdminView && !isTrainerView;
   const visibleNavItems = loading
     ? []
     : getVisibleNavItems({
@@ -558,6 +596,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         coachingBadge,
         trainerBadge,
       });
+  const mobileNavItems: SidebarNavItem[] = isUserView
+    ? [
+        { id: "mobile-home", href: "/", icon: Home, label: "홈" },
+        { id: "mobile-exercises", href: "/exercises", icon: Dumbbell, label: "운동" },
+        { id: "mobile-routines", href: "/routines", icon: Activity, label: "루틴" },
+        { id: "mobile-history", href: "/history", icon: Calendar, label: "기록" },
+        { id: "mobile-profile", href: "/profile", icon: Users, label: "프로필" },
+      ]
+    : visibleNavItems.slice(0, 5);
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -622,6 +669,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           </Link>
         </div>
+        {showRoleSwitch ? (
+          <div className="border-b border-sidebar-border p-4">
+            <div className="app-nav-section-label">화면 전환</div>
+            <RoleModeSwitch
+              badge={adminBadge}
+              showTrainer={isTrainer}
+              showAdmin={isAdmin}
+              compact
+            />
+          </div>
+        ) : null}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {loading ? (
             <div
@@ -633,7 +691,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               ))}
             </div>
           ) : (
-            visibleNavItems.map(item => <NavItem key={item.id} {...item} />)
+            <NavMenu items={visibleNavItems} userMode={isUserView} />
           )}
         </nav>
         <div className="px-4 pb-2">
@@ -756,6 +814,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </div>
                   </div>
                 </div>
+                {showRoleSwitch ? (
+                  <div className="mt-4 border-t border-sidebar-border pt-4">
+                    <div className="app-nav-section-label">화면 전환</div>
+                    <RoleModeSwitch
+                      badge={adminBadge}
+                      showTrainer={isTrainer}
+                      showAdmin={isAdmin}
+                      compact
+                    />
+                  </div>
+                ) : null}
               </div>
               <nav className="flex-1 space-y-1 overflow-y-auto p-4">
                 {loading ? (
@@ -765,13 +834,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     ))}
                   </div>
                 ) : (
-                  visibleNavItems.map(item => (
-                    <NavItem
-                      key={item.id}
-                      {...item}
-                      onClick={() => setMobileMenuOpen(false)}
-                    />
-                  ))
+                  <NavMenu
+                    items={visibleNavItems}
+                    userMode={isUserView}
+                    onClick={() => setMobileMenuOpen(false)}
+                  />
                 )}
               </nav>
               <div className="border-t border-sidebar-border p-4">
@@ -795,33 +862,22 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── 메인 콘텐츠 ── */}
       <main className="app-main">
-        {showRoleSwitch ? (
-          <RoleModeSwitch
-            badge={adminBadge}
-            showTrainer={isTrainer}
-            showAdmin={isAdmin}
-          />
-        ) : null}
         <div
-          className={cn("app-main-inner", showRoleSwitch && "pt-0")}
+          className="app-main-inner"
           aria-busy={loading}
         >
           {loading ? <AppContentSkeleton /> : children}
         </div>
       </main>
       <nav className="app-mobile-bottom-nav" aria-label="모바일 주요 메뉴">
-        {[
-          { id: "mobile-home", href: "/", icon: Home, label: "홈" },
-          { id: "mobile-exercises", href: "/exercises", icon: Dumbbell, label: "운동" },
-          { id: "mobile-routines", href: "/routines", icon: Activity, label: "루틴" },
-          { id: "mobile-history", href: "/history", icon: Calendar, label: "기록" },
-          { id: "mobile-profile", href: "/profile", icon: Users, label: "프로필" },
-        ].map(item => {
+        {mobileNavItems.map(item => {
           const Icon = item.icon;
-          const active =
-            item.href === "/"
-              ? currentPath === "/"
-              : currentPath === item.href || currentPath.startsWith(`${item.href}/`);
+          const { path: itemPath, hash: itemHash } = splitHref(item.href);
+          const active = itemHash
+            ? currentPath === itemPath && currentHash === itemHash
+            : itemPath === "/" || itemPath === "/trainer" || itemPath === "/admin"
+              ? currentPath === itemPath && currentHash === ""
+              : currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
           return (
             <Link
               key={item.id}
