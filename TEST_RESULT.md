@@ -2,7 +2,7 @@
 
 ## 날짜/시간
 
-2026-06-24 14:51:45 +09:00
+2026-06-25 09:12:59 +09:00
 
 ## 결과
 
@@ -29,6 +29,9 @@
 | 홈 기록 상세 수정 | 통과 | 상세 dialog 종료 후 URL `/history`, 수정 dialog만 표시 |
 | 기록 상세 닫기 race | 통과 | 닫기 직후, 50ms, 250ms, 1초, 2.5초 모두 dialog 0개 유지 |
 | 기록 페이지 직접 상세 | 통과 | `/history` 내부 상세 열기·닫기 후 dialog 0개 유지 |
+| 자동 배포 규칙 변경 후 `pnpm run check` | 통과 | TypeScript 오류 없음 |
+| 자동 배포 규칙 변경 후 `pnpm run test` | 통과 | 6 files, 68 tests |
+| 자동 배포 규칙 변경 후 `pnpm run build` | 통과 | Production client/server build 완료 |
 
 ## 미실행
 
