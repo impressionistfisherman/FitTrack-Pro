@@ -816,32 +816,11 @@ export default function History() {
       </div>
 
       <nav className="content-section-nav" aria-label="운동 기록 빠른 이동">
-        <a href="#history-recent">최근 운동</a>
         <a href="#history-calendar">달력</a>
         <a href="#history-progress">수행 추이</a>
         <a href="#history-weight">체중</a>
+        <a href="#history-log">운동 로그</a>
       </nav>
-
-      <section id="history-recent" className="scroll-mt-24 mb-5" aria-labelledby="history-recent-title">
-        <div className="figma-section-heading">
-          <div>
-            <span>운동 로그</span>
-            <h2 id="history-recent-title">최근 운동</h2>
-          </div>
-          <Badge variant="outline" className="border-border text-muted-foreground">
-            {recentWorkouts?.length ?? 0}개
-          </Badge>
-        </div>
-        <div className="space-y-3">
-          {recentWorkouts && recentWorkouts.length > 0 ? (
-            recentWorkouts.slice(0, 4).map((session: any) => (
-              <SessionCard key={`featured-${session.id}`} session={session} onDelete={handleDeleteSession} onEdit={openEditWorkout} onView={setViewingSession} />
-            ))
-          ) : (
-            <div className="empty-state-panel">아직 완료한 운동이 없습니다.</div>
-          )}
-        </div>
-      </section>
 
       <div className="figma-section-heading">
         <div>
@@ -1033,6 +1012,28 @@ export default function History() {
 
         </div>
       </div>
+
+      <details id="history-log" className="content-disclosure scroll-mt-24 mt-5">
+        <summary>
+          <span>운동 로그</span>
+          <small>최근 운동 {recentWorkouts?.length ?? 0}개 · 눌러서 펼치기</small>
+        </summary>
+        <div className="space-y-3 pt-3">
+          {recentWorkouts && recentWorkouts.length > 0 ? (
+            recentWorkouts.slice(0, 10).map((session: any) => (
+              <SessionCard
+                key={`history-log-${session.id}`}
+                session={session}
+                onDelete={handleDeleteSession}
+                onEdit={openEditWorkout}
+                onView={setViewingSession}
+              />
+            ))
+          ) : (
+            <div className="empty-state-panel">아직 완료한 운동이 없습니다.</div>
+          )}
+        </div>
+      </details>
     </div>
   );
 }
