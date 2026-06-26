@@ -260,6 +260,15 @@ describe("exercises.list", () => {
     await expect(caller.exercises.list({ search: "런닝머신" })).resolves.toEqual(
       expect.arrayContaining([expect.objectContaining({ nameKo: "트레드밀 달리기" })])
     );
+    expect((await caller.exercises.list({ search: "이너싸이" })).some((exercise) =>
+      String(exercise.nameKo).includes("어덕") || String(exercise.name).toLowerCase().includes("adduct")
+    )).toBe(true);
+    expect((await caller.exercises.list({ search: "아웃싸이" })).some((exercise) =>
+      String(exercise.nameKo).includes("어브") || String(exercise.name).toLowerCase().includes("abduct")
+    )).toBe(true);
+    expect((await caller.exercises.list({ search: "어덕트머신" })).some((exercise) =>
+      String(exercise.nameKo).includes("어덕") || String(exercise.name).toLowerCase().includes("adduct")
+    )).toBe(true);
   });
 });
 

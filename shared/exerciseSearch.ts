@@ -51,8 +51,8 @@ const aliasGroups = [
   ["펙 덱 머신", "펙덱", "팩덱", "펙덱 플라이", "pec deck"],
   ["스트레이트 암 케이블 풀다운", "암풀다운", "스트레이트 암 풀다운", "케이블 암풀다운", "straight arm pulldown"],
   ["머신컬", "머신 컬", "머신프리처컬", "머신 프리처 컬", "프리쳐컬", "프리처컬", "preacher curl", "machine curl"],
-  ["이너타이", "이너 타이", "어덕트", "어덕터", "내전근", "adductor", "inner thigh"],
-  ["아웃타이", "아웃 타이", "어브덕트", "어브덕터", "외전근", "abductor", "outer thigh"],
+  ["이너싸이", "이너 싸이", "이너타이", "이너 타이", "어덕트", "어덕터", "어덕션", "힙 어덕션", "어덕트머신", "어덕터머신", "내전근", "adductor", "adduction", "hip adduction", "inner thigh"],
+  ["아웃싸이", "아웃 싸이", "아웃타이", "아웃 타이", "어브덕트", "어브덕터", "어브덕션", "앱덕트", "앱덕터", "앱덕션", "힙 어브덕션", "힙 앱덕션", "아웃싸이머신", "아웃타이머신", "외전근", "abductor", "abduction", "hip abduction", "outer thigh"],
   ["랫풀다운", "렛풀다운", "랫 풀 다운", "랫 풀다운", "풀다운", "lat pulldown", "lat pull down", "pulldown"],
   ["플레이트풀다운", "플레이트 풀다운", "머신풀다운", "머신 풀다운", "레버리지풀다운", "레버리지 풀다운", "레버풀다운", "레버 풀다운", "lever pulldown", "leverage pulldown", "machine pulldown", "lever front pulldown", "레버리지 프론트 풀다운", "레버리지 원암 와이드 풀다운", "리버스 그립 머신 랫 풀다운"],
   ["체스트프레스", "체스트 프레스", "chest press"],
@@ -89,6 +89,95 @@ const popularAliasByExercise = [
   { match: ["스트레이트 암 케이블 풀다운"], aliases: ["암풀다운", "스트레이트 암 풀다운"] },
 ];
 
+const equipmentSynonymGroups = [
+  ["덤벨", "디비", "DB", "dumbbell"],
+  ["바벨", "비비", "BB", "barbell"],
+  ["케이블", "케블", "cable"],
+  ["머신", "machine", "lever", "leverage", "레버", "레버리지"],
+  ["스미스", "스미스머신", "smith", "smith machine"],
+  ["밴드", "고무밴드", "resistance band", "band"],
+  ["케틀벨", "kettlebell"],
+  ["맨몸", "바디웨이트", "bodyweight", "body weight"],
+  ["이지바", "ez바", "EZ 바", "ez bar"],
+  ["로프", "rope"],
+  ["V바", "V 바", "브이바", "v bar", "v-bar"],
+];
+
+const movementSynonymGroups = [
+  ["프레스", "press", "presses"],
+  ["로우", "row", "rows"],
+  ["풀다운", "풀 다운", "랫풀다운", "렛풀다운", "라풀", "lat pulldown", "pull down", "pulldown"],
+  ["레이즈", "raise", "raises"],
+  ["레터럴", "사이드레터럴", "사이드 레터럴", "lateral"],
+  ["플라이", "플라이즈", "fly", "flye", "flyes"],
+  ["컬", "curl", "curls"],
+  ["익스텐션", "익스텐", "extension", "extensions"],
+  ["푸시다운", "푸쉬다운", "pushdown", "pushdowns"],
+  ["스쿼트", "squat", "squats"],
+  ["런지", "lunge", "lunges"],
+  ["데드리프트", "데드", "deadlift"],
+  ["힙힌지", "힙 힌지", "hip hinge"],
+  ["스러스트", "쓰러스트", "트러스트", "thrust"],
+  ["크런치", "crunch"],
+  ["트위스트", "twist"],
+  ["플랭크", "plank"],
+  ["스트레칭", "스트레치", "stretch"],
+  ["킥백", "kickback"],
+  ["풀오버", "pullover"],
+  ["슈러그", "쉬러그", "shrug"],
+];
+
+const bodySynonymGroups = [
+  ["가슴", "흉근", "체스트", "chest", "pec", "pectorals"],
+  ["등", "광배", "광배근", "랫", "lat", "lats", "back"],
+  ["어깨", "숄더", "삼각근", "shoulder", "deltoid", "delt"],
+  ["전면어깨", "앞어깨", "전면 삼각근", "front delt", "anterior delt"],
+  ["측면어깨", "옆어깨", "측면 삼각근", "side delt", "lateral delt"],
+  ["후면어깨", "후면 삼각근", "리어델트", "rear delt", "posterior delt"],
+  ["이두", "이두근", "바이셉", "바이셉스", "bicep", "biceps"],
+  ["삼두", "삼두근", "트라이셉", "트라이셉스", "tricep", "triceps"],
+  ["하체", "다리", "레그", "leg", "legs"],
+  ["허벅지앞", "앞벅지", "대퇴사두", "대퇴사두근", "쿼드", "quad", "quadriceps"],
+  ["허벅지뒤", "뒷벅지", "햄스트링", "햄스", "hamstring", "hamstrings"],
+  ["엉덩이", "둔근", "힙", "글루트", "glute", "glutes"],
+  ["종아리", "카프", "calf", "calves"],
+  ["복근", "복부", "abs", "abdominals"],
+  ["코어", "core"],
+  ["내전근", "이너싸이", "이너타이", "어덕터", "어덕션", "adductor", "adduction", "inner thigh"],
+  ["외전근", "아웃싸이", "아웃타이", "어브덕터", "앱덕터", "어브덕션", "앱덕션", "abductor", "abduction", "outer thigh"],
+];
+
+const positionSynonymGroups = [
+  ["인클라인", "incline"],
+  ["디클라인", "decline"],
+  ["플랫", "flat"],
+  ["시티드", "앉아서", "seated"],
+  ["스탠딩", "서서", "standing"],
+  ["라잉", "누워서", "lying"],
+  ["프론", "엎드려", "prone"],
+  ["원암", "원 암", "한팔", "한 팔", "싱글암", "싱글 암", "one arm", "one-arm", "single arm", "single-arm"],
+  ["투암", "투 암", "양팔", "양 팔", "two arm", "two-arm"],
+  ["와이드", "넓게", "wide", "wide grip", "wide-grip"],
+  ["내로우", "좁게", "클로즈", "close", "close grip", "narrow"],
+  ["리버스", "reverse"],
+  ["해머", "뉴트럴", "neutral", "hammer"],
+];
+
+const generatedAliasRules = [
+  { any: ["adductor", "adduction", "어덕터", "어덕션", "내전근"], aliases: ["이너싸이", "어덕터 머신", "내전근"] },
+  { any: ["abductor", "abduction", "어브덕터", "앱덕터", "어브덕션", "앱덕션", "외전근"], aliases: ["아웃싸이", "어브덕터 머신", "외전근"] },
+  { any: ["lateral raise", "레터럴 레이즈"], aliases: ["사레레", "사이드 레터럴"] },
+  { any: ["shoulder press", "숄더 프레스"], aliases: ["숄프", "어깨 프레스"] },
+  { any: ["overhead press", "오버헤드 프레스"], aliases: ["밀프", "밀리터리 프레스"] },
+  { any: ["lat pulldown", "랫 풀다운", "렛 풀다운"], aliases: ["라풀", "랫풀다운"] },
+  { any: ["seated row", "시티드 로우", "cable row", "케이블 로우"], aliases: ["롱풀", "케이블 로우"] },
+  { any: ["hip thrust", "힙 스러스트"], aliases: ["힙트러스트", "힙쓰러스트"] },
+  { any: ["romanian deadlift", "루마니안 데드리프트"], aliases: ["루마데", "RDL"] },
+  { any: ["bulgarian split squat", "불가리안 스플릿 스쿼트"], aliases: ["불스스", "불가리안"] },
+  { any: ["treadmill", "트레드밀"], aliases: ["런닝머신", "러닝머신"] },
+  { any: ["pec deck", "펙 덱"], aliases: ["펙덱", "펙덱 플라이"] },
+];
+
 const synonymGroups = [
   ["원암", "원 암", "한팔", "한 팔", "싱글암", "싱글 암", "one arm", "one-arm", "single arm", "single-arm"],
   ["투암", "투 암", "양팔", "양 팔", "two arm", "two-arm"],
@@ -114,6 +203,10 @@ const synonymGroups = [
   ["백", "back"],
   ["V바", "V 바", "v bar", "v-bar"],
   ["랫", "lat", "lats"],
+  ...equipmentSynonymGroups,
+  ...movementSynonymGroups,
+  ...bodySynonymGroups,
+  ...positionSynonymGroups,
 ];
 
 const synonymByCompact = new Map<string, Set<string>>();
@@ -224,6 +317,7 @@ export function matchesExerciseSearchText(query: string, ...values: Array<string
 export function getPopularExerciseAliases(...values: Array<string | null | undefined>) {
   const haystack = compactSearchText(values.filter(Boolean).join(" "));
   if (!haystack) return [];
+  const aliases = new Set<string>();
 
   const candidates = popularAliasByExercise
     .slice()
@@ -234,11 +328,18 @@ export function getPopularExerciseAliases(...values: Array<string | null | undef
 
   for (const item of candidates) {
     if (item.match.some((value) => haystack.includes(compactSearchText(value)))) {
-      return item.aliases;
+      for (const alias of item.aliases) aliases.add(alias);
+      break;
     }
   }
 
-  return [];
+  for (const rule of generatedAliasRules) {
+    if (rule.any.some((value) => haystack.includes(compactSearchText(value)))) {
+      for (const alias of rule.aliases) aliases.add(alias);
+    }
+  }
+
+  return Array.from(aliases).slice(0, 4);
 }
 
 export function scoreExerciseSearchMatch(query: string, ...values: Array<string | null | undefined>) {

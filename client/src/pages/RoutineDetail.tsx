@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { matchesExerciseSearchText } from "@shared/exerciseSearch";
+import { getPopularExerciseAliases, matchesExerciseSearchText } from "@shared/exerciseSearch";
 
 const bodyPartLabels: Record<string, string> = {
   chest: "가슴", back: "등", shoulders: "어깨", arms: "팔",
@@ -46,6 +46,17 @@ function makeRoutineSetDetails(count: number, reps: number, existing: Array<{set
   }));
 }
 
+function ExerciseAliasText({ exercise }: { exercise: any }) {
+  const aliases = getPopularExerciseAliases(exercise?.nameKo, exercise?.name);
+  if (!aliases.length) return null;
+
+  return (
+    <span className="block truncate text-xs font-semibold text-primary">
+      {aliases.join(" · ")}
+    </span>
+  );
+}
+
 function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: number; currentCount: number; onAdded: () => void }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -75,7 +86,7 @@ function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: nu
       return matchesExerciseSearchText(search, ex.nameKo, ex.name);
     }
     return true;
-  });
+  }).slice(0, 40);
 
   const bodyParts = ["all", "chest", "back", "shoulders", "arms", "legs", "abs", "glutes", "cardio", "stretching"];
   const bodyPartKo: Record<string, string> = { all: "전체", ...bodyPartLabels };
@@ -138,6 +149,7 @@ function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: nu
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-foreground truncate">{ex.nameKo}</div>
                     <div className="text-xs text-muted-foreground truncate">{ex.name}</div>
+                    <ExerciseAliasText exercise={ex} />
                   </div>
                   <Badge className={cn("text-[10px] border flex-shrink-0", bodyPartColors[ex.bodyPart])}>
                     {bodyPartLabels[ex.bodyPart] || ex.bodyPart}
@@ -155,6 +167,7 @@ function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: nu
               <div>
                 <div className="font-semibold text-foreground">{selectedExercise.nameKo}</div>
                 <div className="text-xs text-muted-foreground">{selectedExercise.name}</div>
+                <ExerciseAliasText exercise={selectedExercise} />
               </div>
               <button onClick={() => setSelectedExercise(null)} className="ml-auto text-xs text-muted-foreground hover:text-foreground">변경</button>
             </div>
@@ -290,7 +303,7 @@ function EditRoutineExerciseDialog({ item, onSaved }: { item: any; onSaved: () =
   const filtered = exercises?.filter((ex) => {
     if (!search) return true;
     return matchesExerciseSearchText(search, ex.nameKo, ex.name);
-  });
+  }).slice(0, 40);
 
   const resetFromItem = () => {
     setChoosingExercise(false);
@@ -346,6 +359,7 @@ function EditRoutineExerciseDialog({ item, onSaved }: { item: any; onSaved: () =
               <div className="min-w-0 flex-1">
                 <div className="truncate font-semibold text-foreground">{selectedExercise.nameKo}</div>
                 <div className="truncate text-xs text-muted-foreground">{selectedExercise.name}</div>
+                <ExerciseAliasText exercise={selectedExercise} />
               </div>
               <Button variant="outline" size="sm" className="h-8 border-border text-xs" onClick={() => setChoosingExercise((value) => !value)}>
                 운동 변경
@@ -390,6 +404,7 @@ function EditRoutineExerciseDialog({ item, onSaved }: { item: any; onSaved: () =
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-medium">{exercise.nameKo}</span>
                         <span className="block truncate text-xs text-muted-foreground">{exercise.name}</span>
+                        <ExerciseAliasText exercise={exercise} />
                       </span>
                       <Badge className={cn("shrink-0 border text-[10px]", bodyPartColors[exercise.bodyPart])}>
                         {bodyPartLabels[exercise.bodyPart] || exercise.bodyPart}
