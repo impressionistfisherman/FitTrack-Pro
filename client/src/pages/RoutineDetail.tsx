@@ -1,5 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
+import { ExerciseResultItem } from "@/components/exercise/ExerciseResultItem";
 import { ArrowDown, ArrowLeft, ArrowUp, Check, Dumbbell, GripVertical, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "wouter";
@@ -129,9 +130,11 @@ function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: nu
             </div>
             <div className="overflow-y-auto flex-1 space-y-1.5 max-h-80">
               {filtered?.map((ex) => (
-                <button
+                <ExerciseResultItem
                   key={ex.id}
-                  onClick={() => {
+                  exercise={ex}
+                  showChevron={false}
+                  onSelect={() => {
                     setSelectedExercise(ex);
                     // 운동 선택 시 기본 세트(3)에 맞게 setDetails 자동 초기화
                     const defaultSets = parseInt(sets) || 3;
@@ -141,20 +144,7 @@ function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: nu
                       reps: parseInt(reps) || 10,
                     })));
                   }}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-accent/50 hover:bg-accent border border-transparent hover:border-primary/30 text-left transition-all"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Dumbbell size={14} className="text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-foreground truncate">{ex.nameKo}</div>
-                    <div className="text-xs text-muted-foreground truncate">{ex.name}</div>
-                    <ExerciseAliasText exercise={ex} />
-                  </div>
-                  <Badge className={cn("text-[10px] border flex-shrink-0", bodyPartColors[ex.bodyPart])}>
-                    {bodyPartLabels[ex.bodyPart] || ex.bodyPart}
-                  </Badge>
-                </button>
+                />
               ))}
             </div>
           </div>
@@ -395,21 +385,12 @@ function EditRoutineExerciseDialog({ item, onSaved }: { item: any; onSaved: () =
                 </div>
                 <div className="max-h-56 space-y-1 overflow-y-auto">
                   {filtered?.map((exercise) => (
-                    <button
+                    <ExerciseResultItem
                       key={exercise.id}
-                      onClick={() => selectExercise(exercise)}
-                      className="flex w-full items-center gap-2 rounded-lg border border-transparent p-2 text-left hover:border-primary/30 hover:bg-card"
-                    >
-                      <Dumbbell size={14} className="shrink-0 text-primary" />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium">{exercise.nameKo}</span>
-                        <span className="block truncate text-xs text-muted-foreground">{exercise.name}</span>
-                        <ExerciseAliasText exercise={exercise} />
-                      </span>
-                      <Badge className={cn("shrink-0 border text-[10px]", bodyPartColors[exercise.bodyPart])}>
-                        {bodyPartLabels[exercise.bodyPart] || exercise.bodyPart}
-                      </Badge>
-                    </button>
+                      exercise={exercise}
+                      showChevron={false}
+                      onSelect={() => selectExercise(exercise)}
+                    />
                   ))}
                 </div>
               </div>

@@ -1,5 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
+import { ExerciseResultItem } from "@/components/exercise/ExerciseResultItem";
 import {
   AlertTriangle, Calculator, ChevronDown, ChevronUp, Clock, Dumbbell, MessageSquare,
   Flame, Minus, MonitorOff, MonitorUp, Plus, RefreshCw, Save, Sparkles, X, CheckCircle, Timer, Trophy
@@ -15,7 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from "sonner";
 import { useWakeLock } from "@/hooks/useWakeLock";
 import RestTimerOverlay from "@/components/RestTimerOverlay";
-import { getPopularExerciseAliases, matchesExerciseSearchText } from "@shared/exerciseSearch";
+import { matchesExerciseSearchText } from "@shared/exerciseSearch";
 
 interface SetLog {
   setNumber: number;
@@ -172,7 +173,7 @@ function AddExerciseModal({ onAdd }: { onAdd: (exercise: any, restSecs: number) 
           </div>
           <div className="overflow-y-auto flex-1 space-y-1.5">
             {filtered?.map(ex => (
-              <ExerciseSelectButton key={ex.id} exercise={ex} onSelect={() => {
+              <ExerciseResultItem key={ex.id} exercise={ex} showChevron={false} onSelect={() => {
                   if (onAdd(ex, restSecs)) {
                     setOpen(false);
                     setSearch("");
@@ -184,28 +185,6 @@ function AddExerciseModal({ onAdd }: { onAdd: (exercise: any, restSecs: number) 
         </DialogContent>
       </Dialog>
     </>
-  );
-}
-
-function ExerciseSelectButton({ exercise, onSelect }: { exercise: any; onSelect: () => void }) {
-  const aliases = getPopularExerciseAliases(exercise.nameKo, exercise.name);
-
-  return (
-    <button
-      onClick={onSelect}
-      className="w-full flex items-center gap-3 p-3 rounded-xl bg-accent/50 hover:bg-accent border border-transparent hover:border-primary/30 text-left transition-all"
-    >
-      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-        <Dumbbell size={14} className="text-primary" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-foreground truncate">{exercise.nameKo}</div>
-        <div className="text-xs text-muted-foreground truncate">{exercise.name}</div>
-        {aliases.length > 0 && (
-          <div className="text-xs font-semibold text-primary truncate">{aliases.join(" · ")}</div>
-        )}
-      </div>
-    </button>
   );
 }
 

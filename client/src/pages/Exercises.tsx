@@ -1,10 +1,10 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { ExerciseResultItem } from "@/components/exercise/ExerciseResultItem";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { trpc } from "@/lib/trpc";
-import { getPopularExerciseAliases, matchesExerciseSearchText } from "@shared/exerciseSearch";
+import { matchesExerciseSearchText } from "@shared/exerciseSearch";
 import { ChevronLeft, ChevronRight, Filter, Heart, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "wouter";
 
 const PAGE_SIZE = 24;
 
@@ -41,49 +41,6 @@ const difficulties = [
   { value: "advanced", label: "고급" },
 ];
 
-const bodyPartColors: Record<string, string> = {
-  chest: "#ef4444",
-  back: "#3b82f6",
-  shoulders: "#eab308",
-  arms: "#f97316",
-  legs: "#22c55e",
-  abs: "#a855f7",
-  glutes: "#ec4899",
-  cardio: "#06b6d4",
-  stretching: "#14b8a6",
-  full_body: "#10b981",
-};
-
-const bodyPartLabels: Record<string, string> = {
-  chest: "가슴",
-  back: "등",
-  shoulders: "어깨",
-  arms: "팔",
-  legs: "하체",
-  abs: "복근",
-  glutes: "둔근",
-  cardio: "유산소",
-  stretching: "스트레칭",
-  full_body: "전신",
-};
-
-const equipmentLabels: Record<string, string> = {
-  barbell: "바벨",
-  dumbbell: "덤벨",
-  machine: "머신",
-  cable: "케이블",
-  bodyweight: "맨몸",
-  kettlebell: "케틀벨",
-  resistance_band: "밴드",
-  none: "기구 없음",
-};
-
-const difficultyConfig: Record<string, { label: string; color: string }> = {
-  beginner: { label: "초급", color: "#22c55e" },
-  intermediate: { label: "중급", color: "#eab308" },
-  advanced: { label: "고급", color: "#ef4444" },
-};
-
 function getInitialFilters() {
   if (typeof window === "undefined") {
     return { bodyPart: "all", equipment: "all", difficulty: "all", search: "", favorites: false, page: 1 };
@@ -99,96 +56,6 @@ function getInitialFilters() {
     favorites: params.get("favorites") === "1",
     page: Number.isInteger(page) && page > 0 ? page : 1,
   };
-}
-
-function ExerciseListItem({
-  exercise,
-  isFav,
-  onToggleFav,
-  showImage,
-}: {
-  exercise: any;
-  isFav?: boolean;
-  onToggleFav?: () => void;
-  showImage?: boolean;
-}) {
-  const [imgError, setImgError] = useState(false);
-  const bpColor = bodyPartColors[exercise.bodyPart] || "#10b981";
-  const diff = difficultyConfig[exercise.difficulty];
-  const aliases = getPopularExerciseAliases(exercise.nameKo, exercise.name);
-
-  return (
-    <article className="exercise-list-item">
-      <Link
-        href={`/exercises/${exercise.id}`}
-        className="exercise-list-link"
-        aria-label={`${exercise.nameKo} 상세 보기`}
-      >
-        <div className="exercise-list-thumbnail" style={{ background: `${bpColor}20` }}>
-          {showImage && exercise.gifUrl && !imgError ? (
-            <img
-              src={exercise.gifUrl}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              onError={() => setImgError(true)}
-            />
-          ) : (
-            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none">
-              <path
-                d="M6 4v16M18 4v16M3 8h4M17 8h4M3 16h4M17 16h4"
-                stroke={bpColor}
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          )}
-        </div>
-
-          <div className="exercise-list-copy">
-          <div className="exercise-list-title">{exercise.nameKo}</div>
-          <div className="exercise-list-subtitle">{exercise.name}</div>
-          {aliases.length > 0 && (
-            <div className="exercise-list-aliases">
-              {aliases.join(" · ")}
-            </div>
-          )}
-          <div className="exercise-list-badges">
-            <span
-              className="exercise-list-badge"
-              style={{ background: `${bpColor}25`, color: bpColor, borderColor: `${bpColor}40` }}
-            >
-              {bodyPartLabels[exercise.bodyPart] || exercise.bodyPart}
-            </span>
-            <span className="exercise-list-badge exercise-list-badge-muted">
-              {equipmentLabels[exercise.equipment] || exercise.equipment}
-            </span>
-            {diff && (
-              <span
-                className="exercise-list-badge"
-                style={{ background: `${diff.color}20`, color: diff.color, borderColor: `${diff.color}40` }}
-              >
-                {diff.label}
-              </span>
-            )}
-          </div>
-        </div>
-        <ChevronRight className="exercise-list-chevron" size={18} aria-hidden="true" />
-      </Link>
-
-      {onToggleFav && (
-        <button
-          type="button"
-          className="exercise-favorite-button"
-          onClick={onToggleFav}
-          aria-label={isFav ? `${exercise.nameKo} 즐겨찾기 해제` : `${exercise.nameKo} 즐겨찾기 추가`}
-          aria-pressed={isFav}
-        >
-          <Heart size={18} fill={isFav ? "#ef4444" : "none"} color={isFav ? "#ef4444" : "currentColor"} />
-        </button>
-      )}
-    </article>
-  );
 }
 
 function FilterChip({
@@ -411,14 +278,22 @@ export default function Exercises() {
         <>
           <div className="space-y-2">
             {visibleExercises.map((exercise) => (
-              <ExerciseListItem
+              <ExerciseResultItem
                 key={exercise.id}
                 exercise={exercise}
-                isFav={favIds.has(exercise.id)}
+                href={`/exercises/${exercise.id}`}
                 showImage={showImages}
-                onToggleFav={
-                  isAuthenticated ? () => toggleFav.mutate({ exerciseId: exercise.id }) : undefined
-                }
+                rightSlot={isAuthenticated ? (
+                  <button
+                    type="button"
+                    className="exercise-favorite-button"
+                    onClick={() => toggleFav.mutate({ exerciseId: exercise.id })}
+                    aria-label={favIds.has(exercise.id) ? `${exercise.nameKo} 즐겨찾기 해제` : `${exercise.nameKo} 즐겨찾기 추가`}
+                    aria-pressed={favIds.has(exercise.id)}
+                  >
+                    <Heart size={18} fill={favIds.has(exercise.id) ? "#ef4444" : "none"} color={favIds.has(exercise.id) ? "#ef4444" : "currentColor"} />
+                  </button>
+                ) : undefined}
               />
             ))}
           </div>
