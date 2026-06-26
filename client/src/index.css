@@ -89,6 +89,12 @@
   --fitness-surface-end: #17191c;
   --fitness-bg-start: #353a40;
   --fitness-bg-end: #121416;
+  --interactive-primary: #ff8a3d;
+  --interactive-primary-hover: #ff9d5c;
+  --interactive-primary-active: #e86f22;
+  --interactive-soft: rgb(255 138 61 / 14%);
+  --interactive-soft-pressed: rgb(255 138 61 / 22%);
+  --interactive-muted-hover: rgb(255 255 255 / 5%);
 }
 
 /* Dark mode same as root since we use dark theme by default */
@@ -730,6 +736,12 @@
   --chart-3: #1ed6ff;
   --chart-4: #d8dbf8;
   --chart-5: #bd7744;
+  --interactive-primary: #ff8a3d;
+  --interactive-primary-hover: #ff9d5c;
+  --interactive-primary-active: #e86f22;
+  --interactive-soft: rgb(255 138 61 / 14%);
+  --interactive-soft-pressed: rgb(255 138 61 / 22%);
+  --interactive-muted-hover: rgb(255 255 255 / 5%);
 }
 
 /* ── 2. LIGHT (밝고 깔끔한 라이트) ── */
@@ -766,6 +778,12 @@
   --chart-3: oklch(0.55 0.18 240);
   --chart-4: oklch(0.55 0.18 290);
   --chart-5: oklch(0.62 0.18 55);
+  --interactive-primary: oklch(0.60 0.18 160);
+  --interactive-primary-hover: oklch(0.55 0.20 160);
+  --interactive-primary-active: oklch(0.48 0.19 160);
+  --interactive-soft: oklch(0.94 0.030 160);
+  --interactive-soft-pressed: oklch(0.90 0.045 160);
+  --interactive-muted-hover: oklch(0.93 0.010 260);
 }
 
 /* ── 3. MIDNIGHT (미드나잇 블루 - 가독성 개선) ── */
@@ -802,6 +820,12 @@
   --chart-3: oklch(0.65 0.20 290);
   --chart-4: oklch(0.70 0.16 240);
   --chart-5: oklch(0.66 0.18 310);
+  --interactive-primary: oklch(0.70 0.22 265);
+  --interactive-primary-hover: oklch(0.76 0.22 265);
+  --interactive-primary-active: oklch(0.62 0.22 265);
+  --interactive-soft: oklch(0.24 0.050 265);
+  --interactive-soft-pressed: oklch(0.29 0.060 265);
+  --interactive-muted-hover: oklch(0.23 0.035 265);
 }
 
 /* ── 4. OCEAN (오션 - 가독성 개선) ── */
@@ -838,6 +862,12 @@
   --chart-3: oklch(0.65 0.18 240);
   --chart-4: oklch(0.70 0.14 220);
   --chart-5: oklch(0.64 0.20 175);
+  --interactive-primary: oklch(0.72 0.18 195);
+  --interactive-primary-hover: oklch(0.78 0.18 195);
+  --interactive-primary-active: oklch(0.63 0.18 195);
+  --interactive-soft: oklch(0.25 0.050 205);
+  --interactive-soft-pressed: oklch(0.30 0.060 205);
+  --interactive-muted-hover: oklch(0.24 0.032 210);
 }
 
 /* ── 5. SUNSET (선셋 - 가독성 개선) ── */
@@ -874,6 +904,12 @@
   --chart-3: oklch(0.77 0.16 75);
   --chart-4: oklch(0.68 0.22 355);
   --chart-5: oklch(0.73 0.18 60);
+  --interactive-primary: oklch(0.75 0.20 45);
+  --interactive-primary-hover: oklch(0.80 0.20 45);
+  --interactive-primary-active: oklch(0.66 0.20 45);
+  --interactive-soft: oklch(0.27 0.050 35);
+  --interactive-soft-pressed: oklch(0.32 0.060 35);
+  --interactive-muted-hover: oklch(0.25 0.028 35);
 }
 
 /* ── 6. FOREST (포레스트 - 가독성 개선) ── */
@@ -910,6 +946,12 @@
   --chart-3: oklch(0.64 0.18 170);
   --chart-4: oklch(0.68 0.14 125);
   --chart-5: oklch(0.66 0.20 160);
+  --interactive-primary: oklch(0.70 0.20 145);
+  --interactive-primary-hover: oklch(0.76 0.20 145);
+  --interactive-primary-active: oklch(0.61 0.20 145);
+  --interactive-soft: oklch(0.25 0.045 145);
+  --interactive-soft-pressed: oklch(0.30 0.055 145);
+  --interactive-muted-hover: oklch(0.24 0.028 145);
 }
 
 /* 스크롤바 테마 적응 */

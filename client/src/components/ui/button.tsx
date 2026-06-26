@@ -10,15 +10,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "border border-primary/35 bg-primary text-primary-foreground shadow-[0_10px_28px_color-mix(in_srgb,var(--primary)_24%,transparent)] hover:brightness-110 hover:shadow-[0_12px_32px_color-mix(in_srgb,var(--primary)_32%,transparent)]",
+          "border border-primary/35 bg-[var(--interactive-primary)] text-primary-foreground shadow-[0_10px_28px_color-mix(in_srgb,var(--primary)_24%,transparent)] hover:bg-[var(--interactive-primary-hover)] hover:shadow-[0_12px_32px_color-mix(in_srgb,var(--primary)_32%,transparent)] active:bg-[var(--interactive-primary-active)]",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
-          "border border-primary/70 bg-background/25 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:border-primary hover:bg-primary/10 dark:bg-background/25 dark:border-primary/70 dark:hover:bg-primary/10",
+          "border border-primary/70 bg-background/25 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:border-primary hover:bg-[var(--interactive-soft)] active:bg-[var(--interactive-soft-pressed)] dark:bg-background/25 dark:border-primary/70",
         secondary:
           "border border-white/5 bg-secondary text-secondary-foreground shadow-[0_10px_28px_rgba(0,0,0,0.18)] hover:bg-secondary/80",
         ghost:
-          "text-muted-foreground hover:bg-white/[0.05] hover:text-foreground dark:hover:bg-white/[0.05]",
+          "text-muted-foreground hover:bg-[var(--interactive-muted-hover)] hover:text-foreground active:bg-[var(--interactive-soft)]",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
