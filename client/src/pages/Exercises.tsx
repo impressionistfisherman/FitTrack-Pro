@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { trpc } from "@/lib/trpc";
-import { matchesExerciseSearchText } from "@shared/exerciseSearch";
+import { getPopularExerciseAliases, matchesExerciseSearchText } from "@shared/exerciseSearch";
 import { ChevronLeft, ChevronRight, Filter, Heart, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
@@ -115,6 +115,7 @@ function ExerciseListItem({
   const [imgError, setImgError] = useState(false);
   const bpColor = bodyPartColors[exercise.bodyPart] || "#10b981";
   const diff = difficultyConfig[exercise.difficulty];
+  const aliases = getPopularExerciseAliases(exercise.nameKo, exercise.name);
 
   return (
     <article className="exercise-list-item">
@@ -144,9 +145,14 @@ function ExerciseListItem({
           )}
         </div>
 
-        <div className="exercise-list-copy">
+          <div className="exercise-list-copy">
           <div className="exercise-list-title">{exercise.nameKo}</div>
           <div className="exercise-list-subtitle">{exercise.name}</div>
+          {aliases.length > 0 && (
+            <div className="exercise-list-aliases">
+              {aliases.join(" · ")}
+            </div>
+          )}
           <div className="exercise-list-badges">
             <span
               className="exercise-list-badge"

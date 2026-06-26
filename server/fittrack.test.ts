@@ -240,6 +240,27 @@ describe("exercises.list", () => {
     expect(result.length).toBeGreaterThan(1);
     expect(result[0].nameKo).toBe("바벨 로우");
   });
+
+  it("searches common Korean gym aliases", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    await expect(caller.exercises.list({ search: "사레레" })).resolves.toEqual(
+      expect.arrayContaining([expect.objectContaining({ nameKo: "레터럴 레이즈" })])
+    );
+    await expect(caller.exercises.list({ search: "밀프" })).resolves.toEqual(
+      expect.arrayContaining([expect.objectContaining({ nameKo: "오버헤드 프레스" })])
+    );
+    await expect(caller.exercises.list({ search: "불스스" })).resolves.toEqual(
+      expect.arrayContaining([expect.objectContaining({ nameKo: "불가리안 스플릿 스쿼트" })])
+    );
+    await expect(caller.exercises.list({ search: "롱풀" })).resolves.toEqual(
+      expect.arrayContaining([expect.objectContaining({ nameKo: "시티드 케이블 로우" })])
+    );
+    await expect(caller.exercises.list({ search: "런닝머신" })).resolves.toEqual(
+      expect.arrayContaining([expect.objectContaining({ nameKo: "트레드밀 달리기" })])
+    );
+  });
 });
 
 describe("exercises.detail", () => {
