@@ -120,7 +120,10 @@ export default function Exercises() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const visibleExercises = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-  const activeFilterCount = [bodyPart !== "all", equipment !== "all", difficulty !== "all"].filter(Boolean).length;
+  const activeFilterCount = [bodyPart !== "all", equipment !== "all", difficulty !== "all", showFavOnly].filter(Boolean).length;
+  const bodyPartLabel = bodyParts.find((option) => option.value === bodyPart)?.label ?? "전체";
+  const equipmentLabel = equipments.find((option) => option.value === equipment)?.label ?? "전체";
+  const difficultyLabel = difficulties.find((option) => option.value === difficulty)?.label ?? "전체";
 
   useEffect(() => {
     setPage(1);
@@ -204,23 +207,46 @@ export default function Exercises() {
           </button>
         </div>
 
-        <div className="exercise-filter-scroll" aria-label="운동 부위 필터">
-          {bodyParts.map((bodyPartOption) => (
-            <FilterChip
-              key={bodyPartOption.value}
-              label={bodyPartOption.label}
-              active={bodyPart === bodyPartOption.value}
-              onClick={() => setBodyPart(bodyPartOption.value)}
-            />
-          ))}
+        <div className="exercise-active-filter-row" aria-label="현재 운동 필터">
+          <button type="button" onClick={() => setShowFilters(true)}>
+            부위 <strong>{bodyPartLabel}</strong>
+          </button>
+          {equipment !== "all" && (
+            <button type="button" onClick={() => setShowFilters(true)}>
+              기구 <strong>{equipmentLabel}</strong>
+            </button>
+          )}
+          {difficulty !== "all" && (
+            <button type="button" onClick={() => setShowFilters(true)}>
+              난이도 <strong>{difficultyLabel}</strong>
+            </button>
+          )}
+          {showFavOnly && (
+            <button type="button" onClick={() => setShowFavOnly(false)}>
+              즐겨찾기 <strong>켜짐</strong>
+            </button>
+          )}
         </div>
       </section>
 
       {showFilters && (
         <section id="exercise-extra-filters" className="exercise-extra-filters" aria-label="상세 운동 필터">
           <div>
+            <h2>부위</h2>
+            <div className="exercise-filter-grid">
+              {bodyParts.map((bodyPartOption) => (
+                <FilterChip
+                  key={bodyPartOption.value}
+                  label={bodyPartOption.label}
+                  active={bodyPart === bodyPartOption.value}
+                  onClick={() => setBodyPart(bodyPartOption.value)}
+                />
+              ))}
+            </div>
+          </div>
+          <div>
             <h2>기구</h2>
-            <div className="flex flex-wrap gap-2">
+            <div className="exercise-filter-grid">
               {equipments.map((equipmentOption) => (
                 <FilterChip
                   key={equipmentOption.value}
@@ -233,7 +259,7 @@ export default function Exercises() {
           </div>
           <div>
             <h2>난이도</h2>
-            <div className="flex flex-wrap gap-2">
+            <div className="exercise-filter-grid">
               {difficulties.map((difficultyOption) => (
                 <FilterChip
                   key={difficultyOption.value}
