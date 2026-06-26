@@ -608,6 +608,7 @@ export default function History() {
   const [freeWorkoutOpen, setFreeWorkoutOpen] = useState(false);
   const [editingSession, setEditingSession] = useState<any | null>(null);
   const [viewingSession, setViewingSession] = useState<any | null>(null);
+  const [workoutLogExpanded, setWorkoutLogExpanded] = useState(false);
   const dismissedRouteSessionIdRef = useRef<number | null>(null);
   const routeSessionId = useMemo(() => {
     const match = location.match(/^\/history\/(\d+)$/);
@@ -660,6 +661,13 @@ export default function History() {
     openEditWorkout(session);
   };
 
+  const focusWorkoutLog = () => {
+    setWorkoutLogExpanded(true);
+    window.setTimeout(() => {
+      document.getElementById("history-log")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+  };
+
   const prevMonth = () => {
     const nextYear = month === 1 ? year - 1 : year;
     const nextMonthValue = month === 1 ? 12 : month - 1;
@@ -680,6 +688,12 @@ export default function History() {
       .filter((session: any) => getSessionDateKey(session) === selectedDate)
       .sort((a: any, b: any) => getSessionDate(b).getTime() - getSessionDate(a).getTime());
   }, [sessions, selectedDate]);
+  const selectedDateLabel = useMemo(() => (
+    new Date(`${selectedDate}T12:00:00`).toLocaleDateString("ko-KR", { month: "long", day: "numeric", weekday: "short" })
+  ), [selectedDate]);
+  const workoutLogSessions = selectedDateSessions.length > 0 ? selectedDateSessions : (recentWorkouts ?? []);
+  const visibleWorkoutLogSessions = workoutLogExpanded ? workoutLogSessions : workoutLogSessions.slice(0, 3);
+  const hiddenWorkoutLogCount = Math.max(0, workoutLogSessions.length - visibleWorkoutLogSessions.length);
 
   useEffect(() => {
     if (!routeSessionId) {
@@ -853,24 +867,36 @@ export default function History() {
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <div>
                     <div className="text-sm font-semibold text-foreground">
-                      {new Date(`${selectedDate}T12:00:00`).toLocaleDateString("ko-KR", { month: "long", day: "numeric", weekday: "short" })}
+                      {selectedDateLabel}
                     </div>
-                    <div className="text-xs text-muted-foreground">선택한 날짜 운동 기록</div>
+                    <div className="text-xs text-muted-foreground">상세 운동 로그는 화면 하단에서 확인</div>
                   </div>
                   <Badge variant="outline" className="border-border text-muted-foreground">
                     {selectedDateSessions.length}개
                   </Badge>
                 </div>
                 {selectedDateSessions.length > 0 ? (
-                  <div className="space-y-2">
-                    {selectedDateSessions.map((session: any) => (
-                      <SessionCard key={session.id} session={session} onDelete={handleDeleteSession} onEdit={openEditWorkout} onView={setViewingSession} />
-                    ))}
-                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="mt-1 h-11 w-full justify-between border-border bg-background/45 text-foreground hover:bg-accent"
+                    onClick={focusWorkoutLog}
+                  >
+                    <span>{selectedDateLabel} 로그 {selectedDateSessions.length}개 보기</span>
+                    <ChevronDown size={16} />
+                  </Button>
                 ) : (
-                  <div className="rounded-lg border border-dashed border-border px-3 py-5 text-center text-sm text-muted-foreground">
-                    이 날짜에는 운동 기록이 없습니다.
-                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="mt-1 h-11 w-full border border-dashed border-border text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      setEditingSession(null);
+                      setFreeWorkoutOpen(true);
+                    }}
+                  >
+                    이 날짜에 운동 기록 추가
+                  </Button>
                 )}
               </div>
             </CardContent>
@@ -1006,27 +1032,59 @@ export default function History() {
         </div>
       </div>
 
-      <details id="history-log" className="content-disclosure scroll-mt-24 mt-5">
-        <summary>
-          <span>운동 로그</span>
-          <small>최근 운동 {recentWorkouts?.length ?? 0}개 · 눌러서 펼치기</small>
-        </summary>
-        <div className="space-y-3 pt-3">
-          {recentWorkouts && recentWorkouts.length > 0 ? (
-            recentWorkouts.slice(0, 10).map((session: any) => (
-              <SessionCard
-                key={`history-log-${session.id}`}
-                session={session}
-                onDelete={handleDeleteSession}
-                onEdit={openEditWorkout}
-                onView={setViewingSession}
-              />
-            ))
-          ) : (
-            <div className="empty-state-panel">아직 완료한 운동이 없습니다.</div>
+      <Card id="history-log" className="scroll-mt-24 mt-5 border-border bg-card">
+        <CardContent className="p-4 sm:p-5">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <span className="text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Workout log</span>
+              <h2 className="mt-1 text-lg font-extrabold tracking-tight text-foreground">운동 로그</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {selectedDateSessions.length > 0
+                  ? `${selectedDateLabel} 기록 ${selectedDateSessions.length}개`
+                  : `선택한 날짜 기록 없음 · 최근 운동 ${recentWorkouts?.length ?? 0}개`}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11 justify-between gap-2 border-border bg-accent/30 sm:min-w-32"
+              onClick={() => setWorkoutLogExpanded((value) => !value)}
+              disabled={workoutLogSessions.length <= 3}
+              aria-expanded={workoutLogExpanded}
+            >
+              {workoutLogExpanded ? "축소" : "확대"}
+              <ChevronDown size={16} className={cn("transition-transform", workoutLogExpanded && "rotate-180")} />
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {visibleWorkoutLogSessions.length > 0 ? (
+              visibleWorkoutLogSessions.map((session: any) => (
+                <SessionCard
+                  key={`history-log-${session.id}`}
+                  session={session}
+                  onDelete={handleDeleteSession}
+                  onEdit={openEditWorkout}
+                  onView={setViewingSession}
+                />
+              ))
+            ) : (
+              <div className="empty-state-panel">아직 완료한 운동이 없습니다.</div>
+            )}
+          </div>
+
+          {hiddenWorkoutLogCount > 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              className="mt-3 h-11 w-full border border-dashed border-border text-muted-foreground hover:text-foreground"
+              onClick={() => setWorkoutLogExpanded(true)}
+            >
+              운동 로그 {hiddenWorkoutLogCount}개 더 보기
+            </Button>
           )}
-        </div>
-      </details>
+        </CardContent>
+      </Card>
     </div>
   );
 }
