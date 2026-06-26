@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { expandExerciseSearchTerms, getPopularExerciseAliases, matchesExerciseSearchText, scoreExerciseSearchMatch } from "../shared/exerciseSearch";
+import { expandExerciseSearchTerms, getPopularExerciseAliases, getReadableKoreanExerciseName, matchesExerciseSearchText, scoreExerciseSearchMatch } from "../shared/exerciseSearch";
 
 describe("exercise search aliases", () => {
   it("matches machine curl aliases to preacher curl names", () => {
@@ -53,6 +53,14 @@ describe("exercise search aliases", () => {
     expect(getPopularExerciseAliases("레버리지 시티드 힙 어덕션", "Lever Seated Hip Adduction")).toEqual(
       expect.arrayContaining(["이너싸이", "내전근"])
     );
+  });
+
+  it("normalizes awkward imported Korean exercise display names", () => {
+    expect(getReadableKoreanExerciseName({ name: "Adductor", nameKo: "어덕터" })).toBe("이너싸이 머신");
+    expect(getReadableKoreanExerciseName({ name: "Abductor Machine", nameKo: "어브덕터 머신" })).toBe("아웃싸이 머신");
+    expect(getReadableKoreanExerciseName({ name: "Alternate Hammer Curl", nameKo: "얼터네이트 해머 컬" })).toBe("교대 해머 컬");
+    expect(getReadableKoreanExerciseName({ name: "Barbell Shrug Behind The Back", nameKo: "바벨 슈러그 비하인드 더 백" })).toBe("바벨 슈러그 등 뒤");
+    expect(getReadableKoreanExerciseName({ name: "Chest Tap Push-Up Male", nameKo: "체스트 Tap 푸시업 Male" })).toBe("가슴 터치 푸시업");
   });
 
   it("scores exact exercise name matches above partial matches", () => {

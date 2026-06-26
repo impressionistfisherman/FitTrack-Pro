@@ -125,6 +125,8 @@ const movementSynonymGroups = [
   ["킥백", "kickback"],
   ["풀오버", "pullover"],
   ["슈러그", "쉬러그", "shrug"],
+  ["탭", "터치", "tap", "touch"],
+  ["점프", "jump", "jumps"],
 ];
 
 const bodySynonymGroups = [
@@ -176,6 +178,99 @@ const generatedAliasRules = [
   { any: ["bulgarian split squat", "불가리안 스플릿 스쿼트"], aliases: ["불스스", "불가리안"] },
   { any: ["treadmill", "트레드밀"], aliases: ["런닝머신", "러닝머신"] },
   { any: ["pec deck", "펙 덱"], aliases: ["펙덱", "펙덱 플라이"] },
+];
+
+const koreanDisplayPhraseReplacements: Array<[RegExp, string]> = [
+  [/^어덕터$/i, "이너싸이 머신"],
+  [/^어브덕터 머신$/i, "아웃싸이 머신"],
+  [/어덕터 머신/g, "이너싸이 머신"],
+  [/어브덕터 머신/g, "아웃싸이 머신"],
+  [/힙 어덕션/g, "이너싸이"],
+  [/힙 어브덕션|힙 앱덕션/g, "아웃싸이"],
+  [/얼터네이팅|얼터네이트/g, "교대"],
+  [/원암|원 암/g, "한손"],
+  [/투암|투 암/g, "양손"],
+  [/싱글암|싱글 암/g, "한손"],
+  [/투 덤벨/g, "덤벨 양손"],
+  [/투 케틀벨/g, "케틀벨 양손"],
+  [/덤벨 원 레그/g, "덤벨 한발"],
+  [/원 레그/g, "한발"],
+  [/싱글 레그/g, "한발"],
+  [/투 레그/g, "양발"],
+  [/온 니/g, "무릎 대고"],
+  [/온 더 니/g, "무릎 대고"],
+  [/헤드 온 벤치/g, "벤치에 머리 지지"],
+  [/라잉 어게인스트 언 인클라인/g, "인클라인 벤치에 기대서"],
+  [/비하인드 더 백/g, "등 뒤"],
+  [/투 어 벤치/g, "벤치까지"],
+  [/풀어파트/g, "풀 어파트"],
+  [/다이아고널/g, "대각선"],
+  [/델토이드/g, "어깨"],
+  [/글루트/g, "둔근"],
+  [/쿼드/g, "대퇴사두"],
+  [/바이셉스|바이셉/g, "이두"],
+  [/트라이셉스|트라이셉/g, "삼두"],
+  [/체스트/g, "가슴"],
+  [/Sitted/gi, "시티드"],
+  [/Twisting/gi, "회전"],
+  [/Twisted/gi, "트위스트"],
+  [/Rotate/gi, "회전"],
+  [/Raised/gi, "올린"],
+  [/Support/gi, "보조"],
+  [/Tap/gi, "터치"],
+  [/Touch/gi, "터치"],
+  [/Jumps/gi, "점프"],
+  [/Jump/gi, "점프"],
+  [/Circular/gi, "원형"],
+  [/Apart/gi, "벌리기"],
+  [/Basic/gi, "기본"],
+  [/Modified/gi, "변형"],
+  [/Prisoner/gi, "프리즈너"],
+  [/Semi/gi, "세미"],
+  [/Swimmer/gi, "스위머"],
+  [/Cossack/gi, "코사크"],
+  [/French/gi, "프렌치"],
+  [/Thrusts/gi, "스러스트"],
+  [/Renegade/gi, "레니게이드"],
+  [/힐 터치/g, "뒤꿈치 터치"],
+  [/힐 터처/g, "뒤꿈치 터치"],
+  [/앵클/g, "발목"],
+  [/서클/g, "돌리기"],
+  [/메디신 볼/g, "메디신볼"],
+  [/스텝 업/g, "스텝업"],
+  [/풀 업/g, "풀업"],
+  [/푸시 업|푸쉬 업/g, "푸시업"],
+  [/싯업/g, "싯업"],
+  [/AB 롤아웃/g, "AB 휠 롤아웃"],
+  [/\bMale\b|\bFemale\b/gi, ""],
+  [/\s+v\.\s*\d+/gi, ""],
+  [/\s*\(.*?\)\s*/g, " "],
+  [/\s+-\s+/g, " "],
+];
+
+const englishDisplayPhraseMap: Array<[RegExp, string]> = [
+  [/\badductor\b|\bhip adduction\b/i, "이너싸이 머신"],
+  [/\babductor\b|\bhip abduction\b/i, "아웃싸이 머신"],
+  [/\bbarbell bench press\b/i, "바벨 벤치프레스"],
+  [/\bincline barbell bench press\b/i, "인클라인 바벨 벤치프레스"],
+  [/\bdumbbell bench press\b/i, "덤벨 벤치프레스"],
+  [/\bbench press\b/i, "벤치프레스"],
+  [/\blat pulldown\b|\bpull down\b|\bpulldown\b/i, "랫 풀다운"],
+  [/\bseated cable row\b|\bseated row\b/i, "시티드 케이블 로우"],
+  [/\blateral raise\b/i, "레터럴 레이즈"],
+  [/\boverhead press\b|\bmilitary press\b/i, "오버헤드 프레스"],
+  [/\bshoulder press\b/i, "숄더 프레스"],
+  [/\brear delt\b/i, "리어 델트"],
+  [/\btriceps? pushdown\b/i, "트라이셉 푸시다운"],
+  [/\bhammer curl\b/i, "해머 컬"],
+  [/\bbiceps? curl\b/i, "이두 컬"],
+  [/\bromanian deadlift\b/i, "루마니안 데드리프트"],
+  [/\bdeadlift\b/i, "데드리프트"],
+  [/\bbulgarian split squat\b/i, "불가리안 스플릿 스쿼트"],
+  [/\bsquat\b/i, "스쿼트"],
+  [/\bhip thrust\b/i, "힙 스러스트"],
+  [/\btreadmill\b/i, "트레드밀 달리기"],
+  [/\bpec deck\b/i, "펙 덱 머신"],
 ];
 
 const synonymGroups = [
@@ -340,6 +435,66 @@ export function getPopularExerciseAliases(...values: Array<string | null | undef
   }
 
   return Array.from(aliases).slice(0, 4);
+}
+
+function cleanupKoreanDisplayName(value: string) {
+  let next = value.replace(/[·ㆍ_/\\|]+/g, " ");
+  for (const [pattern, replacement] of koreanDisplayPhraseReplacements) {
+    next = next.replace(pattern, replacement);
+  }
+  return next
+    .replace(/\s+/g, " ")
+    .replace(/\s+(머신|프레스|로우|컬|레이즈|플라이|스쿼트|런지|데드리프트|풀다운|푸시다운|익스텐션|스트레칭|스트레치)/g, " $1")
+    .trim();
+}
+
+function translateEnglishExerciseName(value: string) {
+  const normalized = normalizeExerciseSearchText(value);
+  if (!normalized) return "";
+
+  for (const [pattern, replacement] of englishDisplayPhraseMap) {
+    if (pattern.test(normalized)) return replacement;
+  }
+
+  return "";
+}
+
+export function getReadableKoreanExerciseName(exercise: {
+  name?: string | null;
+  nameKo?: string | null;
+  equipment?: string | null;
+  bodyPart?: string | null;
+}) {
+  const rawKo = typeof exercise.nameKo === "string" ? exercise.nameKo.trim() : "";
+  const rawEn = typeof exercise.name === "string" ? exercise.name.trim() : "";
+  const cleanedKo = rawKo ? cleanupKoreanDisplayName(rawKo) : "";
+
+  const englishDerived = rawEn ? translateEnglishExerciseName(rawEn) : "";
+  if (!cleanedKo && englishDerived) return englishDerived;
+
+  if (!cleanedKo) return rawEn;
+
+  const compactKo = compactSearchText(cleanedKo);
+  const compactEnglishDerived = compactSearchText(englishDerived);
+  if (englishDerived && (
+    /[a-z]/i.test(cleanedKo)
+    || compactKo.length > compactEnglishDerived.length + 12
+  )) {
+    const prefixParts: string[] = [];
+    const normalizedEn = normalizeExerciseSearchText(rawEn);
+    if (/\bbarbell\b/.test(normalizedEn) && !/바벨/.test(englishDerived)) prefixParts.push("바벨");
+    if (/\bdumbbell\b/.test(normalizedEn) && !/덤벨/.test(englishDerived)) prefixParts.push("덤벨");
+    if (/\bcable\b/.test(normalizedEn) && !/케이블/.test(englishDerived)) prefixParts.push("케이블");
+    if (/\bmachine\b|\blever\b/.test(normalizedEn) && !/머신|레버/.test(englishDerived)) prefixParts.push("머신");
+    if (/\bband\b/.test(normalizedEn) && !/밴드/.test(englishDerived)) prefixParts.push("밴드");
+    if (/\bone arm\b|\bone-arm\b|\bsingle arm\b/.test(normalizedEn) && !/한손/.test(englishDerived)) prefixParts.push("한손");
+    if (/\bseated\b/.test(normalizedEn) && !/시티드|앉/.test(englishDerived)) prefixParts.push("시티드");
+    if (/\bstanding\b/.test(normalizedEn) && !/스탠딩|서서/.test(englishDerived)) prefixParts.push("스탠딩");
+
+    return cleanupKoreanDisplayName([...prefixParts, englishDerived].join(" "));
+  }
+
+  return cleanedKo;
 }
 
 export function scoreExerciseSearchMatch(query: string, ...values: Array<string | null | undefined>) {

@@ -5,7 +5,7 @@ import mysql from "mysql2/promise";
 import { Pool as PgPool } from "pg";
 import bulkExercises from "./data/bulk-exercises.json";
 import { ENV } from "./_core/env";
-import { expandExerciseSearchTerms, getExerciseSearchTokenGroups, matchesExerciseSearchText, scoreExerciseSearchMatch } from "../shared/exerciseSearch";
+import { expandExerciseSearchTerms, getExerciseSearchTokenGroups, getReadableKoreanExerciseName, matchesExerciseSearchText, scoreExerciseSearchMatch } from "../shared/exerciseSearch";
 
 const databaseUrl = process.env.DATABASE_URL?.trim();
 const sqlitePath = process.env.SQLITE_DB_PATH
@@ -230,6 +230,7 @@ function normalizeExercise<T extends Row | null>(exercise: T): T {
   if (!exercise) return exercise;
   return {
     ...exercise,
+    nameKo: getReadableKoreanExerciseName(exercise),
     primaryMuscles: parseJson(exercise.primaryMuscles, []),
     secondaryMuscles: parseJson(exercise.secondaryMuscles, []),
     secondaryImages: parseJson(exercise.secondaryImages, []),

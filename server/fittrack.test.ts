@@ -270,6 +270,17 @@ describe("exercises.list", () => {
       String(exercise.nameKo).includes("어덕") || String(exercise.name).toLowerCase().includes("adduct")
     )).toBe(true);
   });
+
+  it("returns readable Korean display names for imported exercises", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const innerThigh = await caller.exercises.list({ search: "이너싸이" });
+    expect(innerThigh.some((exercise) => exercise.nameKo === "이너싸이 머신")).toBe(true);
+
+    const chestTap = await caller.exercises.list({ search: "체스트 탭 푸시업" });
+    expect(chestTap.some((exercise) => !String(exercise.nameKo).includes("Male") && !String(exercise.nameKo).includes("Tap"))).toBe(true);
+  });
 });
 
 describe("exercises.detail", () => {
