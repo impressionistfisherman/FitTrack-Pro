@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Filter, Heart, Search, X } from "lucide-reac
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 24;
 
 const bodyParts = [
   { value: "all", label: "전체" },
@@ -105,10 +105,12 @@ function ExerciseListItem({
   exercise,
   isFav,
   onToggleFav,
+  showImage,
 }: {
   exercise: any;
   isFav?: boolean;
   onToggleFav?: () => void;
+  showImage?: boolean;
 }) {
   const [imgError, setImgError] = useState(false);
   const bpColor = bodyPartColors[exercise.bodyPart] || "#10b981";
@@ -122,7 +124,7 @@ function ExerciseListItem({
         aria-label={`${exercise.nameKo} 상세 보기`}
       >
         <div className="exercise-list-thumbnail" style={{ background: `${bpColor}20` }}>
-          {exercise.gifUrl && !imgError ? (
+          {showImage && exercise.gifUrl && !imgError ? (
             <img
               src={exercise.gifUrl}
               alt=""
@@ -214,6 +216,7 @@ export default function Exercises() {
   const [page, setPage] = useState(initial.page);
   const [showFilters, setShowFilters] = useState(false);
   const [showFavOnly, setShowFavOnly] = useState(initial.favorites);
+  const [showImages, setShowImages] = useState(false);
   const debouncedSearch = useDebouncedValue(search.trim(), 250);
 
   const utils = trpc.useUtils();
@@ -297,46 +300,48 @@ export default function Exercises() {
         )}
       </header>
 
-      <div className="flex w-full gap-2 mb-3">
-        <label className="exercise-search">
-          <span className="sr-only">운동 이름 검색</span>
-          <Search size={16} aria-hidden="true" />
-          <input
-            type="search"
-            placeholder="운동 이름 검색..."
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-          {search && (
-            <button type="button" onClick={() => setSearch("")} aria-label="검색어 초기화">
-              <X size={16} />
-            </button>
-          )}
-        </label>
-        <button
-          type="button"
-          onClick={() => setShowFilters((current) => !current)}
-          className={`exercise-filter-button${showFilters ? " exercise-filter-button-active" : ""}`}
-          aria-expanded={showFilters}
-          aria-controls="exercise-extra-filters"
-          aria-label="상세 필터"
-        >
-          <Filter size={16} />
-          <span className="hidden sm:inline">필터</span>
-          {activeFilterCount > 0 && <span className="exercise-filter-count">{activeFilterCount}</span>}
-        </button>
-      </div>
+      <section className="exercise-control-panel" aria-label="운동 검색과 필터">
+        <div className="exercise-control-row">
+          <label className="exercise-search">
+            <span className="sr-only">운동 이름 검색</span>
+            <Search size={16} aria-hidden="true" />
+            <input
+              type="search"
+              placeholder="운동 이름 검색..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+            {search && (
+              <button type="button" onClick={() => setSearch("")} aria-label="검색어 초기화">
+                <X size={16} />
+              </button>
+            )}
+          </label>
+          <button
+            type="button"
+            onClick={() => setShowFilters((current) => !current)}
+            className={`exercise-filter-button${showFilters ? " exercise-filter-button-active" : ""}`}
+            aria-expanded={showFilters}
+            aria-controls="exercise-extra-filters"
+            aria-label="상세 필터"
+          >
+            <Filter size={16} />
+            <span className="hidden sm:inline">필터</span>
+            {activeFilterCount > 0 && <span className="exercise-filter-count">{activeFilterCount}</span>}
+          </button>
+        </div>
 
-      <div className="exercise-filter-scroll" aria-label="운동 부위 필터">
-        {bodyParts.map((bodyPartOption) => (
-          <FilterChip
-            key={bodyPartOption.value}
-            label={bodyPartOption.label}
-            active={bodyPart === bodyPartOption.value}
-            onClick={() => setBodyPart(bodyPartOption.value)}
-          />
-        ))}
-      </div>
+        <div className="exercise-filter-scroll" aria-label="운동 부위 필터">
+          {bodyParts.map((bodyPartOption) => (
+            <FilterChip
+              key={bodyPartOption.value}
+              label={bodyPartOption.label}
+              active={bodyPart === bodyPartOption.value}
+              onClick={() => setBodyPart(bodyPartOption.value)}
+            />
+          ))}
+        </div>
+      </section>
 
       {showFilters && (
         <section id="exercise-extra-filters" className="exercise-extra-filters" aria-label="상세 운동 필터">
@@ -374,10 +379,20 @@ export default function Exercises() {
         </section>
       )}
 
-      <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground" aria-live="polite">
-        <span>{isLoading && !exercises ? "로딩 중..." : `${filtered.length}개 운동`}</span>
-        {filtered.length > PAGE_SIZE && <span>· {currentPage}/{totalPages} 페이지</span>}
-        {isFetching && exercises && <span className="text-primary">업데이트 중</span>}
+      <div className="exercise-result-summary" aria-live="polite">
+        <div>
+          <span>{isLoading && !exercises ? "로딩 중..." : `${filtered.length}개 운동`}</span>
+          {filtered.length > PAGE_SIZE && <span> · {currentPage}/{totalPages} 페이지</span>}
+          {isFetching && exercises && <span className="text-primary"> · 업데이트 중</span>}
+        </div>
+        <button
+          type="button"
+          className={`exercise-image-toggle${showImages ? " exercise-image-toggle-active" : ""}`}
+          onClick={() => setShowImages((current) => !current)}
+          aria-pressed={showImages}
+        >
+          {showImages ? "이미지 켜짐" : "빠른 목록"}
+        </button>
       </div>
 
       {isLoading && !exercises ? (
@@ -394,6 +409,7 @@ export default function Exercises() {
                 key={exercise.id}
                 exercise={exercise}
                 isFav={favIds.has(exercise.id)}
+                showImage={showImages}
                 onToggleFav={
                   isAuthenticated ? () => toggleFav.mutate({ exerciseId: exercise.id }) : undefined
                 }

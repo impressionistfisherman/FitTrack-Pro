@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import OneRMCalculator from "@/components/OneRMCalculator";
 import WorkoutShareCard from "@/components/WorkoutShareCard";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -117,10 +117,10 @@ function AddExerciseModal({ onAdd }: { onAdd: (exercise: any, restSecs: number) 
     { enabled: open }
   );
 
-  const filtered = exercises?.filter(ex => {
+  const filtered = useMemo(() => exercises?.filter(ex => {
     if (!search) return true;
     return matchesExerciseSearchText(search, ex.nameKo, ex.name);
-  });
+  }).slice(0, 40), [exercises, search]);
 
   const bodyParts = ["all", "chest", "back", "shoulders", "arms", "legs", "abs", "glutes", "cardio", "stretching"];
   const bpKo: Record<string, string> = {
@@ -150,6 +150,9 @@ function AddExerciseModal({ onAdd }: { onAdd: (exercise: any, restSecs: number) 
                 {bpKo[bp]}
               </button>
             ))}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {exercises ? `${filtered?.length ?? 0}개 표시${(exercises.length ?? 0) > (filtered?.length ?? 0) ? " · 검색어를 더 입력하면 좁혀집니다" : ""}` : "운동 목록 로딩 중"}
           </div>
           {/* 휴식 시간 설정 */}
           <div className="flex items-center gap-3 px-1 py-2 bg-accent/50 rounded-xl border border-border">

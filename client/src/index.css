@@ -246,6 +246,27 @@
     font-weight: 600;
   }
 
+  .exercise-control-panel {
+    position: sticky;
+    top: 0.75rem;
+    z-index: 12;
+    margin-bottom: 0.875rem;
+    border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+    border-radius: 1rem;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--card) 96%, white 4%), color-mix(in srgb, var(--card) 96%, black 4%));
+    padding: 0.625rem;
+    box-shadow: 0 1rem 2.5rem color-mix(in srgb, #000 28%, transparent);
+    backdrop-filter: blur(14px);
+  }
+
+  .exercise-control-row {
+    display: flex;
+    width: 100%;
+    gap: 0.5rem;
+    margin-bottom: 0.625rem;
+  }
+
   .exercise-toolbar-button-favorite {
     border-color: color-mix(in oklch, #ef4444 70%, var(--border));
     background: color-mix(in oklch, #ef4444 12%, var(--card));
@@ -322,7 +343,6 @@
     width: 100%;
     gap: 0.5rem;
     overflow-x: auto;
-    margin-bottom: 0.75rem;
     padding-bottom: 0.25rem;
     scrollbar-width: none;
   }
@@ -366,7 +386,7 @@
   .exercise-list-item {
     position: relative;
     display: flex;
-    min-height: 5.875rem;
+    min-height: 5rem;
     width: 100%;
     overflow: hidden;
     border-radius: 0.875rem;
@@ -386,7 +406,7 @@
     flex: 1;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.625rem 3.25rem 0.625rem 0.75rem;
+    padding: 0.5625rem 3.25rem 0.5625rem 0.625rem;
   }
 
   .exercise-list-link:focus-visible {
@@ -396,8 +416,8 @@
 
   .exercise-list-thumbnail {
     display: flex;
-    width: 4.5rem;
-    height: 4.5rem;
+    width: 3.875rem;
+    height: 3.875rem;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
@@ -413,8 +433,8 @@
   }
 
   .exercise-list-thumbnail svg {
-    width: 2rem;
-    height: 2rem;
+    width: 1.75rem;
+    height: 1.75rem;
   }
 
   .exercise-list-copy {
@@ -521,6 +541,37 @@
   .exercise-pagination span {
     color: var(--muted-foreground);
     font-size: 0.8125rem;
+  }
+
+  .exercise-result-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+  }
+
+  .exercise-image-toggle {
+    display: inline-flex;
+    min-height: 2.25rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    padding: 0.4375rem 0.75rem;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .exercise-image-toggle-active {
+    border-color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 14%, var(--card));
+    color: var(--primary);
   }
 
   /* NOTE: .flex override removed - conflicts with Tailwind 4 responsive variants (lg:flex etc.) */

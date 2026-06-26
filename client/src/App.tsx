@@ -1,27 +1,53 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Route, Router as WouterRouter, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import AppLayout from "./components/AppLayout";
 
-const Home = lazy(() => import("./pages/Home"));
-const Exercises = lazy(() => import("./pages/Exercises"));
-const ExerciseDetail = lazy(() => import("./pages/ExerciseDetail"));
-const Routines = lazy(() => import("./pages/Routines"));
-const RoutineDetail = lazy(() => import("./pages/RoutineDetail"));
-const WorkoutSession = lazy(() => import("./pages/WorkoutSession"));
-const History = lazy(() => import("./pages/History"));
-const AICoach = lazy(() => import("./pages/AICoach"));
-const Coaching = lazy(() => import("@/pages/Coaching"));
-const Feedback = lazy(() => import("@/pages/Feedback"));
-const Profile = lazy(() => import("@/pages/Profile"));
-const BodyWeight = lazy(() => import("@/pages/BodyWeight"));
-const Admin = lazy(() => import("@/pages/Admin"));
-const Trainer = lazy(() => import("@/pages/Trainer"));
-const TrainerClientDetail = lazy(() => import("@/pages/TrainerClientDetail"));
+const loadHome = () => import("./pages/Home");
+const loadExercises = () => import("./pages/Exercises");
+const loadExerciseDetail = () => import("./pages/ExerciseDetail");
+const loadRoutines = () => import("./pages/Routines");
+const loadRoutineDetail = () => import("./pages/RoutineDetail");
+const loadWorkoutSession = () => import("./pages/WorkoutSession");
+const loadHistory = () => import("./pages/History");
+const loadAICoach = () => import("./pages/AICoach");
+const loadCoaching = () => import("@/pages/Coaching");
+const loadFeedback = () => import("@/pages/Feedback");
+const loadProfile = () => import("@/pages/Profile");
+const loadBodyWeight = () => import("@/pages/BodyWeight");
+const loadAdmin = () => import("@/pages/Admin");
+const loadTrainer = () => import("@/pages/Trainer");
+const loadTrainerClientDetail = () => import("@/pages/TrainerClientDetail");
+
+const Home = lazy(loadHome);
+const Exercises = lazy(loadExercises);
+const ExerciseDetail = lazy(loadExerciseDetail);
+const Routines = lazy(loadRoutines);
+const RoutineDetail = lazy(loadRoutineDetail);
+const WorkoutSession = lazy(loadWorkoutSession);
+const History = lazy(loadHistory);
+const AICoach = lazy(loadAICoach);
+const Coaching = lazy(loadCoaching);
+const Feedback = lazy(loadFeedback);
+const Profile = lazy(loadProfile);
+const BodyWeight = lazy(loadBodyWeight);
+const Admin = lazy(loadAdmin);
+const Trainer = lazy(loadTrainer);
+const TrainerClientDetail = lazy(loadTrainerClientDetail);
+
+const preloadCommonRoutes = () => {
+  void loadExercises();
+  void loadRoutines();
+  void loadHistory();
+  void loadAICoach();
+  void loadCoaching();
+  void loadProfile();
+  void loadBodyWeight();
+};
 
 const routerBase =
   import.meta.env.BASE_URL && import.meta.env.BASE_URL !== "/"
@@ -77,6 +103,25 @@ function PageLoading() {
 
 function AppInner() {
   const { themeConfig } = useTheme();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const preload = () => preloadCommonRoutes();
+    const browserWindow = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+
+    if (browserWindow.requestIdleCallback && browserWindow.cancelIdleCallback) {
+      const idleId = browserWindow.requestIdleCallback(preload, { timeout: 2500 });
+      return () => browserWindow.cancelIdleCallback?.(idleId);
+    }
+
+    const timeoutId = globalThis.setTimeout(preload, 1200);
+    return () => globalThis.clearTimeout(timeoutId);
+  }, []);
+
   return (
     <TooltipProvider>
       <Toaster theme={themeConfig.isDark ? "dark" : "light"} />

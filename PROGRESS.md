@@ -1,60 +1,44 @@
-# FitTrack Pro 작업 진행 기록
+# PROGRESS
 
-## 날짜/시간
+## 2026-06-26 10:22:36 +09:00
 
-2026-06-25 16:05:52 +09:00
+### 작업 요약
 
-## 작업 요약
+- 전체 반응속도와 로딩 체감 개선 요청에 대해, 전역 메뉴와 기존 라우팅은 유지하고 병목 가능성이 큰 사용자 흐름부터 수정함.
+- 외부 fitness/workout 앱 UX 레퍼런스에서 공통적으로 확인되는 방향인 빠른 진입, 낮은 조작 비용, 명확한 진행 상태를 기준으로 운동 탐색과 운동 세션 일부를 개선함.
 
-- 사이드바와 역할 전환은 유지하고 사용자 메뉴 8개 본문 블록만 재배치
-- 홈에서 중복된 트레이너·관리자·AI 코치 전환 버튼 제거
-- 운동 탐색에서 중복 플랜/운동 탭 제거, 기능 제목·검색·필터·목록 계층 정리
-- 루틴에서 중복 탭과 임의 진행률 제거, 실제 루틴 수·평균 주간 계획·목표 수 요약으로 교체
-- 기록에서 같은 최근 운동 목록이 두 번 표시되던 중복 블록 제거
-- 체중 요약을 현재값·증감·최저/최고 구조로 정리하고 차트 높이 확대
-- 의견 화면을 작성/처리 내역 2열 구조로 변경
-- AI 코치 탭을 상단 고정형으로 변경하고 콘텐츠 폭 확대
-- 코칭과 프로필의 데스크톱 콘텐츠 폭·헤더 계층 개선
-- 프로필에 연결·운동 요약·체중·목표 설정 빠른 이동 추가
-- 기존 기능, 메뉴, 라우팅, 저장 처리 유지
-- 공통 기본 버튼의 고정 오렌지 그라데이션 제거
-- 버튼·선택 메뉴·진행률·주요 CTA·카드 광원을 현재 테마 `--primary` 색상에 연동
-- 홈 상세 통계와 추가 기능을 접이식 블록으로 분리해 초기 정보량 축소
-- 코칭 타임라인·과제·피드백·PT 기록을 데스크톱 2열 블록으로 재배치
-- 기록 화면에 최근 운동·달력·수행 추이·체중 빠른 이동 추가
-- 기록 화면의 운동 로그를 최하단으로 이동하고 기본 접힘 상태로 변경
-- 운동 로그를 클릭해 축소·확대할 수 있게 하고 최대 10개 최근 기록 표시
-- 기록 화면의 불필요한 달력·수행 추이·체중·운동 로그 빠른 이동 바 제거
+### 변경 사항
 
-## 현재 상태
+- `client/src/App.tsx`
+  - 라우트 lazy import를 재사용 가능한 loader 함수로 분리함.
+  - 앱 초기 렌더 이후 브라우저 유휴 시간에 주요 페이지 chunk를 백그라운드 사전 로드하도록 추가함.
+  - 초기 로딩을 막지 않고 이후 메뉴 이동 체감을 줄이는 방식으로 적용함.
 
-- TypeScript 검사, 69개 Unit 테스트, Production build 통과
-- 데스크톱 및 390x844 모바일 운동 탐색 브라우저 QA 통과
-- 기존 사용자 변경 `SESSION_HANDOFF.md`, `local-db/fittrack_local.sqlite*` 유지
-
-## 변경 파일
-
-- `client/src/components/BodyWeightTracker.tsx`
-- `client/src/components/AppLayout.tsx`
-- `client/src/components/ui/button.tsx`
-- `client/src/index.css`
-- `client/src/pages/AICoach.tsx`
-- `client/src/pages/BodyWeight.tsx`
-- `client/src/pages/Coaching.tsx`
 - `client/src/pages/Exercises.tsx`
-- `client/src/pages/Feedback.tsx`
-- `client/src/pages/History.tsx`
-- `client/src/pages/Home.tsx`
-- `client/src/pages/Profile.tsx`
-- `client/src/pages/Routines.tsx`
-- `PROGRESS.md`
-- `TEST_RESULT.md`
+  - 운동 목록 페이지 크기를 50개에서 24개로 축소함.
+  - GIF 썸네일 자동 렌더를 기본 비활성화하고 `빠른 목록` / `이미지 켜짐` 토글로 전환함.
+  - 검색창과 부위 필터를 sticky 컨트롤 패널로 묶어 스크롤 중에도 조작하기 쉽게 변경함.
+  - 기존 상세 필터, 즐겨찾기, 페이지네이션, 상세 이동 기능은 유지함.
 
-## 남은 문제
+- `client/src/pages/WorkoutSession.tsx`
+  - 운동 추가 모달 검색 결과 렌더링을 최대 40개로 제한함.
+  - 검색 결과 필터링을 `useMemo`로 감싸 입력 중 불필요한 계산을 줄임.
+  - 기존 운동 추가, 휴식 시간 설정, AI 피드백 호출 기능은 유지함.
 
-- 로그인 사용자 데이터가 포함된 홈·루틴·기록·체중·코칭·AI·프로필 운영 화면 시각 QA 필요
+- `client/src/index.css`
+  - 운동 탐색 컨트롤 패널, 빠른 목록 토글, 더 조밀한 운동 목록 카드 스타일을 추가함.
 
-## 다음 세션
+### 현재 상태
 
-1. 운영 로그인 계정으로 각 화면의 실제 데이터 밀도 확인
-2. 화면별 긴 텍스트와 빈 상태의 모바일 회귀 확인
+- 필수 검증 통과
+  - `.\node_modules\.bin\pnpm.CMD run check`
+  - `.\node_modules\.bin\pnpm.CMD run test`
+  - `.\node_modules\.bin\pnpm.CMD run build`
+- 이번 작업에서 전역 사이드바, 역할 전환 UI, 기존 페이지 구분은 변경하지 않음.
+- 기존 dirty 파일인 `SESSION_HANDOFF.md`, `local-db/fittrack_local.sqlite*`는 작업 범위에서 제외해야 함.
+
+### 남은 문제 및 다음 작업
+
+- 실제 브라우저 기준으로 모바일/웹 스크롤, 검색 입력, 페이지 이동 체감 QA 필요.
+- 다음 우선순위는 `History`, `Home`, `Routines`, `WorkoutSession`의 세부 블록 재배치와 모바일 조작 흐름 정리임.
+- 빌드 결과상 `charts`, `History`, `WorkoutSession`, `Profile`, `AICoach` chunk가 여전히 크므로 추가 분할 또는 지연 로딩 후보임.
