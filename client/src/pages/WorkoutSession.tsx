@@ -553,6 +553,7 @@ export default function WorkoutSession() {
   const [newRoutineName, setNewRoutineName] = useState("");
   const [finishedDuration, setFinishedDuration] = useState(0);
   const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseAiFeedback | null>(null);
+  const [showExerciseFeedback, setShowExerciseFeedback] = useState(false);
   const { data: prCheckResult } = trpc.pr.check.useQuery({ sessionId: sid }, { enabled: checkPREnabled, retry: false });
 
   const { isActive: wakeLockActive, isSupported: wakeLockSupported, toggle: toggleWakeLock } = useWakeLock(true);
@@ -685,6 +686,7 @@ export default function WorkoutSession() {
       expanded: true,
     }]);
     toast.success(`${ex.nameKo}을(를) 세션에 추가했습니다.`);
+    setShowExerciseFeedback(false);
     setExerciseFeedback({
       title: `${ex.nameKo} 추가 피드백`,
       fit: "AI가 현재 세션 구성과 목표를 보고 피드백을 준비하고 있습니다.",
@@ -853,47 +855,6 @@ export default function WorkoutSession() {
         </CardContent>
       </Card>
 
-      {(aiExerciseFeedback.isPending || exerciseFeedback) && (
-        <Card className="bg-primary/5 border-primary/20 mb-4">
-          <CardContent className="p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <Sparkles size={16} className="text-primary" />
-                <h2 className="text-sm font-semibold text-foreground">AI 운동 추가 피드백</h2>
-              </div>
-              {(aiExerciseFeedback.isPending || exerciseFeedback?.source === "fallback") && (
-                <span className="flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
-                  {aiExerciseFeedback.isPending && <RefreshCw size={10} className="animate-spin" />}
-                  {aiExerciseFeedback.isPending ? "AI 분석 중" : "기본 피드백"}
-                </span>
-              )}
-            </div>
-            {exerciseFeedback ? (
-              <div className="grid gap-2 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
-                <div className="rounded-lg bg-background/40 p-2">
-                  <div className="mb-1 font-semibold text-foreground">{exerciseFeedback.title}</div>
-                  <p>{exerciseFeedback.fit}</p>
-                </div>
-                <div className="rounded-lg bg-background/40 p-2">
-                  <div className="mb-1 font-semibold text-foreground">순서</div>
-                  <p>{exerciseFeedback.orderTip}</p>
-                </div>
-                <div className="rounded-lg bg-background/40 p-2">
-                  <div className="mb-1 font-semibold text-foreground">볼륨</div>
-                  <p>{exerciseFeedback.volumeTip}</p>
-                </div>
-                <div className="rounded-lg bg-background/40 p-2">
-                  <div className="mb-1 font-semibold text-foreground">주의</div>
-                  <p>{exerciseFeedback.caution}</p>
-                </div>
-              </div>
-            ) : aiExerciseFeedback.isPending ? (
-              <div className="text-xs text-muted-foreground">운동 구성 피드백을 준비하고 있습니다.</div>
-            ) : null}
-          </CardContent>
-        </Card>
-      )}
-
       <div className="figma-section-heading">
         <div><span>운동 목록</span><h2>현재 세션</h2></div>
         <b className="text-sm text-primary">{exercises.length}개</b>
@@ -920,6 +881,66 @@ export default function WorkoutSession() {
         </div>
       ) : (
         <AddExerciseModal onAdd={addExercise} />
+      )}
+
+      {(aiExerciseFeedback.isPending || exerciseFeedback) && (
+        <Card className="mt-4 border-primary/20 bg-primary/5">
+          <CardContent className="p-4">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between gap-3 text-left"
+              onClick={() => setShowExerciseFeedback((value) => !value)}
+              aria-expanded={showExerciseFeedback}
+            >
+              <div className="flex min-w-0 items-center gap-2">
+                <Sparkles size={16} className="shrink-0 text-primary" />
+                <div className="min-w-0">
+                  <h2 className="truncate text-sm font-semibold text-foreground">AI 운동 추가 피드백</h2>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {aiExerciseFeedback.isPending ? "분석 중 · 운동 입력은 계속 가능" : exerciseFeedback?.title ?? "보조 피드백"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                {(aiExerciseFeedback.isPending || exerciseFeedback?.source === "fallback") && (
+                  <span className="hidden items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground sm:flex">
+                    {aiExerciseFeedback.isPending && <RefreshCw size={10} className="animate-spin" />}
+                    {aiExerciseFeedback.isPending ? "AI 분석 중" : "기본 피드백"}
+                  </span>
+                )}
+                <ChevronDown size={16} className={cn("text-muted-foreground transition-transform", showExerciseFeedback && "rotate-180")} />
+              </div>
+            </button>
+            {showExerciseFeedback && (
+              <div className="mt-3">
+                {exerciseFeedback ? (
+                  <div className="grid gap-2 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
+                    <div className="rounded-lg bg-background/40 p-2">
+                      <div className="mb-1 font-semibold text-foreground">{exerciseFeedback.title}</div>
+                      <p>{exerciseFeedback.fit}</p>
+                    </div>
+                    <div className="rounded-lg bg-background/40 p-2">
+                      <div className="mb-1 font-semibold text-foreground">순서</div>
+                      <p>{exerciseFeedback.orderTip}</p>
+                    </div>
+                    <div className="rounded-lg bg-background/40 p-2">
+                      <div className="mb-1 font-semibold text-foreground">볼륨</div>
+                      <p>{exerciseFeedback.volumeTip}</p>
+                    </div>
+                    <div className="rounded-lg bg-background/40 p-2">
+                      <div className="mb-1 font-semibold text-foreground">주의</div>
+                      <p>{exerciseFeedback.caution}</p>
+                    </div>
+                  </div>
+                ) : aiExerciseFeedback.isPending ? (
+                  <div className="rounded-lg border border-border bg-background/40 p-3 text-xs text-muted-foreground">
+                    운동 구성 피드백을 준비하고 있습니다.
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* 공유 카드 */}
