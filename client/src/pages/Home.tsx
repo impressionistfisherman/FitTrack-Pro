@@ -691,7 +691,7 @@ export default function Home() {
 
   if (!isAuthenticated) {
     return (
-      <div className="page-shell page-shell-wide animate-fade-in">
+      <div className="page-shell page-shell-wide flex min-h-[calc(100dvh-2rem)] items-center animate-fade-in">
         <div className="relative overflow-hidden rounded-3xl border border-border bg-card px-5 py-8 sm:px-8 sm:py-10">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
