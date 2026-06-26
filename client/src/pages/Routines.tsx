@@ -137,10 +137,11 @@ function RenameRoutineDialog({ routine, onRenamed }: { routine: any; onRenamed: 
     }}>
       <DialogTrigger asChild>
         <button
-          className="ml-2 rounded-lg p-1.5 text-muted-foreground opacity-100 transition-colors hover:bg-accent hover:text-foreground sm:opacity-0 sm:group-hover:opacity-100"
+          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border px-3 text-xs font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           aria-label="루틴 이름 변경"
         >
           <Pencil size={14} />
+          이름
         </button>
       </DialogTrigger>
       <DialogContent className="max-w-sm border-border bg-card text-foreground">
@@ -204,12 +205,12 @@ function RoutineCard({
       )}
       onClick={selectionMode ? onToggleSelected : undefined}
     >
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
+      <CardContent className="flex min-h-[172px] flex-col p-4">
+        <div className="mb-3 flex items-start gap-3">
           {selectionMode && (
             <button
               type="button"
-              className="mr-3 mt-0.5 text-primary"
+              className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-primary/35 bg-primary/10 text-primary"
               onClick={(event) => {
                 event.stopPropagation();
                 onToggleSelected?.();
@@ -220,22 +221,11 @@ function RoutineCard({
             </button>
           )}
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground text-base truncate">{routine.name}</h3>
+            <h3 className="truncate text-base font-bold text-foreground">{routine.name}</h3>
             {routine.description && (
-              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{routine.description}</p>
+              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{routine.description}</p>
             )}
           </div>
-          {!selectionMode && (
-            <>
-              <RenameRoutineDialog routine={routine} onRenamed={onDelete} />
-              <button
-                onClick={(e) => { e.preventDefault(); deleteRoutine.mutate({ id: routine.id }); }}
-                className="ml-2 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-              >
-                <Trash2 size={14} />
-              </button>
-            </>
-          )}
         </div>
 
         <div className="figma-card-metrics">
@@ -253,10 +243,10 @@ function RoutineCard({
           <span style={{ width: `${Math.min(100, Math.max(18, Number(routine.daysPerWeek || 3) * 14))}%` }} />
         </div>
 
-        <div className="mt-3 flex gap-2">
+        <div className="mt-auto grid gap-2 pt-3 sm:grid-cols-[minmax(0,1fr)_auto]">
           <Button
             size="sm"
-            className="h-9 min-w-0 flex-1 gap-1.5 whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90 text-xs"
+            className="h-10 min-w-0 gap-1.5 whitespace-nowrap bg-primary text-xs text-primary-foreground hover:bg-primary/90"
             onClick={handleStart}
             disabled={selectionMode || startSession.isPending}
           >
@@ -264,17 +254,33 @@ function RoutineCard({
             운동 시작
           </Button>
           {selectionMode ? (
-            <Button size="sm" variant="outline" className="h-9 gap-1.5 whitespace-nowrap border-border text-muted-foreground text-xs" disabled>
+            <Button size="sm" variant="outline" className="h-10 gap-1.5 whitespace-nowrap border-border text-xs text-muted-foreground" disabled>
               편집 <ChevronRight size={12} />
             </Button>
           ) : (
             <Link href={`/routines/${routine.id}`}>
-              <Button size="sm" variant="outline" className="h-9 gap-1.5 whitespace-nowrap border-border text-muted-foreground hover:text-foreground text-xs">
+              <Button size="sm" variant="outline" className="h-10 w-full gap-1.5 whitespace-nowrap border-border text-xs text-muted-foreground hover:text-foreground sm:w-auto">
                 편집 <ChevronRight size={12} />
               </Button>
             </Link>
           )}
         </div>
+        {!selectionMode && (
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <RenameRoutineDialog routine={routine} onRenamed={onDelete} />
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                if (!window.confirm(`"${routine.name}" 루틴을 삭제할까요? 삭제한 루틴은 복구할 수 없습니다.`)) return;
+                deleteRoutine.mutate({ id: routine.id });
+              }}
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-destructive/30 px-3 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/10"
+            >
+              <Trash2 size={14} />
+              삭제
+            </button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

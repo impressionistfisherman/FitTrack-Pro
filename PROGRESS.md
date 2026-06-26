@@ -1,23 +1,21 @@
 # PROGRESS
 
-## 2026-06-26 11:08:35 +09:00
+## 2026-06-26 15:51:14 +09:00
 
 ### 작업 요약
 
-- UI/UX 순차 개선 4차로 테마별 버튼 인터랙션 색상 토큰을 분리함.
+- UI/UX 순차 개선 5차로 루틴 목록 카드의 액션 배치를 정리함.
 - 전역 메뉴, 역할 전환, 라우팅은 변경하지 않음.
 
 ### 변경 사항
 
-- `client/src/index.css`
-  - `--interactive-primary`, `--interactive-primary-hover`, `--interactive-primary-active` 추가.
-  - `--interactive-soft`, `--interactive-soft-pressed`, `--interactive-muted-hover` 추가.
-  - dark, light, midnight, ocean, sunset, forest 테마별 값을 각각 지정.
-
-- `client/src/components/ui/button.tsx`
-  - 기본 버튼 hover/active 색상을 테마별 변수로 변경.
-  - outline 버튼 hover/active 배경을 테마별 변수로 변경.
-  - ghost 버튼 hover/active 배경을 테마별 변수로 변경.
+- `client/src/pages/Routines.tsx`
+  - 루틴 카드의 헤더, 메타 정보, 진행 바, 액션 영역을 세로 구조로 정리.
+  - 운동 시작 버튼을 주요 액션으로 유지.
+  - 편집, 이름 변경, 삭제를 보조 액션으로 분리.
+  - 모바일에서 숨겨져 있던 이름 변경/삭제 액션을 항상 명확히 표시.
+  - 삭제 버튼 클릭 시 확인 후 삭제하도록 변경.
+  - 선택 관리 모드의 선택 버튼 터치 영역 확대.
 
 ### 현재 상태
 
@@ -29,6 +27,7 @@
 
 ### 다음 작업
 
-- 5차: 남은 화면별 세부 블럭 재배치.
-  - 홈/루틴/운동/코칭/프로필 순서로 카드 밀도와 액션 위치 점검.
-  - 모바일 우선으로 너무 큰 카드, 중복 CTA, 보조 정보 위치 정리.
+- 6차: 운동 목록 화면 검색/필터/결과 영역 배치 점검.
+  - 모바일에서 검색과 필터가 결과를 밀어내는 문제 정리.
+  - 즐겨찾기/필터 버튼 위치 정리.
+  - 결과 카드 밀도 재점검.
