@@ -114,7 +114,10 @@ export default function Meals() {
 
   const mealsQuery = trpc.meals.byDate.useQuery({ date }, { enabled: isAuthenticated });
   const targetsQuery = trpc.meals.targets.useQuery(undefined, { enabled: isAuthenticated });
-  const recommendedTargetsQuery = trpc.meals.recommendedTargets.useQuery(undefined, { enabled: isAuthenticated });
+  const hasSavedMealTargets = Boolean(targetsQuery.data?.saved);
+  const recommendedTargetsQuery = trpc.meals.recommendedTargets.useQuery(undefined, {
+    enabled: isAuthenticated && targetsQuery.isSuccess && !hasSavedMealTargets,
+  });
   const weeklyReportQuery = trpc.meals.weeklyReport.useQuery({ endDate: date, days: 7 }, { enabled: isAuthenticated });
   const foodsQuery = trpc.meals.foods.useQuery(
     { query: debouncedFoodSearch, limit: 30 },
@@ -673,6 +676,22 @@ export default function Meals() {
                       </div>
                     ))}
                   </div>
+                </div>
+              ) : hasSavedMealTargets ? (
+                <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-border bg-background/35 p-3">
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">저장된 목표 사용 중</div>
+                    <div className="text-xs text-muted-foreground">자동 계산값은 필요할 때만 다시 불러옵니다.</div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="shrink-0 border-border"
+                    onClick={() => recommendedTargetsQuery.refetch()}
+                    disabled={recommendedTargetsQuery.isFetching}
+                  >
+                    {recommendedTargetsQuery.isFetching ? "계산 중" : "계산값 불러오기"}
+                  </Button>
                 </div>
               ) : null}
               <div className="grid grid-cols-2 gap-3">
