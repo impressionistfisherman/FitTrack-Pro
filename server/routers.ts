@@ -2822,6 +2822,11 @@ ${exerciseSummary.slice(0, 80).join("\n")}
           foodName: z.string().max(160).optional(),
           amount: z.number().min(0.1).max(10000),
           unit: z.string().max(24).default("g"),
+          calories: z.number().min(0).max(20000).optional(),
+          protein: z.number().min(0).max(1000).optional(),
+          carbs: z.number().min(0).max(2000).optional(),
+          fat: z.number().min(0).max(1000).optional(),
+          sodium: z.number().min(0).max(200000).optional(),
         })).min(1).max(30),
       }))
       .mutation(async ({ ctx, input }) => {
@@ -2834,6 +2839,105 @@ ${exerciseSummary.slice(0, 80).join("\n")}
       .mutation(async ({ ctx, input }) => {
         await deleteMealLog(ctx.user.id, input.id);
         return { success: true };
+      }),
+
+    parseMealImage: protectedProcedure
+      .input(z.object({
+        imageDataUrl: z.string().min(100).max(5_800_000),
+      }))
+      .mutation(async ({ input }) => {
+        if (!input.imageDataUrl.startsWith("data:image/")) {
+          throw new Error("이미지 파일만 분석할 수 있습니다.");
+        }
+
+        const response = await invokeLLM({
+          provider: "openai",
+          messages: [
+            {
+              role: "system",
+              content: `당신은 식단 사진을 읽어 음식 후보와 대략 중량을 추정하는 영양 기록 도우미입니다.
+사진에 명확히 보이는 음식만 반환하세요. 보이지 않는 음식은 추측하지 마세요.
+중량은 사용자가 수정할 전제의 대략값입니다. 확신이 낮으면 confidence를 낮게 주세요.
+한국 사용자가 검색하기 쉬운 음식명으로 반환하세요. 예: 닭가슴살, 백미밥, 김치찌개, 샐러드.
+응답은 반드시 JSON만 반환하세요.`,
+            },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: `반환 규칙:
+- items는 최대 8개
+- amount는 g 기준 추정값
+- calories/protein/carbs/fat은 해당 amount 기준 대략값
+- 모르면 0
+- notes에는 사용자가 확인해야 할 점을 짧게 작성`,
+                },
+                {
+                  type: "image_url",
+                  image_url: { url: input.imageDataUrl, detail: "high" },
+                },
+              ],
+            },
+          ],
+          maxTokens: 2048,
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "meal_image_parse",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  confidence: { type: "number" },
+                  notes: { type: "string" },
+                  items: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        foodName: { type: "string" },
+                        amount: { type: "number" },
+                        unit: { type: "string" },
+                        calories: { type: "number" },
+                        protein: { type: "number" },
+                        carbs: { type: "number" },
+                        fat: { type: "number" },
+                        confidence: { type: "number" },
+                        notes: { type: "string" },
+                      },
+                      required: ["foodName", "amount", "unit", "calories", "protein", "carbs", "fat", "confidence", "notes"],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+                required: ["confidence", "notes", "items"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        const content = response.choices[0]?.message?.content;
+        const text = typeof content === "string" ? content : JSON.stringify(content ?? {});
+        const parsed = JSON.parse(text);
+        return {
+          confidence: Number(parsed.confidence) || 0,
+          notes: String(parsed.notes ?? ""),
+          items: Array.isArray(parsed.items)
+            ? parsed.items.slice(0, 8).map((item: any) => ({
+                foodName: String(item.foodName ?? "").trim(),
+                amount: Math.max(1, Number(item.amount) || 100),
+                unit: String(item.unit || "g"),
+                calories: Math.max(0, Number(item.calories) || 0),
+                protein: Math.max(0, Number(item.protein) || 0),
+                carbs: Math.max(0, Number(item.carbs) || 0),
+                fat: Math.max(0, Number(item.fat) || 0),
+                confidence: Math.max(0, Math.min(1, Number(item.confidence) || 0)),
+                notes: String(item.notes ?? ""),
+              })).filter((item: any) => item.foodName)
+            : [],
+        };
       }),
   }),
 

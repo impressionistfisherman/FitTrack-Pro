@@ -10,8 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
-import { CalendarDays, Copy, Heart, Plus, Save, Search, Target, Trash2, TrendingUp, Utensils } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { CalendarDays, Camera, Copy, Heart, Plus, Save, Search, Target, Trash2, TrendingUp, Utensils, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const mealTypes = [
@@ -38,9 +38,44 @@ function targetPercent(value: number, target: number) {
   return Math.min(160, Math.round((value / target) * 100));
 }
 
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result ?? ""));
+    reader.onerror = () => reject(reader.error ?? new Error("이미지를 읽지 못했습니다."));
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImage(dataUrl: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("이미지를 불러오지 못했습니다."));
+    image.src = dataUrl;
+  });
+}
+
+async function prepareMealImageDataUrl(file: File) {
+  const dataUrl = await readFileAsDataUrl(file);
+  const image = await loadImage(dataUrl);
+  const maxSide = 1800;
+  const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+  const width = Math.max(1, Math.round(image.width * scale));
+  const height = Math.max(1, Math.round(image.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) return dataUrl;
+  context.drawImage(image, 0, 0, width, height);
+  return canvas.toDataURL("image/jpeg", 0.86);
+}
+
 export default function Meals() {
   const { isAuthenticated, loading } = useAuth();
   const utils = trpc.useUtils();
+  const mealImageInputRef = useRef<HTMLInputElement | null>(null);
   const [date, setDate] = useState(todayKey());
   const [mealType, setMealType] = useState("breakfast");
   const [foodSearch, setFoodSearch] = useState("");
@@ -48,6 +83,17 @@ export default function Meals() {
   const [amount, setAmount] = useState("100");
   const [notes, setNotes] = useState("");
   const [newFoodOpen, setNewFoodOpen] = useState(false);
+  const [imageItems, setImageItems] = useState<Array<{
+    foodName: string;
+    amount: string;
+    calories: string;
+    protein: string;
+    carbs: string;
+    fat: string;
+    confidence: number;
+    notes: string;
+  }>>([]);
+  const [imageNotes, setImageNotes] = useState("");
   const [foodForm, setFoodForm] = useState({
     name: "",
     brand: "",
@@ -124,6 +170,24 @@ export default function Meals() {
   const toggleFavorite = trpc.meals.toggleFoodFavorite.useMutation({
     onSuccess: () => utils.meals.foods.invalidate(),
     onError: () => toast.error("즐겨찾기는 직접 등록한 음식만 가능합니다."),
+  });
+  const parseMealImage = trpc.meals.parseMealImage.useMutation({
+    onSuccess: (result) => {
+      setImageNotes(result.notes || "");
+      setImageItems(result.items.map((item: any) => ({
+        foodName: item.foodName,
+        amount: String(Math.round(item.amount || 100)),
+        calories: String(Math.round(item.calories || 0)),
+        protein: String(Math.round((item.protein || 0) * 10) / 10),
+        carbs: String(Math.round((item.carbs || 0) * 10) / 10),
+        fat: String(Math.round((item.fat || 0) * 10) / 10),
+        confidence: item.confidence ?? 0,
+        notes: item.notes ?? "",
+      })));
+      if (result.items.length) toast.success("이미지에서 음식을 찾았습니다. 확인 후 저장하세요.");
+      else toast.warning("음식을 찾지 못했습니다. 더 선명한 사진을 사용하세요.");
+    },
+    onError: () => toast.error("식단 이미지를 분석하지 못했습니다."),
   });
 
   const totals = mealsQuery.data?.totals ?? { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: 0 };
@@ -211,6 +275,53 @@ export default function Meals() {
     });
   };
 
+  const handleMealImage = async (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("이미지 파일만 업로드할 수 있습니다.");
+      return;
+    }
+    if (file.size > 12 * 1024 * 1024) {
+      toast.error("이미지는 12MB 이하로 올려주세요.");
+      return;
+    }
+    try {
+      const imageDataUrl = await prepareMealImageDataUrl(file);
+      await parseMealImage.mutateAsync({ imageDataUrl });
+    } finally {
+      if (mealImageInputRef.current) mealImageInputRef.current.value = "";
+    }
+  };
+
+  const saveImageMeal = () => {
+    const items = imageItems
+      .filter((item) => item.foodName.trim())
+      .map((item) => ({
+        foodName: item.foodName.trim(),
+        amount: Number(item.amount) || 100,
+        unit: "g",
+        calories: Number(item.calories) || 0,
+        protein: Number(item.protein) || 0,
+        carbs: Number(item.carbs) || 0,
+        fat: Number(item.fat) || 0,
+      }));
+    if (!items.length) {
+      toast.error("저장할 음식 후보가 없습니다.");
+      return;
+    }
+    createLog.mutate({
+      mealDate: new Date(`${date}T12:00:00`),
+      mealType: mealType as any,
+      notes: imageNotes ? `AI 이미지 인식: ${imageNotes}` : "AI 이미지 인식",
+      items,
+    }, {
+      onSuccess: () => {
+        setImageItems([]);
+        setImageNotes("");
+      },
+    });
+  };
+
   return (
     <div className="page-shell figma-page content-page animate-fade-in">
       <div className="page-content-header">
@@ -228,6 +339,98 @@ export default function Meals() {
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)]">
         <div className="space-y-4">
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="p-5">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Camera size={17} className="text-primary" />
+                  <h2 className="text-sm font-semibold text-foreground">이미지로 식단 인식</h2>
+                </div>
+                <Badge className="border border-primary/25 bg-primary/10 text-primary">AI 확인 필요</Badge>
+              </div>
+              <p className="mb-3 text-xs text-muted-foreground">
+                사진 분석 결과는 추정값입니다. 음식명과 중량을 확인한 뒤 저장하세요.
+              </p>
+              <input
+                ref={mealImageInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(event) => handleMealImage(event.target.files?.[0])}
+              />
+              <Button
+                variant="outline"
+                className="w-full gap-2 border-border"
+                onClick={() => mealImageInputRef.current?.click()}
+                disabled={parseMealImage.isPending}
+              >
+                <Camera size={16} />
+                {parseMealImage.isPending ? "이미지 분석 중..." : "사진 업로드 / 촬영"}
+              </Button>
+
+              {imageItems.length ? (
+                <div className="mt-4 space-y-3">
+                  {imageNotes ? <div className="rounded-xl border border-border bg-background/40 p-3 text-xs text-muted-foreground">{imageNotes}</div> : null}
+                  {imageItems.map((item, index) => (
+                    <div key={`${item.foodName}-${index}`} className="rounded-xl border border-border bg-background/45 p-3">
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <Badge variant="outline" className="border-border text-muted-foreground">
+                          신뢰도 {Math.round(item.confidence * 100)}%
+                        </Badge>
+                        <button
+                          type="button"
+                          className="rounded-lg p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() => setImageItems((items) => items.filter((_, itemIndex) => itemIndex !== index))}
+                          aria-label="후보 삭제"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_90px]">
+                        <Input
+                          value={item.foodName}
+                          onChange={(event) => setImageItems((items) => items.map((next, itemIndex) => itemIndex === index ? { ...next, foodName: event.target.value } : next))}
+                          className="border-border bg-card"
+                          placeholder="음식명"
+                        />
+                        <Input
+                          type="number"
+                          value={item.amount}
+                          onChange={(event) => setImageItems((items) => items.map((next, itemIndex) => itemIndex === index ? { ...next, amount: event.target.value } : next))}
+                          className="border-border bg-card text-right"
+                          placeholder="g"
+                        />
+                      </div>
+                      <div className="mt-2 grid grid-cols-4 gap-2">
+                        {[
+                          ["calories", "kcal"],
+                          ["protein", "단백"],
+                          ["carbs", "탄수"],
+                          ["fat", "지방"],
+                        ].map(([key, label]) => (
+                          <label key={key} className="space-y-1">
+                            <span className="text-[10px] text-muted-foreground">{label}</span>
+                            <Input
+                              type="number"
+                              value={(item as any)[key]}
+                              onChange={(event) => setImageItems((items) => items.map((next, itemIndex) => itemIndex === index ? { ...next, [key]: event.target.value } : next))}
+                              className="h-9 border-border bg-card text-right text-xs"
+                            />
+                          </label>
+                        ))}
+                      </div>
+                      {item.notes ? <p className="mt-2 text-xs text-muted-foreground">{item.notes}</p> : null}
+                    </div>
+                  ))}
+                  <Button className="w-full bg-primary text-primary-foreground" onClick={saveImageMeal} disabled={createLog.isPending}>
+                    확인한 이미지 식단 저장
+                  </Button>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+
           <Card className="border-border bg-card">
             <CardContent className="p-5">
               <div className="mb-4 flex items-center gap-2">

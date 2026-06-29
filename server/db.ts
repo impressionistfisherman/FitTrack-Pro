@@ -3696,7 +3696,17 @@ export async function createMealLog(userId: number, input: {
   mealDate: Date;
   mealType: string;
   notes?: string;
-  items: Array<{ foodId?: number; foodName?: string; amount: number; unit?: string }>;
+  items: Array<{
+    foodId?: number;
+    foodName?: string;
+    amount: number;
+    unit?: string;
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+    sodium?: number;
+  }>;
 }) {
   await ensureMealTables();
   const now = new Date().toISOString();
@@ -3716,7 +3726,15 @@ export async function createMealLog(userId: number, input: {
       ? await get("SELECT * FROM foods WHERE id = ? AND (userId IS NULL OR userId = ?) LIMIT 1", item.foodId, userId)
       : null;
     const foodName = item.foodName?.trim() || food?.name || "음식";
-    const nutrition = food ? calcNutrition(food, item.amount) : { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: null };
+    const nutrition = food
+      ? calcNutrition(food, item.amount)
+      : {
+          calories: Math.max(0, Number(item.calories) || 0),
+          protein: Math.max(0, Number(item.protein) || 0),
+          carbs: Math.max(0, Number(item.carbs) || 0),
+          fat: Math.max(0, Number(item.fat) || 0),
+          sodium: item.sodium == null ? null : Math.max(0, Number(item.sodium) || 0),
+        };
     await run(
       `INSERT INTO meal_log_items
        (mealLogId, foodId, foodName, amount, unit, calories, protein, carbs, fat, sodium, createdAt)
