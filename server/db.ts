@@ -3510,6 +3510,12 @@ function buildFoodSearchTerms(query: string) {
 
   if (compact.includes("컬라면")) terms.push("컵라면", "라면");
   if (compact.includes("육계장")) terms.push("육개장", "육개장 사발면", "사발면");
+  for (const suffix of ["국밥", "김밥", "라면", "찌개", "덮밥", "볶음밥", "비빔밥", "샌드위치", "샐러드"]) {
+    if (compact.endsWith(suffix) && compact.length > suffix.length) {
+      const prefix = compact.slice(0, -suffix.length);
+      terms.push(prefix, `${suffix} ${prefix}`, `${suffix}_${prefix}`);
+    }
+  }
   for (const keyword of keywordFallbacks) {
     if (compact.includes(keyword.replace(/\s+/g, ""))) terms.push(keyword);
   }
@@ -3598,6 +3604,26 @@ async function upsertPublicFood(food: {
   );
 }
 
+export async function importPublicFoods(foods: Array<{
+  name: string;
+  brand: string;
+  caloriesPer100: number;
+  proteinPer100: number;
+  carbsPer100: number;
+  fatPer100: number;
+  sodiumPer100?: number | null;
+  aliases: string[];
+}>) {
+  await ensureMealTables();
+  let imported = 0;
+  for (const food of foods) {
+    if (!food.name.trim()) continue;
+    await upsertPublicFood(food);
+    imported += 1;
+  }
+  return { imported };
+}
+
 async function importFoodNutritionFromOpenApi(query: string, limit = 30) {
   const apiKey = process.env.FOODSAFETY_API_KEY
     ?? process.env.MFDS_API_KEY
@@ -3677,7 +3703,7 @@ export async function listFoods(userId: number, query = "", limit = 30): Promise
       rows = await searchFoodRows(userId, term, limit);
       if (rows.length) break;
     }
-    if (rows.length < Math.min(5, limit)) {
+    if (rows.length < Math.min(5, limit) && process.env.FOOD_SEARCH_LIVE_IMPORT === "1") {
       await importFoodNutritionFromOpenApi(searchTerms[0] ?? query, limit);
       for (const term of searchTerms) {
         rows = await searchFoodRows(userId, term, limit);
