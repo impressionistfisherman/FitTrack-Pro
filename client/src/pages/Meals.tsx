@@ -118,31 +118,55 @@ export default function Meals() {
   const recommendedTargetsQuery = trpc.meals.recommendedTargets.useQuery(undefined, {
     enabled: isAuthenticated && targetsQuery.isSuccess && !hasSavedMealTargets,
   });
-  const weeklyReportQuery = trpc.meals.weeklyReport.useQuery({ endDate: date, days: 7 }, { enabled: isAuthenticated });
+  const weeklyReportQuery = trpc.meals.weeklyReport.useQuery(
+    { endDate: date, days: 7 },
+    {
+      enabled: isAuthenticated && !isWeeklyReportCollapsed,
+      staleTime: 60_000,
+    },
+  );
   const foodsQuery = trpc.meals.foods.useQuery(
     { query: debouncedFoodSearch, limit: 30 },
-    { enabled: isAuthenticated },
+    {
+      enabled: isAuthenticated && Boolean(debouncedFoodSearch),
+      staleTime: 5 * 60_000,
+    },
   );
-  const recentFoodsQuery = trpc.meals.recentFoods.useQuery({ limit: 8 }, { enabled: isAuthenticated });
-  const frequentFoodsQuery = trpc.meals.frequentFoods.useQuery({ limit: 8 }, { enabled: isAuthenticated });
-  const recentMealsQuery = trpc.meals.recentMeals.useQuery({ limit: 5 }, { enabled: isAuthenticated });
+  const recentFoodsQuery = trpc.meals.recentFoods.useQuery(
+    { limit: 8 },
+    { enabled: isAuthenticated, staleTime: 60_000 },
+  );
+  const frequentFoodsQuery = trpc.meals.frequentFoods.useQuery(
+    { limit: 8 },
+    { enabled: isAuthenticated, staleTime: 60_000 },
+  );
+  const recentMealsQuery = trpc.meals.recentMeals.useQuery(
+    { limit: 5 },
+    { enabled: isAuthenticated, staleTime: 60_000 },
+  );
   const invalidateMeals = async () => {
-    await Promise.all([
+    const invalidations = [
       utils.meals.byDate.invalidate({ date }),
       utils.meals.recentFoods.invalidate(),
       utils.meals.frequentFoods.invalidate(),
       utils.meals.recentMeals.invalidate(),
-      utils.meals.weeklyReport.invalidate({ endDate: date, days: 7 }),
-    ]);
+    ];
+    if (!isWeeklyReportCollapsed) {
+      invalidations.push(utils.meals.weeklyReport.invalidate({ endDate: date, days: 7 }));
+    }
+    await Promise.all(invalidations);
   };
   const saveTargets = trpc.meals.saveTargets.useMutation({
     onSuccess: async () => {
       toast.success("식단 목표를 저장했습니다.");
-      await Promise.all([
+      const invalidations = [
         utils.meals.targets.invalidate(),
         utils.meals.recommendedTargets.invalidate(),
-        utils.meals.weeklyReport.invalidate({ endDate: date, days: 7 }),
-      ]);
+      ];
+      if (!isWeeklyReportCollapsed) {
+        invalidations.push(utils.meals.weeklyReport.invalidate({ endDate: date, days: 7 }));
+      }
+      await Promise.all(invalidations);
     },
     onError: () => toast.error("목표 저장에 실패했습니다."),
   });
@@ -857,8 +881,6 @@ export default function Meals() {
                   </div>
                 </div>
               </div>
-              {!hasFoodSearch ? <div className="mt-3">{renderFoodSearchResults()}</div> : null}
-
               {selectedFood && (
                 <div className="mt-4 rounded-xl border border-border bg-background/45 p-3">
                   <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
