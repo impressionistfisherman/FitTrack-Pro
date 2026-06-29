@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
-import { CalendarDays, Heart, Plus, Search, Trash2, Utensils } from "lucide-react";
+import { CalendarDays, Copy, Heart, Plus, Search, Trash2, Utensils } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -59,6 +59,17 @@ export default function Meals() {
     { query: debouncedFoodSearch, limit: 30 },
     { enabled: isAuthenticated },
   );
+  const recentFoodsQuery = trpc.meals.recentFoods.useQuery({ limit: 8 }, { enabled: isAuthenticated });
+  const frequentFoodsQuery = trpc.meals.frequentFoods.useQuery({ limit: 8 }, { enabled: isAuthenticated });
+  const recentMealsQuery = trpc.meals.recentMeals.useQuery({ limit: 5 }, { enabled: isAuthenticated });
+  const invalidateMeals = async () => {
+    await Promise.all([
+      utils.meals.byDate.invalidate({ date }),
+      utils.meals.recentFoods.invalidate(),
+      utils.meals.frequentFoods.invalidate(),
+      utils.meals.recentMeals.invalidate(),
+    ]);
+  };
   const createFood = trpc.meals.createFood.useMutation({
     onSuccess: async () => {
       toast.success("음식을 등록했습니다.");
@@ -75,14 +86,14 @@ export default function Meals() {
       setFoodSearch("");
       setAmount("100");
       setNotes("");
-      await utils.meals.byDate.invalidate({ date });
+      await invalidateMeals();
     },
     onError: () => toast.error("식단 기록에 실패했습니다."),
   });
   const deleteLog = trpc.meals.deleteLog.useMutation({
     onSuccess: async () => {
       toast.success("식단 기록을 삭제했습니다.");
-      await utils.meals.byDate.invalidate({ date });
+      await invalidateMeals();
     },
     onError: () => toast.error("식단 삭제에 실패했습니다."),
   });
@@ -104,6 +115,12 @@ export default function Meals() {
       fat: Math.round(selectedFood.fatPer100 * ratio * 10) / 10,
     };
   }, [amount, selectedFood]);
+
+  const selectFood = (food: any, grams?: number) => {
+    setSelectedFood(food);
+    setFoodSearch(food.name);
+    setAmount(String(grams ?? 100));
+  };
 
   if (loading) return <PageLoadingState wide />;
   if (!isAuthenticated) {
@@ -133,6 +150,20 @@ export default function Meals() {
       mealType: mealType as any,
       notes: notes.trim() || undefined,
       items: [{ foodId: selectedFood.id, amount: Number(amount) || 100, unit: selectedFood.servingUnit ?? "g" }],
+    });
+  };
+
+  const copyMeal = (meal: any) => {
+    createLog.mutate({
+      mealDate: new Date(`${date}T12:00:00`),
+      mealType: meal.mealType,
+      notes: meal.notes || undefined,
+      items: meal.items.map((item: any) => ({
+        foodId: item.foodId ?? undefined,
+        foodName: item.foodName,
+        amount: item.amount,
+        unit: item.unit ?? "g",
+      })),
     });
   };
 
@@ -178,6 +209,43 @@ export default function Meals() {
                     </div>
                   ))}
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border bg-card">
+            <CardContent className="p-5">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h2 className="text-sm font-semibold text-foreground">최근 식사 다시 기록</h2>
+                <Badge variant="outline" className="border-border text-muted-foreground">복사</Badge>
+              </div>
+              <div className="space-y-2">
+                {recentMealsQuery.data?.length ? recentMealsQuery.data.map((meal: any) => (
+                  <button
+                    key={meal.id}
+                    type="button"
+                    onClick={() => copyMeal(meal)}
+                    disabled={createLog.isPending}
+                    className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-background/45 p-3 text-left transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:opacity-60"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="border-border text-[11px] text-muted-foreground">
+                          {mealTypes.find((type) => type.value === meal.mealType)?.label ?? meal.mealType}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">{meal.items.length}개 음식</span>
+                      </div>
+                      <div className="mt-1 truncate text-sm font-semibold text-foreground">
+                        {meal.items.map((item: any) => item.foodName).join(", ")}
+                      </div>
+                    </div>
+                    <Copy size={15} className="shrink-0 text-primary" />
+                  </button>
+                )) : (
+                  <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+                    아직 복사할 최근 식사가 없습니다.
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -244,6 +312,39 @@ export default function Meals() {
                   <Input value={foodSearch} onChange={(e) => setFoodSearch(e.target.value)} className="border-border bg-accent pl-9" placeholder="음식 검색..." />
                 </label>
               </div>
+              <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                <div className="rounded-xl border border-border bg-background/35 p-3">
+                  <div className="mb-2 text-xs font-semibold text-muted-foreground">최근 먹은 음식</div>
+                  <div className="flex flex-wrap gap-2">
+                    {recentFoodsQuery.data?.length ? recentFoodsQuery.data.map((food: any) => (
+                      <button
+                        key={food.id}
+                        type="button"
+                        onClick={() => selectFood(food)}
+                        className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:border-primary/40 hover:text-primary"
+                      >
+                        {food.name}
+                      </button>
+                    )) : <span className="text-xs text-muted-foreground">기록하면 자동 표시</span>}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border bg-background/35 p-3">
+                  <div className="mb-2 text-xs font-semibold text-muted-foreground">자주 먹는 음식</div>
+                  <div className="flex flex-wrap gap-2">
+                    {frequentFoodsQuery.data?.length ? frequentFoodsQuery.data.map((food: any) => (
+                      <button
+                        key={food.id}
+                        type="button"
+                        onClick={() => selectFood(food)}
+                        className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:border-primary/40 hover:text-primary"
+                      >
+                        {food.name}
+                        {food.useCount ? <span className="ml-1 text-muted-foreground">{food.useCount}</span> : null}
+                      </button>
+                    )) : <span className="text-xs text-muted-foreground">반복 기록하면 자동 표시</span>}
+                  </div>
+                </div>
+              </div>
               <div className="mt-3 max-h-56 space-y-2 overflow-y-auto">
                 {foodsQuery.data?.map((food: any) => (
                   <div
@@ -255,15 +356,17 @@ export default function Meals() {
                   >
                     <button
                       type="button"
-                      onClick={() => {
-                        setSelectedFood(food);
-                        setFoodSearch(food.name);
-                      }}
+                      onClick={() => selectFood(food)}
                       className="min-w-0 flex-1 text-left"
                     >
-                      <div className="truncate text-sm font-semibold text-foreground">{food.name}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="truncate text-sm font-semibold text-foreground">{food.name}</div>
+                        <Badge variant="outline" className="shrink-0 border-border text-[10px] text-muted-foreground">
+                          {food.favorite ? "즐겨찾기" : food.source}
+                        </Badge>
+                      </div>
                       <div className="truncate text-xs text-muted-foreground">
-                        {food.brand || "내 음식"} · 100g {Math.round(food.caloriesPer100)}kcal · P {food.proteinPer100}g
+                        {food.brand || food.source} · 100g {Math.round(food.caloriesPer100)}kcal · P {food.proteinPer100}g
                       </div>
                     </button>
                     {food.userId && (
@@ -290,12 +393,30 @@ export default function Meals() {
 
               {selectedFood && (
                 <div className="mt-4 rounded-xl border border-border bg-background/45 p-3">
-                  <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <div className="text-sm font-semibold text-foreground">{selectedFood.name}</div>
                       <div className="text-xs text-muted-foreground">중량 수정 후 저장</div>
                     </div>
-                    <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="h-10 w-28 border-border bg-card text-right" />
+                    <div className="flex items-center gap-2">
+                      <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="h-10 w-28 border-border bg-card text-right" />
+                      <span className="text-xs text-muted-foreground">g</span>
+                    </div>
+                  </div>
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    {[50, 100, 150, 200].map((grams) => (
+                      <button
+                        key={grams}
+                        type="button"
+                        onClick={() => setAmount(String(grams))}
+                        className={cn(
+                          "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+                          amount === String(grams) ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:text-foreground",
+                        )}
+                      >
+                        {grams}g
+                      </button>
+                    ))}
                   </div>
                   {selectedPreview && (
                     <div className="grid grid-cols-4 gap-2 text-center text-xs">

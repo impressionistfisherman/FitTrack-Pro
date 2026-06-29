@@ -26,7 +26,10 @@ import {
   deleteWorkoutLog,
   getBodyWeights,
   getMealsByDate,
+  listFrequentFoods,
   listFoods,
+  listRecentFoods,
+  listRecentMealTemplates,
   getUserFeedback,
   getCoachingCommentsForClient,
   getCoachingCommentsForPair,
@@ -2698,6 +2701,24 @@ ${exerciseSummary.slice(0, 80).join("\n")}
       }).optional())
       .query(async ({ ctx, input }) => {
         return await listFoods(ctx.user.id, input?.query ?? "", input?.limit ?? 30);
+      }),
+
+    recentFoods: protectedProcedure
+      .input(z.object({ limit: z.number().int().min(1).max(20).default(10) }).optional())
+      .query(async ({ ctx, input }) => {
+        return await listRecentFoods(ctx.user.id, input?.limit ?? 10);
+      }),
+
+    frequentFoods: protectedProcedure
+      .input(z.object({ limit: z.number().int().min(1).max(20).default(10) }).optional())
+      .query(async ({ ctx, input }) => {
+        return await listFrequentFoods(ctx.user.id, input?.limit ?? 10);
+      }),
+
+    recentMeals: protectedProcedure
+      .input(z.object({ limit: z.number().int().min(1).max(10).default(6) }).optional())
+      .query(async ({ ctx, input }) => {
+        return await listRecentMealTemplates(ctx.user.id, input?.limit ?? 6);
       }),
 
     createFood: protectedProcedure

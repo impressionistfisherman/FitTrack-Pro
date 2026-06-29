@@ -3326,6 +3326,7 @@ function normalizeFood(row: Row): Row {
   return {
     id: Number(row.id),
     userId: row.userId == null ? null : Number(row.userId),
+    source: row.userId == null ? "기본" : "내 음식",
     name: row.name,
     brand: row.brand ?? "",
     servingUnit: row.servingUnit ?? "g",
@@ -3336,6 +3337,8 @@ function normalizeFood(row: Row): Row {
     sodiumPer100: row.sodiumPer100 == null ? null : Number(row.sodiumPer100),
     aliases: parseJson(row.aliases, []),
     favorite: Boolean(row.favorite),
+    useCount: row.useCount == null ? undefined : Number(row.useCount),
+    lastUsedAt: row.lastUsedAt,
     createdAt: row.createdAt,
   };
 }
@@ -3376,6 +3379,59 @@ export async function listFoods(userId: number, query = "", limit = 30): Promise
         limit,
       );
   return rows.map(normalizeFood);
+}
+
+export async function listRecentFoods(userId: number, limit = 10): Promise<Row[]> {
+  await ensureMealTables();
+  const rows = await all(
+    `SELECT f.*, i.createdAt AS lastUsedAt
+     FROM meal_log_items i
+     JOIN meal_logs m ON m.id = i.mealLogId
+     JOIN foods f ON f.id = i.foodId
+     WHERE m.userId = ?
+     ORDER BY i.createdAt DESC
+     LIMIT ?`,
+    userId,
+    Math.max(limit * 4, 20),
+  );
+  const seen = new Set<number>();
+  const result: Row[] = [];
+  for (const row of rows) {
+    const id = Number(row.id);
+    if (seen.has(id)) continue;
+    seen.add(id);
+    result.push(normalizeFood(row));
+    if (result.length >= limit) break;
+  }
+  return result;
+}
+
+export async function listFrequentFoods(userId: number, limit = 10): Promise<Row[]> {
+  await ensureMealTables();
+  const rows = await all(
+    `SELECT f.*, i.createdAt AS lastUsedAt
+     FROM meal_log_items i
+     JOIN meal_logs m ON m.id = i.mealLogId
+     JOIN foods f ON f.id = i.foodId
+     WHERE m.userId = ?
+     ORDER BY i.createdAt DESC
+     LIMIT 240`,
+    userId,
+  );
+  const grouped = new Map<number, Row & { useCount: number }>();
+  for (const row of rows) {
+    const id = Number(row.id);
+    const current = grouped.get(id);
+    if (current) {
+      current.useCount += 1;
+      continue;
+    }
+    grouped.set(id, { ...row, useCount: 1 });
+  }
+  return [...grouped.values()]
+    .sort((a, b) => b.useCount - a.useCount || String(b.lastUsedAt ?? "").localeCompare(String(a.lastUsedAt ?? "")))
+    .slice(0, limit)
+    .map(normalizeFood);
 }
 
 export async function createFood(userId: number, input: {
@@ -3433,6 +3489,21 @@ export async function getMealsByDate(userId: number, dateKey: string): Promise<R
     start,
     end,
   );
+  const normalizedMeals = await normalizeMealRows(meals);
+  const totals = normalizedMeals.flatMap((meal) => meal.items).reduce(
+    (sum, item) => ({
+      calories: sum.calories + item.calories,
+      protein: sum.protein + item.protein,
+      carbs: sum.carbs + item.carbs,
+      fat: sum.fat + item.fat,
+      sodium: sum.sodium + (item.sodium ?? 0),
+    }),
+    { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: 0 },
+  );
+  return { meals: normalizedMeals, totals };
+}
+
+async function normalizeMealRows(meals: Row[]): Promise<Row[]> {
   const ids = meals.map((meal) => Number(meal.id));
   const items = ids.length
     ? await all(
@@ -3466,17 +3537,20 @@ export async function getMealsByDate(userId: number, dateKey: string): Promise<R
       sodium: item.sodium == null ? null : Number(item.sodium),
     })),
   }));
-  const totals = normalizedMeals.flatMap((meal) => meal.items).reduce(
-    (sum, item) => ({
-      calories: sum.calories + item.calories,
-      protein: sum.protein + item.protein,
-      carbs: sum.carbs + item.carbs,
-      fat: sum.fat + item.fat,
-      sodium: sum.sodium + (item.sodium ?? 0),
-    }),
-    { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: 0 },
+  return normalizedMeals;
+}
+
+export async function listRecentMealTemplates(userId: number, limit = 6): Promise<Row[]> {
+  await ensureMealTables();
+  const meals = await all(
+    `SELECT * FROM meal_logs
+     WHERE userId = ?
+     ORDER BY mealDate DESC, id DESC
+     LIMIT ?`,
+    userId,
+    limit,
   );
-  return { meals: normalizedMeals, totals };
+  return normalizeMealRows(meals);
 }
 
 export async function createMealLog(userId: number, input: {
