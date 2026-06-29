@@ -196,7 +196,7 @@ export default function Meals() {
   const totals = mealsQuery.data?.totals ?? { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: 0 };
   const targets = targetsQuery.data ?? { calories: 2200, protein: 140, carbs: 250, fat: 65 };
   const macroCalories = totals.protein * 4 + totals.carbs * 4 + totals.fat * 9;
-  const hasFoodSearch = Boolean(debouncedFoodSearch);
+  const hasFoodSearch = Boolean(foodSearch.trim());
   const selectedPreview = useMemo(() => {
     if (!selectedFood) return null;
     const grams = Number(amount) || 0;
@@ -293,6 +293,16 @@ export default function Meals() {
           음식 데이터를 검색하는 중입니다.
         </div>
       ) : null}
+      {foodsQuery.isError ? (
+        <div className="rounded-xl border border-dashed border-destructive/40 bg-destructive/5 p-4 text-center text-sm text-destructive">
+          음식 검색 API 응답을 받지 못했습니다. 잠시 후 다시 입력하거나 직접 음식 등록을 사용하세요.
+        </div>
+      ) : null}
+      {hasFoodSearch && !debouncedFoodSearch ? (
+        <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+          검색어 입력을 확인하는 중입니다.
+        </div>
+      ) : null}
       {foodsQuery.data?.map((food: any) => (
         <div
           key={food.id}
@@ -331,7 +341,7 @@ export default function Meals() {
           )}
         </div>
       ))}
-      {!foodsQuery.isLoading && !foodsQuery.data?.length ? (
+      {!foodsQuery.isLoading && !foodsQuery.isError && debouncedFoodSearch && !foodsQuery.data?.length ? (
         <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
           검색 결과가 없습니다. 표기가 다르면 예: 육개장, 컵라면처럼 다시 검색하거나 음식 등록으로 추가하세요.
         </div>
