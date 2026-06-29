@@ -14,6 +14,7 @@ const loadRoutines = () => import("./pages/Routines");
 const loadRoutineDetail = () => import("./pages/RoutineDetail");
 const loadWorkoutSession = () => import("./pages/WorkoutSession");
 const loadHistory = () => import("./pages/History");
+const loadMeals = () => import("@/pages/Meals");
 const loadAICoach = () => import("./pages/AICoach");
 const loadCoaching = () => import("@/pages/Coaching");
 const loadFeedback = () => import("@/pages/Feedback");
@@ -30,6 +31,7 @@ const Routines = lazy(loadRoutines);
 const RoutineDetail = lazy(loadRoutineDetail);
 const WorkoutSession = lazy(loadWorkoutSession);
 const History = lazy(loadHistory);
+const Meals = lazy(loadMeals);
 const AICoach = lazy(loadAICoach);
 const Coaching = lazy(loadCoaching);
 const Feedback = lazy(loadFeedback);
@@ -43,6 +45,7 @@ const preloadCommonRoutes = () => {
   void loadExercises();
   void loadRoutines();
   void loadHistory();
+  void loadMeals();
   void loadAICoach();
   void loadCoaching();
   void loadProfile();
@@ -66,6 +69,7 @@ function Routes() {
         <Route path="/workout/:sessionId" component={WorkoutSession} />
         <Route path="/history/:id" component={History} />
         <Route path="/history" component={History} />
+        <Route path="/meals" component={Meals} />
         <Route path="/ai-coach" component={AICoach} />
         <Route path="/coaching" component={Coaching} />
         <Route path="/feedback" component={Feedback} />

@@ -92,6 +92,17 @@ const pgQuotedIdentifiers = [
   "targetReps",
   "userId",
   "gifUrl",
+  "servingUnit",
+  "caloriesPer100",
+  "proteinPer100",
+  "carbsPer100",
+  "fatPer100",
+  "sodiumPer100",
+  "mealDate",
+  "mealType",
+  "mealLogId",
+  "foodId",
+  "foodName",
 ] as const;
 
 let userProfileImageColumnReady = false;
@@ -3223,6 +3234,302 @@ export async function addBodyWeight(userId: number, input: {
 
 export async function deleteBodyWeight(id: number, userId: number): Promise<any> {
   await run("DELETE FROM body_weights WHERE id = ? AND userId = ?", id, userId);
+}
+
+let mealTablesReady = false;
+
+async function ensureMealTables() {
+  if (mealTablesReady) return;
+  const autoId = autoIdColumn();
+  await run(
+    `CREATE TABLE IF NOT EXISTS foods (
+      id ${autoId},
+      userId integer,
+      name varchar(160) NOT NULL,
+      brand varchar(120),
+      servingUnit varchar(24) NOT NULL DEFAULT 'g',
+      caloriesPer100 real NOT NULL DEFAULT 0,
+      proteinPer100 real NOT NULL DEFAULT 0,
+      carbsPer100 real NOT NULL DEFAULT 0,
+      fatPer100 real NOT NULL DEFAULT 0,
+      sodiumPer100 real,
+      aliases text,
+      favorite integer NOT NULL DEFAULT 0,
+      createdAt timestamp
+    )`,
+  );
+  await run(
+    `CREATE TABLE IF NOT EXISTS meal_logs (
+      id ${autoId},
+      userId integer NOT NULL,
+      mealDate timestamp NOT NULL,
+      mealType varchar(24) NOT NULL DEFAULT 'snack',
+      notes text,
+      createdAt timestamp,
+      updatedAt timestamp
+    )`,
+  );
+  await run(
+    `CREATE TABLE IF NOT EXISTS meal_log_items (
+      id ${autoId},
+      mealLogId integer NOT NULL,
+      foodId integer,
+      foodName varchar(160) NOT NULL,
+      amount real NOT NULL DEFAULT 100,
+      unit varchar(24) NOT NULL DEFAULT 'g',
+      calories real NOT NULL DEFAULT 0,
+      protein real NOT NULL DEFAULT 0,
+      carbs real NOT NULL DEFAULT 0,
+      fat real NOT NULL DEFAULT 0,
+      sodium real,
+      createdAt timestamp
+    )`,
+  );
+  const defaultFoodCount = await get<{ count: number }>("SELECT COUNT(*) AS count FROM foods WHERE userId IS NULL");
+  if (!Number(defaultFoodCount?.count ?? 0)) {
+    const defaultFoods = [
+      ["백미밥", "기본", 130, 2.7, 28.6, 0.3, ["흰쌀밥", "쌀밥", "밥"]],
+      ["현미밥", "기본", 112, 2.6, 23, 0.9, ["잡곡밥", "현미"]],
+      ["닭가슴살", "기본", 165, 31, 0, 3.6, ["닭찌", "닭가슴", "치킨브레스트"]],
+      ["삶은 계란", "기본", 155, 13, 1.1, 11, ["계란", "달걀", "삶은달걀"]],
+      ["고구마", "기본", 86, 1.6, 20, 0.1, ["삶은고구마", "군고구마"]],
+      ["바나나", "기본", 89, 1.1, 23, 0.3, ["banana"]],
+      ["두부", "기본", 76, 8, 1.9, 4.8, ["모두부", "부침두부"]],
+      ["김치", "기본", 21, 1.7, 3.2, 0.5, ["배추김치"]],
+      ["그릭요거트", "기본", 97, 9, 3.6, 5, ["그릭 yogurt", "요거트"]],
+      ["프로틴 쉐이크", "기본", 390, 78, 8, 5, ["단백질쉐이크", "보충제", "프로틴"]],
+    ] as const;
+    const now = new Date().toISOString();
+    for (const food of defaultFoods) {
+      await run(
+        `INSERT INTO foods
+         (userId, name, brand, servingUnit, caloriesPer100, proteinPer100, carbsPer100, fatPer100, aliases, favorite, createdAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        null,
+        food[0],
+        food[1],
+        "g",
+        food[2],
+        food[3],
+        food[4],
+        food[5],
+        JSON.stringify(food[6]),
+        0,
+        now,
+      );
+    }
+  }
+  mealTablesReady = true;
+}
+
+function normalizeFood(row: Row): Row {
+  return {
+    id: Number(row.id),
+    userId: row.userId == null ? null : Number(row.userId),
+    name: row.name,
+    brand: row.brand ?? "",
+    servingUnit: row.servingUnit ?? "g",
+    caloriesPer100: Number(row.caloriesPer100) || 0,
+    proteinPer100: Number(row.proteinPer100) || 0,
+    carbsPer100: Number(row.carbsPer100) || 0,
+    fatPer100: Number(row.fatPer100) || 0,
+    sodiumPer100: row.sodiumPer100 == null ? null : Number(row.sodiumPer100),
+    aliases: parseJson(row.aliases, []),
+    favorite: Boolean(row.favorite),
+    createdAt: row.createdAt,
+  };
+}
+
+function calcNutrition(food: Row, amount: number) {
+  const ratio = Math.max(0, amount) / 100;
+  return {
+    calories: Math.round((Number(food.caloriesPer100) || 0) * ratio),
+    protein: Math.round((Number(food.proteinPer100) || 0) * ratio * 10) / 10,
+    carbs: Math.round((Number(food.carbsPer100) || 0) * ratio * 10) / 10,
+    fat: Math.round((Number(food.fatPer100) || 0) * ratio * 10) / 10,
+    sodium: food.sodiumPer100 == null ? null : Math.round((Number(food.sodiumPer100) || 0) * ratio),
+  };
+}
+
+export async function listFoods(userId: number, query = "", limit = 30): Promise<Row[]> {
+  await ensureMealTables();
+  const q = `%${query.trim().toLowerCase()}%`;
+  const rows = query.trim()
+    ? await all(
+        `SELECT * FROM foods
+         WHERE (userId IS NULL OR userId = ?)
+           AND (lower(name) LIKE ? OR lower(COALESCE(brand, '')) LIKE ? OR lower(COALESCE(aliases, '')) LIKE ?)
+         ORDER BY favorite DESC, userId DESC, name
+         LIMIT ?`,
+        userId,
+        q,
+        q,
+        q,
+        limit,
+      )
+    : await all(
+        `SELECT * FROM foods
+         WHERE userId IS NULL OR userId = ?
+         ORDER BY favorite DESC, createdAt DESC, name
+         LIMIT ?`,
+        userId,
+        limit,
+      );
+  return rows.map(normalizeFood);
+}
+
+export async function createFood(userId: number, input: {
+  name: string;
+  brand?: string;
+  servingUnit?: string;
+  caloriesPer100: number;
+  proteinPer100?: number;
+  carbsPer100?: number;
+  fatPer100?: number;
+  sodiumPer100?: number;
+  aliases?: string[];
+  favorite?: boolean;
+}) {
+  await ensureMealTables();
+  const now = new Date().toISOString();
+  const result = await run(
+    `INSERT INTO foods
+     (userId, name, brand, servingUnit, caloriesPer100, proteinPer100, carbsPer100, fatPer100, sodiumPer100, aliases, favorite, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    userId,
+    input.name.trim(),
+    input.brand?.trim() || null,
+    input.servingUnit || "g",
+    input.caloriesPer100,
+    input.proteinPer100 ?? 0,
+    input.carbsPer100 ?? 0,
+    input.fatPer100 ?? 0,
+    input.sodiumPer100 ?? null,
+    JSON.stringify(input.aliases ?? []),
+    input.favorite ? 1 : 0,
+    now,
+  );
+  return getInsertId(result);
+}
+
+export async function toggleFoodFavorite(userId: number, foodId: number) {
+  await ensureMealTables();
+  const food = await get("SELECT favorite FROM foods WHERE id = ? AND userId = ? LIMIT 1", foodId, userId);
+  if (!food) throw new Error("Food not found");
+  const next = food.favorite ? 0 : 1;
+  await run("UPDATE foods SET favorite = ? WHERE id = ? AND userId = ?", next, foodId, userId);
+  return Boolean(next);
+}
+
+export async function getMealsByDate(userId: number, dateKey: string): Promise<Row> {
+  await ensureMealTables();
+  const start = `${dateKey}T00:00:00.000Z`;
+  const end = `${dateKey}T23:59:59.999Z`;
+  const meals = await all(
+    `SELECT * FROM meal_logs
+     WHERE userId = ? AND mealDate >= ? AND mealDate <= ?
+     ORDER BY mealDate DESC, id DESC`,
+    userId,
+    start,
+    end,
+  );
+  const ids = meals.map((meal) => Number(meal.id));
+  const items = ids.length
+    ? await all(
+        `SELECT * FROM meal_log_items WHERE mealLogId IN (${ids.map(() => "?").join(", ")}) ORDER BY id`,
+        ...ids,
+      )
+    : [];
+  const itemsByMeal = new Map<number, Row[]>();
+  for (const item of items) {
+    const mealLogId = Number(item.mealLogId);
+    if (!itemsByMeal.has(mealLogId)) itemsByMeal.set(mealLogId, []);
+    itemsByMeal.get(mealLogId)!.push(item);
+  }
+  const normalizedMeals = meals.map((meal) => ({
+    id: Number(meal.id),
+    mealDate: meal.mealDate,
+    mealType: meal.mealType,
+    notes: meal.notes ?? "",
+    createdAt: meal.createdAt,
+    updatedAt: meal.updatedAt,
+    items: (itemsByMeal.get(Number(meal.id)) ?? []).map((item) => ({
+      id: Number(item.id),
+      foodId: item.foodId == null ? null : Number(item.foodId),
+      foodName: item.foodName,
+      amount: Number(item.amount) || 0,
+      unit: item.unit ?? "g",
+      calories: Number(item.calories) || 0,
+      protein: Number(item.protein) || 0,
+      carbs: Number(item.carbs) || 0,
+      fat: Number(item.fat) || 0,
+      sodium: item.sodium == null ? null : Number(item.sodium),
+    })),
+  }));
+  const totals = normalizedMeals.flatMap((meal) => meal.items).reduce(
+    (sum, item) => ({
+      calories: sum.calories + item.calories,
+      protein: sum.protein + item.protein,
+      carbs: sum.carbs + item.carbs,
+      fat: sum.fat + item.fat,
+      sodium: sum.sodium + (item.sodium ?? 0),
+    }),
+    { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: 0 },
+  );
+  return { meals: normalizedMeals, totals };
+}
+
+export async function createMealLog(userId: number, input: {
+  mealDate: Date;
+  mealType: string;
+  notes?: string;
+  items: Array<{ foodId?: number; foodName?: string; amount: number; unit?: string }>;
+}) {
+  await ensureMealTables();
+  const now = new Date().toISOString();
+  const result = await run(
+    `INSERT INTO meal_logs (userId, mealDate, mealType, notes, createdAt, updatedAt)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    userId,
+    toDbDate(input.mealDate) ?? now,
+    input.mealType,
+    input.notes ?? null,
+    now,
+    now,
+  );
+  const mealLogId = getInsertId(result);
+  for (const item of input.items) {
+    const food = item.foodId
+      ? await get("SELECT * FROM foods WHERE id = ? AND (userId IS NULL OR userId = ?) LIMIT 1", item.foodId, userId)
+      : null;
+    const foodName = item.foodName?.trim() || food?.name || "음식";
+    const nutrition = food ? calcNutrition(food, item.amount) : { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: null };
+    await run(
+      `INSERT INTO meal_log_items
+       (mealLogId, foodId, foodName, amount, unit, calories, protein, carbs, fat, sodium, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      mealLogId,
+      item.foodId ?? null,
+      foodName,
+      item.amount,
+      item.unit ?? food?.servingUnit ?? "g",
+      nutrition.calories,
+      nutrition.protein,
+      nutrition.carbs,
+      nutrition.fat,
+      nutrition.sodium,
+      now,
+    );
+  }
+  return mealLogId;
+}
+
+export async function deleteMealLog(userId: number, mealLogId: number) {
+  await ensureMealTables();
+  const meal = await get("SELECT id FROM meal_logs WHERE id = ? AND userId = ? LIMIT 1", mealLogId, userId);
+  if (!meal) return;
+  await run("DELETE FROM meal_log_items WHERE mealLogId = ?", mealLogId);
+  await run("DELETE FROM meal_logs WHERE id = ? AND userId = ?", mealLogId, userId);
 }
 
 function getWeekStart(date: Date) {

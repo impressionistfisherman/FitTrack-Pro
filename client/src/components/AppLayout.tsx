@@ -16,6 +16,7 @@ import {
   MessageSquare,
   Scale,
   ShieldCheck,
+  Utensils,
   UserCheck,
   Users,
   X,
@@ -39,6 +40,7 @@ const userNavItems: SidebarNavItem[] = [
   { id: "user-exercises", href: "/exercises", icon: Dumbbell, label: "운동" },
   { id: "user-routines", href: "/routines", icon: Activity, label: "루틴" },
   { id: "user-history", href: "/history", icon: Calendar, label: "기록" },
+  { id: "user-meals", href: "/meals", icon: Utensils, label: "식단" },
   { id: "user-body-weight", href: "/body-weight", icon: Scale, label: "체중" },
   {
     id: "user-coaching",
@@ -815,6 +817,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           { id: "mobile-exercises", href: "/exercises", icon: Dumbbell, label: "운동" },
           { id: "mobile-routines", href: "/routines", icon: Activity, label: "루틴" },
           { id: "mobile-history", href: "/history", icon: Calendar, label: "기록" },
+          { id: "mobile-meals", href: "/meals", icon: Utensils, label: "식단" },
           { id: "mobile-profile", href: "/profile", icon: Users, label: "프로필" },
         ].map(item => {
           const Icon = item.icon;

@@ -6,6 +6,8 @@ import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   addBodyWeight,
+  createFood,
+  createMealLog,
   addUserFeedback,
   addCoachingComment,
   addCoachingTask,
@@ -18,10 +20,13 @@ import {
   createRoutine,
   createWorkoutSession,
   deleteBodyWeight,
+  deleteMealLog,
   deleteRoutine,
   deleteWorkoutSession,
   deleteWorkoutLog,
   getBodyWeights,
+  getMealsByDate,
+  listFoods,
   getUserFeedback,
   getCoachingCommentsForClient,
   getCoachingCommentsForPair,
@@ -85,6 +90,7 @@ import {
   reorderRoutineExercises,
   replaceUserGoals,
   setUserPreference,
+  toggleFoodFavorite,
   toggleFavorite,
   updateCoachingTaskStatus,
   updateRoutine,
@@ -2679,6 +2685,73 @@ ${exerciseSummary.slice(0, 80).join("\n")}
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
         await deleteBodyWeight(input.id, ctx.user.id);
+        return { success: true };
+      }),
+  }),
+
+  // ============ MEALS ============
+  meals: router({
+    foods: protectedProcedure
+      .input(z.object({
+        query: z.string().max(80).default(""),
+        limit: z.number().int().min(1).max(80).default(30),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        return await listFoods(ctx.user.id, input?.query ?? "", input?.limit ?? 30);
+      }),
+
+    createFood: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1).max(160),
+        brand: z.string().max(120).optional(),
+        servingUnit: z.string().max(24).default("g"),
+        caloriesPer100: z.number().min(0).max(2000),
+        proteinPer100: z.number().min(0).max(300).default(0),
+        carbsPer100: z.number().min(0).max(300).default(0),
+        fatPer100: z.number().min(0).max(300).default(0),
+        sodiumPer100: z.number().min(0).max(100000).optional(),
+        aliases: z.array(z.string().max(60)).max(20).default([]),
+        favorite: z.boolean().default(false),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const id = await createFood(ctx.user.id, input);
+        return { id };
+      }),
+
+    toggleFoodFavorite: protectedProcedure
+      .input(z.object({ foodId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const favorite = await toggleFoodFavorite(ctx.user.id, input.foodId);
+        return { favorite };
+      }),
+
+    byDate: protectedProcedure
+      .input(z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }))
+      .query(async ({ ctx, input }) => {
+        return await getMealsByDate(ctx.user.id, input.date);
+      }),
+
+    createLog: protectedProcedure
+      .input(z.object({
+        mealDate: z.date(),
+        mealType: z.enum(["breakfast", "lunch", "dinner", "snack", "preworkout", "postworkout"]),
+        notes: z.string().max(300).optional(),
+        items: z.array(z.object({
+          foodId: z.number().optional(),
+          foodName: z.string().max(160).optional(),
+          amount: z.number().min(0.1).max(10000),
+          unit: z.string().max(24).default("g"),
+        })).min(1).max(30),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const id = await createMealLog(ctx.user.id, input);
+        return { id };
+      }),
+
+    deleteLog: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await deleteMealLog(ctx.user.id, input.id);
         return { success: true };
       }),
   }),
