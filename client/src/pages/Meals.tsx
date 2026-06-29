@@ -113,6 +113,7 @@ export default function Meals() {
 
   const mealsQuery = trpc.meals.byDate.useQuery({ date }, { enabled: isAuthenticated });
   const targetsQuery = trpc.meals.targets.useQuery(undefined, { enabled: isAuthenticated });
+  const recommendedTargetsQuery = trpc.meals.recommendedTargets.useQuery(undefined, { enabled: isAuthenticated });
   const weeklyReportQuery = trpc.meals.weeklyReport.useQuery({ endDate: date, days: 7 }, { enabled: isAuthenticated });
   const foodsQuery = trpc.meals.foods.useQuery(
     { query: debouncedFoodSearch, limit: 30 },
@@ -135,6 +136,7 @@ export default function Meals() {
       toast.success("식단 목표를 저장했습니다.");
       await Promise.all([
         utils.meals.targets.invalidate(),
+        utils.meals.recommendedTargets.invalidate(),
         utils.meals.weeklyReport.invalidate({ endDate: date, days: 7 }),
       ]);
     },
@@ -259,6 +261,18 @@ export default function Meals() {
       carbs: Number(targetForm.carbs) || 0,
       fat: Number(targetForm.fat) || 0,
     });
+  };
+
+  const applyRecommendedTargets = () => {
+    const recommended = recommendedTargetsQuery.data?.targets;
+    if (!recommended) return;
+    setTargetForm({
+      calories: String(recommended.calories),
+      protein: String(recommended.protein),
+      carbs: String(recommended.carbs),
+      fat: String(recommended.fat),
+    });
+    saveTargets.mutate(recommended);
   };
 
   const copyMeal = (meal: any) => {
@@ -517,11 +531,35 @@ export default function Meals() {
                   <Target size={17} className="text-primary" />
                   <h2 className="text-sm font-semibold text-foreground">식단 목표</h2>
                 </div>
-                <Button size="sm" className="gap-2 bg-primary text-primary-foreground" onClick={submitTargets} disabled={saveTargets.isPending}>
-                  <Save size={14} />
-                  저장
-                </Button>
+                <Badge variant="outline" className="border-border text-muted-foreground">수정 가능</Badge>
               </div>
+              <div className="mb-4 rounded-xl border border-border bg-background/35 p-3 text-xs text-muted-foreground">
+                저장 위치: 계정 설정값(`mealTargets`). 운동 목표와 체중 기록 기반 추천을 적용하거나 직접 수정할 수 있습니다.
+                {recommendedTargetsQuery.data?.basis ? (
+                  <div className="mt-2 text-foreground">
+                    운동 목표: {recommendedTargetsQuery.data.basis.goalSummary} · 주 {recommendedTargetsQuery.data.basis.weeklyWorkouts}회 · 추천 전략: {recommendedTargetsQuery.data.basis.label}
+                  </div>
+                ) : null}
+              </div>
+              {recommendedTargetsQuery.data?.targets ? (
+                <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-semibold text-foreground">운동 목표 기반 추천</div>
+                      <div className="text-xs text-muted-foreground">{recommendedTargetsQuery.data.basis.description}</div>
+                    </div>
+                    <Button size="sm" variant="outline" className="border-border" onClick={applyRecommendedTargets} disabled={saveTargets.isPending}>
+                      적용
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2 text-center text-xs">
+                    <div className="rounded-lg bg-background/45 p-2"><b>{recommendedTargetsQuery.data.targets.calories}</b><br />kcal</div>
+                    <div className="rounded-lg bg-background/45 p-2"><b>{recommendedTargetsQuery.data.targets.protein}g</b><br />단백</div>
+                    <div className="rounded-lg bg-background/45 p-2"><b>{recommendedTargetsQuery.data.targets.carbs}g</b><br />탄수</div>
+                    <div className="rounded-lg bg-background/45 p-2"><b>{recommendedTargetsQuery.data.targets.fat}g</b><br />지방</div>
+                  </div>
+                </div>
+              ) : null}
               <div className="grid grid-cols-2 gap-3">
                 {[
                   ["calories", "칼로리", "kcal"],
@@ -543,6 +581,10 @@ export default function Meals() {
                   </label>
                 ))}
               </div>
+              <Button className="mt-4 w-full gap-2 bg-primary text-primary-foreground" onClick={submitTargets} disabled={saveTargets.isPending}>
+                <Save size={14} />
+                목표 저장
+              </Button>
             </CardContent>
           </Card>
 

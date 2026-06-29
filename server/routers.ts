@@ -135,6 +135,54 @@ function parseMealTargets(value: string | null) {
   }
 }
 
+function buildRecommendedMealTargets(args: {
+  goals: any[];
+  goal: any | null;
+  latestWeight?: number;
+}) {
+  const selectedGoalValues = args.goals.length
+    ? args.goals.map((item: any) => item.goal).filter(Boolean)
+    : args.goal?.goal
+      ? [args.goal.goal]
+      : ["general"];
+  const latestWeight = args.latestWeight ?? args.goal?.targetWeight ?? 70;
+  const heightCm = args.goal?.heightCm ?? 170;
+  const gender = args.goal?.gender ?? "male";
+  const age = args.goal?.birthYear ? new Date().getFullYear() - args.goal.birthYear : 30;
+  const genderOffset = gender === "female" ? -161 : 5;
+  const weeklyWorkouts = args.goal?.weeklyWorkouts ?? args.goals[0]?.weeklyWorkouts ?? 3;
+  const activityMultiplier = weeklyWorkouts >= 5 ? 1.725 : weeklyWorkouts >= 3 ? 1.55 : 1.375;
+  const bmr = Math.round(10 * latestWeight + 6.25 * heightCm - 5 * age + genderOffset);
+  const tdee = Math.round(bmr * activityMultiplier);
+  const strategy = buildNutritionStrategy(selectedGoalValues, tdee, latestWeight);
+  const hasEndurance = selectedGoalValues.includes("endurance");
+  const hasFatLoss = selectedGoalValues.includes("fat_loss");
+  const hasHypertrophy = selectedGoalValues.includes("hypertrophy");
+  const protein = strategy.proteinTarget;
+  const fat = Math.round(latestWeight * (hasFatLoss ? 0.7 : hasHypertrophy ? 0.9 : 0.8));
+  const carbs = Math.max(0, Math.round((strategy.calories - protein * 4 - fat * 9) / 4));
+  return {
+    targets: {
+      calories: strategy.calories,
+      protein,
+      carbs: hasEndurance ? Math.max(carbs, Math.round(latestWeight * 4)) : carbs,
+      fat,
+    },
+    basis: {
+      label: strategy.label,
+      description: strategy.description,
+      goalSummary: selectedGoalValues.map((value) => goalLabels[value] ?? value).join(" + "),
+      weeklyWorkouts,
+      latestWeight,
+      heightCm,
+      gender,
+      age,
+      bmr,
+      tdee,
+    },
+  };
+}
+
 const bodyPartLabels: Record<string, string> = {
   chest: "가슴",
   back: "등",
@@ -2772,6 +2820,20 @@ ${exerciseSummary.slice(0, 80).join("\n")}
     targets: protectedProcedure
       .query(async ({ ctx }) => {
         return parseMealTargets(await getUserPreference(ctx.user.id, "mealTargets"));
+      }),
+
+    recommendedTargets: protectedProcedure
+      .query(async ({ ctx }) => {
+        const [goal, goals, weights] = await Promise.all([
+          getUserGoal(ctx.user.id),
+          getUserGoals(ctx.user.id),
+          getBodyWeights(ctx.user.id, 1),
+        ]);
+        return buildRecommendedMealTargets({
+          goal,
+          goals,
+          latestWeight: weights[0]?.weightKg,
+        });
       }),
 
     saveTargets: protectedProcedure
