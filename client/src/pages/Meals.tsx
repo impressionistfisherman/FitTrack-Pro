@@ -534,10 +534,13 @@ export default function Meals() {
                 <Badge variant="outline" className="border-border text-muted-foreground">수정 가능</Badge>
               </div>
               <div className="mb-4 rounded-xl border border-border bg-background/35 p-3 text-xs text-muted-foreground">
-                저장 위치: 계정 설정값(`mealTargets`). 운동 목표와 체중 기록 기반 추천을 적용하거나 직접 수정할 수 있습니다.
+                저장 위치: 계정 설정값 `mealTargets`. 아래 자동 계산값을 적용하거나 직접 수정해 저장합니다.
                 {recommendedTargetsQuery.data?.basis ? (
-                  <div className="mt-2 text-foreground">
-                    운동 목표: {recommendedTargetsQuery.data.basis.goalSummary} · 주 {recommendedTargetsQuery.data.basis.weeklyWorkouts}회 · 추천 전략: {recommendedTargetsQuery.data.basis.label}
+                  <div className="mt-2 space-y-1 text-foreground">
+                    <div>운동 목표: {recommendedTargetsQuery.data.basis.goalSummary} · 주 {recommendedTargetsQuery.data.basis.weeklyWorkouts}회 · 추천 전략: {recommendedTargetsQuery.data.basis.label}</div>
+                    <div className="text-muted-foreground">
+                      계산 기준: 체중 {recommendedTargetsQuery.data.basis.latestWeight}kg · BMR {recommendedTargetsQuery.data.basis.bmr}kcal · TDEE {recommendedTargetsQuery.data.basis.tdee}kcal
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -545,11 +548,11 @@ export default function Meals() {
                 <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
                   <div className="mb-2 flex items-center justify-between gap-3">
                     <div>
-                      <div className="text-sm font-semibold text-foreground">운동 목표 기반 추천</div>
+                      <div className="text-sm font-semibold text-foreground">칼로리 자동 계산</div>
                       <div className="text-xs text-muted-foreground">{recommendedTargetsQuery.data.basis.description}</div>
                     </div>
                     <Button size="sm" variant="outline" className="border-border" onClick={applyRecommendedTargets} disabled={saveTargets.isPending}>
-                      적용
+                      계산값 적용
                     </Button>
                   </div>
                   <div className="grid grid-cols-4 gap-2 text-center text-xs">
@@ -585,43 +588,6 @@ export default function Meals() {
                 <Save size={14} />
                 목표 저장
               </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border bg-card">
-            <CardContent className="p-5">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <h2 className="text-sm font-semibold text-foreground">최근 식사 다시 기록</h2>
-                <Badge variant="outline" className="border-border text-muted-foreground">복사</Badge>
-              </div>
-              <div className="space-y-2">
-                {recentMealsQuery.data?.length ? recentMealsQuery.data.map((meal: any) => (
-                  <button
-                    key={meal.id}
-                    type="button"
-                    onClick={() => copyMeal(meal)}
-                    disabled={createLog.isPending}
-                    className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-background/45 p-3 text-left transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:opacity-60"
-                  >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="border-border text-[11px] text-muted-foreground">
-                          {mealTypes.find((type) => type.value === meal.mealType)?.label ?? meal.mealType}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">{meal.items.length}개 음식</span>
-                      </div>
-                      <div className="mt-1 truncate text-sm font-semibold text-foreground">
-                        {meal.items.map((item: any) => item.foodName).join(", ")}
-                      </div>
-                    </div>
-                    <Copy size={15} className="shrink-0 text-primary" />
-                  </button>
-                )) : (
-                  <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
-                    아직 복사할 최근 식사가 없습니다.
-                  </div>
-                )}
-              </div>
             </CardContent>
           </Card>
 
@@ -686,6 +652,40 @@ export default function Meals() {
                   <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input value={foodSearch} onChange={(e) => setFoodSearch(e.target.value)} className="border-border bg-accent pl-9" placeholder="음식 검색..." />
                 </label>
+              </div>
+              <div className="mt-4 rounded-xl border border-border bg-background/35 p-3">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <div className="text-xs font-semibold text-muted-foreground">이전 기록 참조</div>
+                  <Badge variant="outline" className="border-border text-[10px] text-muted-foreground">현재 날짜로 저장</Badge>
+                </div>
+                <div className="space-y-2">
+                  {recentMealsQuery.data?.length ? recentMealsQuery.data.map((meal: any) => (
+                    <button
+                      key={meal.id}
+                      type="button"
+                      onClick={() => copyMeal(meal)}
+                      disabled={createLog.isPending}
+                      className="flex w-full items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2 text-left transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:opacity-60"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="border-border text-[10px] text-muted-foreground">
+                            {mealTypes.find((type) => type.value === meal.mealType)?.label ?? meal.mealType}
+                          </Badge>
+                          <span className="text-[11px] text-muted-foreground">{meal.items.length}개</span>
+                        </div>
+                        <div className="mt-1 truncate text-xs font-semibold text-foreground">
+                          {meal.items.map((item: any) => item.foodName).join(", ")}
+                        </div>
+                      </div>
+                      <Copy size={14} className="shrink-0 text-primary" />
+                    </button>
+                  )) : (
+                    <div className="rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
+                      식단을 기록하면 이전 기록이 여기에 표시됩니다.
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="mt-4 grid gap-3 lg:grid-cols-2">
                 <div className="rounded-xl border border-border bg-background/35 p-3">
