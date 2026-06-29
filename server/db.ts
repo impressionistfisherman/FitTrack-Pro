@@ -3752,6 +3752,34 @@ export async function importPublicFoods(foods: Array<{
   return { imported };
 }
 
+export async function getFoodDataStatus(): Promise<Row> {
+  await ensureMealTables();
+  const [total, publicFoods, userFoods, mfdsFoods, searchableFoods] = await Promise.all([
+    get("SELECT COUNT(*) AS count FROM foods"),
+    get("SELECT COUNT(*) AS count FROM foods WHERE userId IS NULL"),
+    get("SELECT COUNT(*) AS count FROM foods WHERE userId IS NOT NULL"),
+    get(`SELECT COUNT(*) AS count FROM foods WHERE userId IS NULL AND (brand = ? OR searchText LIKE ? OR aliases LIKE ?)`, "식품의약품안전처", "%식품영양성분db%", "%MFDS%"),
+    get("SELECT COUNT(*) AS count FROM foods WHERE searchText IS NOT NULL AND searchText <> ''"),
+  ]);
+  const samples = await all(
+    `SELECT name, brand FROM foods
+     WHERE userId IS NULL
+     ORDER BY id DESC
+     LIMIT 8`,
+  );
+  return {
+    totalFoods: Number(total?.count ?? 0),
+    publicFoods: Number(publicFoods?.count ?? 0),
+    userFoods: Number(userFoods?.count ?? 0),
+    mfdsFoods: Number(mfdsFoods?.count ?? 0),
+    searchableFoods: Number(searchableFoods?.count ?? 0),
+    samples: samples.map((row) => ({
+      name: String(row.name ?? ""),
+      brand: String(row.brand ?? ""),
+    })),
+  };
+}
+
 async function importFoodNutritionFromOpenApi(query: string, limit = 30) {
   const apiKey = process.env.FOODSAFETY_API_KEY
     ?? process.env.MFDS_API_KEY

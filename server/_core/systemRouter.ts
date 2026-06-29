@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getFoodDataStatus } from "../db";
 import { notifyOwner } from "./notification";
 import { adminProcedure, publicProcedure, router } from "./trpc";
 
@@ -12,6 +13,11 @@ export const systemRouter = router({
     .query(() => ({
       ok: true,
     })),
+
+  foodDataStatus: publicProcedure
+    .query(async () => {
+      return await getFoodDataStatus();
+    }),
 
   notifyOwner: adminProcedure
     .input(
