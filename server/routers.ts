@@ -40,6 +40,7 @@ import {
   getExerciseById,
   getExerciseHistory,
   getExercises,
+  getExercisesPage,
   getFavorites,
   getClientTrainers,
   getPendingClientTrainerLinks,
@@ -1602,11 +1603,30 @@ export const appRouter = router({
           bodyPart: z.string().optional(),
           equipment: z.string().optional(),
           category: z.string().optional(),
+          difficulty: z.string().optional(),
           search: z.string().optional(),
+          limit: z.number().int().min(1).max(100).optional(),
+          offset: z.number().int().min(0).optional(),
         }).optional()
       )
       .query(async ({ input }) => {
         return await getExercises(input);
+      }),
+
+    page: publicProcedure
+      .input(
+        z.object({
+          bodyPart: z.string().optional(),
+          equipment: z.string().optional(),
+          category: z.string().optional(),
+          difficulty: z.string().optional(),
+          search: z.string().optional(),
+          limit: z.number().int().min(1).max(100).default(24),
+          offset: z.number().int().min(0).default(0),
+        }).optional()
+      )
+      .query(async ({ input }) => {
+        return await getExercisesPage(input);
       }),
 
     detail: publicProcedure

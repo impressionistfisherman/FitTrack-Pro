@@ -2,7 +2,6 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { ExerciseResultItem } from "@/components/exercise/ExerciseResultItem";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { trpc } from "@/lib/trpc";
-import { matchesExerciseSearchText } from "@shared/exerciseSearch";
 import { ChevronLeft, ChevronRight, Filter, Heart, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -91,35 +90,48 @@ export default function Exercises() {
   const [showFavOnly, setShowFavOnly] = useState(initial.favorites);
   const [showImages, setShowImages] = useState(false);
   const debouncedSearch = useDebouncedValue(search.trim(), 250);
+  const pageInput = {
+    bodyPart: bodyPart !== "all" ? bodyPart : undefined,
+    equipment: equipment !== "all" ? equipment : undefined,
+    difficulty: difficulty !== "all" ? difficulty : undefined,
+    search: debouncedSearch || undefined,
+    limit: PAGE_SIZE,
+    offset: (Math.max(1, page) - 1) * PAGE_SIZE,
+  };
 
   const utils = trpc.useUtils();
-  const { data: exercises, isLoading, isFetching } = trpc.exercises.list.useQuery(
+  const pageQuery = trpc.exercises.page.useQuery(
+    pageInput,
+    { enabled: !showFavOnly, staleTime: 1000 * 60 * 10 }
+  );
+  const favoriteFilterQuery = trpc.exercises.list.useQuery(
     {
       bodyPart: bodyPart !== "all" ? bodyPart : undefined,
       equipment: equipment !== "all" ? equipment : undefined,
+      difficulty: difficulty !== "all" ? difficulty : undefined,
+      search: debouncedSearch || undefined,
     },
-    { staleTime: 1000 * 60 * 5 }
+    { enabled: showFavOnly, staleTime: 1000 * 60 * 10 }
   );
-  const { data: favorites } = trpc.favorites.list.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: favorites } = trpc.favorites.list.useQuery(undefined, { enabled: isAuthenticated, staleTime: 1000 * 60 * 5 });
   const favIds = useMemo(() => new Set(favorites?.map((favorite: any) => favorite.ex.id) || []), [favorites]);
 
   const toggleFav = trpc.favorites.toggle.useMutation({
     onSuccess: () => utils.favorites.list.invalidate(),
   });
 
-  const filtered = useMemo(
-    () =>
-      exercises?.filter((exercise) => {
-        if (showFavOnly && !favIds.has(exercise.id)) return false;
-        if (difficulty !== "all" && exercise.difficulty !== difficulty) return false;
-        return !debouncedSearch || matchesExerciseSearchText(debouncedSearch, exercise.nameKo, exercise.name);
-      }) ?? [],
-    [debouncedSearch, difficulty, exercises, favIds, showFavOnly]
+  const favoriteFiltered = useMemo(
+    () => favoriteFilterQuery.data?.filter((exercise) => favIds.has(exercise.id)) ?? [],
+    [favoriteFilterQuery.data, favIds]
   );
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const totalCount = showFavOnly ? favoriteFiltered.length : pageQuery.data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-  const visibleExercises = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const visibleExercises = showFavOnly
+    ? favoriteFiltered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+    : pageQuery.data?.items ?? [];
+  const isLoading = showFavOnly ? favoriteFilterQuery.isLoading : pageQuery.isLoading;
+  const isFetching = showFavOnly ? favoriteFilterQuery.isFetching : pageQuery.isFetching;
   const activeFilterCount = [bodyPart !== "all", equipment !== "all", difficulty !== "all", showFavOnly].filter(Boolean).length;
   const bodyPartLabel = bodyParts.find((option) => option.value === bodyPart)?.label ?? "전체";
   const equipmentLabel = equipments.find((option) => option.value === equipment)?.label ?? "전체";
@@ -128,6 +140,10 @@ export default function Exercises() {
   useEffect(() => {
     setPage(1);
   }, [bodyPart, equipment, difficulty, debouncedSearch, showFavOnly]);
+
+  useEffect(() => {
+    if (!isLoading && page > totalPages) setPage(totalPages);
+  }, [isLoading, page, totalPages]);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -280,9 +296,9 @@ export default function Exercises() {
 
       <div className="exercise-result-summary" aria-live="polite">
         <div>
-          <span>{isLoading && !exercises ? "로딩 중..." : `${filtered.length}개 운동`}</span>
-          {filtered.length > PAGE_SIZE && <span> · {currentPage}/{totalPages} 페이지</span>}
-          {isFetching && exercises && <span className="text-primary"> · 업데이트 중</span>}
+          <span>{isLoading && !visibleExercises.length ? "로딩 중..." : `${totalCount}개 운동`}</span>
+          {totalCount > PAGE_SIZE && <span> · {currentPage}/{totalPages} 페이지</span>}
+          {isFetching && visibleExercises.length > 0 && <span className="text-primary"> · 업데이트 중</span>}
         </div>
         <button
           type="button"
@@ -294,7 +310,7 @@ export default function Exercises() {
         </button>
       </div>
 
-      {isLoading && !exercises ? (
+      {isLoading && !visibleExercises.length ? (
         <div className="space-y-2" aria-label="운동 목록 로딩 중" aria-busy="true">
           {Array.from({ length: 8 }).map((_, index) => (
             <div key={index} className="h-[94px] skeleton rounded-xl" />

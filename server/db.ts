@@ -482,6 +482,7 @@ type SeedExercise = {
 };
 
 let supplementalExercisesReady = false;
+let exerciseIndexesReady = false;
 
 function normalizeExerciseSeedKey(value: unknown): string {
   if (value == null) return "";
@@ -516,6 +517,12 @@ function uniqueExercisesByName(rows: Row[]): Row[] {
 }
 
 async function ensureSupplementalExercises() {
+  if (!exerciseIndexesReady) {
+    await run("CREATE INDEX IF NOT EXISTS idx_exercises_filter_sort ON exercises (bodyPart, equipment, difficulty, nameKo)");
+    await run("CREATE INDEX IF NOT EXISTS idx_exercises_name ON exercises (name)");
+    await run("CREATE INDEX IF NOT EXISTS idx_exercises_name_ko ON exercises (nameKo)");
+    exerciseIndexesReady = true;
+  }
   if (supplementalExercisesReady) return;
 
   const existingRows = await all("SELECT id, name, nameKo FROM exercises");
@@ -898,7 +905,10 @@ export async function getExercises(filters?: {
   bodyPart?: string;
   equipment?: string;
   category?: string;
+  difficulty?: string;
   search?: string;
+  limit?: number;
+  offset?: number;
 }): Promise<Row[]> {
   await ensureSupplementalExercises();
 
@@ -916,6 +926,10 @@ export async function getExercises(filters?: {
   if (filters?.category) {
     where.push("category = ?");
     params.push(filters.category);
+  }
+  if (filters?.difficulty) {
+    where.push("difficulty = ?");
+    params.push(filters.difficulty);
   }
   if (filters?.search) {
     const tokenGroups = getExerciseSearchTokenGroups(filters.search).slice(0, 8);
@@ -938,11 +952,17 @@ export async function getExercises(filters?: {
   }
 
   const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
-  const rows = await all(`SELECT * FROM exercises ${whereClause} ORDER BY nameKo`, ...params);
+  const canPageInSql = !filters?.search && Number.isFinite(filters?.limit);
+  const limitClause = canPageInSql ? " LIMIT ? OFFSET ?" : "";
+  const rows = await all(
+    `SELECT * FROM exercises ${whereClause} ORDER BY nameKo${limitClause}`,
+    ...params,
+    ...(canPageInSql ? [Math.max(1, Math.min(100, Math.round(filters?.limit ?? 24))), Math.max(0, Math.round(filters?.offset ?? 0))] : []),
+  );
   const normalizedRows = uniqueExercisesByName(rows).map((row) => normalizeExercise(row));
   if (!filters?.search) return normalizedRows;
 
-  return normalizedRows
+  const scoredRows = normalizedRows
     .map((row) => ({
       row,
       score: scoreExerciseSearchMatch(filters.search!, row.nameKo, row.name),
@@ -954,6 +974,33 @@ export async function getExercises(filters?: {
       || String(a.row.name ?? "").localeCompare(String(b.row.name ?? ""), "en")
     ))
     .map((item) => item.row);
+  if (!Number.isFinite(filters?.limit)) return scoredRows;
+  const offset = Math.max(0, Math.round(filters?.offset ?? 0));
+  const limit = Math.max(1, Math.min(100, Math.round(filters?.limit ?? 24)));
+  return scoredRows.slice(offset, offset + limit);
+}
+
+export async function getExercisesPage(filters?: {
+  bodyPart?: string;
+  equipment?: string;
+  category?: string;
+  difficulty?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{ items: Row[]; total: number }> {
+  const limit = Math.max(1, Math.min(100, Math.round(filters?.limit ?? 24)));
+  const offset = Math.max(0, Math.round(filters?.offset ?? 0));
+  const baseFilters = {
+    bodyPart: filters?.bodyPart,
+    equipment: filters?.equipment,
+    category: filters?.category,
+    difficulty: filters?.difficulty,
+    search: filters?.search,
+  };
+  const items = await getExercises({ ...baseFilters, limit, offset });
+  const total = (await getExercises(baseFilters)).length;
+  return { items, total };
 }
 
 export async function getExerciseById(id: number): Promise<Row | null> {
@@ -3285,6 +3332,11 @@ async function ensureMealTables() {
       createdAt timestamp
     )`,
   );
+  await run("CREATE INDEX IF NOT EXISTS idx_foods_user_created ON foods (userId, createdAt)");
+  await run("CREATE INDEX IF NOT EXISTS idx_foods_user_name ON foods (userId, name)");
+  await run("CREATE INDEX IF NOT EXISTS idx_meal_logs_user_date ON meal_logs (userId, mealDate)");
+  await run("CREATE INDEX IF NOT EXISTS idx_meal_log_items_meal ON meal_log_items (mealLogId)");
+  await run("CREATE INDEX IF NOT EXISTS idx_meal_log_items_food_created ON meal_log_items (foodId, createdAt)");
   const defaultFoods = [
     ["백미밥", "밥/탄수", 130, 2.7, 28.6, 0.3, ["흰쌀밥", "쌀밥", "공기밥", "밥", "햇반", "즉석밥", "white rice"]],
     ["현미밥", "밥/탄수", 112, 2.6, 23, 0.9, ["현미", "현미햇반", "현미 즉석밥", "잡곡밥", "brown rice"]],
