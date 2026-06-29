@@ -2819,7 +2819,8 @@ ${exerciseSummary.slice(0, 80).join("\n")}
 
     targets: protectedProcedure
       .query(async ({ ctx }) => {
-        return parseMealTargets(await getUserPreference(ctx.user.id, "mealTargets"));
+        const storedTargets = await getUserPreference(ctx.user.id, "mealTargets");
+        return { ...parseMealTargets(storedTargets), saved: Boolean(storedTargets) };
       }),
 
     recommendedTargets: protectedProcedure

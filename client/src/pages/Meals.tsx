@@ -83,7 +83,7 @@ export default function Meals() {
   const [amount, setAmount] = useState("100");
   const [notes, setNotes] = useState("");
   const [newFoodOpen, setNewFoodOpen] = useState(false);
-  const [isWeeklyReportCollapsed, setIsWeeklyReportCollapsed] = useState(false);
+  const [isWeeklyReportCollapsed, setIsWeeklyReportCollapsed] = useState(true);
   const [imageItems, setImageItems] = useState<Array<{
     foodName: string;
     amount: string;
@@ -195,6 +195,7 @@ export default function Meals() {
 
   const totals = mealsQuery.data?.totals ?? { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: 0 };
   const targets = targetsQuery.data ?? { calories: 2200, protein: 140, carbs: 250, fat: 65 };
+  const isTargetSectionReady = !targetsQuery.isLoading && !recommendedTargetsQuery.isLoading;
   const macroCalories = totals.protein * 4 + totals.carbs * 4 + totals.fat * 9;
   const selectedPreview = useMemo(() => {
     if (!selectedFood) return null;
@@ -216,13 +217,22 @@ export default function Meals() {
 
   useEffect(() => {
     if (!targetsQuery.data) return;
+    if (!targetsQuery.data.saved && recommendedTargetsQuery.data?.targets) {
+      setTargetForm({
+        calories: String(recommendedTargetsQuery.data.targets.calories),
+        protein: String(recommendedTargetsQuery.data.targets.protein),
+        carbs: String(recommendedTargetsQuery.data.targets.carbs),
+        fat: String(recommendedTargetsQuery.data.targets.fat),
+      });
+      return;
+    }
     setTargetForm({
       calories: String(targetsQuery.data.calories ?? 2200),
       protein: String(targetsQuery.data.protein ?? 140),
       carbs: String(targetsQuery.data.carbs ?? 250),
       fat: String(targetsQuery.data.fat ?? 65),
     });
-  }, [targetsQuery.data]);
+  }, [recommendedTargetsQuery.data?.targets, targetsQuery.data]);
 
   if (loading) return <PageLoadingState wide />;
   if (!isAuthenticated) {
@@ -555,61 +565,69 @@ export default function Meals() {
                 </div>
                 <Badge variant="outline" className="border-border text-muted-foreground">수정 가능</Badge>
               </div>
-              <div className="mb-4 rounded-xl border border-border bg-background/35 p-3 text-xs text-muted-foreground">
-                저장 위치: 계정 설정값 `mealTargets`. 아래 자동 계산값을 적용하거나 직접 수정해 저장합니다.
-                {recommendedTargetsQuery.data?.basis ? (
-                  <div className="mt-2 space-y-1 text-foreground">
-                    <div>운동 목표: {recommendedTargetsQuery.data.basis.goalSummary} · 주 {recommendedTargetsQuery.data.basis.weeklyWorkouts}회 · 추천 전략: {recommendedTargetsQuery.data.basis.label}</div>
-                    <div className="text-muted-foreground">
-                      계산 기준: 체중 {recommendedTargetsQuery.data.basis.latestWeight}kg · BMR {recommendedTargetsQuery.data.basis.bmr}kcal · TDEE {recommendedTargetsQuery.data.basis.tdee}kcal
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-              {recommendedTargetsQuery.data?.targets ? (
-                <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <div>
-                      <div className="text-sm font-semibold text-foreground">칼로리 자동 계산</div>
-                      <div className="text-xs text-muted-foreground">{recommendedTargetsQuery.data.basis.description}</div>
-                    </div>
-                    <Button size="sm" variant="outline" className="border-border" onClick={applyRecommendedTargets} disabled={saveTargets.isPending}>
-                      계산값 적용
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                    <div className="rounded-lg bg-background/45 p-2"><b>{recommendedTargetsQuery.data.targets.calories}</b><br />kcal</div>
-                    <div className="rounded-lg bg-background/45 p-2"><b>{recommendedTargetsQuery.data.targets.protein}g</b><br />단백</div>
-                    <div className="rounded-lg bg-background/45 p-2"><b>{recommendedTargetsQuery.data.targets.carbs}g</b><br />탄수</div>
-                    <div className="rounded-lg bg-background/45 p-2"><b>{recommendedTargetsQuery.data.targets.fat}g</b><br />지방</div>
-                  </div>
+              {!isTargetSectionReady ? (
+                <div className="rounded-xl border border-border bg-background/35 p-4 text-sm text-muted-foreground">
+                  식단 목표와 칼로리 자동 계산값을 불러오는 중입니다.
                 </div>
-              ) : null}
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  ["calories", "칼로리", "kcal"],
-                  ["protein", "단백질", "g"],
-                  ["carbs", "탄수화물", "g"],
-                  ["fat", "지방", "g"],
-                ].map(([key, label, unit]) => (
-                  <label key={key} className="space-y-1.5">
-                    <span className="text-xs font-semibold text-muted-foreground">{label}</span>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        value={(targetForm as any)[key]}
-                        onChange={(event) => setTargetForm((form) => ({ ...form, [key]: event.target.value }))}
-                        className="border-border bg-accent"
-                      />
-                      <span className="w-8 text-xs text-muted-foreground">{unit}</span>
+              ) : (
+                <>
+                  <div className="mb-4 rounded-xl border border-border bg-background/35 p-3 text-xs text-muted-foreground">
+                    저장 위치: 계정 설정값 `mealTargets`. 아래 자동 계산값을 적용하거나 직접 수정해 저장합니다.
+                    {recommendedTargetsQuery.data?.basis ? (
+                      <div className="mt-2 space-y-1 text-foreground">
+                        <div>운동 목표: {recommendedTargetsQuery.data.basis.goalSummary} · 주 {recommendedTargetsQuery.data.basis.weeklyWorkouts}회 · 추천 전략: {recommendedTargetsQuery.data.basis.label}</div>
+                        <div className="text-muted-foreground">
+                          계산 기준: 체중 {recommendedTargetsQuery.data.basis.latestWeight}kg · BMR {recommendedTargetsQuery.data.basis.bmr}kcal · TDEE {recommendedTargetsQuery.data.basis.tdee}kcal
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                  {recommendedTargetsQuery.data?.targets ? (
+                    <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-semibold text-foreground">칼로리 자동 계산</div>
+                          <div className="text-xs text-muted-foreground">{recommendedTargetsQuery.data.basis.description}</div>
+                        </div>
+                        <Button size="sm" variant="outline" className="border-border" onClick={applyRecommendedTargets} disabled={saveTargets.isPending}>
+                          계산값 적용
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2 text-center text-xs">
+                        <div className="rounded-lg bg-background/45 p-2"><b>{recommendedTargetsQuery.data.targets.calories}</b><br />kcal</div>
+                        <div className="rounded-lg bg-background/45 p-2"><b>{recommendedTargetsQuery.data.targets.protein}g</b><br />단백</div>
+                        <div className="rounded-lg bg-background/45 p-2"><b>{recommendedTargetsQuery.data.targets.carbs}g</b><br />탄수</div>
+                        <div className="rounded-lg bg-background/45 p-2"><b>{recommendedTargetsQuery.data.targets.fat}g</b><br />지방</div>
+                      </div>
                     </div>
-                  </label>
-                ))}
-              </div>
-              <Button className="mt-4 w-full gap-2 bg-primary text-primary-foreground" onClick={submitTargets} disabled={saveTargets.isPending}>
-                <Save size={14} />
-                목표 저장
-              </Button>
+                  ) : null}
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      ["calories", "칼로리", "kcal"],
+                      ["protein", "단백질", "g"],
+                      ["carbs", "탄수화물", "g"],
+                      ["fat", "지방", "g"],
+                    ].map(([key, label, unit]) => (
+                      <label key={key} className="space-y-1.5">
+                        <span className="text-xs font-semibold text-muted-foreground">{label}</span>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            value={(targetForm as any)[key]}
+                            onChange={(event) => setTargetForm((form) => ({ ...form, [key]: event.target.value }))}
+                            className="border-border bg-accent"
+                          />
+                          <span className="w-8 text-xs text-muted-foreground">{unit}</span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                  <Button className="mt-4 w-full gap-2 bg-primary text-primary-foreground" onClick={submitTargets} disabled={saveTargets.isPending}>
+                    <Save size={14} />
+                    목표 저장
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
 
