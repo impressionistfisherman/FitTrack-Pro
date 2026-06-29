@@ -3305,6 +3305,7 @@ function foodSearchText(input: { name?: unknown; brand?: unknown; aliases?: unkn
 async function ensureFoodSearchTextColumn() {
   if (databaseType === "postgres") {
     await run(`ALTER TABLE foods ADD COLUMN IF NOT EXISTS "searchText" text`);
+    await run(`ALTER TABLE foods ADD COLUMN IF NOT EXISTS "servingSizeGrams" real NOT NULL DEFAULT 100`);
     return;
   }
   if (databaseType === "mysql") {
@@ -3313,11 +3314,19 @@ async function ensureFoodSearchTextColumn() {
     } catch (error: any) {
       if (error?.code !== "ER_DUP_FIELDNAME" && error?.errno !== 1060) throw error;
     }
+    try {
+      await run("ALTER TABLE foods ADD COLUMN servingSizeGrams REAL NOT NULL DEFAULT 100");
+    } catch {
+      // Column already exists.
+    }
     return;
   }
   const columns = await all<{ name: string }>("PRAGMA table_info(foods)");
   if (!columns.some((column) => column.name === "searchText")) {
     await run("ALTER TABLE foods ADD COLUMN searchText TEXT");
+  }
+  if (!columns.some((column) => column.name === "servingSizeGrams")) {
+    await run("ALTER TABLE foods ADD COLUMN servingSizeGrams REAL NOT NULL DEFAULT 100");
   }
 }
 
@@ -3343,6 +3352,7 @@ async function ensureMealTables() {
       name varchar(160) NOT NULL,
       brand varchar(120),
       servingUnit varchar(24) NOT NULL DEFAULT 'g',
+      servingSizeGrams real NOT NULL DEFAULT 100,
       caloriesPer100 real NOT NULL DEFAULT 0,
       proteinPer100 real NOT NULL DEFAULT 0,
       carbsPer100 real NOT NULL DEFAULT 0,
@@ -3549,6 +3559,7 @@ function normalizeFood(row: Row): Row {
     name: row.name,
     brand: row.brand ?? "",
     servingUnit: row.servingUnit ?? "g",
+    servingSizeGrams: Number(row.servingSizeGrams) || 100,
     caloriesPer100: Number(row.caloriesPer100) || 0,
     proteinPer100: Number(row.proteinPer100) || 0,
     carbsPer100: Number(row.carbsPer100) || 0,
@@ -3905,6 +3916,7 @@ export async function createFood(userId: number, input: {
   name: string;
   brand?: string;
   servingUnit?: string;
+  servingSizeGrams?: number;
   caloriesPer100: number;
   proteinPer100?: number;
   carbsPer100?: number;
@@ -3917,12 +3929,13 @@ export async function createFood(userId: number, input: {
   const now = new Date().toISOString();
   const result = await run(
     `INSERT INTO foods
-     (userId, name, brand, servingUnit, caloriesPer100, proteinPer100, carbsPer100, fatPer100, sodiumPer100, aliases, searchText, favorite, createdAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     (userId, name, brand, servingUnit, servingSizeGrams, caloriesPer100, proteinPer100, carbsPer100, fatPer100, sodiumPer100, aliases, searchText, favorite, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     userId,
     input.name.trim(),
     input.brand?.trim() || null,
     input.servingUnit || "g",
+    Math.max(1, Number(input.servingSizeGrams) || 100),
     input.caloriesPer100,
     input.proteinPer100 ?? 0,
     input.carbsPer100 ?? 0,
@@ -3934,6 +3947,14 @@ export async function createFood(userId: number, input: {
     now,
   );
   return getInsertId(result);
+}
+
+export async function deleteFood(userId: number, foodId: number) {
+  await ensureMealTables();
+  const food = await get("SELECT id FROM foods WHERE id = ? AND userId = ? LIMIT 1", foodId, userId);
+  if (!food) throw new Error("Food not found");
+  await run("UPDATE meal_log_items SET foodId = NULL WHERE foodId = ?", foodId);
+  await run("DELETE FROM foods WHERE id = ? AND userId = ?", foodId, userId);
 }
 
 export async function toggleFoodFavorite(userId: number, foodId: number) {

@@ -20,6 +20,7 @@ import {
   createRoutine,
   createWorkoutSession,
   deleteBodyWeight,
+  deleteFood,
   deleteMealLog,
   deleteRoutine,
   deleteWorkoutSession,
@@ -2811,6 +2812,7 @@ ${exerciseSummary.slice(0, 80).join("\n")}
         name: z.string().min(1).max(160),
         brand: z.string().max(120).optional(),
         servingUnit: z.string().max(24).default("g"),
+        servingSizeGrams: z.number().min(1).max(10000).default(100),
         caloriesPer100: z.number().min(0).max(2000),
         proteinPer100: z.number().min(0).max(300).default(0),
         carbsPer100: z.number().min(0).max(300).default(0),
@@ -2822,6 +2824,13 @@ ${exerciseSummary.slice(0, 80).join("\n")}
       .mutation(async ({ ctx, input }) => {
         const id = await createFood(ctx.user.id, input);
         return { id };
+      }),
+
+    deleteFood: protectedProcedure
+      .input(z.object({ foodId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await deleteFood(ctx.user.id, input.foodId);
+        return { success: true };
       }),
 
     toggleFoodFavorite: protectedProcedure

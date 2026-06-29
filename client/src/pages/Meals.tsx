@@ -38,6 +38,13 @@ function targetPercent(value: number, target: number) {
   return Math.min(160, Math.round((value / target) * 100));
 }
 
+function formatMealItemAmount(item: any) {
+  const grams = Math.round(Number(item.amount) || 0);
+  const unit = String(item.unit ?? "g").trim();
+  if (!unit || unit === "g") return `${grams}g`;
+  return `${unit} · ${grams}g`;
+}
+
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -81,6 +88,8 @@ export default function Meals() {
   const [foodSearch, setFoodSearch] = useState("");
   const [selectedFood, setSelectedFood] = useState<any | null>(null);
   const [amount, setAmount] = useState("100");
+  const [portionAmount, setPortionAmount] = useState("1");
+  const [portionUnit, setPortionUnit] = useState("인분");
   const [notes, setNotes] = useState("");
   const [newFoodOpen, setNewFoodOpen] = useState(false);
   const [isWeeklyReportCollapsed, setIsWeeklyReportCollapsed] = useState(true);
@@ -102,6 +111,8 @@ export default function Meals() {
     proteinPer100: "",
     carbsPer100: "",
     fatPer100: "",
+    servingUnit: "인분",
+    servingSizeGrams: "100",
     aliases: "",
   });
   const [targetForm, setTargetForm] = useState({
@@ -180,10 +191,28 @@ export default function Meals() {
     onSuccess: async () => {
       toast.success("음식을 등록했습니다.");
       setNewFoodOpen(false);
-      setFoodForm({ name: "", brand: "", caloriesPer100: "", proteinPer100: "", carbsPer100: "", fatPer100: "", aliases: "" });
+      setFoodForm({ name: "", brand: "", caloriesPer100: "", proteinPer100: "", carbsPer100: "", fatPer100: "", servingUnit: "인분", servingSizeGrams: "100", aliases: "" });
       await utils.meals.foods.invalidate();
     },
     onError: () => toast.error("음식 등록에 실패했습니다."),
+  });
+  const deleteFood = trpc.meals.deleteFood.useMutation({
+    onSuccess: async () => {
+      toast.success("내 음식을 삭제했습니다.");
+      if (selectedFood?.userId) {
+        setSelectedFood(null);
+        setFoodSearch("");
+        setAmount("100");
+        setPortionAmount("1");
+        setPortionUnit("인분");
+      }
+      await Promise.all([
+        utils.meals.foods.invalidate(),
+        utils.meals.recentFoods.invalidate(),
+        utils.meals.frequentFoods.invalidate(),
+      ]);
+    },
+    onError: () => toast.error("직접 등록한 음식만 삭제할 수 있습니다."),
   });
   const createLog = trpc.meals.createLog.useMutation({
     onSuccess: async () => {
@@ -191,6 +220,8 @@ export default function Meals() {
       setSelectedFood(null);
       setFoodSearch("");
       setAmount("100");
+      setPortionAmount("1");
+      setPortionUnit("인분");
       setNotes("");
       await invalidateMeals();
     },
@@ -243,9 +274,12 @@ export default function Meals() {
   }, [amount, selectedFood]);
 
   const selectFood = (food: any, grams?: number) => {
+    const nextGrams = grams ?? Math.round(Number(food.servingSizeGrams) || 100);
     setSelectedFood(food);
     setFoodSearch(food.name);
-    setAmount(String(grams ?? 100));
+    setAmount(String(nextGrams));
+    setPortionAmount("1");
+    setPortionUnit(food.servingUnit && food.servingUnit !== "g" ? food.servingUnit : "인분");
   };
 
   useEffect(() => {
@@ -276,6 +310,8 @@ export default function Meals() {
     createFood.mutate({
       name: foodForm.name.trim(),
       brand: foodForm.brand.trim() || undefined,
+      servingUnit: foodForm.servingUnit.trim() || "인분",
+      servingSizeGrams: Number(foodForm.servingSizeGrams) || 100,
       caloriesPer100: Number(foodForm.caloriesPer100) || 0,
       proteinPer100: Number(foodForm.proteinPer100) || 0,
       carbsPer100: Number(foodForm.carbsPer100) || 0,
@@ -294,7 +330,11 @@ export default function Meals() {
       mealDate: new Date(`${date}T12:00:00`),
       mealType: mealType as any,
       notes: notes.trim() || undefined,
-      items: [{ foodId: selectedFood.id, amount: Number(amount) || 100, unit: selectedFood.servingUnit ?? "g" }],
+      items: [{
+        foodId: selectedFood.id,
+        amount: Number(amount) || 100,
+        unit: `${Number(portionAmount) || 1}${portionUnit.trim() || "인분"}`,
+      }],
     });
   };
 
@@ -360,17 +400,32 @@ export default function Meals() {
             </div>
           </button>
           {food.userId && (
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                toggleFavorite.mutate({ foodId: food.id });
-              }}
-              className="rounded-full p-2 text-muted-foreground hover:bg-accent hover:text-primary"
-              aria-label="즐겨찾기"
-            >
-              <Heart size={16} fill={food.favorite ? "currentColor" : "none"} />
-            </button>
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  toggleFavorite.mutate({ foodId: food.id });
+                }}
+                className="rounded-full p-2 text-muted-foreground hover:bg-accent hover:text-primary"
+                aria-label="즐겨찾기"
+              >
+                <Heart size={16} fill={food.favorite ? "currentColor" : "none"} />
+              </button>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  if (!window.confirm("직접 등록한 음식을 삭제할까요? 기존 식단 기록은 유지됩니다.")) return;
+                  deleteFood.mutate({ foodId: food.id });
+                }}
+                disabled={deleteFood.isPending}
+                className="rounded-full p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                aria-label="음식 삭제"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
           )}
         </div>
       ))}
@@ -392,6 +447,11 @@ export default function Meals() {
         foodName: item.foodName,
         amount: item.amount,
         unit: item.unit ?? "g",
+        calories: item.calories,
+        protein: item.protein,
+        carbs: item.carbs,
+        fat: item.fat,
+        sodium: item.sodium ?? undefined,
       })),
     });
   };
@@ -782,6 +842,27 @@ export default function Meals() {
                     </div>
                   ))}
                 </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label>기본 섭취 단위</Label>
+                    <Input
+                      value={foodForm.servingUnit}
+                      onChange={(e) => setFoodForm((f) => ({ ...f, servingUnit: e.target.value }))}
+                      className="border-border bg-card"
+                      placeholder="예: 인분, 개, 봉, 팩"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>1단위 중량(g)</Label>
+                    <Input
+                      type="number"
+                      value={foodForm.servingSizeGrams}
+                      onChange={(e) => setFoodForm((f) => ({ ...f, servingSizeGrams: e.target.value }))}
+                      className="border-border bg-card"
+                      placeholder="예: 210"
+                    />
+                  </div>
+                </div>
                 <div className="space-y-1.5">
                   <Label>별칭</Label>
                   <Input value={foodForm.aliases} onChange={(e) => setFoodForm((f) => ({ ...f, aliases: e.target.value }))} className="border-border bg-card" placeholder="닭찌, 훈제닭 처럼 쉼표로 구분" />
@@ -895,25 +976,39 @@ export default function Meals() {
                   <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <div className="text-sm font-semibold text-foreground">{selectedFood.name}</div>
-                      <div className="text-xs text-muted-foreground">중량 수정 후 저장</div>
+                      <div className="text-xs text-muted-foreground">섭취 단위와 실제 중량을 분리해서 저장</div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="h-10 w-28 border-border bg-card text-right" />
-                      <span className="text-xs text-muted-foreground">g</span>
+                    <div className="grid grid-cols-[76px_88px_96px] items-end gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-muted-foreground">수량</Label>
+                        <Input type="number" value={portionAmount} onChange={(e) => setPortionAmount(e.target.value)} className="h-10 border-border bg-card text-right" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-muted-foreground">단위</Label>
+                        <Input value={portionUnit} onChange={(e) => setPortionUnit(e.target.value)} className="h-10 border-border bg-card" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-muted-foreground">실제 g</Label>
+                        <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="h-10 border-border bg-card text-right" />
+                      </div>
                     </div>
                   </div>
                   <div className="mb-3 flex flex-wrap gap-2">
-                    {[50, 100, 150, 200].map((grams) => (
+                    {Array.from(new Set([Number(selectedFood.servingSizeGrams) || 100, 50, 100, 150, 200].map((value) => Math.round(value)))).map((grams) => (
                       <button
                         key={grams}
                         type="button"
-                        onClick={() => setAmount(String(grams))}
+                        onClick={() => {
+                          setAmount(String(grams));
+                          setPortionAmount("1");
+                          setPortionUnit(selectedFood.servingUnit && selectedFood.servingUnit !== "g" ? selectedFood.servingUnit : "인분");
+                        }}
                         className={cn(
                           "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
                           amount === String(grams) ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:text-foreground",
                         )}
                       >
-                        {grams}g
+                        {grams === Math.round(Number(selectedFood.servingSizeGrams) || 100) ? `기본 ${grams}g` : `${grams}g`}
                       </button>
                     ))}
                   </div>
@@ -951,7 +1046,7 @@ export default function Meals() {
                     <div className="space-y-1.5">
                       {meal.items.map((item: any) => (
                         <div key={item.id} className="flex items-center justify-between gap-3 text-sm">
-                          <span className="min-w-0 truncate text-foreground">{item.foodName} <span className="text-xs text-muted-foreground">{item.amount}{item.unit}</span></span>
+                          <span className="min-w-0 truncate text-foreground">{item.foodName} <span className="text-xs text-muted-foreground">{formatMealItemAmount(item)}</span></span>
                           <span className="shrink-0 font-semibold text-primary">{Math.round(item.calories)} kcal</span>
                         </div>
                       ))}
