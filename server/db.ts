@@ -3592,6 +3592,56 @@ export async function getMealsByDate(userId: number, dateKey: string): Promise<R
   return { meals: normalizedMeals, totals };
 }
 
+function addDaysToDateKey(dateKey: string, days: number) {
+  const date = new Date(`${dateKey}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+export async function getMealDailyTotals(userId: number, endDateKey: string, days = 7): Promise<Row[]> {
+  await ensureMealTables();
+  const safeDays = Math.min(31, Math.max(1, Math.round(days)));
+  const startDateKey = addDaysToDateKey(endDateKey, -(safeDays - 1));
+  const meals = await all(
+    `SELECT * FROM meal_logs
+     WHERE userId = ? AND mealDate >= ? AND mealDate <= ?
+     ORDER BY mealDate ASC, id ASC`,
+    userId,
+    `${startDateKey}T00:00:00.000Z`,
+    `${endDateKey}T23:59:59.999Z`,
+  );
+  const normalizedMeals = await normalizeMealRows(meals);
+  const totalsByDate = new Map<string, Row>();
+
+  for (let index = 0; index < safeDays; index += 1) {
+    const date = addDaysToDateKey(startDateKey, index);
+    totalsByDate.set(date, { date, calories: 0, protein: 0, carbs: 0, fat: 0, sodium: 0, mealCount: 0 });
+  }
+
+  for (const meal of normalizedMeals) {
+    const date = String(meal.mealDate).slice(0, 10);
+    const current = totalsByDate.get(date);
+    if (!current) continue;
+    current.mealCount += 1;
+    for (const item of meal.items) {
+      current.calories += item.calories;
+      current.protein += item.protein;
+      current.carbs += item.carbs;
+      current.fat += item.fat;
+      current.sodium += item.sodium ?? 0;
+    }
+  }
+
+  return [...totalsByDate.values()].map((day) => ({
+    ...day,
+    calories: Math.round(day.calories),
+    protein: Math.round(day.protein * 10) / 10,
+    carbs: Math.round(day.carbs * 10) / 10,
+    fat: Math.round(day.fat * 10) / 10,
+    sodium: Math.round(day.sodium),
+  }));
+}
+
 async function normalizeMealRows(meals: Row[]): Promise<Row[]> {
   const ids = meals.map((meal) => Number(meal.id));
   const items = ids.length

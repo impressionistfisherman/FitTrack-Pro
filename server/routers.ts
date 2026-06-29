@@ -26,6 +26,7 @@ import {
   deleteWorkoutLog,
   getBodyWeights,
   getMealsByDate,
+  getMealDailyTotals,
   listFrequentFoods,
   listFoods,
   listRecentFoods,
@@ -117,6 +118,22 @@ const equipmentLabels: Record<string, string> = {
   kettlebell: "케틀벨",
   none: "기구 없음",
 };
+
+const mealTargetsSchema = z.object({
+  calories: z.number().int().min(0).max(10000).default(2200),
+  protein: z.number().min(0).max(500).default(140),
+  carbs: z.number().min(0).max(1000).default(250),
+  fat: z.number().min(0).max(500).default(65),
+});
+
+function parseMealTargets(value: string | null) {
+  if (!value) return mealTargetsSchema.parse({});
+  try {
+    return mealTargetsSchema.parse(JSON.parse(value));
+  } catch {
+    return mealTargetsSchema.parse({});
+  }
+}
 
 const bodyPartLabels: Record<string, string> = {
   chest: "가슴",
@@ -2750,6 +2767,49 @@ ${exerciseSummary.slice(0, 80).join("\n")}
       .input(z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }))
       .query(async ({ ctx, input }) => {
         return await getMealsByDate(ctx.user.id, input.date);
+      }),
+
+    targets: protectedProcedure
+      .query(async ({ ctx }) => {
+        return parseMealTargets(await getUserPreference(ctx.user.id, "mealTargets"));
+      }),
+
+    saveTargets: protectedProcedure
+      .input(mealTargetsSchema)
+      .mutation(async ({ ctx, input }) => {
+        await setUserPreference(ctx.user.id, "mealTargets", JSON.stringify(input));
+        return input;
+      }),
+
+    weeklyReport: protectedProcedure
+      .input(z.object({
+        endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        days: z.number().int().min(1).max(31).default(7),
+      }))
+      .query(async ({ ctx, input }) => {
+        const targets = parseMealTargets(await getUserPreference(ctx.user.id, "mealTargets"));
+        const days = await getMealDailyTotals(ctx.user.id, input.endDate, input.days);
+        const totals = days.reduce(
+          (sum, day) => ({
+            calories: sum.calories + day.calories,
+            protein: sum.protein + day.protein,
+            carbs: sum.carbs + day.carbs,
+            fat: sum.fat + day.fat,
+            sodium: sum.sodium + day.sodium,
+            mealCount: sum.mealCount + day.mealCount,
+          }),
+          { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: 0, mealCount: 0 },
+        );
+        const average = {
+          calories: Math.round(totals.calories / days.length),
+          protein: Math.round((totals.protein / days.length) * 10) / 10,
+          carbs: Math.round((totals.carbs / days.length) * 10) / 10,
+          fat: Math.round((totals.fat / days.length) * 10) / 10,
+          sodium: Math.round(totals.sodium / days.length),
+          mealCount: Math.round((totals.mealCount / days.length) * 10) / 10,
+        };
+        const hitDays = days.filter((day) => targets.calories > 0 && day.calories >= targets.calories * 0.9 && day.calories <= targets.calories * 1.1).length;
+        return { targets, days, totals, average, hitDays };
       }),
 
     createLog: protectedProcedure

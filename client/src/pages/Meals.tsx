@@ -10,8 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
-import { CalendarDays, Copy, Heart, Plus, Search, Trash2, Utensils } from "lucide-react";
-import { useMemo, useState } from "react";
+import { CalendarDays, Copy, Heart, Plus, Save, Search, Target, Trash2, TrendingUp, Utensils } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 const mealTypes = [
@@ -33,6 +33,11 @@ function macroPercent(value: number, total: number) {
   return Math.min(100, Math.round((value / total) * 100));
 }
 
+function targetPercent(value: number, target: number) {
+  if (!target) return 0;
+  return Math.min(160, Math.round((value / target) * 100));
+}
+
 export default function Meals() {
   const { isAuthenticated, loading } = useAuth();
   const utils = trpc.useUtils();
@@ -52,9 +57,17 @@ export default function Meals() {
     fatPer100: "",
     aliases: "",
   });
+  const [targetForm, setTargetForm] = useState({
+    calories: "2200",
+    protein: "140",
+    carbs: "250",
+    fat: "65",
+  });
   const debouncedFoodSearch = useDebouncedValue(foodSearch.trim(), 200);
 
   const mealsQuery = trpc.meals.byDate.useQuery({ date }, { enabled: isAuthenticated });
+  const targetsQuery = trpc.meals.targets.useQuery(undefined, { enabled: isAuthenticated });
+  const weeklyReportQuery = trpc.meals.weeklyReport.useQuery({ endDate: date, days: 7 }, { enabled: isAuthenticated });
   const foodsQuery = trpc.meals.foods.useQuery(
     { query: debouncedFoodSearch, limit: 30 },
     { enabled: isAuthenticated },
@@ -68,8 +81,19 @@ export default function Meals() {
       utils.meals.recentFoods.invalidate(),
       utils.meals.frequentFoods.invalidate(),
       utils.meals.recentMeals.invalidate(),
+      utils.meals.weeklyReport.invalidate({ endDate: date, days: 7 }),
     ]);
   };
+  const saveTargets = trpc.meals.saveTargets.useMutation({
+    onSuccess: async () => {
+      toast.success("식단 목표를 저장했습니다.");
+      await Promise.all([
+        utils.meals.targets.invalidate(),
+        utils.meals.weeklyReport.invalidate({ endDate: date, days: 7 }),
+      ]);
+    },
+    onError: () => toast.error("목표 저장에 실패했습니다."),
+  });
   const createFood = trpc.meals.createFood.useMutation({
     onSuccess: async () => {
       toast.success("음식을 등록했습니다.");
@@ -103,6 +127,7 @@ export default function Meals() {
   });
 
   const totals = mealsQuery.data?.totals ?? { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: 0 };
+  const targets = targetsQuery.data ?? { calories: 2200, protein: 140, carbs: 250, fat: 65 };
   const macroCalories = totals.protein * 4 + totals.carbs * 4 + totals.fat * 9;
   const selectedPreview = useMemo(() => {
     if (!selectedFood) return null;
@@ -121,6 +146,16 @@ export default function Meals() {
     setFoodSearch(food.name);
     setAmount(String(grams ?? 100));
   };
+
+  useEffect(() => {
+    if (!targetsQuery.data) return;
+    setTargetForm({
+      calories: String(targetsQuery.data.calories ?? 2200),
+      protein: String(targetsQuery.data.protein ?? 140),
+      carbs: String(targetsQuery.data.carbs ?? 250),
+      fat: String(targetsQuery.data.fat ?? 65),
+    });
+  }, [targetsQuery.data]);
 
   if (loading) return <PageLoadingState wide />;
   if (!isAuthenticated) {
@@ -150,6 +185,15 @@ export default function Meals() {
       mealType: mealType as any,
       notes: notes.trim() || undefined,
       items: [{ foodId: selectedFood.id, amount: Number(amount) || 100, unit: selectedFood.servingUnit ?? "g" }],
+    });
+  };
+
+  const submitTargets = () => {
+    saveTargets.mutate({
+      calories: Number(targetForm.calories) || 0,
+      protein: Number(targetForm.protein) || 0,
+      carbs: Number(targetForm.carbs) || 0,
+      fat: Number(targetForm.fat) || 0,
     });
   };
 
@@ -192,23 +236,109 @@ export default function Meals() {
               </div>
               <Input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="mb-4 border-border bg-accent text-foreground" />
               <div className="rounded-2xl border border-border bg-background/45 p-4">
-                <div className="text-3xl font-black text-foreground">{Math.round(totals.calories).toLocaleString()} kcal</div>
-                <div className="mt-1 text-xs text-muted-foreground">기록된 식사 {mealsQuery.data?.meals?.length ?? 0}개</div>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-3xl font-black text-foreground">{Math.round(totals.calories).toLocaleString()} kcal</div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      목표 {targets.calories.toLocaleString()} kcal · 기록된 식사 {mealsQuery.data?.meals?.length ?? 0}개
+                    </div>
+                  </div>
+                  <Badge className="border border-primary/25 bg-primary/10 text-primary">
+                    {targetPercent(totals.calories, targets.calories)}%
+                  </Badge>
+                </div>
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-accent">
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, targetPercent(totals.calories, targets.calories))}%` }} />
+                </div>
                 <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                   {[
-                    ["단백질", `${Math.round(totals.protein)}g`, macroPercent(totals.protein * 4, macroCalories)],
-                    ["탄수화물", `${Math.round(totals.carbs)}g`, macroPercent(totals.carbs * 4, macroCalories)],
-                    ["지방", `${Math.round(totals.fat)}g`, macroPercent(totals.fat * 9, macroCalories)],
-                  ].map(([label, value, percent]) => (
-                    <div key={label} className="rounded-xl bg-accent/45 p-3">
-                      <div className="text-base font-bold text-foreground">{value}</div>
-                      <div className="text-[11px] text-muted-foreground">{label}</div>
+                    { label: "단백질", value: totals.protein, target: targets.protein },
+                    { label: "탄수화물", value: totals.carbs, target: targets.carbs },
+                    { label: "지방", value: totals.fat, target: targets.fat },
+                  ].map((macro) => (
+                    <div key={macro.label} className="rounded-xl bg-accent/45 p-3">
+                      <div className="text-base font-bold text-foreground">{Math.round(macro.value)}g</div>
+                      <div className="text-[11px] text-muted-foreground">{macro.label}</div>
                       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-background">
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, targetPercent(macro.value, macro.target))}%` }} />
                       </div>
+                      <div className="mt-1 text-[10px] text-muted-foreground">{targetPercent(macro.value, macro.target)}% / {macro.target}g</div>
                     </div>
                   ))}
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border bg-card">
+            <CardContent className="p-5">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <TrendingUp size={17} className="text-primary" />
+                  <h2 className="text-sm font-semibold text-foreground">7일 리포트</h2>
+                </div>
+                <Badge variant="outline" className="border-border text-muted-foreground">
+                  목표 근접 {weeklyReportQuery.data?.hitDays ?? 0}일
+                </Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="rounded-xl bg-accent/45 p-3">
+                  <div className="text-lg font-black text-foreground">{weeklyReportQuery.data?.average.calories ?? 0}</div>
+                  <div className="text-[11px] text-muted-foreground">평균 kcal</div>
+                </div>
+                <div className="rounded-xl bg-accent/45 p-3">
+                  <div className="text-lg font-black text-foreground">{weeklyReportQuery.data?.average.protein ?? 0}g</div>
+                  <div className="text-[11px] text-muted-foreground">평균 단백질</div>
+                </div>
+              </div>
+              <div className="mt-4 space-y-2">
+                {weeklyReportQuery.data?.days.map((day: any) => (
+                  <div key={day.date} className="rounded-xl border border-border bg-background/35 p-3">
+                    <div className="mb-2 flex items-center justify-between text-xs">
+                      <span className="font-semibold text-foreground">{day.date.slice(5)}</span>
+                      <span className="text-muted-foreground">{day.calories} / {weeklyReportQuery.data.targets.calories} kcal</span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-accent">
+                      <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, targetPercent(day.calories, weeklyReportQuery.data.targets.calories))}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border bg-card">
+            <CardContent className="p-5">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Target size={17} className="text-primary" />
+                  <h2 className="text-sm font-semibold text-foreground">식단 목표</h2>
+                </div>
+                <Button size="sm" className="gap-2 bg-primary text-primary-foreground" onClick={submitTargets} disabled={saveTargets.isPending}>
+                  <Save size={14} />
+                  저장
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  ["calories", "칼로리", "kcal"],
+                  ["protein", "단백질", "g"],
+                  ["carbs", "탄수화물", "g"],
+                  ["fat", "지방", "g"],
+                ].map(([key, label, unit]) => (
+                  <label key={key} className="space-y-1.5">
+                    <span className="text-xs font-semibold text-muted-foreground">{label}</span>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        value={(targetForm as any)[key]}
+                        onChange={(event) => setTargetForm((form) => ({ ...form, [key]: event.target.value }))}
+                        className="border-border bg-accent"
+                      />
+                      <span className="w-8 text-xs text-muted-foreground">{unit}</span>
+                    </div>
+                  </label>
+                ))}
               </div>
             </CardContent>
           </Card>
