@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
-import { CalendarDays, Camera, Copy, Heart, Plus, Save, Search, Target, Trash2, TrendingUp, Utensils, X } from "lucide-react";
+import { CalendarDays, Camera, ChevronDown, Copy, Heart, Plus, Save, Search, Target, Trash2, TrendingUp, Utensils, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -83,6 +83,7 @@ export default function Meals() {
   const [amount, setAmount] = useState("100");
   const [notes, setNotes] = useState("");
   const [newFoodOpen, setNewFoodOpen] = useState(false);
+  const [isWeeklyReportCollapsed, setIsWeeklyReportCollapsed] = useState(false);
   const [imageItems, setImageItems] = useState<Array<{
     foodName: string;
     amount: string;
@@ -489,38 +490,59 @@ export default function Meals() {
 
           <Card className="border-border bg-card">
             <CardContent className="p-5">
-              <div className="mb-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                className={cn(
+                  "flex w-full items-center justify-between gap-3 text-left",
+                  !isWeeklyReportCollapsed && "mb-4",
+                )}
+                aria-expanded={!isWeeklyReportCollapsed}
+                onClick={() => setIsWeeklyReportCollapsed((value) => !value)}
+              >
                 <div className="flex items-center gap-2">
                   <TrendingUp size={17} className="text-primary" />
                   <h2 className="text-sm font-semibold text-foreground">7일 리포트</h2>
                 </div>
-                <Badge variant="outline" className="border-border text-muted-foreground">
-                  목표 근접 {weeklyReportQuery.data?.hitDays ?? 0}일
-                </Badge>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-center">
-                <div className="rounded-xl bg-accent/45 p-3">
-                  <div className="text-lg font-black text-foreground">{weeklyReportQuery.data?.average.calories ?? 0}</div>
-                  <div className="text-[11px] text-muted-foreground">평균 kcal</div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="border-border text-muted-foreground">
+                    목표 근접 {weeklyReportQuery.data?.hitDays ?? 0}일
+                  </Badge>
+                  <ChevronDown
+                    size={18}
+                    className={cn(
+                      "text-muted-foreground transition-transform",
+                      isWeeklyReportCollapsed && "-rotate-90",
+                    )}
+                  />
                 </div>
-                <div className="rounded-xl bg-accent/45 p-3">
-                  <div className="text-lg font-black text-foreground">{weeklyReportQuery.data?.average.protein ?? 0}g</div>
-                  <div className="text-[11px] text-muted-foreground">평균 단백질</div>
-                </div>
-              </div>
-              <div className="mt-4 space-y-2">
-                {weeklyReportQuery.data?.days.map((day: any) => (
-                  <div key={day.date} className="rounded-xl border border-border bg-background/35 p-3">
-                    <div className="mb-2 flex items-center justify-between text-xs">
-                      <span className="font-semibold text-foreground">{day.date.slice(5)}</span>
-                      <span className="text-muted-foreground">{day.calories} / {weeklyReportQuery.data.targets.calories} kcal</span>
+              </button>
+              {!isWeeklyReportCollapsed ? (
+                <>
+                  <div className="grid grid-cols-2 gap-2 text-center">
+                    <div className="rounded-xl bg-accent/45 p-3">
+                      <div className="text-lg font-black text-foreground">{weeklyReportQuery.data?.average.calories ?? 0}</div>
+                      <div className="text-[11px] text-muted-foreground">평균 kcal</div>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-accent">
-                      <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, targetPercent(day.calories, weeklyReportQuery.data.targets.calories))}%` }} />
+                    <div className="rounded-xl bg-accent/45 p-3">
+                      <div className="text-lg font-black text-foreground">{weeklyReportQuery.data?.average.protein ?? 0}g</div>
+                      <div className="text-[11px] text-muted-foreground">평균 단백질</div>
                     </div>
                   </div>
-                ))}
-              </div>
+                  <div className="mt-4 space-y-2">
+                    {weeklyReportQuery.data?.days.map((day: any) => (
+                      <div key={day.date} className="rounded-xl border border-border bg-background/35 p-3">
+                        <div className="mb-2 flex items-center justify-between text-xs">
+                          <span className="font-semibold text-foreground">{day.date.slice(5)}</span>
+                          <span className="text-muted-foreground">{day.calories} / {weeklyReportQuery.data.targets.calories} kcal</span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-accent">
+                          <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, targetPercent(day.calories, weeklyReportQuery.data.targets.calories))}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : null}
             </CardContent>
           </Card>
 
