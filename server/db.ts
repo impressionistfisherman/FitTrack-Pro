@@ -3481,32 +3481,188 @@ function calcNutrition(food: Row, amount: number) {
   };
 }
 
-export async function listFoods(userId: number, query = "", limit = 30): Promise<Row[]> {
-  await ensureMealTables();
-  const trimmedQuery = query.trim().toLowerCase();
+function parseFoodNumber(value: unknown) {
+  if (value == null) return 0;
+  const parsed = Number(String(value).replace(/[^\d.-]/g, ""));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function buildFoodSearchTerms(query: string) {
+  const normalized = query.trim().toLowerCase();
+  const compact = normalized.replace(/\s+/g, "");
+  const terms = [normalized, compact];
+  const keywordFallbacks = [
+    "컵라면",
+    "라면",
+    "김밥",
+    "삼각김밥",
+    "도시락",
+    "닭가슴살",
+    "프로틴",
+    "햇반",
+    "컵밥",
+    "버거",
+    "샐러드",
+    "샌드위치",
+    "요거트",
+    "두유",
+  ];
+
+  if (compact.includes("컬라면")) terms.push("컵라면", "라면");
+  for (const keyword of keywordFallbacks) {
+    if (compact.includes(keyword.replace(/\s+/g, ""))) terms.push(keyword);
+  }
+  if (compact.endsWith("라면")) terms.push("라면");
+  if (compact.endsWith("김밥")) terms.push("김밥");
+
+  return Array.from(new Set(terms.filter(Boolean)));
+}
+
+async function searchFoodRows(userId: number, term: string, limit: number) {
+  const trimmedQuery = term.trim().toLowerCase();
   const q = `%${trimmedQuery}%`;
   const compactQ = `%${trimmedQuery.replace(/\s+/g, "")}%`;
-  const rows = query.trim()
-    ? await all(
-        `SELECT * FROM foods
-         WHERE (userId IS NULL OR userId = ?)
-           AND (
-             lower(name) LIKE ?
-             OR lower(replace(name, ' ', '')) LIKE ?
-             OR lower(COALESCE(brand, '')) LIKE ?
-             OR lower(replace(COALESCE(aliases, ''), ' ', '')) LIKE ?
-             OR lower(COALESCE(aliases, '')) LIKE ?
-           )
-         ORDER BY favorite DESC, userId DESC, name
-         LIMIT ?`,
-        userId,
-        q,
-        compactQ,
-        q,
-        compactQ,
-        q,
-        limit,
-      )
+  return await all(
+    `SELECT * FROM foods
+     WHERE (userId IS NULL OR userId = ?)
+       AND (
+         lower(name) LIKE ?
+         OR lower(replace(name, ' ', '')) LIKE ?
+         OR lower(COALESCE(brand, '')) LIKE ?
+         OR lower(replace(COALESCE(aliases, ''), ' ', '')) LIKE ?
+         OR lower(COALESCE(aliases, '')) LIKE ?
+       )
+     ORDER BY favorite DESC, userId DESC, name
+     LIMIT ?`,
+    userId,
+    q,
+    compactQ,
+    q,
+    compactQ,
+    q,
+    limit,
+  );
+}
+
+async function upsertPublicFood(food: {
+  name: string;
+  brand: string;
+  caloriesPer100: number;
+  proteinPer100: number;
+  carbsPer100: number;
+  fatPer100: number;
+  sodiumPer100?: number | null;
+  aliases: string[];
+}) {
+  const existing = await get(
+    "SELECT id FROM foods WHERE userId IS NULL AND name = ? AND COALESCE(brand, '') = ? LIMIT 1",
+    food.name,
+    food.brand,
+  );
+  const now = new Date().toISOString();
+  const aliases = JSON.stringify(Array.from(new Set(food.aliases.filter(Boolean))));
+  if (existing) {
+    await run(
+      `UPDATE foods
+       SET servingUnit = ?, caloriesPer100 = ?, proteinPer100 = ?, carbsPer100 = ?, fatPer100 = ?, sodiumPer100 = ?, aliases = ?
+       WHERE id = ? AND userId IS NULL`,
+      "g",
+      food.caloriesPer100,
+      food.proteinPer100,
+      food.carbsPer100,
+      food.fatPer100,
+      food.sodiumPer100 ?? null,
+      aliases,
+      existing.id,
+    );
+    return;
+  }
+
+  await run(
+    `INSERT INTO foods
+     (userId, name, brand, servingUnit, caloriesPer100, proteinPer100, carbsPer100, fatPer100, sodiumPer100, aliases, favorite, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    null,
+    food.name,
+    food.brand,
+    "g",
+    food.caloriesPer100,
+    food.proteinPer100,
+    food.carbsPer100,
+    food.fatPer100,
+    food.sodiumPer100 ?? null,
+    aliases,
+    0,
+    now,
+  );
+}
+
+async function importFoodNutritionFromOpenApi(query: string, limit = 30) {
+  const apiKey = process.env.FOODSAFETY_API_KEY
+    ?? process.env.MFDS_API_KEY
+    ?? process.env.DATA_GO_KR_FOOD_API_KEY
+    ?? "";
+  if (!apiKey || !query.trim()) return 0;
+
+  const end = Math.min(Math.max(limit, 10), 100);
+  const encodedQuery = encodeURIComponent(query.trim());
+  const urls = [
+    `https://openapi.foodsafetykorea.go.kr/api/${apiKey}/I2790/json/1/${end}/DESC_KOR=${encodedQuery}`,
+    `https://openapi.foodsafetykorea.go.kr/api/${apiKey}/I0750/json/1/${end}/DESC_KOR=${encodedQuery}`,
+  ];
+
+  let imported = 0;
+  for (const url of urls) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) continue;
+      const payload = await response.json() as any;
+      const container = payload?.I2790 ?? payload?.I0750;
+      const rows = Array.isArray(container?.row) ? container.row : [];
+      for (const row of rows) {
+        const name = String(row.DESC_KOR ?? row.FOOD_NM_KR ?? row.FOOD_NM ?? "").trim();
+        if (!name) continue;
+        const servingSize = parseFoodNumber(row.SERVING_SIZE ?? row.SERVING_WT ?? row.SERVING_UNIT ?? 100) || 100;
+        const calories = parseFoodNumber(row.NUTR_CONT1 ?? row.AMT_NUM1 ?? row.ENERGY_QY);
+        const carbs = parseFoodNumber(row.NUTR_CONT2 ?? row.AMT_NUM7 ?? row.CARBOHYDRATE_QY);
+        const protein = parseFoodNumber(row.NUTR_CONT3 ?? row.AMT_NUM3 ?? row.PROTEIN_QY);
+        const fat = parseFoodNumber(row.NUTR_CONT4 ?? row.AMT_NUM4 ?? row.FAT_QY);
+        const sodium = parseFoodNumber(row.NUTR_CONT6 ?? row.AMT_NUM12 ?? row.NA_QY);
+        const ratio = servingSize > 0 ? 100 / servingSize : 1;
+        const brand = String(row.MAKER_NAME ?? row.MANUFACTURER ?? row.SUB_REF_NAME ?? row.GROUP_NAME ?? "식약처").trim() || "식약처";
+        await upsertPublicFood({
+          name,
+          brand,
+          caloriesPer100: Math.round(calories * ratio * 10) / 10,
+          proteinPer100: Math.round(protein * ratio * 10) / 10,
+          carbsPer100: Math.round(carbs * ratio * 10) / 10,
+          fatPer100: Math.round(fat * ratio * 10) / 10,
+          sodiumPer100: sodium ? Math.round(sodium * ratio) : null,
+          aliases: [
+            query,
+            String(row.FOOD_CD ?? ""),
+            String(row.GROUP_NAME ?? ""),
+            String(row.SUB_REF_NAME ?? ""),
+            String(row.MAKER_NAME ?? ""),
+            "식품영양성분DB",
+            "식약처",
+          ],
+        });
+        imported += 1;
+      }
+      if (imported > 0) break;
+    } catch {
+      continue;
+    }
+  }
+  return imported;
+}
+
+export async function listFoods(userId: number, query = "", limit = 30): Promise<Row[]> {
+  await ensureMealTables();
+  const searchTerms = buildFoodSearchTerms(query);
+  let rows = query.trim()
+    ? []
     : await all(
         `SELECT * FROM foods
          WHERE userId IS NULL OR userId = ?
@@ -3515,6 +3671,19 @@ export async function listFoods(userId: number, query = "", limit = 30): Promise
         userId,
         limit,
       );
+  if (query.trim()) {
+    for (const term of searchTerms) {
+      rows = await searchFoodRows(userId, term, limit);
+      if (rows.length) break;
+    }
+    if (rows.length < Math.min(5, limit)) {
+      await importFoodNutritionFromOpenApi(searchTerms[0] ?? query, limit);
+      for (const term of searchTerms) {
+        rows = await searchFoodRows(userId, term, limit);
+        if (rows.length) break;
+      }
+    }
+  }
   return rows.map(normalizeFood);
 }
 
