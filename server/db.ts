@@ -3514,25 +3514,10 @@ async function ensureMealTables() {
     ["샐러드 파스타", "간편식", 160, 6, 24, 5, ["파스타샐러드", "편의점 샐러드파스타", "샐파"]],
     ["포케", "간편식", 145, 9, 20, 3.5, ["포케볼", "연어포케", "참치포케", "poke"]],
   ] as const;
-  const now = new Date().toISOString();
-  for (const food of defaultFoods) {
-    const existing = await get("SELECT id FROM foods WHERE userId IS NULL AND name = ? LIMIT 1", food[0]);
-    if (existing) {
-      await run(
-        `UPDATE foods
-         SET brand = ?, servingUnit = ?, caloriesPer100 = ?, proteinPer100 = ?, carbsPer100 = ?, fatPer100 = ?, aliases = ?, searchText = ?
-         WHERE id = ? AND userId IS NULL`,
-        food[1],
-        "g",
-        food[2],
-        food[3],
-        food[4],
-        food[5],
-        JSON.stringify(food[6]),
-        foodSearchText({ name: food[0], brand: food[1], aliases: food[6] }),
-        existing.id,
-      );
-    } else {
+  const seedReady = await get("SELECT id FROM foods WHERE userId IS NULL AND name = ? LIMIT 1", "백미밥");
+  if (!seedReady) {
+    const now = new Date().toISOString();
+    for (const food of defaultFoods) {
       await run(
         `INSERT INTO foods
          (userId, name, brand, servingUnit, caloriesPer100, proteinPer100, carbsPer100, fatPer100, aliases, searchText, favorite, createdAt)
