@@ -3509,6 +3509,7 @@ function buildFoodSearchTerms(query: string) {
   ];
 
   if (compact.includes("컬라면")) terms.push("컵라면", "라면");
+  if (compact.includes("육계장")) terms.push("육개장", "육개장 사발면", "사발면");
   for (const keyword of keywordFallbacks) {
     if (compact.includes(keyword.replace(/\s+/g, ""))) terms.push(keyword);
   }

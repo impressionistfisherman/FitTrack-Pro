@@ -196,6 +196,7 @@ export default function Meals() {
   const totals = mealsQuery.data?.totals ?? { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: 0 };
   const targets = targetsQuery.data ?? { calories: 2200, protein: 140, carbs: 250, fat: 65 };
   const macroCalories = totals.protein * 4 + totals.carbs * 4 + totals.fat * 9;
+  const hasFoodSearch = Boolean(debouncedFoodSearch);
   const selectedPreview = useMemo(() => {
     if (!selectedFood) return null;
     const grams = Number(amount) || 0;
@@ -284,6 +285,59 @@ export default function Meals() {
     });
     saveTargets.mutate(recommended);
   };
+
+  const renderFoodSearchResults = () => (
+    <div className="max-h-56 space-y-2 overflow-y-auto">
+      {foodsQuery.isLoading ? (
+        <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+          음식 데이터를 검색하는 중입니다.
+        </div>
+      ) : null}
+      {foodsQuery.data?.map((food: any) => (
+        <div
+          key={food.id}
+          className={cn(
+            "flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors",
+            selectedFood?.id === food.id ? "border-primary/50 bg-primary/10" : "border-border bg-background/45 hover:border-primary/30",
+          )}
+        >
+          <button
+            type="button"
+            onClick={() => selectFood(food)}
+            className="min-w-0 flex-1 text-left"
+          >
+            <div className="flex items-center gap-2">
+              <div className="truncate text-sm font-semibold text-foreground">{food.name}</div>
+              <Badge variant="outline" className="shrink-0 border-border text-[10px] text-muted-foreground">
+                {food.favorite ? "즐겨찾기" : food.source}
+              </Badge>
+            </div>
+            <div className="truncate text-xs text-muted-foreground">
+              {food.brand || food.source} · 100g {Math.round(food.caloriesPer100)}kcal · P {food.proteinPer100}g
+            </div>
+          </button>
+          {food.userId && (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                toggleFavorite.mutate({ foodId: food.id });
+              }}
+              className="rounded-full p-2 text-muted-foreground hover:bg-accent hover:text-primary"
+              aria-label="즐겨찾기"
+            >
+              <Heart size={16} fill={food.favorite ? "currentColor" : "none"} />
+            </button>
+          )}
+        </div>
+      ))}
+      {!foodsQuery.isLoading && !foodsQuery.data?.length ? (
+        <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+          검색 결과가 없습니다. 표기가 다르면 예: 육개장, 컵라면처럼 다시 검색하거나 음식 등록으로 추가하세요.
+        </div>
+      ) : null}
+    </div>
+  );
 
   const copyMeal = (meal: any) => {
     createLog.mutate({
@@ -701,6 +755,12 @@ export default function Meals() {
                   <Input value={foodSearch} onChange={(e) => setFoodSearch(e.target.value)} className="border-border bg-accent pl-9" placeholder="음식 검색..." />
                 </label>
               </div>
+              {hasFoodSearch ? (
+                <div className="mt-3">
+                  <div className="mb-2 text-xs font-semibold text-muted-foreground">검색 결과</div>
+                  {renderFoodSearchResults()}
+                </div>
+              ) : null}
               <div className="mt-4 rounded-xl border border-border bg-background/35 p-3">
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <div className="text-xs font-semibold text-muted-foreground">이전 기록 참조</div>
@@ -768,51 +828,7 @@ export default function Meals() {
                   </div>
                 </div>
               </div>
-              <div className="mt-3 max-h-56 space-y-2 overflow-y-auto">
-                {foodsQuery.data?.map((food: any) => (
-                  <div
-                    key={food.id}
-                    className={cn(
-                      "flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors",
-                      selectedFood?.id === food.id ? "border-primary/50 bg-primary/10" : "border-border bg-background/45 hover:border-primary/30",
-                    )}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => selectFood(food)}
-                      className="min-w-0 flex-1 text-left"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="truncate text-sm font-semibold text-foreground">{food.name}</div>
-                        <Badge variant="outline" className="shrink-0 border-border text-[10px] text-muted-foreground">
-                          {food.favorite ? "즐겨찾기" : food.source}
-                        </Badge>
-                      </div>
-                      <div className="truncate text-xs text-muted-foreground">
-                        {food.brand || food.source} · 100g {Math.round(food.caloriesPer100)}kcal · P {food.proteinPer100}g
-                      </div>
-                    </button>
-                    {food.userId && (
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          toggleFavorite.mutate({ foodId: food.id });
-                        }}
-                        className="rounded-full p-2 text-muted-foreground hover:bg-accent hover:text-primary"
-                        aria-label="즐겨찾기"
-                      >
-                        <Heart size={16} fill={food.favorite ? "currentColor" : "none"} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                {!foodsQuery.isLoading && !foodsQuery.data?.length ? (
-                  <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
-                    검색 결과가 없습니다. 자주 먹는 음식이면 위의 음식 등록으로 추가하세요.
-                  </div>
-                ) : null}
-              </div>
+              {!hasFoodSearch ? <div className="mt-3">{renderFoodSearchResults()}</div> : null}
 
               {selectedFood && (
                 <div className="mt-4 rounded-xl border border-border bg-background/45 p-3">
