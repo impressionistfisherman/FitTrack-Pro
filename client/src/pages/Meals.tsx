@@ -105,15 +105,15 @@ export default function Meals() {
     aliases: "",
   });
   const [targetForm, setTargetForm] = useState({
-    calories: "2200",
-    protein: "140",
-    carbs: "250",
-    fat: "65",
+    calories: "",
+    protein: "",
+    carbs: "",
+    fat: "",
   });
   const debouncedFoodSearch = useDebouncedValue(foodSearch.trim(), 200);
 
   const mealsQuery = trpc.meals.byDate.useQuery({ date }, { enabled: isAuthenticated });
-  const targetsQuery = trpc.meals.targets.useQuery(undefined, { enabled: isAuthenticated });
+  const targetsQuery = trpc.meals.targets.useQuery(undefined, { enabled: isAuthenticated, staleTime: 5 * 60_000 });
   const hasSavedMealTargets = Boolean(targetsQuery.data?.saved);
   const recommendedTargetsQuery = trpc.meals.recommendedTargets.useQuery(undefined, {
     enabled: isAuthenticated && targetsQuery.isSuccess && !hasSavedMealTargets,
@@ -157,10 +157,16 @@ export default function Meals() {
     await Promise.all(invalidations);
   };
   const saveTargets = trpc.meals.saveTargets.useMutation({
-    onSuccess: async () => {
+    onSuccess: async (savedTargets) => {
       toast.success("식단 목표를 저장했습니다.");
+      utils.meals.targets.setData(undefined, { ...savedTargets, saved: true });
+      setTargetForm({
+        calories: String(savedTargets.calories || ""),
+        protein: String(savedTargets.protein || ""),
+        carbs: String(savedTargets.carbs || ""),
+        fat: String(savedTargets.fat || ""),
+      });
       const invalidations = [
-        utils.meals.targets.invalidate(),
         utils.meals.recommendedTargets.invalidate(),
       ];
       if (!isWeeklyReportCollapsed) {
@@ -656,7 +662,9 @@ export default function Meals() {
                 <Badge variant="outline" className="border-border text-muted-foreground">수정 가능</Badge>
               </div>
               <div className="mb-4 rounded-xl border border-border bg-background/35 p-3 text-xs text-muted-foreground">
-                저장 위치: 계정 설정값 `mealTargets`. 자동 계산값을 적용하거나 직접 수정해 저장합니다.
+                {hasSavedMealTargets
+                  ? "저장된 식단 목표를 사용 중입니다. 필요하면 값을 수정해 다시 저장하세요."
+                  : "운동 목표와 체중 기반 추천값을 적용하거나 직접 입력해 저장하세요."}
                 {recommendedTargetsQuery.data?.basis ? (
                   <div className="mt-2 space-y-1 text-foreground">
                     <div>운동 목표: {recommendedTargetsQuery.data.basis.goalSummary} · 주 {recommendedTargetsQuery.data.basis.weeklyWorkouts}회 · 추천 전략: {recommendedTargetsQuery.data.basis.label}</div>
@@ -732,6 +740,7 @@ export default function Meals() {
                         type="number"
                         value={(targetForm as any)[key]}
                         onChange={(event) => setTargetForm((form) => ({ ...form, [key]: event.target.value }))}
+                        disabled={targetsQuery.isLoading}
                         className="border-border bg-accent"
                       />
                       <span className="w-8 text-xs text-muted-foreground">{unit}</span>
@@ -741,7 +750,7 @@ export default function Meals() {
               </div>
               <Button className="mt-4 w-full gap-2 bg-primary text-primary-foreground" onClick={submitTargets} disabled={saveTargets.isPending || targetsQuery.isLoading}>
                 <Save size={14} />
-                목표 저장
+                {targetsQuery.isLoading ? "목표 불러오는 중" : "목표 저장"}
               </Button>
             </CardContent>
           </Card>

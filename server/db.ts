@@ -103,6 +103,7 @@ const pgQuotedIdentifiers = [
   "mealLogId",
   "foodId",
   "foodName",
+  "searchText",
 ] as const;
 
 let userProfileImageColumnReady = false;
@@ -3285,6 +3286,53 @@ export async function deleteBodyWeight(id: number, userId: number): Promise<any>
 
 let mealTablesReady = false;
 
+function normalizeFoodSearchText(...values: unknown[]) {
+  return Array.from(new Set(values.flatMap((value) => {
+    if (value == null) return [];
+    const parsed = typeof value === "string" ? parseJson(value, value) : value;
+    const items = Array.isArray(parsed) ? parsed : [parsed];
+    return items
+      .map((item) => String(item ?? "").trim().toLowerCase())
+      .filter(Boolean)
+      .flatMap((item) => [item, item.replace(/\s+/g, "")]);
+  }))).join(" ");
+}
+
+function foodSearchText(input: { name?: unknown; brand?: unknown; aliases?: unknown }) {
+  return normalizeFoodSearchText(input.name, input.brand, input.aliases);
+}
+
+async function ensureFoodSearchTextColumn() {
+  if (databaseType === "postgres") {
+    await run(`ALTER TABLE foods ADD COLUMN IF NOT EXISTS "searchText" text`);
+    return;
+  }
+  if (databaseType === "mysql") {
+    try {
+      await run("ALTER TABLE foods ADD COLUMN searchText TEXT");
+    } catch (error: any) {
+      if (error?.code !== "ER_DUP_FIELDNAME" && error?.errno !== 1060) throw error;
+    }
+    return;
+  }
+  const columns = await all<{ name: string }>("PRAGMA table_info(foods)");
+  if (!columns.some((column) => column.name === "searchText")) {
+    await run("ALTER TABLE foods ADD COLUMN searchText TEXT");
+  }
+}
+
+async function backfillFoodSearchText(limit = 5000) {
+  const rows = await all(
+    `SELECT id, name, brand, aliases FROM foods
+     WHERE searchText IS NULL OR searchText = ''
+     LIMIT ?`,
+    limit,
+  );
+  for (const row of rows) {
+    await run("UPDATE foods SET searchText = ? WHERE id = ?", foodSearchText(row), row.id);
+  }
+}
+
 async function ensureMealTables() {
   if (mealTablesReady) return;
   const autoId = autoIdColumn();
@@ -3305,6 +3353,7 @@ async function ensureMealTables() {
       createdAt timestamp
     )`,
   );
+  await ensureFoodSearchTextColumn();
   await run(
     `CREATE TABLE IF NOT EXISTS meal_logs (
       id ${autoId},
@@ -3334,6 +3383,9 @@ async function ensureMealTables() {
   );
   await run("CREATE INDEX IF NOT EXISTS idx_foods_user_created ON foods (userId, createdAt)");
   await run("CREATE INDEX IF NOT EXISTS idx_foods_user_name ON foods (userId, name)");
+  if (databaseType !== "mysql") {
+    await run("CREATE INDEX IF NOT EXISTS idx_foods_user_search ON foods (userId, searchText)");
+  }
   await run("CREATE INDEX IF NOT EXISTS idx_meal_logs_user_date ON meal_logs (userId, mealDate)");
   await run("CREATE INDEX IF NOT EXISTS idx_meal_log_items_meal ON meal_log_items (mealLogId)");
   await run("CREATE INDEX IF NOT EXISTS idx_meal_log_items_food_created ON meal_log_items (foodId, createdAt)");
@@ -3468,7 +3520,7 @@ async function ensureMealTables() {
     if (existing) {
       await run(
         `UPDATE foods
-         SET brand = ?, servingUnit = ?, caloriesPer100 = ?, proteinPer100 = ?, carbsPer100 = ?, fatPer100 = ?, aliases = ?
+         SET brand = ?, servingUnit = ?, caloriesPer100 = ?, proteinPer100 = ?, carbsPer100 = ?, fatPer100 = ?, aliases = ?, searchText = ?
          WHERE id = ? AND userId IS NULL`,
         food[1],
         "g",
@@ -3477,13 +3529,14 @@ async function ensureMealTables() {
         food[4],
         food[5],
         JSON.stringify(food[6]),
+        foodSearchText({ name: food[0], brand: food[1], aliases: food[6] }),
         existing.id,
       );
     } else {
       await run(
         `INSERT INTO foods
-         (userId, name, brand, servingUnit, caloriesPer100, proteinPer100, carbsPer100, fatPer100, aliases, favorite, createdAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (userId, name, brand, servingUnit, caloriesPer100, proteinPer100, carbsPer100, fatPer100, aliases, searchText, favorite, createdAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         null,
         food[0],
         food[1],
@@ -3493,11 +3546,13 @@ async function ensureMealTables() {
         food[4],
         food[5],
         JSON.stringify(food[6]),
+        foodSearchText({ name: food[0], brand: food[1], aliases: food[6] }),
         0,
         now,
       );
     }
   }
+  await backfillFoodSearchText();
   mealTablesReady = true;
 }
 
@@ -3579,26 +3634,44 @@ function buildFoodSearchTerms(query: string) {
 
 async function searchFoodRows(userId: number, term: string, limit: number) {
   const trimmedQuery = term.trim().toLowerCase();
-  const q = `%${trimmedQuery}%`;
-  const compactQ = `%${trimmedQuery.replace(/\s+/g, "")}%`;
+  const compact = trimmedQuery.replace(/\s+/g, "");
+  if (compact.length < 2) return [];
+  const exact = normalizeFoodSearchText(trimmedQuery, compact);
+  const prefix = `${compact}%`;
+  const contains = `%${compact}%`;
+  const baseParams = [userId];
+  const orderClause = "ORDER BY favorite DESC, userId DESC, name LIMIT ?";
+
+  const exactRows = await all(
+    `SELECT * FROM foods
+     WHERE (userId IS NULL OR userId = ?)
+       AND (searchText = ? OR name = ?)
+     ${orderClause}`,
+    ...baseParams,
+    exact,
+    trimmedQuery,
+    limit,
+  );
+  if (exactRows.length >= Math.min(5, limit)) return exactRows;
+
+  const prefixRows = await all(
+    `SELECT * FROM foods
+     WHERE (userId IS NULL OR userId = ?)
+       AND searchText LIKE ?
+     ${orderClause}`,
+    ...baseParams,
+    prefix,
+    limit,
+  );
+  if (prefixRows.length >= Math.min(5, limit)) return prefixRows;
+
   return await all(
     `SELECT * FROM foods
      WHERE (userId IS NULL OR userId = ?)
-       AND (
-         lower(name) LIKE ?
-         OR lower(replace(name, ' ', '')) LIKE ?
-         OR lower(COALESCE(brand, '')) LIKE ?
-         OR lower(replace(COALESCE(aliases, ''), ' ', '')) LIKE ?
-         OR lower(COALESCE(aliases, '')) LIKE ?
-       )
-     ORDER BY favorite DESC, userId DESC, name
-     LIMIT ?`,
-    userId,
-    q,
-    compactQ,
-    q,
-    compactQ,
-    q,
+       AND searchText LIKE ?
+     ${orderClause}`,
+    ...baseParams,
+    contains,
     limit,
   );
 }
@@ -3620,10 +3693,11 @@ async function upsertPublicFood(food: {
   );
   const now = new Date().toISOString();
   const aliases = JSON.stringify(Array.from(new Set(food.aliases.filter(Boolean))));
+  const searchText = foodSearchText({ name: food.name, brand: food.brand, aliases });
   if (existing) {
     await run(
       `UPDATE foods
-       SET servingUnit = ?, caloriesPer100 = ?, proteinPer100 = ?, carbsPer100 = ?, fatPer100 = ?, sodiumPer100 = ?, aliases = ?
+       SET servingUnit = ?, caloriesPer100 = ?, proteinPer100 = ?, carbsPer100 = ?, fatPer100 = ?, sodiumPer100 = ?, aliases = ?, searchText = ?
        WHERE id = ? AND userId IS NULL`,
       "g",
       food.caloriesPer100,
@@ -3632,6 +3706,7 @@ async function upsertPublicFood(food: {
       food.fatPer100,
       food.sodiumPer100 ?? null,
       aliases,
+      searchText,
       existing.id,
     );
     return;
@@ -3639,8 +3714,8 @@ async function upsertPublicFood(food: {
 
   await run(
     `INSERT INTO foods
-     (userId, name, brand, servingUnit, caloriesPer100, proteinPer100, carbsPer100, fatPer100, sodiumPer100, aliases, favorite, createdAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     (userId, name, brand, servingUnit, caloriesPer100, proteinPer100, carbsPer100, fatPer100, sodiumPer100, aliases, searchText, favorite, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     null,
     food.name,
     food.brand,
@@ -3651,6 +3726,7 @@ async function upsertPublicFood(food: {
     food.fatPer100,
     food.sodiumPer100 ?? null,
     aliases,
+    searchText,
     0,
     now,
   );
@@ -3755,13 +3831,6 @@ export async function listFoods(userId: number, query = "", limit = 30): Promise
       rows = await searchFoodRows(userId, term, limit);
       if (rows.length) break;
     }
-    if (rows.length < Math.min(5, limit) && process.env.FOOD_SEARCH_LIVE_IMPORT === "1") {
-      await importFoodNutritionFromOpenApi(searchTerms[0] ?? query, limit);
-      for (const term of searchTerms) {
-        rows = await searchFoodRows(userId, term, limit);
-        if (rows.length) break;
-      }
-    }
   }
   return rows.map(normalizeFood);
 }
@@ -3835,8 +3904,8 @@ export async function createFood(userId: number, input: {
   const now = new Date().toISOString();
   const result = await run(
     `INSERT INTO foods
-     (userId, name, brand, servingUnit, caloriesPer100, proteinPer100, carbsPer100, fatPer100, sodiumPer100, aliases, favorite, createdAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     (userId, name, brand, servingUnit, caloriesPer100, proteinPer100, carbsPer100, fatPer100, sodiumPer100, aliases, searchText, favorite, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     userId,
     input.name.trim(),
     input.brand?.trim() || null,
@@ -3847,6 +3916,7 @@ export async function createFood(userId: number, input: {
     input.fatPer100 ?? 0,
     input.sodiumPer100 ?? null,
     JSON.stringify(input.aliases ?? []),
+    foodSearchText({ name: input.name, brand: input.brand, aliases: input.aliases ?? [] }),
     input.favorite ? 1 : 0,
     now,
   );

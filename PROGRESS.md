@@ -1,34 +1,26 @@
 # PROGRESS
 
-## 2026-06-29 16:57:57 +09:00
+## 2026-06-29 17:11:07 +09:00
 
 ### 작업 요약
 
-- 전체 렌더링과 DB 로딩 속도 개선을 위해 운동 탐색 payload 축소, 쿼리 캐시 강화, DB 인덱스 추가를 적용함.
+- 식단 목표 저장값 표시 문제, 내부 코드명 노출 문제, 음식 검색 지연 문제를 수정함.
 
 ### 변경 사항
 
-- `client/src/pages/Exercises.tsx`
-  - 일반 운동 목록을 `exercises.page` 서버 페이지 조회로 전환.
-  - 첫 화면에서 전체 2,088건을 받지 않고 24건만 받도록 변경.
-  - 난이도 필터를 서버 요청 조건으로 포함.
-  - 즐겨찾기 필터는 사용자별 정확도 보존을 위해 기존 조회 경로 유지.
-  - 페이지 초과 상태 보정 로직 추가.
-
-- `server/routers.ts`
-  - `exercises.page` procedure 추가.
-  - `exercises.list` 입력에 `difficulty`, `limit`, `offset` 옵션 추가.
+- `client/src/pages/Meals.tsx`
+  - 식단 목표 form의 초기 기본값 `2200/140/250/65` 제거.
+  - 목표 저장 성공 시 `meals.targets` 캐시를 즉시 저장값으로 갱신.
+  - 목표 로딩 중 입력칸 비활성화.
+  - 목표 저장 버튼 문구를 로딩 상태에 맞게 변경.
+  - 사용자 화면에 `mealTargets` 같은 내부 저장 키가 노출되지 않도록 안내 문구 변경.
 
 - `server/db.ts`
-  - `getExercises()`에 난이도, limit, offset 지원 추가.
-  - `getExercisesPage()` 추가.
-  - 운동 필터/정렬용 인덱스 추가.
-  - 식단 음식/로그 반복 조회용 인덱스 추가.
-
-- `client/src/main.tsx`
-  - React Query 기본 `staleTime`을 5분으로 확대.
-  - `gcTime`을 30분으로 확대.
-  - `refetchOnReconnect` 비활성화.
+  - `foods.searchText` 컬럼 보장 로직 추가.
+  - 기본 음식, 직접 등록 음식, import 음식 저장 시 검색 텍스트를 함께 저장.
+  - 기존 음식 데이터의 빈 검색 텍스트를 자동 보정.
+  - 음식 검색 중 외부 Open API 호출 제거.
+  - 음식 검색 쿼리를 `searchText` 중심으로 단순화.
 
 - `TEST_RESULT.md`
   - 검증 결과 갱신.
@@ -42,16 +34,15 @@
   - `.\node_modules\.bin\pnpm.CMD run check`
   - `.\node_modules\.bin\pnpm.CMD run test`
   - `.\node_modules\.bin\pnpm.CMD run build`
-- `getExercisesPage({ limit: 24, offset: 0 })` 직접 확인 완료.
+- 로컬 음식 검색 직접 측정 완료.
 - 기존 dirty 파일인 `SESSION_HANDOFF.md`, `local-db/fittrack_local.sqlite*`는 작업 범위에서 제외해야 함.
 
 ### 남은 문제
 
-- 식단 첫 화면은 아직 여러 procedure가 병렬로 나뉘어 호출됨.
-- 즐겨찾기 운동 필터는 아직 서버 페이지네이션 최적화가 적용되지 않음.
+- 운영 DB에 전체 식품영양성분 DB가 import되어 있지 않으면 검색 가능한 음식 수는 제한됨.
+- 배포 후 운영 DB 첫 접근 시 기존 음식의 `searchText` 보정이 한 번 발생할 수 있음.
 
 ### 다음 작업
 
-- 식단 첫 화면용 `meals.dashboard` 단일 쿼리 추가.
-- 즐겨찾기 운동 필터를 서버에서 userId 기반으로 페이지 조회하도록 별도 protected procedure 추가.
-- 브라우저 Network/Performance 측정값으로 실제 병목 재확인.
+- 운영 DB에 식약처 음식 DB 전체 import 실행 여부 확인.
+- 식단 첫 화면용 `meals.dashboard` 단일 쿼리 추가로 요청 수 추가 축소.
