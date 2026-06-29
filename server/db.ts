@@ -3285,22 +3285,101 @@ async function ensureMealTables() {
       createdAt timestamp
     )`,
   );
-  const defaultFoodCount = await get<{ count: number }>("SELECT COUNT(*) AS count FROM foods WHERE userId IS NULL");
-  if (!Number(defaultFoodCount?.count ?? 0)) {
-    const defaultFoods = [
-      ["백미밥", "기본", 130, 2.7, 28.6, 0.3, ["흰쌀밥", "쌀밥", "밥"]],
-      ["현미밥", "기본", 112, 2.6, 23, 0.9, ["잡곡밥", "현미"]],
-      ["닭가슴살", "기본", 165, 31, 0, 3.6, ["닭찌", "닭가슴", "치킨브레스트"]],
-      ["삶은 계란", "기본", 155, 13, 1.1, 11, ["계란", "달걀", "삶은달걀"]],
-      ["고구마", "기본", 86, 1.6, 20, 0.1, ["삶은고구마", "군고구마"]],
-      ["바나나", "기본", 89, 1.1, 23, 0.3, ["banana"]],
-      ["두부", "기본", 76, 8, 1.9, 4.8, ["모두부", "부침두부"]],
-      ["김치", "기본", 21, 1.7, 3.2, 0.5, ["배추김치"]],
-      ["그릭요거트", "기본", 97, 9, 3.6, 5, ["그릭 yogurt", "요거트"]],
-      ["프로틴 쉐이크", "기본", 390, 78, 8, 5, ["단백질쉐이크", "보충제", "프로틴"]],
-    ] as const;
-    const now = new Date().toISOString();
-    for (const food of defaultFoods) {
+  const defaultFoods = [
+    ["백미밥", "밥/탄수", 130, 2.7, 28.6, 0.3, ["흰쌀밥", "쌀밥", "공기밥", "밥", "햇반", "즉석밥", "white rice"]],
+    ["현미밥", "밥/탄수", 112, 2.6, 23, 0.9, ["현미", "현미햇반", "현미 즉석밥", "잡곡밥", "brown rice"]],
+    ["잡곡밥", "밥/탄수", 121, 3, 25, 0.8, ["잡곡", "오곡밥", "혼합곡밥", "잡곡햇반"]],
+    ["귀리밥", "밥/탄수", 124, 3.8, 23, 2.2, ["오트밥", "귀리", "oat rice"]],
+    ["오트밀", "밥/탄수", 389, 16.9, 66.3, 6.9, ["귀리", "오트", "압착귀리", "퀵오트", "rolled oats", "oatmeal"]],
+    ["고구마", "밥/탄수", 86, 1.6, 20, 0.1, ["삶은고구마", "군고구마", "찐고구마", "sweet potato"]],
+    ["감자", "밥/탄수", 77, 2, 17, 0.1, ["삶은감자", "찐감자", "구운감자", "potato"]],
+    ["바나나", "과일", 89, 1.1, 23, 0.3, ["banana", "바나나 1개", "중간 바나나"]],
+    ["사과", "과일", 52, 0.3, 14, 0.2, ["apple", "사과 1개"]],
+    ["블루베리", "과일", 57, 0.7, 14, 0.3, ["blueberry", "냉동블루베리", "베리"]],
+    ["토마토", "채소", 18, 0.9, 3.9, 0.2, ["방울토마토", "토마토", "cherry tomato"]],
+    ["닭가슴살", "단백질", 165, 31, 0, 3.6, ["닭찌", "닭가슴", "치킨브레스트", "훈제닭", "수비드닭", "chicken breast"]],
+    ["닭다리살", "단백질", 209, 26, 0, 10.9, ["닭정육", "닭다리정육", "닭다리살구이", "chicken thigh"]],
+    ["소고기 우둔살", "단백질", 137, 22, 0, 5, ["우둔", "소우둔", "홍두깨살", "소고기살코기", "lean beef"]],
+    ["소고기 안심", "단백질", 179, 27, 0, 7, ["안심", "소안심", "비프텐더로인", "beef tenderloin"]],
+    ["돼지고기 안심", "단백질", 143, 26, 0, 3.5, ["돼지안심", "돈안심", "pork tenderloin"]],
+    ["돼지고기 목살", "단백질", 269, 17, 0, 22, ["목살", "돼지목살", "pork shoulder"]],
+    ["연어", "단백질", 208, 20, 0, 13, ["생연어", "구운연어", "salmon"]],
+    ["참치캔", "단백질", 116, 25, 0, 1, ["참치", "동원참치", "사조참치", "tuna can", "튜나"]],
+    ["고등어", "단백질", 205, 19, 0, 14, ["고등어구이", "mackerel"]],
+    ["새우", "단백질", 99, 24, 0.2, 0.3, ["칵테일새우", "냉동새우", "shrimp"]],
+    ["삶은 계란", "단백질", 155, 13, 1.1, 11, ["계란", "달걀", "삶은달걀", "삶계", "boiled egg"]],
+    ["계란 흰자", "단백질", 52, 11, 0.7, 0.2, ["흰자", "난백", "egg white"]],
+    ["두부", "단백질", 76, 8, 1.9, 4.8, ["모두부", "부침두부", "찌개두부", "tofu"]],
+    ["순두부", "단백질", 47, 5, 1.4, 2.7, ["soft tofu", "연두부"]],
+    ["콩", "단백질", 173, 16.6, 9.9, 9, ["대두", "삶은콩", "soybean"]],
+    ["그릭요거트", "유제품", 97, 9, 3.6, 5, ["그릭 yogurt", "요거트", "무가당요거트", "greek yogurt"]],
+    ["플레인 요거트", "유제품", 61, 3.5, 4.7, 3.3, ["요거트", "플레인요거트", "yogurt"]],
+    ["저지방 우유", "유제품", 42, 3.4, 5, 1, ["저지방우유", "low fat milk", "우유"]],
+    ["우유", "유제품", 61, 3.2, 4.8, 3.3, ["milk", "흰우유"]],
+    ["프로틴 쉐이크", "보충제", 390, 78, 8, 5, ["단백질쉐이크", "보충제", "프로틴", "웨이", "웨이프로틴", "whey", "protein shake"]],
+    ["프로틴 바", "보충제", 360, 30, 35, 12, ["단백질바", "프로틴바", "protein bar"]],
+    ["아몬드", "견과", 579, 21, 22, 50, ["almond", "아몬드 한줌", "견과"]],
+    ["호두", "견과", 654, 15, 14, 65, ["walnut", "호두 한줌"]],
+    ["땅콩버터", "견과", 588, 25, 20, 50, ["피넛버터", "peanut butter", "땅버"]],
+    ["아보카도", "지방", 160, 2, 8.5, 14.7, ["avocado"]],
+    ["올리브오일", "지방", 884, 0, 0, 100, ["올리브유", "olive oil"]],
+    ["김치", "반찬", 21, 1.7, 3.2, 0.5, ["배추김치", "겉절이", "kimchi"]],
+    ["깍두기", "반찬", 33, 1.2, 7, 0.3, ["무김치", "kkakdugi"]],
+    ["샐러드", "채소", 25, 1.2, 4, 0.5, ["야채샐러드", "채소샐러드", "salad"]],
+    ["양상추", "채소", 15, 1.4, 2.9, 0.2, ["lettuce", "상추"]],
+    ["브로콜리", "채소", 34, 2.8, 6.6, 0.4, ["broccoli", "브로컬리"]],
+    ["파프리카", "채소", 31, 1, 6, 0.3, ["피망", "bell pepper"]],
+    ["김밥", "한식", 170, 5.5, 28, 4, ["야채김밥", "참치김밥", "kimbap"]],
+    ["비빔밥", "한식", 130, 4.5, 21, 3.5, ["비빔밥 한그릇", "bibimbap"]],
+    ["김치찌개", "한식", 60, 4, 4, 3.5, ["김찌", "돼지고기김치찌개", "kimchi stew"]],
+    ["된장찌개", "한식", 55, 4, 5, 2.5, ["된찌", "soybean paste stew"]],
+    ["미역국", "한식", 35, 3, 2, 1.5, ["소고기미역국", "seaweed soup"]],
+    ["북엇국", "한식", 42, 5.5, 2, 1, ["북어국", "황태국"]],
+    ["불고기", "한식", 210, 16, 8, 12, ["소불고기", "beef bulgogi"]],
+    ["제육볶음", "한식", 230, 15, 9, 15, ["제육", "돼지불고기", "jeyuk"]],
+    ["닭갈비", "한식", 180, 14, 10, 9, ["dakgalbi", "닭갈비볶음"]],
+    ["떡볶이", "분식", 180, 4, 36, 2.5, ["떡볶", "tteokbokki"]],
+    ["라면", "분식", 436, 9, 65, 15, ["봉지라면", "컵라면", "ramen", "라멘"]],
+    ["우동", "분식", 110, 3.5, 22, 1.5, ["udon"]],
+    ["국수", "분식", 130, 4, 26, 1, ["잔치국수", "소면", "noodle"]],
+    ["파스타", "양식", 157, 5.8, 31, 0.9, ["스파게티", "spaghetti", "pasta"]],
+    ["피자", "양식", 266, 11, 33, 10, ["pizza", "피자 한조각"]],
+    ["햄버거", "패스트푸드", 254, 13, 25, 12, ["버거", "burger"]],
+    ["치킨", "패스트푸드", 290, 20, 10, 19, ["후라이드치킨", "양념치킨", "닭튀김", "fried chicken"]],
+    ["닭가슴살 샐러드", "간편식", 95, 12, 5, 3, ["닭샐러드", "치킨샐러드", "chicken salad"]],
+    ["샌드위치", "간편식", 230, 10, 28, 8, ["sandwich", "샌드위치 반개"]],
+    ["통밀빵", "빵", 247, 13, 41, 4.2, ["식빵", "호밀빵", "whole wheat bread", "통밀식빵"]],
+    ["베이글", "빵", 250, 10, 49, 1.5, ["bagel"]],
+    ["시리얼", "간편식", 380, 7, 84, 3, ["콘푸라이트", "그래놀라", "cereal", "granola"]],
+    ["에너지바", "간편식", 420, 8, 62, 15, ["시리얼바", "간식바", "energy bar"]],
+    ["아메리카노", "음료", 2, 0.1, 0, 0, ["커피", "아아", "아이스아메리카노", "americano"]],
+    ["라떼", "음료", 45, 2.8, 4.6, 1.8, ["카페라떼", "카페 라떼", "latte"]],
+    ["제로콜라", "음료", 0, 0, 0, 0, ["제로 코카콜라", "제로펩시", "zero coke", "제로음료"]],
+    ["이온음료", "음료", 24, 0, 6, 0, ["포카리", "게토레이", "파워에이드", "sports drink"]],
+    ["꿀", "기타", 304, 0.3, 82, 0, ["honey"]],
+    ["설탕", "기타", 387, 0, 100, 0, ["sugar"]],
+    ["고추장", "양념", 197, 4.9, 44, 1.1, ["gochujang"]],
+    ["쌈장", "양념", 215, 10, 26, 7, ["ssamjang"]],
+    ["간장", "양념", 53, 8, 4.9, 0.1, ["soy sauce", "진간장", "양조간장"]],
+  ] as const;
+  const now = new Date().toISOString();
+  for (const food of defaultFoods) {
+    const existing = await get("SELECT id FROM foods WHERE userId IS NULL AND name = ? LIMIT 1", food[0]);
+    if (existing) {
+      await run(
+        `UPDATE foods
+         SET brand = ?, servingUnit = ?, caloriesPer100 = ?, proteinPer100 = ?, carbsPer100 = ?, fatPer100 = ?, aliases = ?
+         WHERE id = ? AND userId IS NULL`,
+        food[1],
+        "g",
+        food[2],
+        food[3],
+        food[4],
+        food[5],
+        JSON.stringify(food[6]),
+        existing.id,
+      );
+    } else {
       await run(
         `INSERT INTO foods
          (userId, name, brand, servingUnit, caloriesPer100, proteinPer100, carbsPer100, fatPer100, aliases, favorite, createdAt)
@@ -3356,17 +3435,27 @@ function calcNutrition(food: Row, amount: number) {
 
 export async function listFoods(userId: number, query = "", limit = 30): Promise<Row[]> {
   await ensureMealTables();
-  const q = `%${query.trim().toLowerCase()}%`;
+  const trimmedQuery = query.trim().toLowerCase();
+  const q = `%${trimmedQuery}%`;
+  const compactQ = `%${trimmedQuery.replace(/\s+/g, "")}%`;
   const rows = query.trim()
     ? await all(
         `SELECT * FROM foods
          WHERE (userId IS NULL OR userId = ?)
-           AND (lower(name) LIKE ? OR lower(COALESCE(brand, '')) LIKE ? OR lower(COALESCE(aliases, '')) LIKE ?)
+           AND (
+             lower(name) LIKE ?
+             OR lower(replace(name, ' ', '')) LIKE ?
+             OR lower(COALESCE(brand, '')) LIKE ?
+             OR lower(replace(COALESCE(aliases, ''), ' ', '')) LIKE ?
+             OR lower(COALESCE(aliases, '')) LIKE ?
+           )
          ORDER BY favorite DESC, userId DESC, name
          LIMIT ?`,
         userId,
         q,
+        compactQ,
         q,
+        compactQ,
         q,
         limit,
       )
