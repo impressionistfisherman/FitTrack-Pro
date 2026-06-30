@@ -1585,15 +1585,51 @@
   scrollbar-gutter: stable;
 }
 
+.mobile-exercise-picker {
+  min-height: 0;
+}
+
+.mobile-picker-sticky {
+  flex-shrink: 0;
+}
+
+.mobile-food-search-results {
+  max-height: min(22rem, calc(100dvh - 18rem));
+}
+
 @media (max-width: 640px) {
+  .mobile-exercise-picker {
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
+    height: calc(100dvh - 1rem);
+    min-height: calc(100dvh - 1rem);
+    max-height: calc(100dvh - 1rem);
+  }
+
+  .mobile-picker-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    margin-inline: -0.25rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    background: color-mix(in srgb, var(--card) 96%, transparent);
+    padding: 0.25rem 0.25rem 0.5rem;
+    backdrop-filter: blur(16px);
+  }
+
   .exercise-results-list {
-    max-height: calc(100dvh - 18.5rem);
-    min-height: 18rem;
+    max-height: none;
+    min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-right: 0.125rem;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
+  }
+
+  .mobile-food-search-results {
+    max-height: calc(100dvh - 24rem);
+    min-height: 12rem;
   }
 
   .mobile-workout-editor {

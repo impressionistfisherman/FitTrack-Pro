@@ -99,36 +99,38 @@ function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: nu
           <Plus size={16} />운동 추가
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-card border-border text-foreground max-w-lg max-h-[80vh] flex flex-col">
+      <DialogContent className="mobile-exercise-picker bg-card border-border text-foreground max-w-lg max-h-[80vh] flex flex-col overflow-hidden sm:max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className="text-foreground">운동 추가</DialogTitle>
         </DialogHeader>
 
         {!selectedExercise ? (
-          <div className="flex flex-col gap-3 overflow-hidden">
-            <Input
-              placeholder="운동 검색..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="bg-accent border-border text-foreground"
-            />
-            <div className="flex gap-1.5 overflow-x-auto pb-1">
-              {bodyParts.map((bp) => (
-                <button
-                  key={bp}
-                  onClick={() => setSelectedBodyPart(bp)}
-                  className={cn(
-                    "px-2.5 py-1 rounded-full text-xs whitespace-nowrap border transition-all",
-                    selectedBodyPart === bp
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-accent border-border text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {bodyPartKo[bp] || bp}
-                </button>
-              ))}
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+            <div className="mobile-picker-sticky space-y-3">
+              <Input
+                placeholder="운동 검색..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="bg-accent border-border text-foreground"
+              />
+              <div className="flex gap-1.5 overflow-x-auto pb-1">
+                {bodyParts.map((bp) => (
+                  <button
+                    key={bp}
+                    onClick={() => setSelectedBodyPart(bp)}
+                    className={cn(
+                      "px-2.5 py-1 rounded-full text-xs whitespace-nowrap border transition-all",
+                      selectedBodyPart === bp
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-accent border-border text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {bodyPartKo[bp] || bp}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="overflow-y-auto flex-1 space-y-1.5 max-h-80">
+            <div className="exercise-results-list min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-1">
               {filtered?.map((ex) => (
                 <ExerciseResultItem
                   key={ex.id}

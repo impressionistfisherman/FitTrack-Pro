@@ -1,34 +1,32 @@
 # PROGRESS
 
-## 2026-06-30 14:20:11 +09:00
+## 2026-06-30 14:32:11 +09:00
 
 ### 작업 요약
 
-- bulk 운동 데이터 원본을 발음형 한글 매핑 기준으로 재생성함.
-- 운동명 audit 기준에서 의미 번역 잔재와 영어 잔여 토큰을 모두 0개로 맞춤.
-- 성별 표기처럼 운동 선택에 불필요한 꼬리표는 표시명에서 제거함.
+- 모바일에서 운동/음식 검색 결과 목록이 아래로 스크롤되지 않거나, 운동 기록 중 매번 위로 올라가 다시 찾아야 하는 UX를 개선함.
+- 운동 선택 다이얼로그는 검색/필터 영역을 고정하고 결과 목록만 스크롤되도록 구조를 분리함.
+- 음식 검색 결과도 모바일 viewport 기준으로 스크롤 가능한 높이를 확보함.
 
 ### 변경 사항
 
-- `server/data/bulk-exercises.json`
-  - `scripts/build-bulk-exercise-seed.mjs` 기준으로 재생성.
-  - 재생성 후 bulk 운동 1,959개.
-  - audit 기준 영어 잔여 토큰 0개.
+- `client/src/pages/WorkoutSession.tsx`
+  - 운동 추가 다이얼로그에 `mobile-exercise-picker` 적용.
+  - 검색창, 필터, 결과 개수, 휴식 시간 설정을 `mobile-picker-sticky` 영역으로 묶음.
+  - 결과 목록에 `exercise-results-list`, `min-h-0`, `flex-1`, `overflow-y-auto`, `overscroll-contain` 적용.
 
-- `scripts/build-bulk-exercise-seed.mjs`
-  - 남은 영어 토큰을 발음형 한글로 변환하는 mapping 확장.
-  - `male`, `female` 기반 성별 표기는 최종 표시명에서 제거.
+- `client/src/pages/RoutineDetail.tsx`
+  - 루틴 운동 추가 다이얼로그도 같은 모바일 picker 구조로 정리.
+  - 검색/필터 영역과 결과 목록 스크롤 영역을 분리.
 
-- `shared/exerciseSearch.ts`
-  - 런타임 표시명 정리 규칙 확장.
-  - 기존 데이터나 DB에 남아 있는 영어 토큰도 화면 표시 시 발음형 한글로 정리.
-  - 성별 꼬리표는 제거.
+- `client/src/pages/Meals.tsx`
+  - 음식 검색 결과 영역에 `mobile-food-search-results` 적용.
 
-- `scripts/audit-exercise-names.mjs`
-  - `POV`, `JM`, `L`, `Y`, `W`, `SZ` 등 운동명에서 허용 가능한 약어를 audit 예외로 명시.
-
-- `TEST_RESULT.md`
-  - 이번 검증 결과로 갱신.
+- `client/src/index.css`
+  - 모바일 다이얼로그 높이를 `100dvh` 기준으로 보정.
+  - 모바일 picker sticky 영역 추가.
+  - 결과 목록 스크롤 컨테이너의 `min-height`, `overflow`, `touch-action`, `-webkit-overflow-scrolling` 정리.
+  - 음식 검색 결과 목록의 모바일 높이 보정.
 
 ### 현재 상태
 
@@ -37,16 +35,14 @@
   - `.\node_modules\.bin\pnpm.CMD run test`
   - `.\node_modules\.bin\pnpm.CMD run build`
   - `git diff --check`
-- 추가 검증 통과
-  - `.\node_modules\.bin\pnpm.CMD run exercises:audit-names -- --fail-on-findings`
-  - `.\node_modules\.bin\pnpm.CMD exec vitest run server/exerciseSearch.test.ts server/fittrack.test.ts`
+- 모바일 viewport `390x844`로 공개 운동 라이브러리 화면 확인.
 
 ### 남은 문제
 
-- 실제 모바일/웹 브라우저에서 운동 검색 체감 동작은 아직 수동 확인하지 않음.
-- `.gitignore`, `SESSION_HANDOFF.md`, `local-db/fittrack_local.sqlite*`는 기존 dirty 상태로 남아 있으며 이번 작업 범위에서 제외함.
+- 로그인 상태가 없어 실제 운동 기록/식단 기록 내부 검색 흐름은 브라우저에서 끝까지 수동 확인하지 못함.
+- 사용자 로그인 세션에서 운동 기록 다이얼로그와 식단 기록 검색을 한 번 더 눈으로 확인하는 것이 안전함.
 
 ### 다음 작업
 
-- 모바일 운동 검색 모달에서 긴 결과 목록의 스크롤/포커스 동작을 실제 브라우저 기준으로 재검증.
-- 기초 운동/기구명 중심 검색어를 추가로 보강할지 사용자 검색 로그 기준으로 판단.
+- 실제 로그인 상태에서 모바일 운동 추가/변경, 식단 검색 선택 흐름을 재확인.
+- 이후 모바일 기록 화면의 카드 간격/버튼 터치 영역을 추가로 정리.

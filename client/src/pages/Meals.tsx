@@ -360,7 +360,7 @@ export default function Meals() {
   };
 
   const renderFoodSearchResults = () => (
-    <div className="mobile-search-results max-h-72 space-y-2 overflow-y-auto overscroll-contain pr-1">
+    <div className="mobile-search-results mobile-food-search-results space-y-2 overflow-y-auto overscroll-contain pr-1">
       {foodsQuery.isLoading ? (
         <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
           음식 데이터를 검색하는 중입니다.

@@ -139,39 +139,41 @@ function AddExerciseModal({ onAdd }: { onAdd: (exercise: any, restSecs: number) 
         <Plus size={16} />운동 추가
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="bg-card border-border text-foreground max-w-lg max-h-[85vh] flex flex-col">
+        <DialogContent className="mobile-exercise-picker bg-card border-border text-foreground max-w-lg max-h-[85vh] flex flex-col overflow-hidden sm:max-h-[85vh]">
           <DialogHeader><DialogTitle>운동 선택</DialogTitle></DialogHeader>
-          <Input placeholder="운동 검색..." value={search} onChange={e => setSearch(e.target.value)}
-            className="bg-accent border-border text-foreground" />
-          <div className="flex gap-1.5 overflow-x-auto pb-1">
-            {bodyParts.map(bp => (
-              <button key={bp} onClick={() => setBodyPart(bp)}
-                className={cn("px-2.5 py-1 rounded-full text-xs whitespace-nowrap border transition-all",
-                  bodyPart === bp ? "bg-primary text-primary-foreground border-primary" : "bg-accent border-border text-muted-foreground")}>
-                {bpKo[bp]}
-              </button>
-            ))}
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {exercises ? `${filtered?.length ?? 0}개 표시${(exercises.length ?? 0) > (filtered?.length ?? 0) ? " · 검색어를 더 입력하면 좁혀집니다" : ""}` : "운동 목록 로딩 중"}
-          </div>
-          {/* 휴식 시간 설정 */}
-          <div className="flex items-center gap-3 px-1 py-2 bg-accent/50 rounded-xl border border-border">
-            <Timer size={14} className="text-primary flex-shrink-0" />
-            <span className="text-xs text-muted-foreground flex-1">세트 간 휴식</span>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setRestSecs(s => Math.max(15, s - 15))}
-                className="w-6 h-6 rounded-md bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground">
-                <Minus size={10} />
-              </button>
-              <span className="text-sm font-semibold text-foreground w-12 text-center">{restSecs}초</span>
-              <button onClick={() => setRestSecs(s => Math.min(300, s + 15))}
-                className="w-6 h-6 rounded-md bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground">
-                <Plus size={10} />
-              </button>
+          <div className="mobile-picker-sticky space-y-3">
+            <Input placeholder="운동 검색..." value={search} onChange={e => setSearch(e.target.value)}
+              className="bg-accent border-border text-foreground" />
+            <div className="flex gap-1.5 overflow-x-auto pb-1">
+              {bodyParts.map(bp => (
+                <button key={bp} onClick={() => setBodyPart(bp)}
+                  className={cn("px-2.5 py-1 rounded-full text-xs whitespace-nowrap border transition-all",
+                    bodyPart === bp ? "bg-primary text-primary-foreground border-primary" : "bg-accent border-border text-muted-foreground")}>
+                  {bpKo[bp]}
+                </button>
+              ))}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {exercises ? `${filtered?.length ?? 0}개 표시${(exercises.length ?? 0) > (filtered?.length ?? 0) ? " · 검색어를 더 입력하면 좁혀집니다" : ""}` : "운동 목록 로딩 중"}
+            </div>
+            {/* 휴식 시간 설정 */}
+            <div className="flex items-center gap-3 px-1 py-2 bg-accent/50 rounded-xl border border-border">
+              <Timer size={14} className="text-primary flex-shrink-0" />
+              <span className="text-xs text-muted-foreground flex-1">세트 간 휴식</span>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setRestSecs(s => Math.max(15, s - 15))}
+                  className="w-6 h-6 rounded-md bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground">
+                  <Minus size={10} />
+                </button>
+                <span className="text-sm font-semibold text-foreground w-12 text-center">{restSecs}초</span>
+                <button onClick={() => setRestSecs(s => Math.min(300, s + 15))}
+                  className="w-6 h-6 rounded-md bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground">
+                  <Plus size={10} />
+                </button>
+              </div>
             </div>
           </div>
-          <div className="overflow-y-auto flex-1 space-y-1.5">
+          <div className="exercise-results-list min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-1">
             {filtered?.map(ex => (
               <ExerciseResultItem key={ex.id} exercise={ex} showChevron={false} onSelect={() => {
                   if (onAdd(ex, restSecs)) {
