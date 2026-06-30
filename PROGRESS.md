@@ -1,30 +1,22 @@
 # PROGRESS
 
-## 2026-06-29 18:25:04 +09:00
+## 2026-06-30 09:06:22 +09:00
 
 ### 작업 요약
 
-- 식단 음식 삭제 기능을 추가함.
-- 기성품/1인분 입력을 위해 표시 단위와 실제 중량(g)을 분리함.
+- 모바일 웹 하단 메뉴바를 제거함.
+- 모바일 메뉴 열기 버튼을 좌측 상단으로 이동함.
 
 ### 변경 사항
 
-- `client/src/pages/Meals.tsx`
-  - 검색 결과의 직접 등록 음식에 삭제 버튼 추가.
-  - 음식 등록 폼에 기본 섭취 단위와 1단위 중량(g) 입력 추가.
-  - 식사 추가 영역을 수량, 단위, 실제 g 입력으로 분리.
-  - 기록 목록 표시를 `1인분 · 100g` 형식으로 변경.
-  - 이전 기록 복사 시 삭제된 음식도 기존 칼로리/매크로 값이 유지되도록 보완.
+- `client/src/components/AppLayout.tsx`
+  - 모바일 하단 메뉴 nav 제거.
+  - 모바일 메뉴 버튼을 헤더 좌측으로 이동.
+  - 모바일 메뉴 drawer를 우측 진입에서 좌측 진입으로 변경.
 
-- `server/db.ts`
-  - `foods.servingSizeGrams` 컬럼 자동 추가.
-  - 사용자 음식 생성 시 기본 섭취 중량 저장.
-  - `deleteFood()` 추가.
-  - 음식 삭제 시 기존 식단 기록 보존을 위해 `meal_log_items.foodId`만 해제.
-
-- `server/routers.ts`
-  - `meals.deleteFood` mutation 추가.
-  - `meals.createFood` 입력에 `servingSizeGrams` 추가.
+- `client/src/index.css`
+  - 모바일 본문 하단 padding을 하단 메뉴바 기준 `6.5rem`에서 safe-area 기준 최소 여백으로 축소.
+  - 미사용 모바일 하단 메뉴바 CSS 제거.
 
 - `TEST_RESULT.md`
   - 검증 결과 갱신.
@@ -39,13 +31,12 @@
   - `.\node_modules\.bin\pnpm.CMD run test`
   - `.\node_modules\.bin\pnpm.CMD run build`
   - `git diff --check`
+- 모바일 폭 390x844에서 하단 메뉴바 제거와 좌측 메뉴 버튼/좌측 drawer 확인 완료.
 
 ### 남은 문제
 
-- 실제 브라우저에서 식단 UI 클릭 흐름 검증 필요.
-- 공공 음식의 실제 1회 제공량은 MFDS 원본 기준량을 현재 import 데이터에 저장하지 않았으므로 기본 100g으로 표시됨.
+- 모바일 전체 UX는 여전히 화면별 카드 배치와 정보 밀도 개선 여지가 있음.
 
 ### 다음 작업
 
-- MFDS 원본의 `영양성분함량기준량`을 `servingSizeGrams`로 import하도록 import 스크립트 개선.
-- 식단 UI에서 자주 쓰는 단위 프리셋(`인분`, `개`, `봉`, `팩`, `컵`) 버튼화 검토.
+- 모바일 홈/운동/식단/기록 주요 화면별로 상단 헤더 아래 첫 화면 정보 밀도를 재점검.

@@ -690,6 +690,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* ── 모바일 헤더 ── */}
       <header className="app-mobile-header border-b border-white/5 bg-background/80 backdrop-blur-xl">
         <div className="flex items-center justify-between px-4 h-14">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-11 w-11"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+          </Button>
           <Link href="/" className="block">
             <div className="flex items-center gap-2 cursor-pointer">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center">
@@ -718,16 +728,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 로그인
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-11 w-11"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label={mobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
-              aria-expanded={mobileMenuOpen}
-            >
-              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
-            </Button>
           </div>
         </div>
         {mobileMenuOpen && (
@@ -743,7 +743,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               aria-label="메뉴 닫기"
               onClick={() => setMobileMenuOpen(false)}
             />
-            <div className="relative ml-auto flex h-[calc(100dvh-3.5rem)] w-[min(20rem,86vw)] flex-col border-l border-border bg-sidebar shadow-2xl animate-slide-left">
+            <div className="relative mr-auto flex h-[calc(100dvh-3.5rem)] w-[min(20rem,86vw)] flex-col border-r border-border bg-sidebar shadow-2xl animate-slide-right">
               <div className="border-b border-sidebar-border p-4">
                 <div className="flex items-center gap-3">
                   <UserAvatar user={user} className="h-9 w-9" />
@@ -811,33 +811,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {loading ? <AppContentSkeleton /> : children}
         </div>
       </main>
-      <nav className="app-mobile-bottom-nav" aria-label="모바일 주요 메뉴">
-        {[
-          { id: "mobile-home", href: "/", icon: Home, label: "홈" },
-          { id: "mobile-exercises", href: "/exercises", icon: Dumbbell, label: "운동" },
-          { id: "mobile-routines", href: "/routines", icon: Activity, label: "루틴" },
-          { id: "mobile-history", href: "/history", icon: Calendar, label: "기록" },
-          { id: "mobile-meals", href: "/meals", icon: Utensils, label: "식단" },
-          { id: "mobile-profile", href: "/profile", icon: Users, label: "프로필" },
-        ].map(item => {
-          const Icon = item.icon;
-          const active =
-            item.href === "/"
-              ? currentPath === "/"
-              : currentPath === item.href || currentPath.startsWith(`${item.href}/`);
-          return (
-            <Link
-              key={item.id}
-              href={item.href}
-              className={cn("app-mobile-bottom-link", active && "is-active")}
-              aria-current={active ? "page" : undefined}
-            >
-              <Icon size={19} />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
     </div>
   );
 }
