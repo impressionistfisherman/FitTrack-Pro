@@ -265,6 +265,21 @@ describe("exercises.list", () => {
     expect(chestPress.some((exercise) => String(exercise.nameKo).includes("체스트"))).toBe(true);
   });
 
+  it("prioritizes basic gym exercises for broad movement searches", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const pressNames = (await caller.exercises.list({ search: "프레스" })).slice(0, 8).map((exercise) => exercise.nameKo);
+    expect(pressNames).toEqual(expect.arrayContaining(["덤벨 숄더 프레스", "바벨 숄더 프레스", "아놀드 프레스"]));
+
+    const rowNames = (await caller.exercises.list({ search: "로우" })).slice(0, 8).map((exercise) => exercise.nameKo);
+    expect(rowNames).toEqual(expect.arrayContaining(["바벨 로우", "인버티드 로우", "티바 로우"]));
+
+    const curlNames = (await caller.exercises.list({ search: "컬" })).slice(0, 8).map((exercise) => exercise.nameKo);
+    expect(curlNames).toEqual(expect.arrayContaining(["덤벨 컬", "바벨 컬", "해머 컬"]));
+    expect(curlNames).not.toContain("손목 컬");
+  });
+
   it("searches assisted exercises and hides duplicated imported names", async () => {
     const ctx = createPublicContext();
     const caller = appRouter.createCaller(ctx);

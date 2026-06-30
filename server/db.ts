@@ -280,6 +280,8 @@ function aliasValue(row: Row, key: string) {
 
 export const db = pgPool ?? mysqlPool ?? sqlite;
 
+const basicGymExercises = createBasicGymExercises();
+
 const supplementalExercises = [
   {
     name: "Basketball",
@@ -749,7 +751,7 @@ const supplementalExercises = [
     secondaryMuscles: ["glutes", "calves"],
     instructions: ["안장 높이를 맞춥니다.", "가볍게 페달링을 시작합니다.", "무릎이 흔들리지 않게 유지합니다."],
   },
-  ...createBasicGymExercises(),
+  ...basicGymExercises,
   {
     name: "Cable Rope Hammer Curl",
     nameKo: "케이블 로프 해머 컬",
@@ -987,11 +989,43 @@ function normalizeExerciseSeedKey(value: unknown): string {
     .replaceAll(/[^a-z0-9가-힣]+/g, "");
 }
 
+const semanticKoreanExerciseNameReplacements = new Map([
+  ["손목 컬", "리스트 컬"],
+  ["이두 컬", "바이셉 컬"],
+  ["덤벨 이두 컬", "덤벨 바이셉 컬"],
+  ["삼두 딥", "트라이셉 딥"],
+  ["삼두 푸시다운", "트라이셉 푸시다운"],
+  ["삼두 익스텐션", "트라이셉 익스텐션"],
+]);
+
+const basicGymExerciseKeys = new Set(
+  basicGymExercises.flatMap((exercise) => [
+    normalizeExerciseSeedKey(exercise.name),
+    normalizeExerciseSeedKey(exercise.nameKo),
+  ]).filter(Boolean),
+);
+
+function isBasicGymExercise(row: Row): boolean {
+  return basicGymExerciseKeys.has(normalizeExerciseSeedKey(row.name))
+    || basicGymExerciseKeys.has(normalizeExerciseSeedKey(row.nameKo));
+}
+
+function scoreBasicGymExerciseBoost(query: string, row: Row): number {
+  if (!isBasicGymExercise(row)) return 0;
+  if (!matchesExerciseSearchText(query, row.nameKo, row.name)) return 0;
+  const difficultyBoost = row.difficulty === "beginner" ? 60 : 30;
+  const categoryBoost = row.category === "strength" || row.category === "hypertrophy" ? 40 : 10;
+  const nameTokenCount = String(row.nameKo ?? row.name ?? "").trim().split(/\s+/).filter(Boolean).length;
+  const simpleNameBoost = nameTokenCount <= 2 ? 120 : nameTokenCount <= 3 ? 60 : 0;
+  return 180 + difficultyBoost + categoryBoost + simpleNameBoost;
+}
+
 function shouldUpdateExerciseKoreanName(currentNameKo: unknown, nextNameKo: unknown): boolean {
   if (typeof currentNameKo !== "string" || typeof nextNameKo !== "string") return false;
   const current = currentNameKo.trim();
   const next = nextNameKo.trim();
   if (!current || !next || current === next) return false;
+  if (semanticKoreanExerciseNameReplacements.get(current) === next) return true;
   return /[a-z]/i.test(current) && !/[a-z]/i.test(next);
 }
 
@@ -1456,7 +1490,8 @@ export async function getExercises(filters?: {
   const scoredRows = normalizedRows
     .map((row) => ({
       row,
-      score: scoreExerciseSearchMatch(filters.search!, row.nameKo, row.name),
+      score: scoreExerciseSearchMatch(filters.search!, row.nameKo, row.name)
+        + scoreBasicGymExerciseBoost(filters.search!, row),
     }))
     .filter((item) => item.score > 0 || matchesExerciseSearchText(filters.search!, item.row.nameKo, item.row.name))
     .sort((a, b) => (
