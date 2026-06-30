@@ -860,8 +860,8 @@ export default function FreeWorkoutDialog({
             </div>
           </div>
 
-          <div className="min-w-0 space-y-3 lg:flex lg:min-h-0 lg:flex-col">
-          <div className="shrink-0">
+          <div className="mobile-workout-editor min-w-0 space-y-3 lg:flex lg:min-h-0 lg:flex-col">
+          <div className="mobile-workout-search-sticky shrink-0">
             {renderExerciseSearchPanel()}
           </div>
           {selected.length > 0 ? (

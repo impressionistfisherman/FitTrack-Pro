@@ -1595,6 +1595,28 @@
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
   }
+
+  .mobile-workout-editor {
+    max-height: calc(92dvh - 5rem);
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 0.125rem;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+
+  .mobile-workout-search-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    margin-inline: -0.25rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--card) 96%, transparent), color-mix(in srgb, var(--card) 88%, transparent));
+    padding: 0.25rem;
+    backdrop-filter: blur(16px);
+  }
 }
 
 /* 데스크톱 (1280px 이상) */

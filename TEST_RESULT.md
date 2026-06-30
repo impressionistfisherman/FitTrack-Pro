@@ -1,6 +1,6 @@
 # TEST_RESULT
 
-## 2026-06-30 09:14:53 +09:00
+## 2026-06-30 09:41:20 +09:00
 
 ### 테스트 항목
 
@@ -8,7 +8,6 @@
 - `.\node_modules\.bin\pnpm.CMD run test`
 - `.\node_modules\.bin\pnpm.CMD run build`
 - `git diff --check`
-- 모바일 폭 390x844 운동 검색 결과 스크롤 상태 확인
 
 ### 결과
 
@@ -18,18 +17,12 @@
   - 73개 테스트 통과
 - Production build: 통과
 - 공백 검사: 통과
-- 모바일 운동 검색 결과 스크롤 확인: 통과
-  - `scrollHeight: 2323`
-  - `clientHeight: 548`
-  - `overflow-y: auto`
-  - `touch-action: pan-y`
 
 ### 확인한 변경 범위
 
-- 모바일 운동 검색 결과 목록이 자체 스크롤되도록 결과 리스트 컨테이너 추가.
-- 모바일 음식 검색 결과 목록에 터치 스크롤 속성 추가.
-- 자유 운동 기록 모달의 운동 검색/교체 검색 결과를 기본 스크롤 컨테이너로 변경.
-- iOS/모바일 터치 스크롤을 위해 `-webkit-overflow-scrolling: touch`, `touch-action: pan-y`, `overscroll-behavior` 적용.
+- 모바일 운동 기록 모달에서 운동 검색 패널을 sticky 처리.
+- 모바일 운동 기록 모달의 운동 편집 영역을 자체 세로 스크롤 컨테이너로 변경.
+- 세트 입력 중에도 운동 검색창이 모달 상단에 남아 추가 운동을 바로 검색할 수 있도록 조정.
 
 ### 실패 원인 및 조치
 
@@ -37,5 +30,5 @@
 
 ### 미실행 또는 제한 사항
 
-- 로그인 상태의 음식 검색 UI는 실제 계정으로 클릭 검증하지 않음.
+- 로컬 브라우저에서 `/history`는 미로그인 상태라 실제 모달 클릭 검증은 수행하지 못함.
 - `SESSION_HANDOFF.md`, `local-db/fittrack_local.sqlite*`, `.gitignore`의 기존 dirty 상태는 이번 커밋 범위에서 제외함.
