@@ -72,7 +72,7 @@ for (const row of rows) {
 
   for (const token of nameKo.match(/[A-Za-z][A-Za-z-]*/g) ?? []) {
     const normalized = token.toLowerCase();
-    if (["ab", "ez", "it", "t", "v"].includes(normalized)) continue;
+    if (["ab", "ez", "it", "t", "v", "w", "l", "y", "jm", "pov", "s", "sz"].includes(normalized)) continue;
     englishTokenCounts.set(normalized, (englishTokenCounts.get(normalized) ?? 0) + 1);
     if (!englishTokenSamples.has(normalized)) {
       englishTokenSamples.set(normalized, { source: row.source, index: row.index, name: row.name, nameKo });

@@ -22927,7 +22927,7 @@
   },
   {
     "name": "All Fours Squad Stretch",
-    "nameKo": "올포 Squad 스트레치",
+    "nameKo": "올포 스쿼드 스트레치",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -22981,7 +22981,7 @@
   },
   {
     "name": "Archer Pull Up",
-    "nameKo": "Archer 풀업",
+    "nameKo": "아처 풀업",
     "bodyPart": "back",
     "equipment": "bodyweight",
     "category": "strength",
@@ -23009,7 +23009,7 @@
   },
   {
     "name": "Archer Push Up",
-    "nameKo": "Archer 푸시 업",
+    "nameKo": "아처 푸시 업",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -23038,7 +23038,7 @@
   },
   {
     "name": "Arm Slingers Hanging Bent Knee Legs",
-    "nameKo": "암 Slingers 행잉 벤트 니 레그",
+    "nameKo": "암 슬링거 행잉 벤트 니 레그",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -23064,7 +23064,7 @@
   },
   {
     "name": "Arm Slingers Hanging Straight Legs",
-    "nameKo": "암 Slingers 행잉 스트레이트 레그",
+    "nameKo": "암 슬링거 행잉 스트레이트 레그",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -23090,7 +23090,7 @@
   },
   {
     "name": "Arms Apart Circular Toe Touch (male)",
-    "nameKo": "암 Apart Circular 토 Touch Male",
+    "nameKo": "암 어파트 서큘러 토 터치",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -23118,7 +23118,7 @@
   },
   {
     "name": "Arms Overhead Full Sit-up (male)",
-    "nameKo": "암 오버헤드 풀 싯업 Male",
+    "nameKo": "암 오버헤드 풀 싯업",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -23250,7 +23250,7 @@
   },
   {
     "name": "Assisted Lying Glutes Stretch",
-    "nameKo": "어시스트 라잉 Glutes 스트레치",
+    "nameKo": "어시스트 라잉 글루트 스트레치",
     "bodyPart": "legs",
     "equipment": "none",
     "category": "strength",
@@ -23276,7 +23276,7 @@
   },
   {
     "name": "Assisted Lying Gluteus And Piriformis Stretch",
-    "nameKo": "어시스트 라잉 Gluteus & 피리포미스 스트레치",
+    "nameKo": "어시스트 라잉 글루티어스 & 피리포미스 스트레치",
     "bodyPart": "legs",
     "equipment": "none",
     "category": "strength",
@@ -23445,7 +23445,7 @@
   },
   {
     "name": "Assisted Prone Lying Quads Stretch",
-    "nameKo": "어시스트 프론 라잉 Quads 스트레치",
+    "nameKo": "어시스트 프론 라잉 쿼드 스트레치",
     "bodyPart": "legs",
     "equipment": "none",
     "category": "strength",
@@ -23472,7 +23472,7 @@
   },
   {
     "name": "Assisted Prone Rectus Femoris Stretch",
-    "nameKo": "어시스트 프론 Rectus Femoris 스트레치",
+    "nameKo": "어시스트 프론 렉터스 페모리스 스트레치",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "strength",
@@ -23527,7 +23527,7 @@
   },
   {
     "name": "Assisted Seated Pectoralis Major Stretch With Stability Ball",
-    "nameKo": "어시스트 시티드 Pectoralis Major 스트레치 스태빌리티 볼",
+    "nameKo": "어시스트 시티드 펙토랄리스 메이저 스트레치 스태빌리티 볼",
     "bodyPart": "chest",
     "equipment": "none",
     "category": "strength",
@@ -23747,7 +23747,7 @@
   },
   {
     "name": "Astride Jumps (male)",
-    "nameKo": "Astride Jumps Male",
+    "nameKo": "어스트라이드 점프",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -23776,7 +23776,7 @@
   },
   {
     "name": "Back And Forth Step",
-    "nameKo": "백 & Forth 스텝",
+    "nameKo": "백 & 포스 스텝",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -23862,7 +23862,7 @@
   },
   {
     "name": "Back Pec Stretch",
-    "nameKo": "백 Pec 스트레치",
+    "nameKo": "백 펙 스트레치",
     "bodyPart": "back",
     "equipment": "bodyweight",
     "category": "strength",
@@ -23969,7 +23969,7 @@
   },
   {
     "name": "Band Assisted Wheel Rollerout",
-    "nameKo": "밴드 어시스트 휠 Rollerout",
+    "nameKo": "밴드 어시스트 휠 롤아웃",
     "bodyPart": "abs",
     "equipment": "resistance_band",
     "category": "strength",
@@ -24024,7 +24024,7 @@
   },
   {
     "name": "Band Bicycle Crunch",
-    "nameKo": "밴드 Bicycle 크런치",
+    "nameKo": "밴드 바이시클 크런치",
     "bodyPart": "abs",
     "equipment": "resistance_band",
     "category": "strength",
@@ -24133,7 +24133,7 @@
   },
   {
     "name": "Band Fixed Back Close Grip Pulldown",
-    "nameKo": "밴드 Fixed 백 클로즈 그립 풀다운",
+    "nameKo": "밴드 픽스드 백 클로즈 그립 풀다운",
     "bodyPart": "back",
     "equipment": "resistance_band",
     "category": "strength",
@@ -24163,7 +24163,7 @@
   },
   {
     "name": "Band Fixed Back Underhand Pulldown",
-    "nameKo": "밴드 Fixed 백 언더핸드 풀다운",
+    "nameKo": "밴드 픽스드 백 언더핸드 풀다운",
     "bodyPart": "back",
     "equipment": "resistance_band",
     "category": "strength",
@@ -24275,7 +24275,7 @@
   },
   {
     "name": "Band Horizontal Pallof Press",
-    "nameKo": "밴드 Horizontal 팔로프 프레스",
+    "nameKo": "밴드 호리존탈 팔로프 프레스",
     "bodyPart": "abs",
     "equipment": "resistance_band",
     "category": "strength",
@@ -24306,7 +24306,7 @@
   },
   {
     "name": "Band Jack Knife Sit-up",
-    "nameKo": "밴드 Jack Knife 싯업",
+    "nameKo": "밴드 잭 나이프 싯업",
     "bodyPart": "abs",
     "equipment": "resistance_band",
     "category": "strength",
@@ -24359,7 +24359,7 @@
   },
   {
     "name": "Band Kneeling Twisting Crunch",
-    "nameKo": "밴드 닐링 Twisting 크런치",
+    "nameKo": "밴드 닐링 트위스팅 크런치",
     "bodyPart": "abs",
     "equipment": "resistance_band",
     "category": "strength",
@@ -24523,7 +24523,7 @@
   },
   {
     "name": "Band One Arm Twisting Chest Press",
-    "nameKo": "밴드 원암 Twisting 체스트 프레스",
+    "nameKo": "밴드 원암 트위스팅 체스트 프레스",
     "bodyPart": "chest",
     "equipment": "resistance_band",
     "category": "strength",
@@ -24553,7 +24553,7 @@
   },
   {
     "name": "Band One Arm Twisting Seated Row",
-    "nameKo": "밴드 원암 Twisting 시티드 로우",
+    "nameKo": "밴드 원암 트위스팅 시티드 로우",
     "bodyPart": "back",
     "equipment": "resistance_band",
     "category": "strength",
@@ -25022,7 +25022,7 @@
   },
   {
     "name": "Band Standing Twisting Crunch",
-    "nameKo": "밴드 스탠딩 Twisting 크런치",
+    "nameKo": "밴드 스탠딩 트위스팅 크런치",
     "bodyPart": "abs",
     "equipment": "resistance_band",
     "category": "strength",
@@ -25165,7 +25165,7 @@
   },
   {
     "name": "Band Twisting Overhead Press",
-    "nameKo": "밴드 Twisting 오버헤드 프레스",
+    "nameKo": "밴드 트위스팅 오버헤드 프레스",
     "bodyPart": "shoulders",
     "equipment": "resistance_band",
     "category": "strength",
@@ -25194,7 +25194,7 @@
   },
   {
     "name": "Band Two Legs Calf Raise - (band Under Both Legs) V. 2",
-    "nameKo": "밴드 투 레그 카프 레이즈 밴드 Under Both 레그 V. 2",
+    "nameKo": "밴드 투 레그 카프 레이즈 밴드 언더 보스 레그 V. 2",
     "bodyPart": "legs",
     "equipment": "resistance_band",
     "category": "strength",
@@ -25499,7 +25499,7 @@
   },
   {
     "name": "Barbell Biceps Curl (with Arm Blaster)",
-    "nameKo": "바벨 바이셉스 컬 암 Blaster",
+    "nameKo": "바벨 바이셉스 컬 암 블래스터",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "strength",
@@ -25945,7 +25945,7 @@
   },
   {
     "name": "Barbell Full Squat (back Pov)",
-    "nameKo": "바벨 풀 스쿼트 백 Pov",
+    "nameKo": "바벨 풀 스쿼트 백 POV",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -25977,7 +25977,7 @@
   },
   {
     "name": "Barbell Full Squat (side Pov)",
-    "nameKo": "바벨 풀 스쿼트 사이드 Pov",
+    "nameKo": "바벨 풀 스쿼트 사이드 POV",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -26040,7 +26040,7 @@
   },
   {
     "name": "Barbell Glute Bridge Two Legs On Bench (male)",
-    "nameKo": "바벨 글루트 브리지 투 레그 온 벤치 Male",
+    "nameKo": "바벨 글루트 브리지 투 레그 온 벤치",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -26484,7 +26484,7 @@
   },
   {
     "name": "Barbell Lying Lifting (on Hip)",
-    "nameKo": "바벨 라잉 Lifting 온 힙",
+    "nameKo": "바벨 라잉 리프팅 온 힙",
     "bodyPart": "legs",
     "equipment": "barbell",
     "category": "strength",
@@ -26844,7 +26844,7 @@
   },
   {
     "name": "Barbell Pendlay Row",
-    "nameKo": "바벨 Pendlay 로우",
+    "nameKo": "바벨 펜들레이 로우",
     "bodyPart": "back",
     "equipment": "barbell",
     "category": "strength",
@@ -27151,7 +27151,7 @@
   },
   {
     "name": "Barbell Revers Wrist Curl V. 2",
-    "nameKo": "바벨 Revers 리스트 컬 V. 2",
+    "nameKo": "바벨 리버스 리스트 컬 V. 2",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "strength",
@@ -27349,7 +27349,7 @@
   },
   {
     "name": "Barbell Reverse Grip Skullcrusher",
-    "nameKo": "바벨 리버스 그립 Skullcrusher",
+    "nameKo": "바벨 리버스 그립 스컬크러셔",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "strength",
@@ -27429,34 +27429,8 @@
     "secondaryImages": []
   },
   {
-    "name": "Barbell Rollerout",
-    "nameKo": "바벨 Rollerout",
-    "bodyPart": "abs",
-    "equipment": "barbell",
-    "category": "strength",
-    "difficulty": "intermediate",
-    "description": "barbell rollerout",
-    "descriptionKo": null,
-    "primaryMuscles": [
-      "abs"
-    ],
-    "secondaryMuscles": [
-      "lower back"
-    ],
-    "instructions": [
-      "Kneel on the floor and hold a barbell with both hands, shoulder-width apart.",
-      "Roll the barbell forward, extending your arms and keeping your core engaged.",
-      "Continue rolling forward until your body is fully extended and your arms are overhead.",
-      "Pause for a moment, then slowly roll the barbell back towards your knees, maintaining control.",
-      "Repeat for the desired number of repetitions."
-    ],
-    "instructionsKo": null,
-    "gifUrl": null,
-    "secondaryImages": []
-  },
-  {
     "name": "Barbell Rollerout From Bench",
-    "nameKo": "바벨 Rollerout 프롬 벤치",
+    "nameKo": "바벨 롤아웃 프롬 벤치",
     "bodyPart": "abs",
     "equipment": "barbell",
     "category": "strength",
@@ -27845,7 +27819,7 @@
   },
   {
     "name": "Barbell Sitted Alternate Leg Raise",
-    "nameKo": "바벨 Sitted 얼터네이트 레그 레이즈",
+    "nameKo": "바벨 시티드 얼터네이트 레그 레이즈",
     "bodyPart": "abs",
     "equipment": "barbell",
     "category": "strength",
@@ -27869,35 +27843,8 @@
     "secondaryImages": []
   },
   {
-    "name": "Barbell Sitted Alternate Leg Raise (female)",
-    "nameKo": "바벨 Sitted 얼터네이트 레그 레이즈 Female",
-    "bodyPart": "abs",
-    "equipment": "barbell",
-    "category": "strength",
-    "difficulty": "intermediate",
-    "description": "barbell sitted alternate leg raise (female)",
-    "descriptionKo": null,
-    "primaryMuscles": [
-      "abs"
-    ],
-    "secondaryMuscles": [
-      "hip flexors",
-      "quadriceps"
-    ],
-    "instructions": [
-      "Sit on a bench with your back straight and hold a barbell across your thighs.",
-      "Place your hands on the sides of the bench for support.",
-      "Keeping your legs straight, lift one leg up as high as possible while keeping it parallel to the ground.",
-      "Lower the leg back down and repeat with the other leg.",
-      "Continue alternating legs for the desired number of repetitions."
-    ],
-    "instructionsKo": null,
-    "gifUrl": null,
-    "secondaryImages": []
-  },
-  {
     "name": "Barbell Skier",
-    "nameKo": "바벨 Skier",
+    "nameKo": "바벨 스키어",
     "bodyPart": "shoulders",
     "equipment": "barbell",
     "category": "strength",
@@ -28041,7 +27988,7 @@
   },
   {
     "name": "Barbell Standing Ab Rollerout",
-    "nameKo": "바벨 스탠딩 AB Rollerout",
+    "nameKo": "바벨 스탠딩 AB 롤아웃",
     "bodyPart": "abs",
     "equipment": "barbell",
     "category": "strength",
@@ -28864,7 +28811,7 @@
   },
   {
     "name": "Basic Toe Touch (male)",
-    "nameKo": "Basic 토 Touch Male",
+    "nameKo": "베이직 토 터치",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -29029,7 +28976,7 @@
   },
   {
     "name": "Bent Knee Lying Twist (male)",
-    "nameKo": "벤트 니 라잉 트위스트 Male",
+    "nameKo": "벤트 니 라잉 트위스트",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -29244,7 +29191,7 @@
   },
   {
     "name": "Bodyweight Squatting Row",
-    "nameKo": "맨몸 Squatting 로우",
+    "nameKo": "맨몸 스쿼팅 로우",
     "bodyPart": "back",
     "equipment": "bodyweight",
     "category": "strength",
@@ -29271,7 +29218,7 @@
   },
   {
     "name": "Bodyweight Squatting Row (with Towel)",
-    "nameKo": "맨몸 Squatting 로우 타월",
+    "nameKo": "맨몸 스쿼팅 로우 타월",
     "bodyPart": "back",
     "equipment": "bodyweight",
     "category": "strength",
@@ -29492,7 +29439,7 @@
   },
   {
     "name": "Box Jump Down With One Leg Stabilization",
-    "nameKo": "박스 점프 다운 원 레그 Stabilization",
+    "nameKo": "박스 점프 다운 원 레그 스태빌라이제이션",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -29521,7 +29468,7 @@
   },
   {
     "name": "Bridge - Mountain Climber (cross Body)",
-    "nameKo": "브리지 Mountain Climber 크로스 바디",
+    "nameKo": "브리지 마운틴 클라이머 크로스 바디",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -29553,7 +29500,7 @@
   },
   {
     "name": "Butterfly Yoga Pose",
-    "nameKo": "Butterfly Yoga Pose",
+    "nameKo": "버터플라이 요가 포즈",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -29638,7 +29585,7 @@
   },
   {
     "name": "Cable Assisted Inverse Leg Curl",
-    "nameKo": "케이블 어시스트 Inverse 레그 컬",
+    "nameKo": "케이블 어시스트 인버스 레그 컬",
     "bodyPart": "legs",
     "equipment": "cable",
     "category": "strength",
@@ -29838,7 +29785,7 @@
   },
   {
     "name": "Cable Cross-over Revers Fly",
-    "nameKo": "케이블 크로스 오버 Revers 플라이",
+    "nameKo": "케이블 크로스 오버 리버스 플라이",
     "bodyPart": "shoulders",
     "equipment": "cable",
     "category": "strength",
@@ -29866,7 +29813,7 @@
   },
   {
     "name": "Cable Cross-over Variation",
-    "nameKo": "케이블 크로스 오버 Variation",
+    "nameKo": "케이블 크로스 오버 베리에이션",
     "bodyPart": "chest",
     "equipment": "cable",
     "category": "strength",
@@ -30374,7 +30321,7 @@
   },
   {
     "name": "Cable Kneeling Rear Delt Row (with Rope) (male)",
-    "nameKo": "케이블 닐링 리어 델트 로우 로프 Male",
+    "nameKo": "케이블 닐링 리어 델트 로우 로프",
     "bodyPart": "shoulders",
     "equipment": "cable",
     "category": "strength",
@@ -31254,7 +31201,7 @@
   },
   {
     "name": "Cable Palm Rotational Row",
-    "nameKo": "케이블 팜 Rotational 로우",
+    "nameKo": "케이블 팜 로테이셔널 로우",
     "bodyPart": "back",
     "equipment": "cable",
     "category": "strength",
@@ -31367,7 +31314,7 @@
   },
   {
     "name": "Cable Pulldown (pro Lat Bar)",
-    "nameKo": "케이블 풀다운 Pro 랫 바",
+    "nameKo": "케이블 풀다운 프로 랫 바",
     "bodyPart": "back",
     "equipment": "cable",
     "category": "strength",
@@ -31508,7 +31455,7 @@
   },
   {
     "name": "Cable Rear Delt Row (stirrups)",
-    "nameKo": "케이블 리어 델트 로우 Stirrups",
+    "nameKo": "케이블 리어 델트 로우 스터럽",
     "bodyPart": "shoulders",
     "equipment": "cable",
     "category": "strength",
@@ -31568,7 +31515,7 @@
   },
   {
     "name": "Cable Rear Drive",
-    "nameKo": "케이블 리어 Drive",
+    "nameKo": "케이블 리어 드라이브",
     "bodyPart": "arms",
     "equipment": "cable",
     "category": "strength",
@@ -31653,7 +31600,7 @@
   },
   {
     "name": "Cable Reverse Grip Triceps Pushdown (sz-bar) (with Arm Blaster)",
-    "nameKo": "케이블 리버스 그립 트라이셉스 푸시다운 Sz 바 암 Blaster",
+    "nameKo": "케이블 리버스 그립 트라이셉스 푸시다운 SZ 바 암 블래스터",
     "bodyPart": "arms",
     "equipment": "cable",
     "category": "strength",
@@ -32520,7 +32467,7 @@
   },
   {
     "name": "Cable Squatting Curl",
-    "nameKo": "케이블 Squatting 컬",
+    "nameKo": "케이블 스쿼팅 컬",
     "bodyPart": "arms",
     "equipment": "cable",
     "category": "strength",
@@ -33031,7 +32978,7 @@
   },
   {
     "name": "Cable Standing Up Straight Crossovers",
-    "nameKo": "케이블 스탠딩 업 스트레이트 Crossovers",
+    "nameKo": "케이블 스탠딩 업 스트레이트 크로스오버",
     "bodyPart": "chest",
     "equipment": "cable",
     "category": "strength",
@@ -33171,7 +33118,7 @@
   },
   {
     "name": "Cable Thibaudeau Kayak Row",
-    "nameKo": "케이블 Thibaudeau Kayak 로우",
+    "nameKo": "케이블 티보도 카약 로우",
     "bodyPart": "back",
     "equipment": "cable",
     "category": "strength",
@@ -33229,7 +33176,7 @@
   },
   {
     "name": "Cable Triceps Pushdown (v-bar) (with Arm Blaster)",
-    "nameKo": "케이블 트라이셉스 푸시다운 V 바 암 Blaster",
+    "nameKo": "케이블 트라이셉스 푸시다운 V 바 암 블래스터",
     "bodyPart": "arms",
     "equipment": "cable",
     "category": "strength",
@@ -33341,7 +33288,7 @@
   },
   {
     "name": "Cable Twisting Pull",
-    "nameKo": "케이블 Twisting 풀",
+    "nameKo": "케이블 트위스팅 풀",
     "bodyPart": "back",
     "equipment": "cable",
     "category": "strength",
@@ -33452,7 +33399,7 @@
   },
   {
     "name": "Cable Upper Chest Crossovers",
-    "nameKo": "케이블 어퍼 체스트 Crossovers",
+    "nameKo": "케이블 어퍼 체스트 크로스오버",
     "bodyPart": "chest",
     "equipment": "cable",
     "category": "strength",
@@ -33650,7 +33597,7 @@
   },
   {
     "name": "Captains Chair Straight Leg Raise",
-    "nameKo": "Captains 체어 스트레이트 레그 레이즈",
+    "nameKo": "캡틴스 체어 스트레이트 레그 레이즈",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -33703,7 +33650,7 @@
   },
   {
     "name": "Chest Dip (on Dip-pull-up Cage)",
-    "nameKo": "체스트 딥 온 딥 풀업 Cage",
+    "nameKo": "체스트 딥 온 딥 풀업 케이지",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -33787,7 +33734,7 @@
   },
   {
     "name": "Chest Tap Push-up (male)",
-    "nameKo": "체스트 Tap 푸시업 Male",
+    "nameKo": "체스트 탭 푸시업",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -33868,7 +33815,7 @@
   },
   {
     "name": "Clap Push Up",
-    "nameKo": "Clap 푸시 업",
+    "nameKo": "클랩 푸시 업",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -33976,7 +33923,7 @@
   },
   {
     "name": "Crab Twist Toe Touch",
-    "nameKo": "Crab 트위스트 토 Touch",
+    "nameKo": "크랩 트위스트 토 터치",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -34109,7 +34056,7 @@
   },
   {
     "name": "Curtsey Squat",
-    "nameKo": "Curtsey 스쿼트",
+    "nameKo": "커트시 스쿼트",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -34138,7 +34085,7 @@
   },
   {
     "name": "Cycle Cross Trainer",
-    "nameKo": "Cycle 크로스 트레이너",
+    "nameKo": "사이클 크로스 트레이너",
     "bodyPart": "cardio",
     "equipment": "machine",
     "category": "cardio",
@@ -34193,7 +34140,7 @@
   },
   {
     "name": "Deep Push Up",
-    "nameKo": "Deep 푸시 업",
+    "nameKo": "딥 푸시 업",
     "bodyPart": "chest",
     "equipment": "dumbbell",
     "category": "strength",
@@ -34219,7 +34166,7 @@
   },
   {
     "name": "Diamond Push-up",
-    "nameKo": "Diamond 푸시업",
+    "nameKo": "다이아몬드 푸시업",
     "bodyPart": "arms",
     "equipment": "bodyweight",
     "category": "strength",
@@ -34300,7 +34247,7 @@
   },
   {
     "name": "Dumbbell Alternate Biceps Curl (with Arm Blaster)",
-    "nameKo": "덤벨 얼터네이트 바이셉스 컬 암 Blaster",
+    "nameKo": "덤벨 얼터네이트 바이셉스 컬 암 블래스터",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -34438,7 +34385,7 @@
   },
   {
     "name": "Dumbbell Alternating Bicep Curl With Leg Raised On Exercise Ball",
-    "nameKo": "덤벨 얼터네이팅 바이셉 컬 레그 Raised 온 짐볼",
+    "nameKo": "덤벨 얼터네이팅 바이셉 컬 레그 레이즈드 온 짐볼",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -34546,7 +34493,7 @@
   },
   {
     "name": "Dumbbell Around Pullover",
-    "nameKo": "덤벨 Around 풀오버",
+    "nameKo": "덤벨 어라운드 풀오버",
     "bodyPart": "chest",
     "equipment": "dumbbell",
     "category": "strength",
@@ -34656,7 +34603,7 @@
   },
   {
     "name": "Dumbbell Bicep Curl Lunge With Bowling Motion",
-    "nameKo": "덤벨 바이셉 컬 런지 Bowling 모션",
+    "nameKo": "덤벨 바이셉 컬 런지 볼링 모션",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -34685,7 +34632,7 @@
   },
   {
     "name": "Dumbbell Bicep Curl On Exercise Ball With Leg Raised",
-    "nameKo": "덤벨 바이셉 컬 온 짐볼 레그 Raised",
+    "nameKo": "덤벨 바이셉 컬 온 짐볼 레그 레이즈드",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -34713,7 +34660,7 @@
   },
   {
     "name": "Dumbbell Bicep Curl With Stork Stance",
-    "nameKo": "덤벨 바이셉 컬 Stork 스탠스",
+    "nameKo": "덤벨 바이셉 컬 스토크 스탠스",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -34768,7 +34715,7 @@
   },
   {
     "name": "Dumbbell Biceps Curl (with Arm Blaster)",
-    "nameKo": "덤벨 바이셉스 컬 암 Blaster",
+    "nameKo": "덤벨 바이셉스 컬 암 블래스터",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -34878,7 +34825,7 @@
   },
   {
     "name": "Dumbbell Burpee",
-    "nameKo": "덤벨 Burpee",
+    "nameKo": "덤벨 버피",
     "bodyPart": "cardio",
     "equipment": "dumbbell",
     "category": "cardio",
@@ -34968,7 +34915,7 @@
   },
   {
     "name": "Dumbbell Contralateral Forward Lunge",
-    "nameKo": "덤벨 Contralateral 포워드 런지",
+    "nameKo": "덤벨 콘트라레터럴 포워드 런지",
     "bodyPart": "legs",
     "equipment": "dumbbell",
     "category": "strength",
@@ -35513,7 +35460,7 @@
   },
   {
     "name": "Dumbbell Full Can Lateral Raise",
-    "nameKo": "덤벨 풀 Can 레터럴 레이즈",
+    "nameKo": "덤벨 풀 캔 레터럴 레이즈",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "strength",
@@ -35654,7 +35601,7 @@
   },
   {
     "name": "Dumbbell Hammer Curls (with Arm Blaster)",
-    "nameKo": "덤벨 해머 컬 암 Blaster",
+    "nameKo": "덤벨 해머 컬 암 블래스터",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -35791,7 +35738,7 @@
   },
   {
     "name": "Dumbbell Incline Breeding",
-    "nameKo": "덤벨 인클라인 Breeding",
+    "nameKo": "덤벨 인클라인 브리딩",
     "bodyPart": "chest",
     "equipment": "dumbbell",
     "category": "strength",
@@ -36428,7 +36375,7 @@
   },
   {
     "name": "Dumbbell Incline Twisted Flyes",
-    "nameKo": "덤벨 인클라인 Twisted 플라이",
+    "nameKo": "덤벨 인클라인 트위스트 플라이",
     "bodyPart": "chest",
     "equipment": "dumbbell",
     "category": "strength",
@@ -36562,7 +36509,7 @@
   },
   {
     "name": "Dumbbell Kickbacks On Exercise Ball",
-    "nameKo": "덤벨 Kickbacks 온 짐볼",
+    "nameKo": "덤벨 킥백 온 짐볼",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -36778,7 +36725,7 @@
   },
   {
     "name": "Dumbbell Lying External Shoulder Rotation",
-    "nameKo": "덤벨 라잉 External 숄더 로테이션",
+    "nameKo": "덤벨 라잉 익스터널 숄더 로테이션",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "strength",
@@ -36805,7 +36752,7 @@
   },
   {
     "name": "Dumbbell Lying Femoral",
-    "nameKo": "덤벨 라잉 Femoral",
+    "nameKo": "덤벨 라잉 페모럴",
     "bodyPart": "legs",
     "equipment": "dumbbell",
     "category": "strength",
@@ -37454,7 +37401,7 @@
   },
   {
     "name": "Dumbbell One Arm French Press On Exercise Ball",
-    "nameKo": "덤벨 원암 French 프레스 온 짐볼",
+    "nameKo": "덤벨 원암 프렌치 프레스 온 짐볼",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -37618,7 +37565,7 @@
   },
   {
     "name": "Dumbbell One Arm Lateral Raise With Support",
-    "nameKo": "덤벨 원암 레터럴 레이즈 Support",
+    "nameKo": "덤벨 원암 레터럴 레이즈 서포트",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "strength",
@@ -37781,7 +37728,7 @@
   },
   {
     "name": "Dumbbell One Arm Reverse Fly (with Support)",
-    "nameKo": "덤벨 원암 리버스 플라이 Support",
+    "nameKo": "덤벨 원암 리버스 플라이 서포트",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "strength",
@@ -38295,7 +38242,7 @@
   },
   {
     "name": "Dumbbell Over Bench Revers Wrist Curl",
-    "nameKo": "덤벨 오버 벤치 Revers 리스트 컬",
+    "nameKo": "덤벨 오버 벤치 리버스 리스트 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -38349,7 +38296,7 @@
   },
   {
     "name": "Dumbbell Palm Rotational Bent Over Row",
-    "nameKo": "덤벨 팜 Rotational 벤트 오버 로우",
+    "nameKo": "덤벨 팜 로테이셔널 벤트 오버 로우",
     "bodyPart": "back",
     "equipment": "dumbbell",
     "category": "strength",
@@ -38408,7 +38355,7 @@
   },
   {
     "name": "Dumbbell Peacher Hammer Curl",
-    "nameKo": "덤벨 Peacher 해머 컬",
+    "nameKo": "덤벨 피처 해머 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -38548,7 +38495,7 @@
   },
   {
     "name": "Dumbbell Pronate-grip Triceps Extension",
-    "nameKo": "덤벨 Pronate 그립 트라이셉스 익스텐션",
+    "nameKo": "덤벨 프로네이트 그립 트라이셉스 익스텐션",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -38824,7 +38771,7 @@
   },
   {
     "name": "Dumbbell Rear Lateral Raise (support Head)",
-    "nameKo": "덤벨 리어 레터럴 레이즈 Support 헤드",
+    "nameKo": "덤벨 리어 레터럴 레이즈 서포트 헤드",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "strength",
@@ -38851,7 +38798,7 @@
   },
   {
     "name": "Dumbbell Revers Grip Biceps Curl",
-    "nameKo": "덤벨 Revers 그립 바이셉스 컬",
+    "nameKo": "덤벨 리버스 그립 바이셉스 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -38996,7 +38943,7 @@
   },
   {
     "name": "Dumbbell Reverse Grip Row (female)",
-    "nameKo": "덤벨 리버스 그립 로우 Female",
+    "nameKo": "덤벨 리버스 그립 로우",
     "bodyPart": "back",
     "equipment": "dumbbell",
     "category": "strength",
@@ -39162,7 +39109,7 @@
   },
   {
     "name": "Dumbbell Scott Press",
-    "nameKo": "덤벨 Scott 프레스",
+    "nameKo": "덤벨 스콧 프레스",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "strength",
@@ -39731,7 +39678,7 @@
   },
   {
     "name": "Dumbbell Seated One Arm Bicep Curl On Exercise Ball With Leg Raised",
-    "nameKo": "덤벨 시티드 원암 바이셉 컬 온 짐볼 레그 Raised",
+    "nameKo": "덤벨 시티드 원암 바이셉 컬 온 짐볼 레그 레이즈드",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -39787,7 +39734,7 @@
   },
   {
     "name": "Dumbbell Seated One Arm Rotate",
-    "nameKo": "덤벨 시티드 원암 Rotate",
+    "nameKo": "덤벨 시티드 원암 로테이트",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -39923,7 +39870,7 @@
   },
   {
     "name": "Dumbbell Seated Revers Grip Concentration Curl",
-    "nameKo": "덤벨 시티드 Revers 그립 컨센트레이션 컬",
+    "nameKo": "덤벨 시티드 리버스 그립 컨센트레이션 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -40194,7 +40141,7 @@
   },
   {
     "name": "Dumbbell Single Leg Deadlift With Stepbox Support",
-    "nameKo": "덤벨 싱글 레그 데드리프트 Stepbox Support",
+    "nameKo": "덤벨 싱글 레그 데드리프트 스텝박스 서포트",
     "bodyPart": "legs",
     "equipment": "dumbbell",
     "category": "strength",
@@ -40394,7 +40341,7 @@
   },
   {
     "name": "Dumbbell Standing Around World",
-    "nameKo": "덤벨 스탠딩 Around 월드",
+    "nameKo": "덤벨 스탠딩 어라운드 월드",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "strength",
@@ -41127,7 +41074,7 @@
   },
   {
     "name": "Dumbbell Supported Squat",
-    "nameKo": "덤벨 Supported 스쿼트",
+    "nameKo": "덤벨 서포티드 스쿼트",
     "bodyPart": "legs",
     "equipment": "dumbbell",
     "category": "strength",
@@ -41180,7 +41127,7 @@
   },
   {
     "name": "Dumbbell Tricep Kickback With Stork Stance",
-    "nameKo": "덤벨 트라이셉 킥백 Stork 스탠스",
+    "nameKo": "덤벨 트라이셉 킥백 스토크 스탠스",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -41207,7 +41154,7 @@
   },
   {
     "name": "Dumbbell Twisting Bench Press",
-    "nameKo": "덤벨 Twisting 벤치프레스",
+    "nameKo": "덤벨 트위스팅 벤치프레스",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -41264,7 +41211,7 @@
   },
   {
     "name": "Dumbbell Upright Row (back Pov)",
-    "nameKo": "덤벨 업라이트 로우 백 Pov",
+    "nameKo": "덤벨 업라이트 로우 백 POV",
     "bodyPart": "shoulders",
     "equipment": "dumbbell",
     "category": "strength",
@@ -41319,7 +41266,7 @@
   },
   {
     "name": "Dumbbell Waiter Biceps Curl",
-    "nameKo": "덤벨 Waiter 바이셉스 컬",
+    "nameKo": "덤벨 웨이터 바이셉스 컬",
     "bodyPart": "arms",
     "equipment": "dumbbell",
     "category": "strength",
@@ -41425,34 +41372,6 @@
     "secondaryImages": []
   },
   {
-    "name": "Dynamic Chest Stretch (male)",
-    "nameKo": "다이내믹 체스트 스트레치 Male",
-    "bodyPart": "chest",
-    "equipment": "bodyweight",
-    "category": "strength",
-    "difficulty": "intermediate",
-    "description": "dynamic chest stretch (male)",
-    "descriptionKo": null,
-    "primaryMuscles": [
-      "pectorals"
-    ],
-    "secondaryMuscles": [
-      "shoulders",
-      "triceps"
-    ],
-    "instructions": [
-      "Stand tall with your feet shoulder-width apart.",
-      "Extend your arms straight out to the sides, parallel to the ground.",
-      "Slowly bring your arms forward, crossing them in front of your body.",
-      "Feel the stretch in your chest muscles.",
-      "Hold the stretch for 10-30 seconds.",
-      "Return to the starting position and repeat for the desired number of repetitions."
-    ],
-    "instructionsKo": null,
-    "gifUrl": null,
-    "secondaryImages": []
-  },
-  {
     "name": "Elbow Dips",
     "nameKo": "엘보 딥스",
     "bodyPart": "arms",
@@ -41508,7 +41427,7 @@
   },
   {
     "name": "Elevator",
-    "nameKo": "Elevator",
+    "nameKo": "엘리베이터",
     "bodyPart": "back",
     "equipment": "bodyweight",
     "category": "strength",
@@ -41618,7 +41537,7 @@
   },
   {
     "name": "Exercise Ball Back Extension With Knees Off Ground",
-    "nameKo": "짐볼 백 익스텐션 니 오프 Ground",
+    "nameKo": "짐볼 백 익스텐션 니 오프 그라운드",
     "bodyPart": "back",
     "equipment": "stability_ball",
     "category": "strength",
@@ -41865,7 +41784,7 @@
   },
   {
     "name": "Exercise Ball On The Wall Calf Raise (tennis Ball Between Ankles)",
-    "nameKo": "짐볼 온 더 월 카프 레이즈 Tennis 볼 비트윈 Ankles",
+    "nameKo": "짐볼 온 더 월 카프 레이즈 테니스 볼 비트윈 앵클",
     "bodyPart": "legs",
     "equipment": "dumbbell",
     "category": "strength",
@@ -41894,7 +41813,7 @@
   },
   {
     "name": "Exercise Ball On The Wall Calf Raise (tennis Ball Between Knees)",
-    "nameKo": "짐볼 온 더 월 카프 레이즈 Tennis 볼 비트윈 니",
+    "nameKo": "짐볼 온 더 월 카프 레이즈 테니스 볼 비트윈 니",
     "bodyPart": "legs",
     "equipment": "dumbbell",
     "category": "strength",
@@ -41923,7 +41842,7 @@
   },
   {
     "name": "Exercise Ball One Leg Prone Lower Body Rotation",
-    "nameKo": "짐볼 원 레그 프론 Lower 바디 로테이션",
+    "nameKo": "짐볼 원 레그 프론 로워 바디 로테이션",
     "bodyPart": "legs",
     "equipment": "stability_ball",
     "category": "strength",
@@ -41954,7 +41873,7 @@
   },
   {
     "name": "Exercise Ball One Legged Diagonal Kick Hamstring Curl",
-    "nameKo": "짐볼 원 레그드 Diagonal 킥 햄스트링 컬",
+    "nameKo": "짐볼 원 레그드 다이아고널 킥 햄스트링 컬",
     "bodyPart": "legs",
     "equipment": "stability_ball",
     "category": "strength",
@@ -42120,7 +42039,7 @@
   },
   {
     "name": "EZ Bar French Press On Exercise Ball",
-    "nameKo": "EZ바 French 프레스 온 짐볼",
+    "nameKo": "EZ바 프렌치 프레스 온 짐볼",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "strength",
@@ -42254,7 +42173,7 @@
   },
   {
     "name": "EZ Bar Standing French Press",
-    "nameKo": "EZ바 스탠딩 French 프레스",
+    "nameKo": "EZ바 스탠딩 프렌치 프레스",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "strength",
@@ -42631,7 +42550,7 @@
   },
   {
     "name": "Ez-bar Biceps Curl (with Arm Blaster)",
-    "nameKo": "EZ바 바이셉스 컬 암 Blaster",
+    "nameKo": "EZ바 바이셉스 컬 암 블래스터",
     "bodyPart": "arms",
     "equipment": "barbell",
     "category": "strength",
@@ -42713,7 +42632,7 @@
   },
   {
     "name": "Flag",
-    "nameKo": "Flag",
+    "nameKo": "플래그",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -42852,7 +42771,7 @@
   },
   {
     "name": "Forward Lunge (male)",
-    "nameKo": "포워드 런지 Male",
+    "nameKo": "포워드 런지",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -42906,7 +42825,7 @@
   },
   {
     "name": "Frog Planche",
-    "nameKo": "프로그 Planche",
+    "nameKo": "프로그 플란체",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -42964,7 +42883,7 @@
   },
   {
     "name": "Front Lever Reps",
-    "nameKo": "프론트 레버리지 Reps",
+    "nameKo": "프론트 레버리지 렙스",
     "bodyPart": "back",
     "equipment": "bodyweight",
     "category": "strength",
@@ -43021,7 +42940,7 @@
   },
   {
     "name": "Full Maltese",
-    "nameKo": "풀 Maltese",
+    "nameKo": "풀 말티즈",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -43048,7 +42967,7 @@
   },
   {
     "name": "Full Planche",
-    "nameKo": "풀 Planche",
+    "nameKo": "풀 플란체",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -43077,7 +42996,7 @@
   },
   {
     "name": "Full Planche Push-up",
-    "nameKo": "풀 Planche 푸시업",
+    "nameKo": "풀 플란체 푸시업",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -43107,7 +43026,7 @@
   },
   {
     "name": "Glute Bridge March",
-    "nameKo": "글루트 브리지 March",
+    "nameKo": "글루트 브리지 마치",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -43135,7 +43054,7 @@
   },
   {
     "name": "Glute Bridge Two Legs On Bench (male)",
-    "nameKo": "글루트 브리지 투 레그 온 벤치 Male",
+    "nameKo": "글루트 브리지 투 레그 온 벤치",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -43274,7 +43193,7 @@
   },
   {
     "name": "Half Knee Bends (male)",
-    "nameKo": "하프 니 벤드 Male",
+    "nameKo": "하프 니 벤드",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -43302,7 +43221,7 @@
   },
   {
     "name": "Half Sit-up (male)",
-    "nameKo": "하프 싯업 Male",
+    "nameKo": "하프 싯업",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -43355,7 +43274,7 @@
   },
   {
     "name": "Hands Clasped Circular Toe Touch (male)",
-    "nameKo": "핸드 Clasped Circular 토 Touch Male",
+    "nameKo": "핸드 클래스프드 서큘러 토 터치",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -43383,7 +43302,7 @@
   },
   {
     "name": "Hands Reversed Clasped Circular Toe Touch (male)",
-    "nameKo": "핸드 Reversed Clasped Circular 토 Touch Male",
+    "nameKo": "핸드 리버스드 클래스프드 서큘러 토 터치",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -43545,7 +43464,7 @@
   },
   {
     "name": "Hanging Straight Twisting Leg Hip Raise",
-    "nameKo": "행잉 스트레이트 Twisting 레그 힙 레이즈",
+    "nameKo": "행잉 스트레이트 트위스팅 레그 힙 레이즈",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -43631,7 +43550,7 @@
   },
   {
     "name": "Hug Keens To Chest",
-    "nameKo": "허그 Keens 투 체스트",
+    "nameKo": "허그 킨스 투 체스트",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -43658,7 +43577,7 @@
   },
   {
     "name": "Hyght Dumbbell Fly",
-    "nameKo": "Hyght 덤벨 플라이",
+    "nameKo": "하이트 덤벨 플라이",
     "bodyPart": "chest",
     "equipment": "dumbbell",
     "category": "strength",
@@ -43738,7 +43657,7 @@
   },
   {
     "name": "Impossible Dips",
-    "nameKo": "Impossible 딥스",
+    "nameKo": "임파서블 딥스",
     "bodyPart": "arms",
     "equipment": "bodyweight",
     "category": "strength",
@@ -43899,7 +43818,7 @@
   },
   {
     "name": "Incline Scapula Push Up",
-    "nameKo": "인클라인 Scapula 푸시 업",
+    "nameKo": "인클라인 스캐퓰라 푸시 업",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -43928,7 +43847,7 @@
   },
   {
     "name": "Incline Twisting Sit-up",
-    "nameKo": "인클라인 Twisting 싯업",
+    "nameKo": "인클라인 트위스팅 싯업",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -43957,7 +43876,7 @@
   },
   {
     "name": "Inverse Leg Curl (bench Support)",
-    "nameKo": "Inverse 레그 컬 벤치 Support",
+    "nameKo": "인버스 레그 컬 벤치 서포트",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -43984,7 +43903,7 @@
   },
   {
     "name": "Inverse Leg Curl (on Pull-up Cable Machine)",
-    "nameKo": "Inverse 레그 컬 온 풀업 케이블 머신",
+    "nameKo": "인버스 레그 컬 온 풀업 케이블 머신",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -44097,7 +44016,7 @@
   },
   {
     "name": "Jack Burpee",
-    "nameKo": "Jack Burpee",
+    "nameKo": "잭 버피",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -44130,7 +44049,7 @@
   },
   {
     "name": "Jack Jump (male)",
-    "nameKo": "Jack 점프 Male",
+    "nameKo": "잭 점프",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -44328,7 +44247,7 @@
   },
   {
     "name": "Kettlebell Alternating Renegade Row",
-    "nameKo": "케틀벨 얼터네이팅 Renegade 로우",
+    "nameKo": "케틀벨 얼터네이팅 레니게이드 로우",
     "bodyPart": "back",
     "equipment": "kettlebell",
     "category": "strength",
@@ -44893,7 +44812,7 @@
   },
   {
     "name": "Kettlebell Pirate Supper Legs",
-    "nameKo": "케틀벨 파이럿 Supper 레그",
+    "nameKo": "케틀벨 파이럿 서퍼 레그",
     "bodyPart": "shoulders",
     "equipment": "kettlebell",
     "category": "strength",
@@ -45056,7 +44975,7 @@
   },
   {
     "name": "Kick Out Sit",
-    "nameKo": "킥 Out 싯",
+    "nameKo": "킥 아웃 싯",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -45083,7 +45002,7 @@
   },
   {
     "name": "Knee Touch Crunch",
-    "nameKo": "니 Touch 크런치",
+    "nameKo": "니 터치 크런치",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -45137,7 +45056,7 @@
   },
   {
     "name": "Kneeling Plank Tap Shoulder (male)",
-    "nameKo": "닐링 플랭크 Tap 숄더 Male",
+    "nameKo": "닐링 플랭크 탭 숄더",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -45164,7 +45083,7 @@
   },
   {
     "name": "Kneeling Push-up (male)",
-    "nameKo": "닐링 푸시업 Male",
+    "nameKo": "닐링 푸시업",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -45191,7 +45110,7 @@
   },
   {
     "name": "Korean Dips",
-    "nameKo": "Korean 딥스",
+    "nameKo": "코리안 딥스",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -45326,7 +45245,7 @@
   },
   {
     "name": "Lean Planche",
-    "nameKo": "Lean Planche",
+    "nameKo": "린 플란체",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -45354,7 +45273,7 @@
   },
   {
     "name": "Left Hook. Boxing",
-    "nameKo": "Left Hook. Boxing",
+    "nameKo": "레프트 훅 . 복싱",
     "bodyPart": "shoulders",
     "equipment": "bodyweight",
     "category": "strength",
@@ -45693,7 +45612,7 @@
   },
   {
     "name": "Lever Gripless Shrug",
-    "nameKo": "레버리지 Gripless 슈러그",
+    "nameKo": "레버리지 그립리스 슈러그",
     "bodyPart": "back",
     "equipment": "machine",
     "category": "strength",
@@ -45720,7 +45639,7 @@
   },
   {
     "name": "Lever Gripless Shrug V. 2",
-    "nameKo": "레버리지 Gripless 슈러그 V. 2",
+    "nameKo": "레버리지 그립리스 슈러그 V. 2",
     "bodyPart": "back",
     "equipment": "machine",
     "category": "strength",
@@ -45747,7 +45666,7 @@
   },
   {
     "name": "Lever Gripper Hands",
-    "nameKo": "레버리지 Gripper 핸드",
+    "nameKo": "레버리지 그리퍼 핸드",
     "bodyPart": "arms",
     "equipment": "machine",
     "category": "strength",
@@ -45828,7 +45747,7 @@
   },
   {
     "name": "Lever Horizontal One Leg Press",
-    "nameKo": "레버리지 Horizontal 원 레그 프레스",
+    "nameKo": "레버리지 호리존탈 원 레그 프레스",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "strength",
@@ -46473,7 +46392,7 @@
   },
   {
     "name": "Lever Rotary Calf",
-    "nameKo": "레버리지 Rotary 카프",
+    "nameKo": "레버리지 로터리 카프",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "strength",
@@ -46584,7 +46503,7 @@
   },
   {
     "name": "Lever Seated Crunch (chest Pad)",
-    "nameKo": "레버리지 시티드 크런치 체스트 Pad",
+    "nameKo": "레버리지 시티드 크런치 체스트 패드",
     "bodyPart": "abs",
     "equipment": "machine",
     "category": "strength",
@@ -46723,7 +46642,7 @@
   },
   {
     "name": "Lever Seated Hip Abduction",
-    "nameKo": "레버리지 시티드 힙 Abduction",
+    "nameKo": "레버리지 시티드 힙 어브덕션",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "strength",
@@ -47139,7 +47058,7 @@
   },
   {
     "name": "Lever Unilateral Row",
-    "nameKo": "레버리지 Unilateral 로우",
+    "nameKo": "레버리지 유니레터럴 로우",
     "bodyPart": "back",
     "equipment": "machine",
     "category": "strength",
@@ -47251,7 +47170,7 @@
   },
   {
     "name": "Lying (side) Quads Stretch",
-    "nameKo": "라잉 사이드 Quads 스트레치",
+    "nameKo": "라잉 사이드 쿼드 스트레치",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -47385,7 +47304,7 @@
   },
   {
     "name": "March Sit (wall)",
-    "nameKo": "March 싯 월",
+    "nameKo": "마치 싯 월",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -47657,7 +47576,7 @@
   },
   {
     "name": "Modified Hindu Push-up (male)",
-    "nameKo": "Modified Hindu 푸시업 Male",
+    "nameKo": "모디파이드 힌두 푸시업",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -47685,7 +47604,7 @@
   },
   {
     "name": "Modified Push Up To Lower Arms",
-    "nameKo": "Modified 푸시 업 투 Lower 암",
+    "nameKo": "모디파이드 푸시 업 투 로워 암",
     "bodyPart": "arms",
     "equipment": "bodyweight",
     "category": "strength",
@@ -47705,34 +47624,6 @@
       "Lower your body down towards the ground by bending your elbows, keeping them close to your sides.",
       "Once your elbows are at a 90-degree angle, lower your forearms to the ground, keeping your elbows directly under your shoulders.",
       "Pause for a moment, then push through your palms to lift your forearms back up to the starting position.",
-      "Repeat for the desired number of repetitions."
-    ],
-    "instructionsKo": null,
-    "gifUrl": null,
-    "secondaryImages": []
-  },
-  {
-    "name": "Mountain Climber",
-    "nameKo": "Mountain Climber",
-    "bodyPart": "cardio",
-    "equipment": "bodyweight",
-    "category": "cardio",
-    "difficulty": "intermediate",
-    "description": "mountain climber",
-    "descriptionKo": null,
-    "primaryMuscles": [
-      "cardiovascular system"
-    ],
-    "secondaryMuscles": [
-      "core",
-      "shoulders",
-      "triceps"
-    ],
-    "instructions": [
-      "Start in a high plank position with your hands directly under your shoulders and your body in a straight line.",
-      "Engage your core and bring your right knee towards your chest, then quickly switch and bring your left knee towards your chest.",
-      "Continue alternating legs in a running motion, keeping your hips low and your core engaged.",
-      "Maintain a steady pace and breathe evenly throughout the exercise.",
       "Repeat for the desired number of repetitions."
     ],
     "instructionsKo": null,
@@ -47824,7 +47715,7 @@
   },
   {
     "name": "Negative Crunch",
-    "nameKo": "Negative 크런치",
+    "nameKo": "네거티브 크런치",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -48124,7 +48015,7 @@
   },
   {
     "name": "Outside Leg Kick Push-up",
-    "nameKo": "Outside 레그 킥 푸시업",
+    "nameKo": "아웃사이드 레그 킥 푸시업",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -48205,7 +48096,7 @@
   },
   {
     "name": "Pike-to-cobra Push-up",
-    "nameKo": "파이크 투 Cobra 푸시업",
+    "nameKo": "파이크 투 코브라 푸시업",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -48236,7 +48127,7 @@
   },
   {
     "name": "Posterior Step To Overhead Reach",
-    "nameKo": "포스테리어 스텝 투 오버헤드 Reach",
+    "nameKo": "포스테리어 스텝 투 오버헤드 리치",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -48267,7 +48158,7 @@
   },
   {
     "name": "Potty Squat",
-    "nameKo": "Potty 스쿼트",
+    "nameKo": "파티 스쿼트",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -48295,7 +48186,7 @@
   },
   {
     "name": "Potty Squat With Support",
-    "nameKo": "Potty 스쿼트 Support",
+    "nameKo": "파티 스쿼트 서포트",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -48353,7 +48244,7 @@
   },
   {
     "name": "Prisoner Half Sit-up (male)",
-    "nameKo": "Prisoner 하프 싯업 Male",
+    "nameKo": "프리즈너 하프 싯업",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -48687,7 +48578,7 @@
   },
   {
     "name": "Push-up Inside Leg Kick",
-    "nameKo": "푸시업 Inside 레그 킥",
+    "nameKo": "푸시업 인사이드 레그 킥",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -48743,7 +48634,7 @@
   },
   {
     "name": "Push-up On Lower Arms",
-    "nameKo": "푸시업 온 Lower 암",
+    "nameKo": "푸시업 온 로워 암",
     "bodyPart": "arms",
     "equipment": "bodyweight",
     "category": "strength",
@@ -48770,7 +48661,7 @@
   },
   {
     "name": "Push-up Plus",
-    "nameKo": "푸시업 Plus",
+    "nameKo": "푸시업 플러스",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -48798,7 +48689,7 @@
   },
   {
     "name": "Quads",
-    "nameKo": "Quads",
+    "nameKo": "쿼드",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -48826,7 +48717,7 @@
   },
   {
     "name": "Quarter Sit-up",
-    "nameKo": "Quarter 싯업",
+    "nameKo": "쿼터 싯업",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -48988,7 +48879,7 @@
   },
   {
     "name": "Reclining Big Toe Pose With Rope",
-    "nameKo": "Reclining Big 토 Pose 로프",
+    "nameKo": "리클라이닝 빅 토 포즈 로프",
     "bodyPart": "legs",
     "equipment": "none",
     "category": "strength",
@@ -49016,7 +48907,7 @@
   },
   {
     "name": "Resistance Band Hip Thrusts On Knees (female)",
-    "nameKo": "레지스턴스 밴드 힙 Thrusts 온 니 Female",
+    "nameKo": "레지스턴스 밴드 힙 스러스트 온 니",
     "bodyPart": "legs",
     "equipment": "resistance_band",
     "category": "strength",
@@ -49125,7 +49016,7 @@
   },
   {
     "name": "Resistance Band Seated Hip Abduction",
-    "nameKo": "레지스턴스 밴드 시티드 힙 Abduction",
+    "nameKo": "레지스턴스 밴드 시티드 힙 어브덕션",
     "bodyPart": "legs",
     "equipment": "resistance_band",
     "category": "strength",
@@ -49290,7 +49181,7 @@
   },
   {
     "name": "Reverse Hyper Extension (on Stability Ball)",
-    "nameKo": "리버스 Hyper 익스텐션 온 스태빌리티 볼",
+    "nameKo": "리버스 하이퍼 익스텐션 온 스태빌리티 볼",
     "bodyPart": "legs",
     "equipment": "stability_ball",
     "category": "strength",
@@ -49317,7 +49208,7 @@
   },
   {
     "name": "Reverse Hyper On Flat Bench",
-    "nameKo": "리버스 Hyper 온 플랫 벤치",
+    "nameKo": "리버스 하이퍼 온 플랫 벤치",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -49431,7 +49322,7 @@
   },
   {
     "name": "Roller Body Saw",
-    "nameKo": "롤러 바디 Saw",
+    "nameKo": "롤러 바디 쏘",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "strength",
@@ -49540,7 +49431,7 @@
   },
   {
     "name": "Roller Seated Shoulder Flexor Depresor Retractor",
-    "nameKo": "롤러 시티드 숄더 플렉서 Depresor Retractor",
+    "nameKo": "롤러 시티드 숄더 플렉서 디프레서 리트랙터",
     "bodyPart": "chest",
     "equipment": "none",
     "category": "strength",
@@ -49567,7 +49458,7 @@
   },
   {
     "name": "Roller Seated Single Leg Shoulder Flexor Depresor Retractor",
-    "nameKo": "롤러 시티드 싱글 레그 숄더 플렉서 Depresor Retractor",
+    "nameKo": "롤러 시티드 싱글 레그 숄더 플렉서 디프레서 리트랙터",
     "bodyPart": "chest",
     "equipment": "none",
     "category": "strength",
@@ -49650,7 +49541,7 @@
   },
   {
     "name": "Run (equipment)",
-    "nameKo": "런 Equipment",
+    "nameKo": "런 이큅먼트",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -49678,7 +49569,7 @@
   },
   {
     "name": "Scapula Dips",
-    "nameKo": "Scapula 딥스",
+    "nameKo": "스캐퓰라 딥스",
     "bodyPart": "back",
     "equipment": "bodyweight",
     "category": "strength",
@@ -49705,7 +49596,7 @@
   },
   {
     "name": "Scapula Push-up",
-    "nameKo": "Scapula 푸시업",
+    "nameKo": "스캐퓰라 푸시업",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -49725,60 +49616,6 @@
       "As you lower, squeeze your shoulder blades together and push your chest forward.",
       "Pause for a moment at the bottom, then push back up to the starting position.",
       "Repeat for the desired number of repetitions."
-    ],
-    "instructionsKo": null,
-    "gifUrl": null,
-    "secondaryImages": []
-  },
-  {
-    "name": "Scissor Jumps (male)",
-    "nameKo": "시저 Jumps Male",
-    "bodyPart": "cardio",
-    "equipment": "bodyweight",
-    "category": "cardio",
-    "difficulty": "intermediate",
-    "description": "scissor jumps (male)",
-    "descriptionKo": null,
-    "primaryMuscles": [
-      "cardiovascular system"
-    ],
-    "secondaryMuscles": [
-      "quadriceps",
-      "hamstrings",
-      "calves"
-    ],
-    "instructions": [
-      "Stand with your feet shoulder-width apart.",
-      "Jump off the ground and simultaneously cross your right leg in front of your left leg.",
-      "As you land, quickly switch legs, crossing your left leg in front of your right leg.",
-      "Continue alternating legs and jumping as quickly as possible.",
-      "Repeat for the desired number of repetitions."
-    ],
-    "instructionsKo": null,
-    "gifUrl": null,
-    "secondaryImages": []
-  },
-  {
-    "name": "Seated Calf Stretch (male)",
-    "nameKo": "시티드 카프 스트레치 Male",
-    "bodyPart": "legs",
-    "equipment": "bodyweight",
-    "category": "strength",
-    "difficulty": "intermediate",
-    "description": "seated calf stretch (male)",
-    "descriptionKo": null,
-    "primaryMuscles": [
-      "calves"
-    ],
-    "secondaryMuscles": [
-      "hamstrings"
-    ],
-    "instructions": [
-      "Sit on the edge of a chair or bench with your feet flat on the ground.",
-      "Extend one leg straight out in front of you, keeping your heel on the ground.",
-      "Lean forward slightly, feeling a stretch in your calf muscle.",
-      "Hold the stretch for 20-30 seconds.",
-      "Switch legs and repeat the stretch."
     ],
     "instructionsKo": null,
     "gifUrl": null,
@@ -49919,7 +49756,7 @@
   },
   {
     "name": "Seated Wide Angle Pose Sequence",
-    "nameKo": "시티드 와이드 Angle Pose Sequence",
+    "nameKo": "시티드 와이드 앵글 포즈 시퀀스",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -49949,7 +49786,7 @@
   },
   {
     "name": "Self Assisted Inverse Leg Curl",
-    "nameKo": "셀프 어시스트 Inverse 레그 컬",
+    "nameKo": "셀프 어시스트 인버스 레그 컬",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -49976,7 +49813,7 @@
   },
   {
     "name": "Self Assisted Inverse Leg Curl (on Floor)",
-    "nameKo": "셀프 어시스트 Inverse 레그 컬 온 플로어",
+    "nameKo": "셀프 어시스트 인버스 레그 컬 온 플로어",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -50005,7 +49842,7 @@
   },
   {
     "name": "Semi Squat Jump (male)",
-    "nameKo": "Semi 스쿼트 점프 Male",
+    "nameKo": "세미 스쿼트 점프",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -50033,7 +49870,7 @@
   },
   {
     "name": "Short Stride Run",
-    "nameKo": "Short 스트라이드 런",
+    "nameKo": "쇼트 스트라이드 런",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -50088,7 +49925,7 @@
   },
   {
     "name": "Shoulder Tap",
-    "nameKo": "숄더 Tap",
+    "nameKo": "숄더 탭",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -50115,7 +49952,7 @@
   },
   {
     "name": "Shoulder Tap Push-up",
-    "nameKo": "숄더 Tap 푸시업",
+    "nameKo": "숄더 탭 푸시업",
     "bodyPart": "chest",
     "equipment": "bodyweight",
     "category": "strength",
@@ -50144,7 +49981,7 @@
   },
   {
     "name": "Side Bridge Hip Abduction",
-    "nameKo": "사이드 브리지 힙 Abduction",
+    "nameKo": "사이드 브리지 힙 어브덕션",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -50227,7 +50064,7 @@
   },
   {
     "name": "Side Hip Abduction",
-    "nameKo": "사이드 힙 Abduction",
+    "nameKo": "사이드 힙 어브덕션",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -50254,7 +50091,7 @@
   },
   {
     "name": "Side Lying Hip Adduction (male)",
-    "nameKo": "사이드 라잉 힙 어덕션 Male",
+    "nameKo": "사이드 라잉 힙 어덕션",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -50393,7 +50230,7 @@
   },
   {
     "name": "Side-to-side Toe Touch (male)",
-    "nameKo": "사이드 투 사이드 토 Touch Male",
+    "nameKo": "사이드 투 사이드 토 터치",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -50419,7 +50256,7 @@
   },
   {
     "name": "Single Leg Bridge With Outstretched Leg",
-    "nameKo": "싱글 레그 브리지 Outstretched 레그",
+    "nameKo": "싱글 레그 브리지 아웃스트레치드 레그",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -50500,7 +50337,7 @@
   },
   {
     "name": "Single Leg Squat (pistol) Male",
-    "nameKo": "싱글 레그 스쿼트 피스톨 Male",
+    "nameKo": "싱글 레그 스쿼트 피스톨",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -50610,7 +50447,7 @@
   },
   {
     "name": "Skater Hops",
-    "nameKo": "Skater 홉",
+    "nameKo": "스케이터 홉",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -50641,7 +50478,7 @@
   },
   {
     "name": "Ski Ergometer",
-    "nameKo": "Ski Ergometer",
+    "nameKo": "스키 에르고미터",
     "bodyPart": "arms",
     "equipment": "none",
     "category": "strength",
@@ -50670,7 +50507,7 @@
   },
   {
     "name": "Ski Step",
-    "nameKo": "Ski 스텝",
+    "nameKo": "스키 스텝",
     "bodyPart": "cardio",
     "equipment": "bodyweight",
     "category": "cardio",
@@ -50700,7 +50537,7 @@
   },
   {
     "name": "Skin The Cat",
-    "nameKo": "Skin 더 Cat",
+    "nameKo": "스킨 더 캣",
     "bodyPart": "back",
     "equipment": "bodyweight",
     "category": "strength",
@@ -50728,7 +50565,7 @@
   },
   {
     "name": "Sled 45 Degrees One Leg Press",
-    "nameKo": "슬레드 45 Degrees 원 레그 프레스",
+    "nameKo": "슬레드 45 디그리스 원 레그 프레스",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "strength",
@@ -50813,7 +50650,7 @@
   },
   {
     "name": "Sled 45в° Leg Press (back Pov)",
-    "nameKo": "슬레드 45в° 레그 프레스 백 Pov",
+    "nameKo": "슬레드 45в° 레그 프레스 백 POV",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "strength",
@@ -50843,7 +50680,7 @@
   },
   {
     "name": "Sled 45° Leg Press (side Pov)",
-    "nameKo": "슬레드 45° 레그 프레스 사이드 Pov",
+    "nameKo": "슬레드 45° 레그 프레스 사이드 POV",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "strength",
@@ -50928,7 +50765,7 @@
   },
   {
     "name": "Sled Closer Hack Squat",
-    "nameKo": "슬레드 Closer 핵 스쿼트",
+    "nameKo": "슬레드 클로저 핵 스쿼트",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "strength",
@@ -50958,7 +50795,7 @@
   },
   {
     "name": "Sled Forward Angled Calf Raise",
-    "nameKo": "슬레드 포워드 Angled 카프 레이즈",
+    "nameKo": "슬레드 포워드 앵글드 카프 레이즈",
     "bodyPart": "legs",
     "equipment": "machine",
     "category": "strength",
@@ -51103,7 +50940,7 @@
   },
   {
     "name": "Sledge Hammer",
-    "nameKo": "Sledge 해머",
+    "nameKo": "슬레지 해머",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "strength",
@@ -52438,7 +52275,7 @@
   },
   {
     "name": "Sphinx",
-    "nameKo": "Sphinx",
+    "nameKo": "스핑크스",
     "bodyPart": "back",
     "equipment": "bodyweight",
     "category": "strength",
@@ -52493,7 +52330,7 @@
   },
   {
     "name": "Spine Stretch",
-    "nameKo": "Spine 스트레치",
+    "nameKo": "스파인 스트레치",
     "bodyPart": "back",
     "equipment": "bodyweight",
     "category": "strength",
@@ -52521,7 +52358,7 @@
   },
   {
     "name": "Spine Twist",
-    "nameKo": "Spine 트위스트",
+    "nameKo": "스파인 트위스트",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -52580,7 +52417,7 @@
   },
   {
     "name": "Squat To Overhead Reach",
-    "nameKo": "스쿼트 투 오버헤드 Reach",
+    "nameKo": "스쿼트 투 오버헤드 리치",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -52608,7 +52445,7 @@
   },
   {
     "name": "Squat To Overhead Reach With Twist",
-    "nameKo": "스쿼트 투 오버헤드 Reach 트위스트",
+    "nameKo": "스쿼트 투 오버헤드 리치 트위스트",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -52662,7 +52499,7 @@
   },
   {
     "name": "Stalder Press",
-    "nameKo": "Stalder 프레스",
+    "nameKo": "스탈더 프레스",
     "bodyPart": "arms",
     "equipment": "bodyweight",
     "category": "strength",
@@ -52690,7 +52527,7 @@
   },
   {
     "name": "Standing Archer",
-    "nameKo": "스탠딩 Archer",
+    "nameKo": "스탠딩 아처",
     "bodyPart": "back",
     "equipment": "bodyweight",
     "category": "strength",
@@ -52747,7 +52584,7 @@
   },
   {
     "name": "Standing Calf Raise (on A Staircase)",
-    "nameKo": "스탠딩 카프 레이즈 온 어 Staircase",
+    "nameKo": "스탠딩 카프 레이즈 온 어 스테어케이스",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -52829,7 +52666,7 @@
   },
   {
     "name": "Standing Hamstring And Calf Stretch With Strap",
-    "nameKo": "스탠딩 햄스트링 & 카프 스트레치 Strap",
+    "nameKo": "스탠딩 햄스트링 & 카프 스트레치 스트랩",
     "bodyPart": "legs",
     "equipment": "none",
     "category": "strength",
@@ -52883,7 +52720,7 @@
   },
   {
     "name": "Standing Wheel Rollerout",
-    "nameKo": "스탠딩 휠 Rollerout",
+    "nameKo": "스탠딩 휠 롤아웃",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "strength",
@@ -52902,34 +52739,6 @@
       "Bend at your waist and slowly roll the wheel forward, keeping your back straight and your core engaged.",
       "Continue rolling forward until you feel a stretch in your abs and your body is extended as far as possible.",
       "Pause for a moment, then slowly roll the wheel back towards your body, returning to the starting position.",
-      "Repeat for the desired number of repetitions."
-    ],
-    "instructionsKo": null,
-    "gifUrl": null,
-    "secondaryImages": []
-  },
-  {
-    "name": "Star Jump (male)",
-    "nameKo": "스타 점프 Male",
-    "bodyPart": "cardio",
-    "equipment": "bodyweight",
-    "category": "cardio",
-    "difficulty": "intermediate",
-    "description": "star jump (male)",
-    "descriptionKo": null,
-    "primaryMuscles": [
-      "cardiovascular system"
-    ],
-    "secondaryMuscles": [
-      "quadriceps",
-      "hamstrings",
-      "calves"
-    ],
-    "instructions": [
-      "Stand with your feet shoulder-width apart and your arms by your sides.",
-      "Bend your knees slightly and jump up explosively.",
-      "As you jump, spread your legs and extend your arms out to the sides, forming a star shape with your body.",
-      "Land softly on the balls of your feet with your knees slightly bent.",
       "Repeat for the desired number of repetitions."
     ],
     "instructionsKo": null,
@@ -52999,7 +52808,7 @@
   },
   {
     "name": "Straddle Maltese",
-    "nameKo": "스트래들 Maltese",
+    "nameKo": "스트래들 말티즈",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -53026,7 +52835,7 @@
   },
   {
     "name": "Straddle Planche",
-    "nameKo": "스트래들 Planche",
+    "nameKo": "스트래들 플란체",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -53054,7 +52863,7 @@
   },
   {
     "name": "Straight Leg Outer Hip Abductor",
-    "nameKo": "스트레이트 레그 Outer 힙 앱덕터",
+    "nameKo": "스트레이트 레그 아우터 힙 앱덕터",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -53109,7 +52918,7 @@
   },
   {
     "name": "Suspended Abdominal Fallout",
-    "nameKo": "서스펜디드 Abdominal 폴아웃",
+    "nameKo": "서스펜디드 앱도미널 폴아웃",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -53137,7 +52946,7 @@
   },
   {
     "name": "Swimmer Kicks V. 2 (male)",
-    "nameKo": "Swimmer 킥 V. 2 Male",
+    "nameKo": "스위머 킥 V. 2",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -53273,7 +53082,7 @@
   },
   {
     "name": "Triceps Dip (between Benches)",
-    "nameKo": "트라이셉스 딥 비트윈 Benches",
+    "nameKo": "트라이셉스 딥 비트윈 벤치",
     "bodyPart": "arms",
     "equipment": "bodyweight",
     "category": "strength",
@@ -53354,7 +53163,7 @@
   },
   {
     "name": "Twin Handle Parallel Grip Lat Pulldown",
-    "nameKo": "Twin 핸들 패러럴 그립 랫 풀다운",
+    "nameKo": "트윈 핸들 패러럴 그립 랫 풀다운",
     "bodyPart": "back",
     "equipment": "cable",
     "category": "strength",
@@ -53413,7 +53222,7 @@
   },
   {
     "name": "Twisted Leg Raise",
-    "nameKo": "Twisted 레그 레이즈",
+    "nameKo": "트위스트 레그 레이즈",
     "bodyPart": "abs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -53441,36 +53250,8 @@
     "secondaryImages": []
   },
   {
-    "name": "Twisted Leg Raise (female)",
-    "nameKo": "Twisted 레그 레이즈 Female",
-    "bodyPart": "abs",
-    "equipment": "bodyweight",
-    "category": "strength",
-    "difficulty": "intermediate",
-    "description": "twisted leg raise (female)",
-    "descriptionKo": null,
-    "primaryMuscles": [
-      "abs"
-    ],
-    "secondaryMuscles": [
-      "obliques",
-      "hip flexors"
-    ],
-    "instructions": [
-      "Lie flat on your back with your legs extended and your arms by your sides.",
-      "Bend your knees and lift your legs off the ground, bringing them towards your chest.",
-      "As you lift your legs, twist your hips to one side, bringing your knees towards your opposite shoulder.",
-      "Pause for a moment at the top, then slowly lower your legs back down to the starting position.",
-      "Repeat the movement, this time twisting your hips to the other side.",
-      "Continue alternating sides for the desired number of repetitions."
-    ],
-    "instructionsKo": null,
-    "gifUrl": null,
-    "secondaryImages": []
-  },
-  {
     "name": "Two Toe Touch (male)",
-    "nameKo": "투 토 Touch Male",
+    "nameKo": "투 토 터치",
     "bodyPart": "back",
     "equipment": "bodyweight",
     "category": "strength",
@@ -53497,7 +53278,7 @@
   },
   {
     "name": "Upward Facing Dog",
-    "nameKo": "업워드 페이싱 Dog",
+    "nameKo": "업워드 페이싱 도그",
     "bodyPart": "back",
     "equipment": "bodyweight",
     "category": "strength",
@@ -53697,7 +53478,7 @@
   },
   {
     "name": "Walking On Stepmill",
-    "nameKo": "워킹 온 Stepmill",
+    "nameKo": "워킹 온 스텝밀",
     "bodyPart": "cardio",
     "equipment": "none",
     "category": "cardio",
@@ -53728,7 +53509,7 @@
   },
   {
     "name": "Weighted Close Grip Chin-up On Dip Cage",
-    "nameKo": "웨이티드 클로즈 그립 친업 온 딥 Cage",
+    "nameKo": "웨이티드 클로즈 그립 친업 온 딥 케이지",
     "bodyPart": "back",
     "equipment": "none",
     "category": "strength",
@@ -53756,7 +53537,7 @@
   },
   {
     "name": "Weighted Cossack Squats (male)",
-    "nameKo": "웨이티드 Cossack 스쿼트 Male",
+    "nameKo": "웨이티드 코사크 스쿼트",
     "bodyPart": "legs",
     "equipment": "none",
     "category": "strength",
@@ -54556,7 +54337,7 @@
   },
   {
     "name": "Wheel Rollerout",
-    "nameKo": "휠 Rollerout",
+    "nameKo": "휠 롤아웃",
     "bodyPart": "abs",
     "equipment": "none",
     "category": "strength",
@@ -54691,7 +54472,7 @@
   },
   {
     "name": "World Greatest Stretch",
-    "nameKo": "월드 Greatest 스트레치",
+    "nameKo": "월드 그레이티스트 스트레치",
     "bodyPart": "legs",
     "equipment": "bodyweight",
     "category": "strength",
@@ -54713,34 +54494,6 @@
       "Rotate your torso to the right, reaching your right arm up towards the ceiling.",
       "Hold this position for a few seconds, then return to the starting position.",
       "Switch sides and repeat the stretch with your left foot forward."
-    ],
-    "instructionsKo": null,
-    "gifUrl": null,
-    "secondaryImages": []
-  },
-  {
-    "name": "Wrist Rollerer",
-    "nameKo": "리스트 Rollerer",
-    "bodyPart": "arms",
-    "equipment": "none",
-    "category": "strength",
-    "difficulty": "intermediate",
-    "description": "wrist rollerer",
-    "descriptionKo": null,
-    "primaryMuscles": [
-      "forearms"
-    ],
-    "secondaryMuscles": [
-      "biceps",
-      "triceps"
-    ],
-    "instructions": [
-      "Attach a weight to one end of a rope or bar.",
-      "Hold the other end of the rope or bar with both hands, palms facing down.",
-      "Stand with your feet shoulder-width apart and your arms fully extended in front of you.",
-      "Slowly roll the weight up towards your hands by flexing your wrists.",
-      "Pause for a moment at the top, then slowly lower the weight back down to the starting position.",
-      "Repeat for the desired number of repetitions."
     ],
     "instructionsKo": null,
     "gifUrl": null,
