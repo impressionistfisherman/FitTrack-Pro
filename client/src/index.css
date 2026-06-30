@@ -1578,6 +1578,25 @@
   min-width: 0;
 }
 
+.mobile-search-results {
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  scrollbar-gutter: stable;
+}
+
+@media (max-width: 640px) {
+  .exercise-results-list {
+    max-height: calc(100dvh - 18.5rem);
+    min-height: 18rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 0.125rem;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+}
+
 /* 데스크톱 (1280px 이상) */
 @media (min-width: 1280px) {
   .app-sidebar {

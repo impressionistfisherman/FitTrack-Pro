@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { matchesExerciseSearchText } from "@shared/exerciseSearch";
@@ -668,7 +667,7 @@ export default function FreeWorkoutDialog({
       </div>
 
       {shouldShowExerciseList && (
-        <ScrollArea className="h-48 rounded-xl border border-border bg-background/95 shadow-lg sm:h-56">
+        <div className="mobile-search-results h-56 overflow-y-auto overscroll-contain rounded-xl border border-border bg-background/95 shadow-lg sm:h-56">
           <div className="p-2 space-y-1">
             {exercisesLoading ? (
               Array.from({ length: 5 }).map((_, index) => (
@@ -700,7 +699,7 @@ export default function FreeWorkoutDialog({
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
       )}
       {shouldShowExerciseList && exercisesFetching && !exercisesLoading && (
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -914,7 +913,7 @@ export default function FreeWorkoutDialog({
                           />
                         </div>
                         {replaceSearch.trim().length > 0 && (
-                          <ScrollArea className="mt-2 h-40 rounded-md border border-border">
+                          <div className="mobile-search-results mt-2 h-48 overflow-y-auto overscroll-contain rounded-md border border-border">
                             <div className="space-y-1 p-1.5">
                               {replacementExercisesFetching && filteredReplacementExercises.length === 0 ? (
                                 <div className="flex h-20 items-center justify-center gap-1.5 text-xs text-muted-foreground">
@@ -940,7 +939,7 @@ export default function FreeWorkoutDialog({
                                 </div>
                               )}
                             </div>
-                          </ScrollArea>
+                          </div>
                         )}
                         <Button
                           type="button"

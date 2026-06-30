@@ -318,7 +318,7 @@ export default function Exercises() {
         </div>
       ) : visibleExercises.length > 0 ? (
         <>
-          <div className="space-y-2">
+          <div className="exercise-results-list space-y-2">
             {visibleExercises.map((exercise) => (
               <ExerciseResultItem
                 key={exercise.id}
