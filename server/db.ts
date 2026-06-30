@@ -93,6 +93,7 @@ const pgQuotedIdentifiers = [
   "userId",
   "gifUrl",
   "servingUnit",
+  "servingSizeGrams",
   "caloriesPer100",
   "proteinPer100",
   "carbsPer100",
@@ -3829,11 +3830,19 @@ function foodSearchText(input: { name?: unknown; brand?: unknown; aliases?: unkn
 
 async function ensureFoodSearchTextColumn() {
   if (databaseType === "postgres") {
+    await run(`ALTER TABLE foods ALTER COLUMN name TYPE text`);
+    await run(`ALTER TABLE foods ALTER COLUMN brand TYPE text`);
     await run(`ALTER TABLE foods ADD COLUMN IF NOT EXISTS "searchText" text`);
     await run(`ALTER TABLE foods ADD COLUMN IF NOT EXISTS "servingSizeGrams" real NOT NULL DEFAULT 100`);
     return;
   }
   if (databaseType === "mysql") {
+    try {
+      await run("ALTER TABLE foods MODIFY name TEXT NOT NULL");
+      await run("ALTER TABLE foods MODIFY brand TEXT");
+    } catch {
+      // Column type is already compatible or the engine does not support this form.
+    }
     try {
       await run("ALTER TABLE foods ADD COLUMN searchText TEXT");
     } catch (error: any) {
