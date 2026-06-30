@@ -1,32 +1,33 @@
 # PROGRESS
 
-## 2026-06-30 13:39:19 +09:00
+## 2026-06-30 13:48:36 +09:00
 
 ### 작업 요약
 
-- Harness 100 기준으로 `software QA + data quality` 흐름 적용.
-- 운동 검색 결과에서 기본 운동이 혼합/심화 운동보다 먼저 보이도록 랭킹을 개선함.
-- 기존 DB에 남은 일부 의미 번역 운동명을 발음형으로 갱신하도록 보강함.
+- 운동명 전체 audit 체계를 추가함.
+- 의미 번역 잔재와 영어 잔여 토큰을 자동으로 찾을 수 있게 함.
+- audit 결과 기반으로 런타임 표시명과 bulk 재생성 변환표를 보강함.
 
 ### 변경 사항
 
-- `server/db.ts`
-  - `basicGymExercises` set 분리.
-  - `isBasicGymExercise()` 추가.
-  - `scoreBasicGymExerciseBoost()` 추가.
-  - broad 검색에서 기본 운동에 score boost 적용.
-  - 짧은 표준 기본명에 추가 boost 적용.
-  - 의미 번역 잔재 갱신 map 추가.
-    - `손목 컬` → `리스트 컬`
-    - `이두 컬` → `바이셉 컬`
-    - `덤벨 이두 컬` → `덤벨 바이셉 컬`
-    - `삼두 딥` → `트라이셉 딥`
-    - `삼두 푸시다운` → `트라이셉 푸시다운`
-    - `삼두 익스텐션` → `트라이셉 익스텐션`
+- `scripts/audit-exercise-names.mjs`
+  - `server/data/bulk-exercises.json`과 `server/db.ts`의 `nameKo` 검사.
+  - 의미 번역 토큰 감지.
+  - 영어 잔여 토큰 count 및 sample report.
+  - `--fail-on-findings` 사용 시 의미 번역 잔재가 있으면 실패.
 
-- `server/fittrack.test.ts`
-  - broad movement 검색에서 기본 운동이 상단에 포함되는지 검증 추가.
-  - `손목 컬` 같은 의미 번역 잔재가 상단에 나오지 않는지 검증 추가.
+- `package.json`
+  - `exercises:audit-names` script 추가.
+
+- `shared/exerciseSearch.ts`
+  - 런타임 표시명 정리 규칙 확장.
+  - `Blaster`, `Rollerout`, `Inverse`, `Planche`, `Pov`, `Revers`, `Abduction`, `Archer`, `Scapula`, `Squatting`, `Crossovers`, `Maltese` 등 영어 잔여 토큰을 발음형 한글로 정리.
+
+- `scripts/build-bulk-exercise-seed.mjs`
+  - bulk 운동 재생성 시 같은 토큰을 발음형 한글로 변환하도록 mapping 확장.
+
+- `server/exerciseSearch.test.ts`
+  - 영어 잔여 토큰이 표시명에서 정리되는지 테스트 추가.
 
 - `TEST_RESULT.md`
   - 검증 결과 갱신.
@@ -41,14 +42,16 @@
   - `.\node_modules\.bin\pnpm.CMD run test`
   - `.\node_modules\.bin\pnpm.CMD run build`
   - `git diff --check`
+- 추가 audit 통과
+  - `.\node_modules\.bin\pnpm.CMD run exercises:audit-names -- --fail-on-findings`
 
 ### 남은 문제
 
-- 전체 bulk 운동 데이터의 모든 의미 번역 잔재를 완전 제거한 것은 아님.
-- 현재는 검색 체감에 큰 영향을 주는 기본 운동 랭킹과 일부 대표 잔재 갱신을 먼저 처리함.
+- `server/data/bulk-exercises.json` 원본 자체는 아직 재생성하지 않음.
+- 영어 잔여 토큰 306개는 raw bulk 기준으로 report되며, 이번 작업은 상위 빈도 토큰부터 런타임/재생성표에 반영한 단계임.
 
 ### 다음 작업
 
-- bulk 운동명 전체 audit 스크립트 작성.
-- `가슴`, `한손`, `손목`, `발목`, `어깨`, `엉덩이`, `종아리` 등 의미 번역 잔재를 파일/DB 단위로 리포트.
-- 리포트 기반으로 발음형 변환표 확장.
+- `build-bulk-exercise-seed.mjs`로 bulk 데이터 재생성.
+- 재생성 후 audit 재실행.
+- 영어 잔여 토큰 count 감소 확인.

@@ -70,6 +70,13 @@ describe("exercise search aliases", () => {
     expect(matchesExerciseSearchText("덤벨프레스", "덤벨 벤치프레스", "Dumbbell Bench Press")).toBe(true);
   });
 
+  it("normalizes remaining English tokens in imported display names", () => {
+    expect(getReadableKoreanExerciseName({ name: "Barbell Biceps Curl With Arm Blaster", nameKo: "바벨 바이셉스 컬 암 Blaster" })).toBe("바벨 바이셉스 컬 암 블래스터");
+    expect(getReadableKoreanExerciseName({ name: "Band Assisted Wheel Rollerout", nameKo: "밴드 어시스트 휠 Rollerout" })).toBe("밴드 어시스트 휠 롤아웃");
+    expect(getReadableKoreanExerciseName({ name: "Frog Planche", nameKo: "프로그 Planche" })).toBe("프로그 플란체");
+    expect(getReadableKoreanExerciseName({ name: "Incline Scapula Push Up", nameKo: "인클라인 Scapula 푸시 업" })).toBe("인클라인 스캐퓰라 푸시업");
+  });
+
   it("scores exact exercise name matches above partial matches", () => {
     const exact = scoreExerciseSearchMatch("바벨 로우", "바벨 로우", "Bent Over Barbell Row");
     const partial = scoreExerciseSearchMatch("바벨 로우", "덤벨 로우", "Bent Over Two-Dumbbell Row");

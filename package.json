@@ -11,6 +11,7 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "seed": "tsx scripts/seed.mjs",
+    "exercises:audit-names": "node scripts/audit-exercise-names.mjs",
     "meals:import-mfds-foods": "tsx scripts/import-mfds-foods.mjs",
     "status": "tsx scripts/status.mjs",
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
