@@ -13,6 +13,7 @@
     "seed": "tsx scripts/seed.mjs",
     "exercises:audit-names": "node scripts/audit-exercise-names.mjs",
     "meals:import-mfds-foods": "tsx scripts/import-mfds-foods.mjs",
+    "meals:import-food-db-xlsx": "tsx scripts/import-food-db-xlsx.mjs",
     "status": "tsx scripts/status.mjs",
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
     "db:migrate:postgres": "node scripts/migrate-sqlite-to-postgres.mjs"
@@ -75,6 +76,7 @@
     "react-hook-form": "^7.64.0",
     "react-resizable-panels": "^3.0.6",
     "recharts": "^2.15.2",
+    "sax": "^1.6.0",
     "sonner": "^2.0.7",
     "streamdown": "^1.4.0",
     "superjson": "^1.13.3",
@@ -82,6 +84,7 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
     "wouter": "^3.3.5",
+    "yauzl": "^3.4.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
@@ -94,6 +97,8 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19.2.1",
     "@types/react-dom": "^19.2.1",
+    "@types/sax": "^1.2.7",
+    "@types/yauzl": "^3.4.0",
     "@vitejs/plugin-react": "^5.0.4",
     "add": "^2.0.6",
     "autoprefixer": "^10.4.20",

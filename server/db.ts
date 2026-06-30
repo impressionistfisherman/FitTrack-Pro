@@ -4200,6 +4200,7 @@ async function searchFoodRows(userId: number, term: string, limit: number) {
 async function upsertPublicFood(food: {
   name: string;
   brand: string;
+  servingSizeGrams?: number;
   caloriesPer100: number;
   proteinPer100: number;
   carbsPer100: number;
@@ -4256,6 +4257,7 @@ async function upsertPublicFood(food: {
 export async function importPublicFoods(foods: Array<{
   name: string;
   brand: string;
+  servingSizeGrams?: number;
   caloriesPer100: number;
   proteinPer100: number;
   carbsPer100: number;
@@ -4271,6 +4273,110 @@ export async function importPublicFoods(foods: Array<{
     imported += 1;
   }
   return { imported };
+}
+
+type PublicFoodImportRow = {
+  name: string;
+  brand: string;
+  servingSizeGrams?: number;
+  caloriesPer100: number;
+  proteinPer100: number;
+  carbsPer100: number;
+  fatPer100: number;
+  sodiumPer100?: number | null;
+  aliases: string[];
+};
+
+function publicFoodKey(name: unknown, brand: unknown) {
+  return `${String(name ?? "").trim()}\u0000${String(brand ?? "").trim()}`;
+}
+
+export async function importPublicFoodsBulk(
+  foods: PublicFoodImportRow[],
+  options: { batchSize?: number; onProgress?: (stats: { imported: number; skipped: number }) => void } = {},
+) {
+  await ensureMealTables();
+
+  const existing = await all<{ name: string; brand: string | null }>(
+    "SELECT name, brand FROM foods WHERE userId IS NULL",
+  );
+  const seen = new Set(existing.map((row) => publicFoodKey(row.name, row.brand ?? "")));
+  const maxBatchSize = databaseType === "sqlite" ? 50 : 500;
+  const batchSize = Math.min(Math.max(Number(options.batchSize) || maxBatchSize, 1), maxBatchSize);
+  const now = new Date().toISOString();
+  let imported = 0;
+  let skipped = 0;
+  let batch: PublicFoodImportRow[] = [];
+
+  async function flush() {
+    if (batch.length === 0) return;
+    const columns = [
+      "userId",
+      "name",
+      "brand",
+      "servingUnit",
+      "servingSizeGrams",
+      "caloriesPer100",
+      "proteinPer100",
+      "carbsPer100",
+      "fatPer100",
+      "sodiumPer100",
+      "aliases",
+      "searchText",
+      "favorite",
+      "createdAt",
+    ];
+    const rowPlaceholder = `(${columns.map(() => "?").join(", ")})`;
+    const values: any[] = [];
+    for (const food of batch) {
+      const aliases = JSON.stringify(Array.from(new Set(food.aliases.filter(Boolean))));
+      values.push(
+        null,
+        food.name,
+        food.brand,
+        "g",
+        Number(food.servingSizeGrams) > 0 ? Number(food.servingSizeGrams) : 100,
+        food.caloriesPer100,
+        food.proteinPer100,
+        food.carbsPer100,
+        food.fatPer100,
+        food.sodiumPer100 ?? null,
+        aliases,
+        foodSearchText({ name: food.name, brand: food.brand, aliases }),
+        0,
+        now,
+      );
+    }
+
+    await run(
+      `INSERT INTO foods (${columns.join(", ")})
+       VALUES ${batch.map(() => rowPlaceholder).join(", ")}`,
+      ...values,
+    );
+    imported += batch.length;
+    batch = [];
+    options.onProgress?.({ imported, skipped });
+  }
+
+  for (const food of foods) {
+    const name = food.name.trim();
+    const brand = food.brand.trim();
+    if (!name) {
+      skipped += 1;
+      continue;
+    }
+    const key = publicFoodKey(name, brand);
+    if (seen.has(key)) {
+      skipped += 1;
+      continue;
+    }
+    seen.add(key);
+    batch.push({ ...food, name, brand });
+    if (batch.length >= batchSize) await flush();
+  }
+  await flush();
+
+  return { imported, skipped };
 }
 
 export async function getFoodDataStatus(): Promise<Row> {
