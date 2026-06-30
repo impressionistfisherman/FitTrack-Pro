@@ -227,6 +227,22 @@ describe("exercises.list", () => {
     const dumbbellPress = await caller.exercises.list({ search: "덤벨프레스" });
     expect(dumbbellPress[0]).toEqual(expect.objectContaining({ nameKo: "덤벨 프레스" }));
 
+    await expect(caller.exercises.list({ search: "스미스벤치" })).resolves.toEqual(
+      expect.arrayContaining([expect.objectContaining({ nameKo: "스미스 머신 벤치프레스" })])
+    );
+    await expect(caller.exercises.list({ search: "머신로우" })).resolves.toEqual(
+      expect.arrayContaining([expect.objectContaining({ nameKo: "머신 로우" })])
+    );
+    await expect(caller.exercises.list({ search: "숄더프레스" })).resolves.toEqual(
+      expect.arrayContaining([expect.objectContaining({ nameKo: "숄더 프레스" })])
+    );
+    await expect(caller.exercises.list({ search: "레그컬" })).resolves.toEqual(
+      expect.arrayContaining([expect.objectContaining({ nameKo: "레그 컬" })])
+    );
+    await expect(caller.exercises.list({ search: "케이블컬" })).resolves.toEqual(
+      expect.arrayContaining([expect.objectContaining({ nameKo: "케이블 컬" })])
+    );
+
     const oneArmCableRow = await caller.exercises.list({ search: "원암 케이블 로우" });
     expect(oneArmCableRow.some((exercise) => String(exercise.nameKo).includes("원암"))).toBe(true);
 
