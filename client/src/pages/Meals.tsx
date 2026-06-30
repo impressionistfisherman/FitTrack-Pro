@@ -947,7 +947,7 @@ export default function Meals() {
                         key={food.id}
                         type="button"
                         onClick={() => selectFood(food)}
-                        className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:border-primary/40 hover:text-primary"
+                        className="min-h-10 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:border-primary/40 hover:text-primary"
                       >
                         {food.name}
                       </button>
@@ -962,7 +962,7 @@ export default function Meals() {
                         key={food.id}
                         type="button"
                         onClick={() => selectFood(food)}
-                        className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:border-primary/40 hover:text-primary"
+                        className="min-h-10 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:border-primary/40 hover:text-primary"
                       >
                         {food.name}
                         {food.useCount ? <span className="ml-1 text-muted-foreground">{food.useCount}</span> : null}
@@ -1039,7 +1039,12 @@ export default function Meals() {
                       <Badge variant="outline" className="border-border text-muted-foreground">
                         {mealTypes.find((type) => type.value === meal.mealType)?.label ?? meal.mealType}
                       </Badge>
-                      <button className="rounded-lg p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => deleteLog.mutate({ id: meal.id })}>
+                      <button
+                        type="button"
+                        className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => deleteLog.mutate({ id: meal.id })}
+                        aria-label="식단 기록 삭제"
+                      >
                         <Trash2 size={14} />
                       </button>
                     </div>

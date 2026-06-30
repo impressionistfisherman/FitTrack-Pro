@@ -484,7 +484,7 @@ function SessionCard({
               />
             </button>
           </div>
-          <div className="flex items-center gap-1 rounded-lg border border-border bg-accent/25 p-1 sm:border-0 sm:bg-transparent sm:p-0">
+          <div className="grid grid-cols-[1fr_44px_44px_44px] items-center gap-1 rounded-xl border border-border bg-accent/25 p-1 sm:flex sm:border-0 sm:bg-transparent sm:p-0">
             <Badge variant="outline" className="h-7 shrink-0 border-border px-2 text-[11px] text-muted-foreground">
               <Clock size={9} className="mr-1" />
               {session.durationMinutes}분
@@ -492,7 +492,7 @@ function SessionCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-muted-foreground hover:bg-primary/10 hover:text-primary sm:h-8 sm:w-8"
+              className="h-11 w-11 text-muted-foreground hover:bg-primary/10 hover:text-primary sm:h-8 sm:w-8"
               onClick={(event) => {
                 event.stopPropagation();
                 onView(session);
@@ -504,7 +504,7 @@ function SessionCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-muted-foreground hover:bg-primary/10 hover:text-primary sm:h-8 sm:w-8"
+              className="h-11 w-11 text-muted-foreground hover:bg-primary/10 hover:text-primary sm:h-8 sm:w-8"
               onClick={(event) => {
                 event.stopPropagation();
                 onEdit(session);
@@ -516,7 +516,7 @@ function SessionCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive sm:h-8 sm:w-8"
+              className="h-11 w-11 text-muted-foreground hover:bg-destructive/10 hover:text-destructive sm:h-8 sm:w-8"
               onClick={(event) => {
                 event.stopPropagation();
                 onDelete(session.id);

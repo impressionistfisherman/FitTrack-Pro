@@ -781,7 +781,7 @@ export default function WorkoutSession() {
             <button onClick={toggleWakeLock}
               title={wakeLockActive ? "화면 꺼짐 방지 해제" : "화면 꺼짐 방지 켜기"}
               className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200",
+                "flex min-h-11 items-center justify-center gap-1.5 rounded-lg border px-2.5 py-2 text-xs font-medium transition-all duration-200",
                 wakeLockActive
                   ? "bg-primary/15 border-primary/40 text-primary"
                   : "bg-accent border-border text-muted-foreground hover:text-foreground"
@@ -792,7 +792,7 @@ export default function WorkoutSession() {
           )}
           <Button
             variant="outline"
-            className="gap-1.5 border-border text-muted-foreground hover:text-foreground"
+            className="min-h-11 gap-1.5 border-border text-muted-foreground hover:text-foreground"
             onClick={() => {
               const lastCompleted = exercises.flatMap(e => e.sets).filter(s => s.completed).slice(-1)[0];
               setOneRMWeight(lastCompleted?.weightKg || 0);
@@ -803,7 +803,7 @@ export default function WorkoutSession() {
             <Calculator size={15} />
             <span className="hidden sm:inline">1RM</span>
           </Button>
-          <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+          <Button className="min-h-11 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => setShowFinish(true)}>
             <Save size={16} />종료
           </Button>
