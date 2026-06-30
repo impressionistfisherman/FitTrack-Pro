@@ -58,9 +58,16 @@ describe("exercise search aliases", () => {
   it("normalizes awkward imported Korean exercise display names", () => {
     expect(getReadableKoreanExerciseName({ name: "Adductor", nameKo: "어덕터" })).toBe("이너싸이 머신");
     expect(getReadableKoreanExerciseName({ name: "Abductor Machine", nameKo: "어브덕터 머신" })).toBe("아웃싸이 머신");
-    expect(getReadableKoreanExerciseName({ name: "Alternate Hammer Curl", nameKo: "얼터네이트 해머 컬" })).toBe("교대 해머 컬");
-    expect(getReadableKoreanExerciseName({ name: "Barbell Shrug Behind The Back", nameKo: "바벨 슈러그 비하인드 더 백" })).toBe("바벨 슈러그 등 뒤");
-    expect(getReadableKoreanExerciseName({ name: "Chest Tap Push-Up Male", nameKo: "체스트 Tap 푸시업 Male" })).toBe("가슴 터치 푸시업");
+    expect(getReadableKoreanExerciseName({ name: "Alternate Hammer Curl", nameKo: "얼터네이트 해머 컬" })).toBe("얼터네이트 해머 컬");
+    expect(getReadableKoreanExerciseName({ name: "Barbell Shrug Behind The Back", nameKo: "바벨 슈러그 비하인드 더 백" })).toBe("바벨 슈러그 비하인드 더 백");
+    expect(getReadableKoreanExerciseName({ name: "Chest Tap Push-Up Male", nameKo: "체스트 Tap 푸시업 Male" })).toBe("체스트 탭 푸시업");
+  });
+
+  it("keeps phonetic Korean display words instead of semantic translations", () => {
+    expect(getReadableKoreanExerciseName({ name: "Cable One Arm Row", nameKo: "케이블 원암 로우" })).toBe("케이블 원암 로우");
+    expect(getReadableKoreanExerciseName({ name: "Chest Press", nameKo: "체스트 프레스" })).toBe("체스트 프레스");
+    expect(getReadableKoreanExerciseName({ name: "Biceps Curl", nameKo: "바이셉 컬" })).toBe("바이셉 컬");
+    expect(matchesExerciseSearchText("덤벨프레스", "덤벨 벤치프레스", "Dumbbell Bench Press")).toBe(true);
   });
 
   it("scores exact exercise name matches above partial matches", () => {

@@ -220,6 +220,20 @@ describe("exercises.list", () => {
     expect(pulldown.some((exercise) => exercise.name === "Lever Front Pulldown")).toBe(true);
   });
 
+  it("keeps phonetic Korean names and exposes basic dumbbell press", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const dumbbellPress = await caller.exercises.list({ search: "덤벨프레스" });
+    expect(dumbbellPress[0]).toEqual(expect.objectContaining({ nameKo: "덤벨 프레스" }));
+
+    const oneArmCableRow = await caller.exercises.list({ search: "원암 케이블 로우" });
+    expect(oneArmCableRow.some((exercise) => String(exercise.nameKo).includes("원암"))).toBe(true);
+
+    const chestPress = await caller.exercises.list({ search: "체스트 프레스" });
+    expect(chestPress.some((exercise) => String(exercise.nameKo).includes("체스트"))).toBe(true);
+  });
+
   it("searches assisted exercises and hides duplicated imported names", async () => {
     const ctx = createPublicContext();
     const caller = appRouter.createCaller(ctx);
@@ -279,7 +293,7 @@ describe("exercises.list", () => {
     expect(innerThigh.some((exercise) => exercise.nameKo === "이너싸이 머신")).toBe(true);
 
     const chestTap = await caller.exercises.list({ search: "체스트 탭 푸시업" });
-    expect(chestTap.some((exercise) => !String(exercise.nameKo).includes("Male") && !String(exercise.nameKo).includes("Tap"))).toBe(true);
+    expect(chestTap.some((exercise) => exercise.nameKo === "체스트 탭 푸시업")).toBe(true);
   });
 });
 
