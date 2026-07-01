@@ -3382,7 +3382,7 @@ ${historyText}
         equipment: z.array(z.string()).default([]),
         equipmentDetails: z.array(z.string().min(1).max(50)).max(40).default([]),
         sessionDuration: z.number().int().min(20).max(180).default(60),
-        targetBodyParts: z.array(z.enum(["chest", "back", "shoulders", "biceps", "triceps", "arms", "legs", "glutes", "abs"])).min(1).max(5),
+        targetBodyParts: z.array(z.enum(["chest", "back", "shoulders", "biceps", "triceps", "arms", "legs", "glutes", "abs", "cardio"])).min(1).max(6),
         includeCardio: z.boolean().default(false),
         includeCore: z.boolean().default(true),
         warmupStretchMinutes: z.number().int().min(0).max(40).default(10),
@@ -3432,8 +3432,8 @@ ${historyText}
         ].join("\n");
         const recentHistoryText = summarizeWorkoutHistoryForPrompt(recentSessions, logsBySession);
         const cardioText = input.includeCardio
-          ? `유산소 포함: ${input.cardioMinutes}분. 단, 하체가 주요 타겟이면 고강도 유산소는 제외하고 저강도 또는 생략.`
-          : "유산소 제외";
+          ? `유산소 타겟: ${input.cardioMinutes}분. 단, 하체가 주요 타겟이면 고강도 유산소는 제외하고 저강도 또는 생략.`
+          : "유산소 타겟 없음";
         const mainWorkoutMinutes = Math.max(20, input.sessionDuration - input.warmupStretchMinutes - input.cooldownStretchMinutes);
         const plannedCardioMinutes = input.includeCardio ? Math.min(input.cardioMinutes, Math.max(0, mainWorkoutMinutes - 20)) : 0;
         const strengthWorkoutMinutes = Math.max(20, mainWorkoutMinutes - plannedCardioMinutes);
@@ -3443,7 +3443,7 @@ ${historyText}
           input.cooldownStretchMinutes,
           plannedCardioMinutes,
         );
-        const coreText = input.includeCore ? "복근/코어 필요 시 포함" : "복근/코어 제외";
+        const coreText = input.includeCore ? "복근/코어 타겟 포함" : "복근/코어 타겟 없음";
         const intensityText = {
           light: "가볍게 회복 중심",
           normal: "보통 강도",
@@ -3461,7 +3461,7 @@ ${historyText}
               - focus는 사용자가 고른 타겟 부위만 반영하세요.
               - exercises에는 focus와 맞는 메인/보조 운동만 넣으세요. 타겟 외 부위 운동을 섞지 마세요.
               - 이두를 요청한 날에는 삼두 운동을 넣지 말고, 삼두를 요청한 날에는 이두 운동을 넣지 마세요. "팔" 또는 "이두/삼두"라고 명시된 경우에만 둘 다 넣으세요.
-              - 복근/코어가 focus에 있거나 복근 포함이 켜져 있으면 해당 날 exercises에 복근 운동을 반드시 1개 이상 포함하세요.
+              - 복근/코어가 focus에 있으면 해당 날 exercises에 복근 운동을 반드시 1개 이상 포함하세요.
               - 총 세션 시간은 ${input.sessionDuration}분입니다. 스트레칭 ${input.warmupStretchMinutes + input.cooldownStretchMinutes}분을 제외한 exercises 블록은 약 ${mainWorkoutMinutes}분을 채워야 합니다.
               - 유산소를 포함하면 ${plannedCardioMinutes}분만 유산소로 쓰고, 남은 근력 운동 시간 ${strengthWorkoutMinutes}분에 맞춰 근력 운동을 구성하세요.
               - exercises의 근력 운동은 ${targetExerciseCount}개 안팎으로 구성하세요. 긴 운동 시간인데 4~6개로 짧게 끝내지 말고, 타겟 부위에 맞는 메인/보조/고립 운동으로 시간을 채우세요.
@@ -3663,9 +3663,9 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
         plannedCardioMinutes,
       );
       const accessoryText = [
-        includeCardio ? `유산소를 주간 계획에 적절히 포함, 유산소를 넣는 날은 ${plannedCardioMinutes}분` : "유산소는 제외",
+        includeCardio ? `유산소 타겟을 주간 계획에 적절히 배치, 유산소 날은 ${plannedCardioMinutes}분` : "유산소 타겟 없음",
         avoidCardioOnLegDay ? "하체 운동일에는 유산소를 넣지 말고 상체/휴식 부담이 낮은 날에 배치" : "하체 운동일에도 가벼운 유산소 배치 가능",
-        includeCore ? "복근/코어를 주간 계획에 적절히 포함" : "복근/코어는 제외",
+        includeCore ? "복근/코어 타겟을 주간 계획에 적절히 배치" : "복근/코어 타겟 없음",
         `운동 전 스트레칭 ${warmupStretchMinutes}분`,
         `운동 후 스트레칭 ${cooldownStretchMinutes}분`,
       ].join(", ");
@@ -3677,7 +3677,7 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
         "같은 근육군을 연속 운동일에 과도하게 반복하지 말고, 큰 근육군은 최소 1일 이상 회복 간격이 생기게 배치하세요.",
         "먼저 사용자의 목표/숙련도/최근 기록/운동 가능 시간/기구를 바탕으로 각 운동일의 focus를 직접 설계한 뒤, 그 focus에 맞는 운동만 선택하세요.",
         "각 운동일의 focus와 맞는 운동만 넣으세요. 예를 들어 등/어깨/이두 날에는 스쿼트, 핵스쿼트, 런지, 레그프레스, 레그컬, 카프레이즈 같은 하체 운동을 넣지 말고, 하체 운동은 하체/둔근 포커스 날에만 배치하세요.",
-        "가슴 날에는 등/하체 운동을, 등 날에는 가슴/하체 운동을, 어깨/팔 날에는 하체 운동을 섞지 마세요. 복근은 includeCore가 켜진 경우에만 코어 보조로 배치하세요.",
+        "가슴 날에는 등/하체 운동을, 등 날에는 가슴/하체 운동을, 어깨/팔 날에는 하체 운동을 섞지 마세요. 복근은 복근/코어 타겟이 있을 때만 코어 보조로 배치하세요.",
         includeCardio
           ? `유산소는 같은 운동일에 중복해서 넣지 마세요. 러닝/트레드밀은 하루에 한 줄만 허용하고, 유산소 시간은 ${plannedCardioMinutes}분으로 작성하세요.`
           : "유산소 운동은 넣지 마세요.",
@@ -3727,9 +3727,9 @@ exercises에는 반드시 DB 후보의 ID를 포함하세요. ID가 없는 운�
             - 머신과 케이블은 서로 다른 기구입니다. 케이블이 선택되지 않았으면 케이블 운동을 넣지 말고, 머신이 선택되지 않았으면 머신 운동을 넣지 마세요.
             - 운동명은 한국어 운동명을 우선 사용하고, 필요하면 괄호 안에 영어명을 보조로 적으세요.
             - 사용자가 제외한 부위/운동은 넣지 마세요.
-            - 유산소/복근 포함 여부와 사용자 추가 요청을 우선순위 높게 반영하세요.
+            - 유산소/복근 타겟 여부와 사용자 추가 요청을 우선순위 높게 반영하세요.
             - 이두를 요청한 날에는 삼두 운동을 넣지 말고, 삼두를 요청한 날에는 이두 운동을 넣지 마세요. "팔" 또는 "이두/삼두"라고 명시된 경우에만 둘 다 넣으세요.
-            - 복근/코어가 focus에 있거나 복근 포함이 켜져 있으면 해당 날 exercises에 복근 운동을 반드시 1개 이상 포함하세요.
+            - 복근/코어가 focus에 있으면 해당 날 exercises에 복근 운동을 반드시 1개 이상 포함하세요.
             - ${trainingOptimizationRules}
             - exercises에는 메인 운동, 보조 운동, 선택된 경우 유산소/복근만 넣으세요. 스트레칭은 exercises에 넣지 마세요.
             - 각 운동일마다 warmupStretch 배열과 cooldownStretch 배열을 반드시 작성하세요.
@@ -3760,7 +3760,7 @@ ${durationText}
 ${weeklyFrequencyText}
 ${splitText}
 ${excludedText}
-추가 구성: ${accessoryText}
+구성 조건: ${accessoryText}
 ${dayFocusText}
 ${customRequestText}
 

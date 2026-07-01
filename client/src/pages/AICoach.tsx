@@ -45,7 +45,7 @@ const bodyPartOptions = [
   { value: "cardio", label: "유산소" },
 ];
 
-const targetBodyPartOptions = bodyPartOptions.filter((item) => item.value !== "cardio");
+const targetBodyPartOptions = bodyPartOptions;
 const routineDayTargetOptions = bodyPartOptions;
 
 const minuteOptions = [0, 5, 10, 15, 20, 30, 40];
@@ -107,9 +107,6 @@ function ProgramRecommendation() {
   const [equipment, setEquipment] = useState<string[]>([]);
   const [splitPreference, setSplitPreference] = useState("auto");
   const [excludedBodyParts, setExcludedBodyParts] = useState<string[]>([]);
-  const [includeCardio, setIncludeCardio] = useState(false);
-  const [avoidCardioOnLegDay, setAvoidCardioOnLegDay] = useState(false);
-  const [includeCore, setIncludeCore] = useState(false);
   const [warmupStretchMinutes, setWarmupStretchMinutes] = useState("20");
   const [cooldownStretchMinutes, setCooldownStretchMinutes] = useState("20");
   const [cardioMinutes, setCardioMinutes] = useState("20");
@@ -244,9 +241,9 @@ function ProgramRecommendation() {
       daysPerWeek: Number(daysPerWeek),
       splitPreference,
       excludedBodyParts: isCustomSplit ? [] : excludedBodyParts,
-      includeCardio: isCustomSplit ? selectedDayParts.includes("cardio") : includeCardio,
-      avoidCardioOnLegDay: isCustomSplit ? false : avoidCardioOnLegDay,
-      includeCore: isCustomSplit ? selectedDayParts.includes("abs") : includeCore,
+      includeCardio: isCustomSplit ? selectedDayParts.includes("cardio") : false,
+      avoidCardioOnLegDay: false,
+      includeCore: isCustomSplit ? selectedDayParts.includes("abs") : false,
       warmupStretchMinutes: Number(warmupStretchMinutes),
       cooldownStretchMinutes: Number(cooldownStretchMinutes),
       cardioMinutes: Number(cardioMinutes),
@@ -361,36 +358,6 @@ function ProgramRecommendation() {
                 </SelectContent>
               </Select>
             </div>
-            {!isCustomSplit && (
-            <div>
-              <div className="mb-1.5 text-xs text-muted-foreground">추가 구성</div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIncludeCardio((value) => !value)}
-                  className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${includeCardio ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
-                >
-                  유산소 포함
-                </button>
-                {includeCardio && (
-                  <button
-                    type="button"
-                    onClick={() => setAvoidCardioOnLegDay((value) => !value)}
-                    className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${avoidCardioOnLegDay ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
-                  >
-                    하체일 유산소 분리
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setIncludeCore((value) => !value)}
-                  className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${includeCore ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
-                >
-                  복근 포함
-                </button>
-              </div>
-            </div>
-            )}
           </div>
 
           <div className="grid gap-3 border-t border-border/60 pt-4 sm:grid-cols-3">
@@ -422,7 +389,7 @@ function ProgramRecommendation() {
             </div>
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">유산소 시간</div>
-              <Select value={cardioMinutes} onValueChange={setCardioMinutes} disabled={isCustomSplit ? !selectedDayParts.includes("cardio") : !includeCardio}>
+              <Select value={cardioMinutes} onValueChange={setCardioMinutes} disabled={isCustomSplit ? !selectedDayParts.includes("cardio") : true}>
                 <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground disabled:opacity-50">
                   <SelectValue />
                 </SelectTrigger>
@@ -638,8 +605,6 @@ function DailyWorkoutRecommendation() {
   const [sessionDuration, setSessionDuration] = useState("60");
   const [equipment, setEquipment] = useState<string[]>([]);
   const [targetBodyParts, setTargetBodyParts] = useState<string[]>([]);
-  const [includeCardio, setIncludeCardio] = useState(false);
-  const [includeCore, setIncludeCore] = useState(false);
   const [warmupStretchMinutes, setWarmupStretchMinutes] = useState("10");
   const [cooldownStretchMinutes, setCooldownStretchMinutes] = useState("10");
   const [cardioMinutes, setCardioMinutes] = useState("20");
@@ -658,6 +623,8 @@ function DailyWorkoutRecommendation() {
   const availableWorkoutTimes = preferencesQuery.data?.availableWorkoutTimes ?? "";
   const workout = dailyMutation.data?.workout;
   const isStartingWorkout = saveTodayWorkout.isPending || startSession.isPending;
+  const includesCardioTarget = targetBodyParts.includes("cardio");
+  const includesCoreTarget = targetBodyParts.includes("abs");
 
   useEffect(() => {
     if (!preferencesQuery.data || environmentInitialized) return;
@@ -692,8 +659,8 @@ function DailyWorkoutRecommendation() {
       equipmentDetails: location === "outdoor" ? [] : gymEquipmentDetails,
       sessionDuration: Number(sessionDuration),
       targetBodyParts: targetBodyParts as any,
-      includeCardio,
-      includeCore,
+      includeCardio: includesCardioTarget,
+      includeCore: includesCoreTarget,
       warmupStretchMinutes: Number(warmupStretchMinutes),
       cooldownStretchMinutes: Number(cooldownStretchMinutes),
       cardioMinutes: Number(cardioMinutes),
@@ -863,7 +830,7 @@ function DailyWorkoutRecommendation() {
             </div>
             <div>
               <div className="mb-1.5 text-xs text-muted-foreground">유산소 시간</div>
-              <Select value={cardioMinutes} onValueChange={setCardioMinutes} disabled={!includeCardio}>
+              <Select value={cardioMinutes} onValueChange={setCardioMinutes} disabled={!includesCardioTarget}>
                 <SelectTrigger className="h-11 w-full bg-accent border-border text-foreground disabled:opacity-50">
                   <SelectValue />
                 </SelectTrigger>
@@ -873,26 +840,6 @@ function DailyWorkoutRecommendation() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-
-          <div className="border-t border-border/60 pt-4">
-            <div className="mb-1.5 text-xs text-muted-foreground">추가 구성</div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setIncludeCardio((value) => !value)}
-                className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${includeCardio ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
-              >
-                유산소 포함
-              </button>
-              <button
-                type="button"
-                onClick={() => setIncludeCore((value) => !value)}
-                className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${includeCore ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-accent text-muted-foreground"}`}
-              >
-                복근 포함
-              </button>
             </div>
           </div>
 
