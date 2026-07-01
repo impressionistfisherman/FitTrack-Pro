@@ -1,12 +1,12 @@
 # TEST_RESULT
 
-## 2026-06-30 18:41:21 +09:00
+## 2026-07-01 09:07:14 +09:00
 
 ### 테스트 항목
 
-- 운영 Supabase DB 연결 확인
-- `.\node_modules\.bin\pnpm.CMD run meals:import-food-db-xlsx -- --batch-size=500`
-- 운영 Supabase 음식 DB 상태 확인
+- 운영 Supabase 음식 검색 성능 측정
+- 운영 Supabase `pg_trgm` GIN 인덱스 적용
+- 운영 Supabase `foods.name` btree 인덱스 적용
 - `.\node_modules\.bin\pnpm.CMD run check`
 - `.\node_modules\.bin\pnpm.CMD run test`
 - `.\node_modules\.bin\pnpm.CMD run build`
@@ -14,15 +14,16 @@
 
 ### 결과
 
-- 운영 Supabase DB 연결: 통과
-- 운영 Supabase 음식 DB 전체 import: 통과
-  - import 대상 파싱: 323,339건
-  - 신규 insert: 290,243건
-  - 중복 skip: 33,096건
-  - 최종 `foods`: 328,967건
-  - 최종 공공 음식: 328,967건
-  - 최종 MFDS 계열 음식: 328,829건
-  - 최종 검색 가능 음식: 328,967건
+- 운영 Supabase 음식 검색 최적화: 통과
+  - `foods.searchText` trigram GIN 인덱스 생성
+  - `foods.name` btree 인덱스 생성
+  - cold 첫 검색: 약 1.1초
+  - warm 검색:
+    - `육개장`: 약 128ms
+    - `컬라면`: 약 225ms
+    - `닭가슴살`: 약 90ms
+    - `프로틴`: 약 85ms
+    - `김밥`: 약 45ms
 - TypeScript 정적 검사: 통과
 - 전체 Vitest: 통과
   - 6개 테스트 파일
@@ -32,21 +33,22 @@
 
 ### 확인한 변경 범위
 
-- `servingSizeGrams` Postgres quoting 누락 수정.
-- 운영 DB의 `foods.name`, `foods.brand` 길이 제한을 `text`로 완화하도록 보강.
-- 식약처 음식/건강기능식품/가공식품 XLSX 3종을 운영 Supabase DB에 반영.
+- Postgres `pg_trgm` 확장 및 `searchText` GIN trigram 인덱스 보강.
+- `name = ?` exact 검색 최적화를 위한 `foods.name` 단독 인덱스 보강.
+- `searchText` backfill을 컬럼 신규 생성 시에만 수행하도록 변경해 cold start 비용 감소.
+- Postgres에서는 인덱스 존재 여부를 먼저 확인해 불필요한 DDL 호출을 줄임.
 
 ### 실패 원인 및 조치
 
-- 첫 운영 import 시 `servingSizeGrams`가 Postgres에서 `servingsizegrams`로 해석되어 실패.
-  - `pgQuotedIdentifiers`에 `servingSizeGrams` 추가.
-- 두 번째 운영 import 시 일부 제품명/업체명이 기존 `varchar(160)`, `varchar(120)` 길이를 초과해 실패.
-  - Postgres에서 `foods.name`, `foods.brand`를 `text`로 완화하도록 `ensureFoodSearchTextColumn()`에 보강.
-- 운영 `DATABASE_URL`을 유지한 같은 PowerShell 프로세스에서 테스트를 실행해 원격 DB 기준 테스트 실패가 1회 발생.
-  - `DATABASE_URL` 제거 후 로컬 SQLite 기준 전체 테스트 재실행하여 통과 확인.
+- 초기 측정에서 `육개장` 검색이 약 7.4초, `컬라면` 검색이 약 4.2초 소요됨.
+- 원인 1: `%검색어%` LIKE가 30만 건 전체를 훑는 구조.
+  - 조치: `pg_trgm` GIN 인덱스 적용.
+- 원인 2: `name = '육개장'` exact 검색이 `(userId, name)` 복합 인덱스를 비효율적으로 사용.
+  - 조치: `foods.name` 단독 인덱스 적용.
+- 원인 3: 첫 호출마다 `searchText` backfill 스캔이 실행될 수 있음.
+  - 조치: 컬럼 신규 생성 시에만 backfill 실행.
 
 ### 미실행 또는 제한 사항
 
-- 실제 브라우저에서 `/meals` 검색 체감 속도는 아직 별도 측정하지 않음.
-- 30만 건 이상 데이터가 들어갔으므로 음식 검색 쿼리 최적화가 다음 우선순위임.
-- `SESSION_HANDOFF.md`, `local-db/fittrack_local.sqlite*`, `.gitignore`의 기존 dirty 상태는 이번 커밋 범위에서 제외 대상임.
+- 실제 브라우저 UI 입력 체감은 별도 자동화로 측정하지 않음.
+- 첫 검색에는 DB 연결 및 초기 카탈로그 확인 비용이 포함되어 warm 검색보다 느림.

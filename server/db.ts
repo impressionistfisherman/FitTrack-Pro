@@ -3828,15 +3828,48 @@ function foodSearchText(input: { name?: unknown; brand?: unknown; aliases?: unkn
   return normalizeFoodSearchText(input.name, input.brand, input.aliases);
 }
 
+async function postgresIndexExists(tableName: string, indexName: string) {
+  if (databaseType !== "postgres") return false;
+  const row = await get<{ indexname: string }>(
+    "SELECT indexname FROM pg_indexes WHERE schemaname = current_schema() AND tablename = ? AND indexname = ? LIMIT 1",
+    tableName,
+    indexName,
+  );
+  return Boolean(row);
+}
+
+async function ensureIndex(indexName: string, sql: string) {
+  if (databaseType === "postgres" && await postgresIndexExists("foods", indexName)) return;
+  await run(sql);
+}
+
 async function ensureFoodSearchTextColumn() {
   if (databaseType === "postgres") {
-    await run(`ALTER TABLE foods ALTER COLUMN name TYPE text`);
-    await run(`ALTER TABLE foods ALTER COLUMN brand TYPE text`);
+    const columns = await all<{ column_name: string; data_type: string }>(
+      "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = ? AND column_name IN (?, ?, ?, ?) AND table_schema = current_schema()",
+      "foods",
+      "name",
+      "brand",
+      "searchText",
+      "servingSizeGrams",
+    );
+    const columnMap = new Map(columns.map((column) => [column.column_name, column.data_type]));
+    const searchColumnExists = columnMap.has("searchText");
+    if (columnMap.get("name") !== "text") await run(`ALTER TABLE foods ALTER COLUMN name TYPE text`);
+    if (columnMap.get("brand") !== "text") await run(`ALTER TABLE foods ALTER COLUMN brand TYPE text`);
     await run(`ALTER TABLE foods ADD COLUMN IF NOT EXISTS "searchText" text`);
     await run(`ALTER TABLE foods ADD COLUMN IF NOT EXISTS "servingSizeGrams" real NOT NULL DEFAULT 100`);
-    return;
+    try {
+      const trigramExtension = await get<{ extname: string }>("SELECT extname FROM pg_extension WHERE extname = ? LIMIT 1", "pg_trgm");
+      if (!trigramExtension) await run("CREATE EXTENSION IF NOT EXISTS pg_trgm");
+      await ensureIndex("idx_foods_search_text_trgm", `CREATE INDEX IF NOT EXISTS idx_foods_search_text_trgm ON foods USING gin ("searchText" gin_trgm_ops)`);
+    } catch (error) {
+      console.warn("Food trigram search index setup skipped:", error);
+    }
+    return !searchColumnExists;
   }
   if (databaseType === "mysql") {
+    let searchColumnAdded = false;
     try {
       await run("ALTER TABLE foods MODIFY name TEXT NOT NULL");
       await run("ALTER TABLE foods MODIFY brand TEXT");
@@ -3845,6 +3878,7 @@ async function ensureFoodSearchTextColumn() {
     }
     try {
       await run("ALTER TABLE foods ADD COLUMN searchText TEXT");
+      searchColumnAdded = true;
     } catch (error: any) {
       if (error?.code !== "ER_DUP_FIELDNAME" && error?.errno !== 1060) throw error;
     }
@@ -3853,15 +3887,18 @@ async function ensureFoodSearchTextColumn() {
     } catch {
       // Column already exists.
     }
-    return;
+    return searchColumnAdded;
   }
   const columns = await all<{ name: string }>("PRAGMA table_info(foods)");
+  let searchColumnAdded = false;
   if (!columns.some((column) => column.name === "searchText")) {
     await run("ALTER TABLE foods ADD COLUMN searchText TEXT");
+    searchColumnAdded = true;
   }
   if (!columns.some((column) => column.name === "servingSizeGrams")) {
     await run("ALTER TABLE foods ADD COLUMN servingSizeGrams REAL NOT NULL DEFAULT 100");
   }
+  return searchColumnAdded;
 }
 
 async function backfillFoodSearchText(limit = 5000) {
@@ -3897,7 +3934,7 @@ async function ensureMealTables() {
       createdAt timestamp
     )`,
   );
-  await ensureFoodSearchTextColumn();
+  const shouldBackfillFoodSearchText = await ensureFoodSearchTextColumn();
   await run(
     `CREATE TABLE IF NOT EXISTS meal_logs (
       id ${autoId},
@@ -3925,10 +3962,11 @@ async function ensureMealTables() {
       createdAt timestamp
     )`,
   );
-  await run("CREATE INDEX IF NOT EXISTS idx_foods_user_created ON foods (userId, createdAt)");
-  await run("CREATE INDEX IF NOT EXISTS idx_foods_user_name ON foods (userId, name)");
+  await ensureIndex("idx_foods_user_created", "CREATE INDEX IF NOT EXISTS idx_foods_user_created ON foods (userId, createdAt)");
+  await ensureIndex("idx_foods_user_name", "CREATE INDEX IF NOT EXISTS idx_foods_user_name ON foods (userId, name)");
+  await ensureIndex("idx_foods_name", "CREATE INDEX IF NOT EXISTS idx_foods_name ON foods (name)");
   if (databaseType !== "mysql") {
-    await run("CREATE INDEX IF NOT EXISTS idx_foods_user_search ON foods (userId, searchText)");
+    await ensureIndex("idx_foods_user_search", "CREATE INDEX IF NOT EXISTS idx_foods_user_search ON foods (userId, searchText)");
   }
   await run("CREATE INDEX IF NOT EXISTS idx_meal_logs_user_date ON meal_logs (userId, mealDate)");
   await run("CREATE INDEX IF NOT EXISTS idx_meal_log_items_meal ON meal_log_items (mealLogId)");
@@ -4081,7 +4119,7 @@ async function ensureMealTables() {
       );
     }
   }
-  await backfillFoodSearchText();
+  if (shouldBackfillFoodSearchText) await backfillFoodSearchText();
   mealTablesReady = true;
 }
 
