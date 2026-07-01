@@ -391,7 +391,7 @@ export default function Meals() {
   };
 
   const renderFoodSearchResults = () => (
-    <div className="mobile-search-results mobile-food-search-results space-y-2 overflow-y-auto overscroll-contain pr-1">
+    <div className="mobile-search-results mobile-food-search-results space-y-2 overflow-y-auto overscroll-contain">
       {foodsQuery.isLoading ? (
         <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
           음식 데이터를 검색하는 중입니다.
@@ -925,7 +925,7 @@ export default function Meals() {
                   </SelectContent>
                 </Select>
                 <div
-                  className="relative"
+                  className="food-search-anchor"
                   onBlur={(event) => {
                     if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
                     setFoodSearchOpen(false);
@@ -1021,16 +1021,22 @@ export default function Meals() {
               {selectedFood && (
                 <div className="mt-4 rounded-xl border border-border bg-background/45 p-3">
                   <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
+                    <div className="min-w-0">
                       <div className="text-sm font-semibold text-foreground">{selectedFood.name}</div>
                       <div className="text-xs text-muted-foreground">
                         {portionUnit === "g" ? "그램 기준으로 기록" : `1인분 ${getServingSizeGrams(selectedFood)}g 기준`}
                       </div>
                     </div>
-                    <div className="grid grid-cols-[76px_112px] items-end gap-2">
+                    <div className="meal-amount-controls">
                       <div className="space-y-1">
                         <Label className="text-[10px] text-muted-foreground">수량</Label>
-                        <Input type="number" value={portionAmount} onChange={(e) => updatePortionAmount(e.target.value)} className="h-10 border-border bg-card text-right" />
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          value={portionAmount}
+                          onChange={(e) => updatePortionAmount(e.target.value)}
+                          className="h-10 border-border bg-card text-right tabular-nums"
+                        />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-[10px] text-muted-foreground">단위</Label>
