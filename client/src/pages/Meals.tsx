@@ -411,8 +411,8 @@ export default function Meals() {
         <div
           key={food.id}
           className={cn(
-            "flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors",
-            selectedFood?.id === food.id ? "border-primary/50 bg-primary/10" : "border-border bg-background/45 hover:border-primary/30",
+            "food-search-option",
+            selectedFood?.id === food.id ? "food-search-option-selected" : "food-search-option-default",
           )}
         >
           <button
@@ -420,14 +420,16 @@ export default function Meals() {
             onClick={() => selectFood(food)}
             className="min-w-0 flex-1 text-left"
           >
-            <div className="flex items-center gap-2">
-              <div className="truncate text-sm font-semibold text-foreground">{food.name}</div>
-              <Badge variant="outline" className="shrink-0 border-border text-[10px] text-muted-foreground">
+            <div className="food-search-option-header">
+              <div className="food-search-option-title">{food.name}</div>
+              <Badge variant="outline" className="food-search-option-badge">
                 {food.favorite ? "즐겨찾기" : food.source}
               </Badge>
             </div>
-            <div className="truncate text-xs text-muted-foreground">
-              {food.brand || food.source} · 100g {Math.round(food.caloriesPer100)}kcal · P {food.proteinPer100}g
+            <div className="food-search-option-meta">
+              <span>{food.brand || food.source}</span>
+              <span>100g {Math.round(food.caloriesPer100)}kcal</span>
+              <span>P {food.proteinPer100}g</span>
             </div>
           </button>
           {food.userId && (
