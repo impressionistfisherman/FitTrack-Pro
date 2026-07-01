@@ -1556,7 +1556,7 @@ export const appRouter = router({
         availableWorkoutTimes: preferences.availableWorkoutTimes ?? "",
         customSplitPresets: parseCustomSplitPresets(preferences.customSplitPresets),
       }));
-      const recentWorkoutsPromise = getWorkoutSessionsByUser(userId, 20).then(async (sessions) => {
+      const recentWorkoutsPromise = getWorkoutSessionsByUser(userId, 8).then(async (sessions) => {
         const logsBySessionId = await getWorkoutLogsBySessionIds(sessions.map((session: any) => Number(session.id)));
         return sessions.map((session: any) => ({
           ...session,
@@ -1576,7 +1576,7 @@ export const appRouter = router({
         goalsPromise,
         preferencesPromise,
         recentWorkoutsPromise,
-        getRoutinesByUser(userId),
+        getRoutinesByUser(userId, 3),
         getBodyWeights(userId, 8),
         getWorkoutSessionVolumeRows(userId),
       ]);

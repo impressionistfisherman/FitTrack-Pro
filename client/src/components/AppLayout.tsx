@@ -530,6 +530,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const utils = trpc.useUtils();
   const coachingReadMarkedRef = useRef(false);
+  const isCoachingPage = currentPath === "/coaching";
+  const isTrainer = (user as any)?.appRole === "trainer";
+  const isAdmin = user?.role === "admin";
+  const shouldLoadNotifications = isCoachingPage || isTrainer || isAdmin;
   const { data: pendingApplications } = trpc.admin.trainerApplications.useQuery(
     { status: "pending" },
     { enabled: user?.role === "admin" }
@@ -537,18 +541,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { data: coachingNotifications } = trpc.trainer.notifications.useQuery(
     undefined,
     {
-      enabled: Boolean(user?.id),
+      enabled: Boolean(user?.id) && shouldLoadNotifications,
       staleTime: 1000 * 30,
       refetchOnWindowFocus: false,
     }
   );
   const displayName = user?.name || user?.email?.split("@")[0] || "사용자";
-  const isCoachingPage = currentPath === "/coaching";
   const adminBadge = pendingApplications?.length ?? 0;
   const coachingBadge = coachingNotifications?.coachingUnreadCount ?? 0;
   const trainerBadge = coachingNotifications?.trainerUnreadCount ?? 0;
-  const isTrainer = (user as any)?.appRole === "trainer";
-  const isAdmin = user?.role === "admin";
   const showRoleSwitch = !loading && (isTrainer || isAdmin);
   const visibleNavItems = loading
     ? []

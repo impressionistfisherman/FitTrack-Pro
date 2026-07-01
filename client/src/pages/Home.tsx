@@ -31,7 +31,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { lazy, Suspense, useMemo } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 
 const HomeMonthlyChart = lazy(() => import("@/components/HomeMonthlyChart").then((module) => ({ default: module.HomeMonthlyChart })));
 
@@ -610,7 +610,7 @@ function BodyPartBalanceCard({ sessions, isLoading }: { sessions?: any[]; isLoad
       <CardContent className="p-4">
         <div className="mb-3 flex items-center justify-between gap-2">
           <h3 className="font-semibold text-foreground">최근 부위 분포</h3>
-          <span className="text-xs text-muted-foreground">최근 20회</span>
+          <span className="text-xs text-muted-foreground">최근 8회</span>
         </div>
         {isLoading ? (
           <div className="space-y-2">
@@ -668,6 +668,8 @@ function FeatureCards() {
 
 export default function Home() {
   const { user, isAuthenticated, loading } = useAuth();
+  const [showDetailedAnalysis, setShowDetailedAnalysis] = useState(false);
+  const [showExtraFeatures, setShowExtraFeatures] = useState(false);
   const { data: homeSummary, isLoading: homeSummaryLoading } = trpc.home.summary.useQuery(undefined, {
     enabled: isAuthenticated,
     retry: false,
@@ -788,11 +790,12 @@ export default function Home() {
   return (
     <div className="page-shell page-shell-wide figma-page space-y-4 animate-fade-in">
       <section className="figma-home-intro">
-        <div>
-          <p className="text-xs text-muted-foreground">{greeting()},</p>
-          <h1 className="text-2xl font-bold text-foreground">{displayName} 님</h1>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <div className="figma-home-intro-main">
+          <div>
+            <p className="text-xs text-muted-foreground">{greeting()},</p>
+            <h1 className="text-2xl font-bold text-foreground">{displayName} 님</h1>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-1.5">
             {profileLoading ? (
               <>
                 <div className="h-6 w-14 skeleton rounded-full" />
@@ -811,6 +814,31 @@ export default function Home() {
                 ))}
               </>
             )}
+          </div>
+        </div>
+        <div className="figma-home-actions" aria-label="대시보드 패널">
+          <Button
+            type="button"
+            variant={showDetailedAnalysis ? "default" : "outline"}
+            size="sm"
+            className="h-8 gap-1.5 px-2.5 text-xs"
+            onClick={() => setShowDetailedAnalysis((current) => !current)}
+            aria-pressed={showDetailedAnalysis}
+          >
+            <BarChart3 size={13} />
+            상세분석
+          </Button>
+          <Button
+            type="button"
+            variant={showExtraFeatures ? "default" : "outline"}
+            size="sm"
+            className="h-8 gap-1.5 px-2.5 text-xs"
+            onClick={() => setShowExtraFeatures((current) => !current)}
+            aria-pressed={showExtraFeatures}
+          >
+            <Plus size={13} />
+            추가기능
+          </Button>
         </div>
       </section>
 
@@ -868,23 +896,15 @@ export default function Home() {
             <StreakCard streak={homeSummary?.streak} isLoading={homeSummaryLoading} />
             <BodyWeightSummaryCard weights={homeSummary?.bodyWeights} goal={homeSummary?.goal} isLoading={homeSummaryLoading} />
           </div>
-          <details className="content-disclosure">
-            <summary>
-              <span>상세 분석 보기</span>
-              <small>월간 통계 · 운동 품질 · 부위 균형</small>
-            </summary>
+          {showDetailedAnalysis ? (
             <div className="space-y-3 pt-3">
               <ProgressReportCard monthlyStats={homeSummary?.monthlyStats} weeklyStats={homeSummary?.weeklyStats} isLoading={homeSummaryLoading} />
               <MonthlyStatsCard stats={homeSummary?.monthlyStats} isLoading={homeSummaryLoading} />
               <WorkoutQualityCard sessions={homeSummary?.recentWorkouts} isLoading={homeSummaryLoading} />
               <BodyPartBalanceCard sessions={homeSummary?.recentWorkouts} isLoading={homeSummaryLoading} />
             </div>
-          </details>
-          <details className="content-disclosure">
-            <summary>
-              <span>추가 기능</span>
-              <small>AI 코치와 운동 도구</small>
-            </summary>
+          ) : null}
+          {showExtraFeatures ? (
             <div className="space-y-3 pt-3">
               <FeatureCards />
               <Link href="/ai-coach">
@@ -904,7 +924,7 @@ export default function Home() {
                 </Card>
               </Link>
             </div>
-          </details>
+          ) : null}
         </div>
       </div>
     </div>

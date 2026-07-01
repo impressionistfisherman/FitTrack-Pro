@@ -1237,7 +1237,23 @@
 }
 
 .figma-home-intro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
   padding-top: 4px;
+}
+
+.figma-home-intro-main {
+  min-width: 0;
+}
+
+.figma-home-actions {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .figma-profile-hero {
@@ -1452,6 +1468,14 @@
 @media (max-width: 767px) {
   .figma-page {
     padding-inline: 16px;
+  }
+
+  .figma-home-intro {
+    align-items: flex-start;
+  }
+
+  .figma-home-actions {
+    max-width: 9.5rem;
   }
 
   .figma-page .page-header {

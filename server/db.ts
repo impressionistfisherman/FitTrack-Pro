@@ -3074,8 +3074,12 @@ export async function listApprovedTrainers(): Promise<Row[]> {
   }));
 }
 
-export async function getRoutinesByUser(userId: number): Promise<Row[]> {
-  return (await all("SELECT * FROM routines WHERE userId = ? ORDER BY createdAt DESC", userId))
+export async function getRoutinesByUser(userId: number, limit?: number): Promise<Row[]> {
+  const params: any[] = [userId];
+  const normalizedLimit = typeof limit === "number" && limit > 0 ? Math.floor(limit) : null;
+  const limitClause = normalizedLimit ? " LIMIT ?" : "";
+  if (normalizedLimit) params.push(normalizedLimit);
+  return (await all(`SELECT * FROM routines WHERE userId = ? ORDER BY createdAt DESC${limitClause}`, ...params))
     .map((routine) => ({ ...routine, isPublic: Boolean(routine.isPublic) }));
 }
 
