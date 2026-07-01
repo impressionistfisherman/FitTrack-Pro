@@ -86,6 +86,7 @@ export default function Meals() {
   const [date, setDate] = useState(todayKey());
   const [mealType, setMealType] = useState("breakfast");
   const [foodSearch, setFoodSearch] = useState("");
+  const [foodSearchOpen, setFoodSearchOpen] = useState(false);
   const [selectedFood, setSelectedFood] = useState<any | null>(null);
   const [amount, setAmount] = useState("100");
   const [portionAmount, setPortionAmount] = useState("1");
@@ -202,6 +203,7 @@ export default function Meals() {
       if (selectedFood?.userId) {
         setSelectedFood(null);
         setFoodSearch("");
+        setFoodSearchOpen(false);
         setAmount("100");
         setPortionAmount("1");
         setPortionUnit("인분");
@@ -219,6 +221,7 @@ export default function Meals() {
       toast.success("식단을 기록했습니다.");
       setSelectedFood(null);
       setFoodSearch("");
+      setFoodSearchOpen(false);
       setAmount("100");
       setPortionAmount("1");
       setPortionUnit("인분");
@@ -261,6 +264,7 @@ export default function Meals() {
   const targets = targetsQuery.data ?? { calories: 2200, protein: 140, carbs: 250, fat: 65 };
   const macroCalories = totals.protein * 4 + totals.carbs * 4 + totals.fat * 9;
   const hasFoodSearch = Boolean(foodSearch.trim());
+  const showFoodSearchDropdown = foodSearchOpen && hasFoodSearch;
   const selectedPreview = useMemo(() => {
     if (!selectedFood) return null;
     const grams = Number(amount) || 0;
@@ -301,6 +305,7 @@ export default function Meals() {
     const nextGrams = grams ?? servingSizeGrams;
     setSelectedFood(food);
     setFoodSearch(food.name);
+    setFoodSearchOpen(false);
     setAmount(String(nextGrams));
     setPortionAmount(grams ? String(nextGrams) : "1");
     setPortionUnit(grams ? "g" : "인분");
@@ -919,17 +924,33 @@ export default function Meals() {
                     ))}
                   </SelectContent>
                 </Select>
-                <label className="relative">
+                <div
+                  className="relative"
+                  onBlur={(event) => {
+                    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+                    setFoodSearchOpen(false);
+                  }}
+                >
                   <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input value={foodSearch} onChange={(e) => setFoodSearch(e.target.value)} className="border-border bg-accent pl-9" placeholder="음식 검색..." />
-                </label>
-              </div>
-              {hasFoodSearch ? (
-                <div className="mt-3">
-                  <div className="mb-2 text-xs font-semibold text-muted-foreground">검색 결과</div>
-                  {renderFoodSearchResults()}
+                  <Input
+                    value={foodSearch}
+                    onFocus={() => {
+                      if (foodSearch.trim()) setFoodSearchOpen(true);
+                    }}
+                    onChange={(event) => {
+                      setFoodSearch(event.target.value);
+                      setFoodSearchOpen(Boolean(event.target.value.trim()));
+                    }}
+                    className="border-border bg-accent pl-9"
+                    placeholder="음식 검색..."
+                  />
+                  {showFoodSearchDropdown ? (
+                    <div className="food-search-dropdown">
+                      {renderFoodSearchResults()}
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
+              </div>
               <div className="mt-4 rounded-xl border border-border bg-background/35 p-3">
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <div className="text-xs font-semibold text-muted-foreground">이전 기록 참조</div>
