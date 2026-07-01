@@ -273,13 +273,37 @@ export default function Meals() {
     };
   }, [amount, selectedFood]);
 
+  const getServingSizeGrams = (food: any) => Math.max(1, Math.round(Number(food?.servingSizeGrams) || 100));
+
+  const calculateMealAmountGrams = (quantity: string, unit: string, food: any) => {
+    const numericQuantity = Math.max(0, Number(quantity) || 0);
+    if (unit === "g") return Math.round(numericQuantity);
+    return Math.round(numericQuantity * getServingSizeGrams(food));
+  };
+
+  const updatePortionAmount = (quantity: string) => {
+    setPortionAmount(quantity);
+    setAmount(String(calculateMealAmountGrams(quantity, portionUnit, selectedFood)));
+  };
+
+  const updatePortionUnit = (unit: string) => {
+    const currentGrams = Math.max(0, Number(amount) || calculateMealAmountGrams(portionAmount, portionUnit, selectedFood));
+    const nextQuantity = unit === "g"
+      ? String(Math.round(currentGrams))
+      : String(Math.round((currentGrams / getServingSizeGrams(selectedFood)) * 10) / 10 || 1);
+    setPortionUnit(unit);
+    setPortionAmount(nextQuantity);
+    setAmount(String(calculateMealAmountGrams(nextQuantity, unit, selectedFood)));
+  };
+
   const selectFood = (food: any, grams?: number) => {
-    const nextGrams = grams ?? Math.round(Number(food.servingSizeGrams) || 100);
+    const servingSizeGrams = getServingSizeGrams(food);
+    const nextGrams = grams ?? servingSizeGrams;
     setSelectedFood(food);
     setFoodSearch(food.name);
     setAmount(String(nextGrams));
-    setPortionAmount("1");
-    setPortionUnit(food.servingUnit && food.servingUnit !== "g" ? food.servingUnit : "인분");
+    setPortionAmount(grams ? String(nextGrams) : "1");
+    setPortionUnit(grams ? "g" : "인분");
   };
 
   useEffect(() => {
@@ -333,7 +357,9 @@ export default function Meals() {
       items: [{
         foodId: selectedFood.id,
         amount: Number(amount) || 100,
-        unit: `${Number(portionAmount) || 1}${portionUnit.trim() || "인분"}`,
+        unit: portionUnit === "g"
+          ? `${Number(portionAmount) || 0}g`
+          : `${Number(portionAmount) || 1}인분`,
       }],
     });
   };
@@ -976,20 +1002,26 @@ export default function Meals() {
                   <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <div className="text-sm font-semibold text-foreground">{selectedFood.name}</div>
-                      <div className="text-xs text-muted-foreground">섭취 단위와 실제 중량을 분리해서 저장</div>
+                      <div className="text-xs text-muted-foreground">
+                        {portionUnit === "g" ? "그램 기준으로 기록" : `1인분 ${getServingSizeGrams(selectedFood)}g 기준`}
+                      </div>
                     </div>
-                    <div className="grid grid-cols-[76px_88px_96px] items-end gap-2">
+                    <div className="grid grid-cols-[76px_112px] items-end gap-2">
                       <div className="space-y-1">
                         <Label className="text-[10px] text-muted-foreground">수량</Label>
-                        <Input type="number" value={portionAmount} onChange={(e) => setPortionAmount(e.target.value)} className="h-10 border-border bg-card text-right" />
+                        <Input type="number" value={portionAmount} onChange={(e) => updatePortionAmount(e.target.value)} className="h-10 border-border bg-card text-right" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-[10px] text-muted-foreground">단위</Label>
-                        <Input value={portionUnit} onChange={(e) => setPortionUnit(e.target.value)} className="h-10 border-border bg-card" />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-[10px] text-muted-foreground">실제 g</Label>
-                        <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="h-10 border-border bg-card text-right" />
+                        <Select value={portionUnit} onValueChange={updatePortionUnit}>
+                          <SelectTrigger className="h-10 border-border bg-card">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-card border-border">
+                            <SelectItem value="g">그램</SelectItem>
+                            <SelectItem value="인분">인분</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>
@@ -1000,8 +1032,8 @@ export default function Meals() {
                         type="button"
                         onClick={() => {
                           setAmount(String(grams));
-                          setPortionAmount("1");
-                          setPortionUnit(selectedFood.servingUnit && selectedFood.servingUnit !== "g" ? selectedFood.servingUnit : "인분");
+                          setPortionAmount(String(grams));
+                          setPortionUnit("g");
                         }}
                         className={cn(
                           "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
