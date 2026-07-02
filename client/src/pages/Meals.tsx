@@ -569,7 +569,7 @@ export default function Meals() {
 
         <TabsContent value="targets" className="space-y-4">
           <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(360px,1.05fr)]">
-            <div className="space-y-4">
+            <div className="grid gap-4 xl:col-span-2 xl:grid-cols-2 xl:items-start">
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="p-5">
               <div className="mb-4 flex items-center justify-between gap-3">
