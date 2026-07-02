@@ -1645,7 +1645,7 @@
 }
 
 .food-search-dropdown .mobile-food-search-results {
-  max-height: min(16rem, calc(100dvh - 18rem));
+  max-height: min(12rem, calc(100dvh - 22rem));
   padding: 0.5rem;
 }
 
@@ -1763,14 +1763,14 @@
   }
 
   .food-search-dropdown .mobile-food-search-results {
-    max-height: min(14rem, calc(100dvh - 18rem));
+    max-height: min(10rem, calc(100dvh - 24rem));
     min-height: 0;
     padding: 0.375rem;
   }
 
   .food-search-option {
     gap: 0.375rem;
-    padding: 0.625rem 0.75rem;
+    padding: 0.5rem 0.625rem;
   }
 
   .food-search-option-title {

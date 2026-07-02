@@ -138,7 +138,7 @@ export default function Meals() {
     },
   );
   const foodsQuery = trpc.meals.foods.useQuery(
-    { query: debouncedFoodSearch, limit: 30 },
+    { query: debouncedFoodSearch, limit: 8 },
     {
       enabled: isAuthenticated && Boolean(debouncedFoodSearch),
       staleTime: 5 * 60_000,
@@ -264,7 +264,8 @@ export default function Meals() {
   const targets = targetsQuery.data ?? { calories: 2200, protein: 140, carbs: 250, fat: 65 };
   const macroCalories = totals.protein * 4 + totals.carbs * 4 + totals.fat * 9;
   const hasFoodSearch = Boolean(foodSearch.trim());
-  const showFoodSearchDropdown = foodSearchOpen && hasFoodSearch;
+  const selectedFoodMatchesSearch = Boolean(selectedFood && foodSearch.trim() === selectedFood.name);
+  const showFoodSearchDropdown = foodSearchOpen && hasFoodSearch && !selectedFoodMatchesSearch;
   const selectedPreview = useMemo(() => {
     if (!selectedFood) return null;
     const grams = Number(amount) || 0;
@@ -937,11 +938,15 @@ export default function Meals() {
                   <Input
                     value={foodSearch}
                     onFocus={() => {
-                      if (foodSearch.trim()) setFoodSearchOpen(true);
+                      if (foodSearch.trim() && !selectedFoodMatchesSearch) setFoodSearchOpen(true);
                     }}
                     onChange={(event) => {
-                      setFoodSearch(event.target.value);
-                      setFoodSearchOpen(Boolean(event.target.value.trim()));
+                      const nextSearch = event.target.value;
+                      setFoodSearch(nextSearch);
+                      if (selectedFood && nextSearch.trim() !== selectedFood.name) {
+                        setSelectedFood(null);
+                      }
+                      setFoodSearchOpen(Boolean(nextSearch.trim()));
                     }}
                     className="border-border bg-accent pl-9"
                     placeholder="음식 검색..."
