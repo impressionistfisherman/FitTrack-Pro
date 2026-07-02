@@ -15,6 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Link } from "wouter";
@@ -125,12 +126,14 @@ export default function Profile() {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const utils = trpc.useUtils();
   const profileImageInputRef = useRef<HTMLInputElement>(null);
-  const { data: stats } = trpc.history.stats.useQuery(undefined, { enabled: isAuthenticated });
+  const [activeProfileTab, setActiveProfileTab] = useState("connection");
+  const showProfileMetrics = activeProfileTab === "body";
+  const { data: stats } = trpc.history.stats.useQuery(undefined, { enabled: isAuthenticated && showProfileMetrics });
   const { data: goal } = trpc.goals.get.useQuery(undefined, { enabled: isAuthenticated });
   const { data: goals } = trpc.goals.list.useQuery(undefined, { enabled: isAuthenticated });
   const { data: preferences } = trpc.preferences.get.useQuery(undefined, { enabled: isAuthenticated });
-  const { data: trainerStatus } = trpc.trainer.status.useQuery(undefined, { enabled: isAuthenticated });
-  const { data: weights } = trpc.bodyWeight.list.useQuery({ limit: 30 }, { enabled: isAuthenticated });
+  const { data: trainerStatus } = trpc.trainer.status.useQuery(undefined, { enabled: isAuthenticated && activeProfileTab === "connection" });
+  const { data: weights } = trpc.bodyWeight.list.useQuery({ limit: 30 }, { enabled: isAuthenticated && showProfileMetrics });
   const goalInfo = goal as any | null | undefined;
   const [selectedGoal, setSelectedGoal] = useState<string>("");
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
@@ -406,14 +409,15 @@ export default function Profile() {
         currentGoal={currentGoalConfig}
       />
 
-      <nav className="profile-section-nav" aria-label="프로필 빠른 이동">
-        <a href="#profile-coaching">연결</a>
-        <a href="#profile-stats">운동 요약</a>
-        <a href="#profile-weight">체중</a>
-        <a href="#profile-goals">목표·신체 정보</a>
-      </nav>
+      <Tabs value={activeProfileTab} onValueChange={setActiveProfileTab} className="space-y-4">
+        <TabsList className="content-tabs grid h-12 w-full grid-cols-3 gap-1 rounded-xl border border-border bg-accent/30 p-1">
+          <TabsTrigger value="connection" className="text-xs sm:text-sm">연결</TabsTrigger>
+          <TabsTrigger value="body" className="text-xs sm:text-sm">신체·기록</TabsTrigger>
+          <TabsTrigger value="goals" className="text-xs sm:text-sm">목표·설정</TabsTrigger>
+        </TabsList>
 
-      <Card id="profile-coaching" className="scroll-mt-24 bg-card border-border mb-6">
+        <TabsContent value="connection" className="space-y-4">
+      <Card id="profile-coaching" className="scroll-mt-24 bg-card border-border">
         <CardContent className="p-5">
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
@@ -770,9 +774,12 @@ export default function Profile() {
         </CardContent>
       </Card>
 
+        </TabsContent>
+
+        <TabsContent value="body" className="space-y-4">
       {/* Stats */}
       {stats && (
-        <div id="profile-stats" className="scroll-mt-24 grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div id="profile-stats" className="scroll-mt-24 grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { icon: Trophy, label: "총 운동", value: `${stats.totalSessions}회`, color: "text-primary bg-primary/10" },
             { icon: Flame, label: "이번 주", value: `${stats.recentSessionCount}회`, color: "text-orange-400 bg-orange-400/10" },
@@ -1066,8 +1073,11 @@ export default function Profile() {
         );
       })()}
 
+        </TabsContent>
+
+        <TabsContent value="goals" className="space-y-4">
       {/* Goal Setting */}
-      <Card id="profile-goals" className="scroll-mt-24 bg-card border-border mb-4">
+      <Card id="profile-goals" className="scroll-mt-24 bg-card border-border">
         <CardContent className="p-5">
           <div className="flex items-center gap-2 mb-4">
             <Settings size={16} className="text-primary" />
@@ -1367,6 +1377,8 @@ export default function Profile() {
         <LogOut size={16} />
         로그아웃
       </Button>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { trpc } from "@/lib/trpc";
@@ -93,6 +94,7 @@ export default function Meals() {
   const [portionUnit, setPortionUnit] = useState("인분");
   const [notes, setNotes] = useState("");
   const [newFoodOpen, setNewFoodOpen] = useState(false);
+  const [activeMealTab, setActiveMealTab] = useState("log");
   const [isWeeklyReportCollapsed, setIsWeeklyReportCollapsed] = useState(true);
   const [imageItems, setImageItems] = useState<Array<{
     foodName: string;
@@ -128,12 +130,12 @@ export default function Meals() {
   const targetsQuery = trpc.meals.targets.useQuery(undefined, { enabled: isAuthenticated, staleTime: 5 * 60_000 });
   const hasSavedMealTargets = Boolean(targetsQuery.data?.saved);
   const recommendedTargetsQuery = trpc.meals.recommendedTargets.useQuery(undefined, {
-    enabled: isAuthenticated && targetsQuery.isSuccess && !hasSavedMealTargets,
+    enabled: isAuthenticated && activeMealTab === "targets" && targetsQuery.isSuccess && !hasSavedMealTargets,
   });
   const weeklyReportQuery = trpc.meals.weeklyReport.useQuery(
     { endDate: date, days: 7 },
     {
-      enabled: isAuthenticated && !isWeeklyReportCollapsed,
+      enabled: isAuthenticated && activeMealTab === "targets" && !isWeeklyReportCollapsed,
       staleTime: 60_000,
     },
   );
@@ -146,15 +148,15 @@ export default function Meals() {
   );
   const recentFoodsQuery = trpc.meals.recentFoods.useQuery(
     { limit: 8 },
-    { enabled: isAuthenticated, staleTime: 60_000 },
+    { enabled: isAuthenticated && activeMealTab === "log", staleTime: 60_000 },
   );
   const frequentFoodsQuery = trpc.meals.frequentFoods.useQuery(
     { limit: 8 },
-    { enabled: isAuthenticated, staleTime: 60_000 },
+    { enabled: isAuthenticated && activeMealTab === "log", staleTime: 60_000 },
   );
   const recentMealsQuery = trpc.meals.recentMeals.useQuery(
     { limit: 5 },
-    { enabled: isAuthenticated, staleTime: 60_000 },
+    { enabled: isAuthenticated && activeMealTab === "log", staleTime: 60_000 },
   );
   const invalidateMeals = async () => {
     const invalidations = [
@@ -545,15 +547,29 @@ export default function Meals() {
           <p className="page-description">먹은 음식과 중량을 기록하고 하루 영양 합계를 확인하세요</p>
         </div>
         <div className="page-header-actions">
-          <Button variant="outline" className="gap-2 border-border" onClick={() => setNewFoodOpen((value) => !value)}>
+          <Button
+            variant="outline"
+            className="gap-2 border-border"
+            onClick={() => {
+              setActiveMealTab("targets");
+              setNewFoodOpen((value) => !value);
+            }}
+          >
             <Plus size={16} />
             음식 등록
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)]">
-        <div className="space-y-4">
+      <Tabs value={activeMealTab} onValueChange={setActiveMealTab} className="space-y-4">
+        <TabsList className="content-tabs grid h-12 w-full grid-cols-2 gap-1 rounded-xl border border-border bg-accent/30 p-1">
+          <TabsTrigger value="log" className="text-xs sm:text-sm">기록</TabsTrigger>
+          <TabsTrigger value="targets" className="text-xs sm:text-sm">목표·도구</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="targets" className="space-y-4">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(360px,1.05fr)]">
+            <div className="space-y-4">
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="p-5">
               <div className="mb-4 flex items-center justify-between gap-3">
@@ -907,8 +923,11 @@ export default function Meals() {
               </CardContent>
             </Card>
           )}
-        </div>
+            </div>
+          </div>
+        </TabsContent>
 
+        <TabsContent value="log" className="space-y-4">
         <div className="space-y-4">
           <Card className="border-border bg-card">
             <CardContent className="p-5">
@@ -1134,7 +1153,8 @@ export default function Meals() {
             </CardContent>
           </Card>
         </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

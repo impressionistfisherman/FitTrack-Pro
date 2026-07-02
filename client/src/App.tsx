@@ -44,12 +44,6 @@ const TrainerClientDetail = lazy(loadTrainerClientDetail);
 const preloadCommonRoutes = () => {
   void loadExercises();
   void loadRoutines();
-  void loadHistory();
-  void loadMeals();
-  void loadAICoach();
-  void loadCoaching();
-  void loadProfile();
-  void loadBodyWeight();
 };
 
 const routerBase =
@@ -118,11 +112,11 @@ function AppInner() {
     };
 
     if (browserWindow.requestIdleCallback && browserWindow.cancelIdleCallback) {
-      const idleId = browserWindow.requestIdleCallback(preload, { timeout: 2500 });
+      const idleId = browserWindow.requestIdleCallback(preload, { timeout: 4500 });
       return () => browserWindow.cancelIdleCallback?.(idleId);
     }
 
-    const timeoutId = globalThis.setTimeout(preload, 1200);
+    const timeoutId = globalThis.setTimeout(preload, 3000);
     return () => globalThis.clearTimeout(timeoutId);
   }, []);
 
