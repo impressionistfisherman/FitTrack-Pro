@@ -695,8 +695,92 @@ export default function Meals() {
 
         <TabsContent value="targets" className="space-y-4">
           <div className="grid gap-4 xl:grid-cols-2 xl:items-start">
-            <div className="space-y-4 xl:contents">
-              <Card className="border-primary/20 bg-primary/5 xl:order-3">
+            <div className="flex flex-col gap-4">
+              <Card className="border-border bg-card">
+                <CardContent className="p-5">
+                  <div className="mb-4 flex items-center gap-2">
+                    <CalendarDays size={17} className="text-primary" />
+                    <h2 className="text-sm font-semibold text-foreground">
+                      오늘 요약
+                    </h2>
+                  </div>
+                  <Input
+                    type="date"
+                    value={date}
+                    onChange={event => setDate(event.target.value)}
+                    className="mb-4 border-border bg-accent text-foreground"
+                  />
+                  <div className="rounded-2xl border border-border bg-background/45 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-3xl font-black text-foreground">
+                          {Math.round(totals.calories).toLocaleString()} kcal
+                        </div>
+                        <div className="mt-1 text-xs text-muted-foreground">
+                          목표 {targets.calories.toLocaleString()} kcal · 기록된
+                          식사 {mealsQuery.data?.meals?.length ?? 0}개
+                        </div>
+                      </div>
+                      <Badge className="border border-primary/25 bg-primary/10 text-primary">
+                        {targetPercent(totals.calories, targets.calories)}%
+                      </Badge>
+                    </div>
+                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-accent">
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{
+                          width: `${Math.min(100, targetPercent(totals.calories, targets.calories))}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+                      {[
+                        {
+                          label: "단백질",
+                          value: totals.protein,
+                          target: targets.protein,
+                        },
+                        {
+                          label: "탄수화물",
+                          value: totals.carbs,
+                          target: targets.carbs,
+                        },
+                        {
+                          label: "지방",
+                          value: totals.fat,
+                          target: targets.fat,
+                        },
+                      ].map(macro => (
+                        <div
+                          key={macro.label}
+                          className="rounded-xl bg-accent/45 p-3"
+                        >
+                          <div className="text-base font-bold text-foreground">
+                            {Math.round(macro.value)}g
+                          </div>
+                          <div className="text-[11px] text-muted-foreground">
+                            {macro.label}
+                          </div>
+                          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-background">
+                            <div
+                              className="h-full rounded-full bg-primary"
+                              style={{
+                                width: `${Math.min(100, targetPercent(macro.value, macro.target))}%`,
+                              }}
+                            />
+                          </div>
+                          <div className="mt-1 text-[10px] text-muted-foreground">
+                            {targetPercent(macro.value, macro.target)}% /{" "}
+                            {macro.target}g
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-primary/20 bg-primary/5">
                 <CardContent className="p-5">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
@@ -852,7 +936,7 @@ export default function Meals() {
               </Card>
 
               {newFoodOpen && (
-                <Card className="border-primary/20 bg-primary/5 xl:order-5 xl:col-span-2">
+                <Card className="border-primary/20 bg-primary/5">
                   <CardContent className="space-y-3 p-5">
                     <h2 className="text-sm font-semibold text-foreground">
                       내 음식 등록
@@ -958,92 +1042,8 @@ export default function Meals() {
               )}
             </div>
 
-            <div className="space-y-4 xl:contents">
-              <Card className="border-border bg-card xl:order-1">
-                <CardContent className="p-5">
-                  <div className="mb-4 flex items-center gap-2">
-                    <CalendarDays size={17} className="text-primary" />
-                    <h2 className="text-sm font-semibold text-foreground">
-                      오늘 요약
-                    </h2>
-                  </div>
-                  <Input
-                    type="date"
-                    value={date}
-                    onChange={event => setDate(event.target.value)}
-                    className="mb-4 border-border bg-accent text-foreground"
-                  />
-                  <div className="rounded-2xl border border-border bg-background/45 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-3xl font-black text-foreground">
-                          {Math.round(totals.calories).toLocaleString()} kcal
-                        </div>
-                        <div className="mt-1 text-xs text-muted-foreground">
-                          목표 {targets.calories.toLocaleString()} kcal · 기록된
-                          식사 {mealsQuery.data?.meals?.length ?? 0}개
-                        </div>
-                      </div>
-                      <Badge className="border border-primary/25 bg-primary/10 text-primary">
-                        {targetPercent(totals.calories, targets.calories)}%
-                      </Badge>
-                    </div>
-                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-accent">
-                      <div
-                        className="h-full rounded-full bg-primary"
-                        style={{
-                          width: `${Math.min(100, targetPercent(totals.calories, targets.calories))}%`,
-                        }}
-                      />
-                    </div>
-                    <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                      {[
-                        {
-                          label: "단백질",
-                          value: totals.protein,
-                          target: targets.protein,
-                        },
-                        {
-                          label: "탄수화물",
-                          value: totals.carbs,
-                          target: targets.carbs,
-                        },
-                        {
-                          label: "지방",
-                          value: totals.fat,
-                          target: targets.fat,
-                        },
-                      ].map(macro => (
-                        <div
-                          key={macro.label}
-                          className="rounded-xl bg-accent/45 p-3"
-                        >
-                          <div className="text-base font-bold text-foreground">
-                            {Math.round(macro.value)}g
-                          </div>
-                          <div className="text-[11px] text-muted-foreground">
-                            {macro.label}
-                          </div>
-                          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-background">
-                            <div
-                              className="h-full rounded-full bg-primary"
-                              style={{
-                                width: `${Math.min(100, targetPercent(macro.value, macro.target))}%`,
-                              }}
-                            />
-                          </div>
-                          <div className="mt-1 text-[10px] text-muted-foreground">
-                            {targetPercent(macro.value, macro.target)}% /{" "}
-                            {macro.target}g
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-border bg-card xl:order-4">
+            <div className="flex flex-col gap-4">
+              <Card className="border-border bg-card order-2">
                 <CardContent className="p-5">
                   <button
                     type="button"
@@ -1127,7 +1127,7 @@ export default function Meals() {
                 </CardContent>
               </Card>
 
-              <Card className="border-border bg-card xl:order-2">
+              <Card className="border-border bg-card order-1">
                 <CardContent className="p-5">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
