@@ -272,9 +272,9 @@ export default function Coaching() {
         </div>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(320px,0.75fr)_minmax(0,1.25fr)]">
-        <div className="coaching-content-grid">
-          <Card className="border-border bg-card xl:col-span-2">
+      <div className="mx-auto grid w-full max-w-6xl gap-4 xl:grid-cols-2 xl:items-start">
+        <div className="space-y-4">
+          <Card className="border-border bg-card">
             <CardContent className="p-5">
               <div className="mb-4 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 text-base font-semibold text-foreground">
@@ -460,7 +460,7 @@ export default function Coaching() {
             </CardContent>
           </Card>
 
-          <Card className="border-border bg-card xl:col-span-2">
+          <Card className="border-border bg-card">
             <CardContent className="p-5">
               <div className="mb-4 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 text-base font-semibold text-foreground">
