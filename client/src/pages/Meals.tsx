@@ -694,9 +694,9 @@ export default function Meals() {
         </TabsList>
 
         <TabsContent value="targets" className="space-y-4">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] xl:items-start">
-            <div className="space-y-4">
-              <Card className="border-primary/20 bg-primary/5">
+          <div className="grid gap-4 xl:grid-cols-2 xl:items-start">
+            <div className="space-y-4 xl:contents">
+              <Card className="border-primary/20 bg-primary/5 xl:order-1">
                 <CardContent className="p-5">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
@@ -852,7 +852,7 @@ export default function Meals() {
               </Card>
 
               {newFoodOpen && (
-                <Card className="border-primary/20 bg-primary/5">
+                <Card className="border-primary/20 bg-primary/5 xl:order-5 xl:col-span-2">
                   <CardContent className="space-y-3 p-5">
                     <h2 className="text-sm font-semibold text-foreground">
                       내 음식 등록
@@ -958,8 +958,8 @@ export default function Meals() {
               )}
             </div>
 
-            <div className="space-y-4">
-              <Card className="border-border bg-card">
+            <div className="space-y-4 xl:contents">
+              <Card className="border-border bg-card xl:order-3">
                 <CardContent className="p-5">
                   <div className="mb-4 flex items-center gap-2">
                     <CalendarDays size={17} className="text-primary" />
@@ -1043,7 +1043,7 @@ export default function Meals() {
                 </CardContent>
               </Card>
 
-              <Card className="border-border bg-card">
+              <Card className="border-border bg-card xl:order-2">
                 <CardContent className="p-5">
                   <button
                     type="button"
@@ -1127,7 +1127,7 @@ export default function Meals() {
                 </CardContent>
               </Card>
 
-              <Card className="border-border bg-card">
+              <Card className="border-border bg-card xl:order-4">
                 <CardContent className="p-5">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
