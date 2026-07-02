@@ -939,18 +939,18 @@ export default function Profile() {
                     <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                       <defs>
                         <linearGradient id="weightGradProfile" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="oklch(0.74 0.18 160)" stopOpacity={0.35} />
-                          <stop offset="95%" stopColor="oklch(0.74 0.18 160)" stopOpacity={0} />
+                          <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.35} />
+                          <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="fatGradProfile" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f97316" stopOpacity={0.25} />
-                          <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                          <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={0.25} />
+                          <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.28 0.014 260)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                       <XAxis
                         dataKey="date"
-                        tick={{ fontSize: 10, fill: "oklch(0.55 0.01 260)" }}
+                        tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
                         tickLine={false}
                         axisLine={false}
                         interval="preserveStartEnd"
@@ -958,7 +958,7 @@ export default function Profile() {
                       <YAxis
                         yAxisId="weight"
                         domain={["auto", "auto"]}
-                        tick={{ fontSize: 10, fill: "oklch(0.55 0.01 260)" }}
+                        tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
                         tickLine={false}
                         axisLine={false}
                         tickFormatter={(v) => `${v}kg`}
@@ -968,7 +968,7 @@ export default function Profile() {
                           yAxisId="fat"
                           orientation="right"
                           domain={[0, 50]}
-                          tick={{ fontSize: 10, fill: "oklch(0.55 0.01 260)" }}
+                          tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
                           tickLine={false}
                           axisLine={false}
                           tickFormatter={(v) => `${v}%`}
@@ -991,20 +991,20 @@ export default function Profile() {
                         <ReferenceLine
                           yAxisId="weight"
                           y={targetW}
-                          stroke="oklch(0.74 0.18 160)"
+                          stroke="var(--chart-1)"
                           strokeDasharray="6 3"
                           strokeWidth={1.5}
-                          label={{ value: `목표 ${targetW}kg`, position: "insideTopRight", fontSize: 10, fill: "oklch(0.74 0.18 160)" }}
+                          label={{ value: `목표 ${targetW}kg`, position: "insideTopRight", fontSize: 10, fill: "var(--chart-1)" }}
                         />
                       )}
                       <Area
                         yAxisId="weight"
                         type="monotone"
                         dataKey="체중"
-                        stroke="oklch(0.74 0.18 160)"
+                        stroke="var(--chart-1)"
                         fill="url(#weightGradProfile)"
                         strokeWidth={2.5}
-                        dot={{ r: 3.5, fill: "oklch(0.74 0.18 160)", strokeWidth: 0 }}
+                        dot={{ r: 3.5, fill: "var(--chart-1)", strokeWidth: 0 }}
                         activeDot={{ r: 5 }}
                       />
                       {chartData.some(d => d.체지방 !== undefined) && (
@@ -1012,10 +1012,10 @@ export default function Profile() {
                           yAxisId="fat"
                           type="monotone"
                           dataKey="체지방"
-                          stroke="#f97316"
+                          stroke="var(--chart-2)"
                           fill="url(#fatGradProfile)"
                           strokeWidth={2}
-                          dot={{ r: 3, fill: "#f97316", strokeWidth: 0 }}
+                          dot={{ r: 3, fill: "var(--chart-2)", strokeWidth: 0 }}
                           activeDot={{ r: 4 }}
                         />
                       )}
@@ -1025,18 +1025,18 @@ export default function Profile() {
                   {/* 범례 */}
                   <div className="flex items-center gap-4 mt-2 justify-center">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <div className="w-3 h-0.5 rounded bg-emerald-400" />
+                      <div className="w-3 h-0.5 rounded" style={{ backgroundColor: "var(--chart-1)" }} />
                       체중
                     </div>
                     {chartData.some(d => d.체지방 !== undefined) && (
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <div className="w-3 h-0.5 rounded bg-orange-400" />
+                        <div className="w-3 h-0.5 rounded" style={{ backgroundColor: "var(--chart-2)" }} />
                         체지방률
                       </div>
                     )}
                     {targetW && (
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <div className="w-3 h-0.5 rounded bg-emerald-400 opacity-50" style={{ borderTop: '1px dashed' }} />
+                        <div className="w-3 h-0.5 rounded opacity-50" style={{ borderTop: "1px dashed var(--chart-1)" }} />
                         목표 체중
                       </div>
                     )}

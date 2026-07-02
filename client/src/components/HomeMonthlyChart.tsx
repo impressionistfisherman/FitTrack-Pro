@@ -19,7 +19,7 @@ export function HomeMonthlyChart({ stats }: { stats: any[] }) {
           yAxisId="volume"
           orientation="right"
           width={48}
-          stroke="var(--color-blue-400)"
+          stroke="var(--chart-2)"
           style={{ fontSize: "12px" }}
           tickFormatter={(value) => Number(value).toLocaleString()}
         />
@@ -39,8 +39,8 @@ export function HomeMonthlyChart({ stats }: { stats: any[] }) {
           }}
         />
         <Legend />
-        <Bar yAxisId="count" dataKey="운동횟수" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
-        <Bar yAxisId="volume" dataKey={volumeKey} name="볼륨" fill="var(--color-blue-400)" radius={[4, 4, 0, 0]} />
+        <Bar yAxisId="count" dataKey="운동횟수" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+        <Bar yAxisId="volume" dataKey={volumeKey} name="볼륨" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

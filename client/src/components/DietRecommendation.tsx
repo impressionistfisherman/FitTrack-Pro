@@ -51,14 +51,14 @@ function MacroCircle({ protein, carbs, fat, total }: { protein: number; carbs: n
       <div className="relative w-24 h-24 flex-shrink-0">
         <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
           <circle cx="50" cy="50" r={r} fill="none" stroke="var(--accent)" strokeWidth="14" />
-          {/* 단백질 - 초록 */}
-          <circle cx="50" cy="50" r={r} fill="none" stroke="#10b981" strokeWidth="14"
+          {/* 단백질 */}
+          <circle cx="50" cy="50" r={r} fill="none" stroke="var(--chart-1)" strokeWidth="14"
             strokeDasharray={`${pLen} ${circ - pLen}`} strokeDashoffset={pOffset} />
-          {/* 탄수화물 - 파랑 */}
-          <circle cx="50" cy="50" r={r} fill="none" stroke="#3b82f6" strokeWidth="14"
+          {/* 탄수화물 */}
+          <circle cx="50" cy="50" r={r} fill="none" stroke="var(--chart-2)" strokeWidth="14"
             strokeDasharray={`${cLen} ${circ - cLen}`} strokeDashoffset={cOffset} />
-          {/* 지방 - 주황 */}
-          <circle cx="50" cy="50" r={r} fill="none" stroke="#f97316" strokeWidth="14"
+          {/* 지방 */}
+          <circle cx="50" cy="50" r={r} fill="none" stroke="var(--chart-3)" strokeWidth="14"
             strokeDasharray={`${fLen} ${circ - fLen}`} strokeDashoffset={fOffset} />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -70,21 +70,21 @@ function MacroCircle({ protein, carbs, fat, total }: { protein: number; carbs: n
       <div className="space-y-1.5 flex-1">
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0" />
+            <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: "var(--chart-1)" }} />
             <span className="text-muted-foreground">단백질</span>
           </div>
           <span className="font-semibold text-foreground">{protein}g <span className="text-muted-foreground font-normal">({pPct}%)</span></span>
         </div>
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0" />
+            <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: "var(--chart-2)" }} />
             <span className="text-muted-foreground">탄수화물</span>
           </div>
           <span className="font-semibold text-foreground">{carbs}g <span className="text-muted-foreground font-normal">({cPct}%)</span></span>
         </div>
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-orange-500 flex-shrink-0" />
+            <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: "var(--chart-3)" }} />
             <span className="text-muted-foreground">지방</span>
           </div>
           <span className="font-semibold text-foreground">{fat}g <span className="text-muted-foreground font-normal">({fPct}%)</span></span>
