@@ -914,15 +914,15 @@ export default function History() {
                   <AreaChart data={volumeChartData}>
                     <defs>
                       <linearGradient id="volumeGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="oklch(0.72 0.18 160)" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="oklch(0.72 0.18 160)" stopOpacity={0} />
+                        <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.22 0.01 260)" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: "oklch(0.55 0.01 260)" }} />
-                    <YAxis tick={{ fontSize: 10, fill: "oklch(0.55 0.01 260)" }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
+                    <YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Area type="monotone" dataKey="볼륨" stroke="oklch(0.72 0.18 160)" fill="url(#volumeGrad)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="볼륨" stroke="var(--chart-1)" fill="url(#volumeGrad)" strokeWidth={2} />
                   </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -1001,16 +1001,16 @@ export default function History() {
                   </div>
                   <ResponsiveContainer width="100%" height={190}>
                     <LineChart data={progressChartData} margin={{ top: 8, right: 12, left: -10, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.22 0.01 260)" />
-                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: "oklch(0.55 0.01 260)" }} />
-                      <YAxis domain={["auto", "auto"]} tick={{ fontSize: 10, fill: "oklch(0.55 0.01 260)" }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
+                      <YAxis domain={["auto", "auto"]} tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
                       <Tooltip content={<CustomTooltip />} />
                       <Line
                         type="monotone"
                         dataKey="평균무게"
-                        stroke="oklch(0.72 0.18 160)"
+                        stroke="var(--chart-1)"
                         strokeWidth={2.5}
-                        dot={{ r: 4, fill: "oklch(0.72 0.18 160)", strokeWidth: 0 }}
+                        dot={{ r: 4, fill: "var(--chart-1)", strokeWidth: 0 }}
                         activeDot={{ r: 6 }}
                       />
                     </LineChart>
