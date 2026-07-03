@@ -743,12 +743,12 @@ export default function FreeWorkoutDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[92dvh] min-h-0 w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-hidden border-border bg-card p-0 text-foreground sm:max-w-[min(100vw-2rem,68rem)]">
+      <DialogContent className="flex h-[calc(100dvh-1rem)] max-h-[calc(100dvh-1rem)] min-h-0 w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-hidden border-border bg-card p-0 text-foreground sm:h-[92dvh] sm:max-h-[92dvh] sm:max-w-[min(100vw-2rem,68rem)]">
         <DialogHeader className="shrink-0 border-b border-border px-5 py-4">
           <DialogTitle className="text-foreground">{editSession ? "운동 기록 수정" : "운동 기록 추가"}</DialogTitle>
         </DialogHeader>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-4">
           <div className="grid gap-4 px-4 py-4 sm:px-5 lg:grid-cols-[minmax(280px,0.72fr)_minmax(0,1.45fr)]">
           <div className="min-w-0 space-y-3">
             <div className="space-y-1.5">
