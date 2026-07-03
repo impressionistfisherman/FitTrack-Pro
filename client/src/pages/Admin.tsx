@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useBufferedValue } from "@/hooks/useDebouncedValue";
 import { AlertTriangle, Database, Megaphone, Save, Search, ShieldCheck, UserCheck, Users, UserX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -82,7 +82,8 @@ export default function Admin() {
   const [feedbackStatuses, setFeedbackStatuses] = useState<Record<number, "open" | "reviewing" | "resolved" | "closed">>({});
   const [memberNames, setMemberNames] = useState<Record<number, string>>({});
   const [memberRoles, setMemberRoles] = useState<Record<number, "user" | "admin">>({});
-  const debouncedMemberSearch = useDebouncedValue(memberSearch.trim(), 220);
+  const [draftMemberSearch, setDraftMemberSearch] = useBufferedValue(memberSearch, setMemberSearch, 220);
+  const committedMemberSearch = memberSearch.trim();
   const { data: applications, isLoading } = trpc.admin.trainerApplications.useQuery(
     { status },
     { enabled: user?.role === "admin" }
@@ -100,7 +101,7 @@ export default function Admin() {
     { enabled: user?.role === "admin" }
   );
   const { data: members, isLoading: membersLoading } = trpc.admin.members.useQuery(
-    { search: debouncedMemberSearch, role: memberRole, appRole: memberAppRole },
+    { search: committedMemberSearch, role: memberRole, appRole: memberAppRole },
     { enabled: user?.role === "admin" }
   );
   const { data: userFeedback, isLoading: userFeedbackLoading } = trpc.admin.userFeedback.useQuery(
@@ -439,8 +440,8 @@ export default function Admin() {
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  value={memberSearch}
-                  onChange={(event) => setMemberSearch(event.target.value)}
+                  value={draftMemberSearch}
+                  onChange={(event) => setDraftMemberSearch(event.target.value)}
                   placeholder="이름, 이메일, 회원 ID 검색"
                   className="border-border bg-background pl-9 text-foreground"
                 />

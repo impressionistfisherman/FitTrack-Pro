@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useWakeLock } from "@/hooks/useWakeLock";
-import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useBufferedValue } from "@/hooks/useDebouncedValue";
 import RestTimerOverlay from "@/components/RestTimerOverlay";
 import { matchesExerciseSearchText } from "@shared/exerciseSearch";
 
@@ -113,7 +113,8 @@ function AddExerciseModal({ onAdd }: { onAdd: (exercise: any, restSecs: number) 
   const [search, setSearch] = useState("");
   const [bodyPart, setBodyPart] = useState("all");
   const [restSecs, setRestSecs] = useState(90);
-  const debouncedSearch = useDebouncedValue(search.trim(), 180);
+  const [draftSearch, setDraftSearch] = useBufferedValue(search, setSearch, 180);
+  const committedSearch = search.trim();
 
   const { data: exercises } = trpc.exercises.list.useQuery(
     { bodyPart: bodyPart !== "all" ? bodyPart : undefined },
@@ -121,9 +122,9 @@ function AddExerciseModal({ onAdd }: { onAdd: (exercise: any, restSecs: number) 
   );
 
   const filtered = useMemo(() => exercises?.filter(ex => {
-    if (!debouncedSearch) return true;
-    return matchesExerciseSearchText(debouncedSearch, ex.nameKo, ex.name);
-  }).slice(0, 40), [exercises, debouncedSearch]);
+    if (!committedSearch) return true;
+    return matchesExerciseSearchText(committedSearch, ex.nameKo, ex.name);
+  }).slice(0, 40), [exercises, committedSearch]);
 
   const bodyParts = ["all", "chest", "back", "shoulders", "arms", "legs", "abs", "glutes", "cardio", "stretching"];
   const bpKo: Record<string, string> = {
@@ -144,7 +145,7 @@ function AddExerciseModal({ onAdd }: { onAdd: (exercise: any, restSecs: number) 
         <DialogContent className="mobile-exercise-picker bg-card border-border text-foreground max-w-lg max-h-[85vh] flex flex-col overflow-hidden sm:max-h-[85vh]">
           <DialogHeader><DialogTitle>운동 선택</DialogTitle></DialogHeader>
           <div className="mobile-picker-sticky space-y-3">
-            <Input placeholder="운동 검색..." value={search} onChange={e => setSearch(e.target.value)}
+            <Input placeholder="운동 검색..." value={draftSearch} onChange={e => setDraftSearch(e.target.value)}
               className="bg-accent border-border text-foreground" />
             <div className="flex gap-1.5 overflow-x-auto pb-1">
               {bodyParts.map(bp => (

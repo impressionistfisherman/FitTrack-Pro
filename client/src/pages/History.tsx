@@ -17,6 +17,7 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
+import { useBufferedValue } from "@/hooks/useDebouncedValue";
 
 const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const MONTHS = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
@@ -603,6 +604,7 @@ export default function History() {
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [chartExerciseId, setChartExerciseId] = useState<number | null>(null);
   const [exerciseSearch, setExerciseSearch] = useState("");
+  const [draftExerciseSearch, setDraftExerciseSearch] = useBufferedValue(exerciseSearch, setExerciseSearch, 180);
   const [exerciseSearchOpen, setExerciseSearchOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(toDateKey(new Date()));
   const [freeWorkoutOpen, setFreeWorkoutOpen] = useState(false);
@@ -732,7 +734,7 @@ export default function History() {
       : source;
     return filtered.slice(0, 12);
   }, [exercises, exerciseSearch]);
-  const hasExerciseSearch = exerciseSearch.trim().length > 0;
+  const hasExerciseSearch = draftExerciseSearch.trim().length > 0;
   const shouldShowExerciseOptions = exerciseSearchOpen && hasExerciseSearch;
 
   const closeExerciseSearchIfLeaving = (nextFocus: EventTarget | null) => {
@@ -945,10 +947,10 @@ export default function History() {
                 className={cn("space-y-2", (shouldShowExerciseOptions || chartExerciseId) && "mb-4")}
               >
                 <input
-                  value={exerciseSearch}
+                  value={draftExerciseSearch}
                   onFocus={() => setExerciseSearchOpen(true)}
                   onChange={(event) => {
-                    setExerciseSearch(event.target.value);
+                    setDraftExerciseSearch(event.target.value);
                     setExerciseSearchOpen(true);
                   }}
                   placeholder={selectedChartExercise ? selectedChartExercise.nameKo : "운동 이름 검색..."}

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useBufferedValue } from "@/hooks/useDebouncedValue";
 import { cn } from "@/lib/utils";
 import { matchesExerciseSearchText } from "@shared/exerciseSearch";
 import { CalendarDays, ChevronDown, Dumbbell, ImagePlus, Loader2, Minus, Pencil, Plus, Search, Sparkles, Trash2 } from "lucide-react";
@@ -204,22 +204,24 @@ export default function FreeWorkoutDialog({
   const [captureMessage, setCaptureMessage] = useState("");
   const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseAiFeedback | null>(null);
   const exerciseSearchRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const debouncedSearch = useDebouncedValue(search.trim(), 180);
-  const debouncedReplaceSearch = useDebouncedValue(replaceSearch.trim(), 180);
-  const hasExerciseSearch = search.trim().length > 0;
+  const [draftSearch, setDraftSearch] = useBufferedValue(search, setSearch, 180);
+  const [draftReplaceSearch, setDraftReplaceSearch] = useBufferedValue(replaceSearch, setReplaceSearch, 180);
+  const committedSearch = search.trim();
+  const committedReplaceSearch = replaceSearch.trim();
+  const hasExerciseSearch = draftSearch.trim().length > 0;
   const shouldShowExerciseList = exerciseSearchOpen && hasExerciseSearch;
 
   const { data: exercises, isLoading: exercisesLoading, isFetching: exercisesFetching } = trpc.exercises.list.useQuery(
-    { search: debouncedSearch || undefined },
-    { enabled: open && exerciseSearchOpen && debouncedSearch.length > 0, staleTime: 1000 * 60 * 5 }
+    { search: committedSearch || undefined },
+    { enabled: open && exerciseSearchOpen && committedSearch.length > 0, staleTime: 1000 * 60 * 5 }
   );
   const { data: weights } = trpc.bodyWeight.list.useQuery(
     { limit: 1 },
     { enabled: open, staleTime: 1000 * 60 * 5 }
   );
   const { data: replacementExercises, isFetching: replacementExercisesFetching } = trpc.exercises.list.useQuery(
-    { search: debouncedReplaceSearch || undefined },
-    { enabled: open && replacingExerciseId !== null && debouncedReplaceSearch.length > 0, staleTime: 1000 * 60 * 5 }
+    { search: committedReplaceSearch || undefined },
+    { enabled: open && replacingExerciseId !== null && committedReplaceSearch.length > 0, staleTime: 1000 * 60 * 5 }
   );
   const updateSession = trpc.workout.updateSession.useMutation();
   const saveSession = trpc.workout.saveSession.useMutation();
@@ -233,9 +235,9 @@ export default function FreeWorkoutDialog({
     const selectedIds = new Set(selected.map((item) => item.exercise.id));
     return (exercises ?? [])
       .filter((exercise) => !selectedIds.has(exercise.id))
-      .filter((exercise) => matchesExerciseSearchText(debouncedSearch, exercise.nameKo, exercise.name))
+      .filter((exercise) => matchesExerciseSearchText(committedSearch, exercise.nameKo, exercise.name))
       .slice(0, 20);
-  }, [debouncedSearch, exercises, selected]);
+  }, [committedSearch, exercises, selected]);
 
   const filteredReplacementExercises = useMemo(() => {
     if (replacingExerciseId === null) return [];
@@ -246,9 +248,9 @@ export default function FreeWorkoutDialog({
     );
     return (replacementExercises ?? [])
       .filter((exercise) => !selectedIds.has(exercise.id))
-      .filter((exercise) => matchesExerciseSearchText(debouncedReplaceSearch, exercise.nameKo, exercise.name))
+      .filter((exercise) => matchesExerciseSearchText(committedReplaceSearch, exercise.nameKo, exercise.name))
       .slice(0, 12);
-  }, [debouncedReplaceSearch, replacementExercises, replacingExerciseId, selected]);
+  }, [committedReplaceSearch, replacementExercises, replacingExerciseId, selected]);
 
   const closeExerciseSearchIfLeaving = (nextFocus: EventTarget | null) => {
     if (nextFocus instanceof Node && exerciseSearchRefs.current.some((node) => node?.contains(nextFocus))) return;
@@ -658,10 +660,10 @@ export default function FreeWorkoutDialog({
       <div className="relative">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <Input
-          value={search}
-          onFocus={() => setExerciseSearchOpen(search.trim().length > 0)}
+          value={draftSearch}
+          onFocus={() => setExerciseSearchOpen(draftSearch.trim().length > 0)}
           onChange={(event) => {
-            setSearch(event.target.value);
+            setDraftSearch(event.target.value);
             setExerciseSearchOpen(event.target.value.trim().length > 0);
           }}
           placeholder="벤치, 스쿼트..."
@@ -909,13 +911,13 @@ export default function FreeWorkoutDialog({
                         <div className="relative">
                           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                           <Input
-                            value={replaceSearch}
-                            onChange={(event) => setReplaceSearch(event.target.value)}
+                            value={draftReplaceSearch}
+                            onChange={(event) => setDraftReplaceSearch(event.target.value)}
                             placeholder="변경할 운동 검색..."
                             className="h-8 bg-card border-border pl-8 text-sm text-foreground"
                           />
                         </div>
-                        {replaceSearch.trim().length > 0 && (
+                        {draftReplaceSearch.trim().length > 0 && (
                           <div className="mobile-search-results mt-2 h-48 overflow-y-auto overscroll-contain rounded-md border border-border">
                             <div className="space-y-1 p-1.5">
                               {replacementExercisesFetching && filteredReplacementExercises.length === 0 ? (

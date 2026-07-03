@@ -1,15 +1,13 @@
 # PROGRESS
 
-## 2026-07-03 09:52:32 +09:00
+## 2026-07-03 10:01:11 +09:00
 
 ### 작업 요약
 
-- 이미지 운동 캡처 인식 후 DB 매칭 정확도 보강
-- 캡처 매칭에서 장비 단어가 보이는 경우 장비 제거 별칭을 사용하지 않도록 수정
-- 해머 컬, 크런치, 니업 계열 동작 토큰 감지와 우선 매칭 규칙 추가
-- `케이블 해머 컬` 기본 운동 데이터와 검색 별칭 추가
-- OCR 프롬프트에 케이블 해머컬, 크런치, 시티드 니업 오분류 방지 문구 추가
-- 캡처 매칭 회귀 테스트 추가
+- 검색 입력 중 키 입력 자체가 늦게 찍히는 문제 완화
+- 기존 debounce가 부모 컴포넌트 재렌더를 막지 못하던 구조를 보완
+- `useBufferedValue`를 추가해 input draft 값과 실제 검색 state를 분리
+- 운동 기록 추가 모달, 운동 탐색, 식단, 루틴, 운동 세션, 기록, 트레이너, 관리자 검색 입력에 적용
 
 ### 현재 상태
 
@@ -17,17 +15,22 @@
 
 ### 변경 파일
 
-- `server/routers.ts`
-- `server/db.ts`
-- `server/fittrack.test.ts`
-- `shared/exerciseSearch.ts`
+- `client/src/hooks/useDebouncedValue.ts`
+- `client/src/components/FreeWorkoutDialog.tsx`
+- `client/src/pages/Admin.tsx`
+- `client/src/pages/Exercises.tsx`
+- `client/src/pages/History.tsx`
+- `client/src/pages/Meals.tsx`
+- `client/src/pages/RoutineDetail.tsx`
+- `client/src/pages/TrainerClientDetail.tsx`
+- `client/src/pages/WorkoutSession.tsx`
 - `TEST_RESULT.md`
 - `PROGRESS.md`
 
 ### 남은 문제
 
-- LLM이 이미지에 없는 운동명을 완전히 임의 생성하는 경우는 서버 매칭만으로 100% 방지할 수 없으므로 실제 이미지 재확인 필요
+- 실제 배포 환경에서 입력 지연이 남는 경우 검색 결과 리스트 렌더링 가상화까지 추가 검토 필요
 
 ### 다음 세션에서 할 일
 
-- 추가 오분류 사례가 나오면 `preferredCaptureMatches`에 회귀 케이스를 추가
+- 특정 화면에서 여전히 입력 지연이 재현되면 해당 검색 결과 리스트를 가상 스크롤 또는 포털/메모화 구조로 분리

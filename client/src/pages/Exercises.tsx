@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { ExerciseResultItem } from "@/components/exercise/ExerciseResultItem";
-import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useBufferedValue } from "@/hooks/useDebouncedValue";
 import { trpc } from "@/lib/trpc";
 import { ChevronLeft, ChevronRight, Filter, Heart, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -89,7 +89,8 @@ export default function Exercises() {
   const [showFilters, setShowFilters] = useState(false);
   const [showFavOnly, setShowFavOnly] = useState(initial.favorites);
   const [showImages, setShowImages] = useState(false);
-  const debouncedSearch = useDebouncedValue(search.trim(), 250);
+  const [draftSearch, setDraftSearch] = useBufferedValue(search, setSearch, 180);
+  const debouncedSearch = search.trim();
   const pageInput = {
     bodyPart: bodyPart !== "all" ? bodyPart : undefined,
     equipment: equipment !== "all" ? equipment : undefined,
@@ -200,10 +201,10 @@ export default function Exercises() {
             <input
               type="search"
               placeholder="운동 이름 검색..."
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              value={draftSearch}
+              onChange={(event) => setDraftSearch(event.target.value)}
             />
-            {search && (
+            {draftSearch && (
               <button type="button" onClick={() => setSearch("")} aria-label="검색어 초기화">
                 <X size={16} />
               </button>

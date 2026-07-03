@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useBufferedValue } from "@/hooks/useDebouncedValue";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import {
@@ -147,7 +147,8 @@ export default function Meals() {
     carbs: "",
     fat: "",
   });
-  const debouncedFoodSearch = useDebouncedValue(foodSearch.trim(), 200);
+  const [draftFoodSearch, setDraftFoodSearch] = useBufferedValue(foodSearch, setFoodSearch, 180);
+  const debouncedFoodSearch = foodSearch.trim();
 
   const mealsQuery = trpc.meals.byDate.useQuery(
     { date },
@@ -331,9 +332,9 @@ export default function Meals() {
     fat: 65,
   };
   const macroCalories = totals.protein * 4 + totals.carbs * 4 + totals.fat * 9;
-  const hasFoodSearch = Boolean(foodSearch.trim());
+  const hasFoodSearch = Boolean(draftFoodSearch.trim());
   const selectedFoodMatchesSearch = Boolean(
-    selectedFood && foodSearch.trim() === selectedFood.name
+    selectedFood && draftFoodSearch.trim() === selectedFood.name
   );
   const showFoodSearchDropdown =
     foodSearchOpen && hasFoodSearch && !selectedFoodMatchesSearch;
@@ -1351,14 +1352,14 @@ export default function Meals() {
                       className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                     />
                     <Input
-                      value={foodSearch}
+                      value={draftFoodSearch}
                       onFocus={() => {
-                        if (foodSearch.trim() && !selectedFoodMatchesSearch)
+                        if (draftFoodSearch.trim() && !selectedFoodMatchesSearch)
                           setFoodSearchOpen(true);
                       }}
                       onChange={event => {
                         const nextSearch = event.target.value;
-                        setFoodSearch(nextSearch);
+                        setDraftFoodSearch(nextSearch);
                         if (
                           selectedFood &&
                           nextSearch.trim() !== selectedFood.name
