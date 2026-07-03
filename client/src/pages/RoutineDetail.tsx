@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { getPopularExerciseAliases, matchesExerciseSearchText } from "@shared/exerciseSearch";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 const bodyPartLabels: Record<string, string> = {
   chest: "가슴", back: "등", shoulders: "어깨", arms: "팔",
@@ -67,6 +68,7 @@ function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: nu
   const [rest, setRest] = useState("90");
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [setDetails, setSetDetails] = useState<Array<{setNumber: number; weightKg?: number; reps?: number}>>([]);
+  const debouncedSearch = useDebouncedValue(search.trim(), 180);
 
   const { data: exercises } = trpc.exercises.list.useQuery({
     bodyPart: selectedBodyPart !== "all" ? selectedBodyPart : undefined,
@@ -83,8 +85,8 @@ function AddExerciseDialog({ routineId, currentCount, onAdded }: { routineId: nu
   });
 
   const filtered = exercises?.filter((ex) => {
-    if (search) {
-      return matchesExerciseSearchText(search, ex.nameKo, ex.name);
+    if (debouncedSearch) {
+      return matchesExerciseSearchText(debouncedSearch, ex.nameKo, ex.name);
     }
     return true;
   }).slice(0, 40);
@@ -278,6 +280,7 @@ function EditRoutineExerciseDialog({ item, onSaved }: { item: any; onSaved: () =
   const [setDetails, setSetDetails] = useState<Array<{setNumber: number; weightKg?: number; reps?: number}>>(
     makeRoutineSetDetails(item.re.sets || 3, item.re.reps || 10, Array.isArray(item.re.setDetails) ? item.re.setDetails : []),
   );
+  const debouncedSearch = useDebouncedValue(search.trim(), 180);
   const { data: exercises } = trpc.exercises.list.useQuery({
     bodyPart: selectedBodyPart !== "all" ? selectedBodyPart : undefined,
   }, { enabled: open && choosingExercise });
@@ -293,8 +296,8 @@ function EditRoutineExerciseDialog({ item, onSaved }: { item: any; onSaved: () =
   const bodyParts = ["all", "chest", "back", "shoulders", "arms", "legs", "abs", "glutes", "cardio", "stretching"];
   const bodyPartKo: Record<string, string> = { all: "전체", ...bodyPartLabels };
   const filtered = exercises?.filter((ex) => {
-    if (!search) return true;
-    return matchesExerciseSearchText(search, ex.nameKo, ex.name);
+    if (!debouncedSearch) return true;
+    return matchesExerciseSearchText(debouncedSearch, ex.nameKo, ex.name);
   }).slice(0, 40);
 
   const resetFromItem = () => {

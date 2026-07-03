@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useWakeLock } from "@/hooks/useWakeLock";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import RestTimerOverlay from "@/components/RestTimerOverlay";
 import { matchesExerciseSearchText } from "@shared/exerciseSearch";
 
@@ -112,6 +113,7 @@ function AddExerciseModal({ onAdd }: { onAdd: (exercise: any, restSecs: number) 
   const [search, setSearch] = useState("");
   const [bodyPart, setBodyPart] = useState("all");
   const [restSecs, setRestSecs] = useState(90);
+  const debouncedSearch = useDebouncedValue(search.trim(), 180);
 
   const { data: exercises } = trpc.exercises.list.useQuery(
     { bodyPart: bodyPart !== "all" ? bodyPart : undefined },
@@ -119,9 +121,9 @@ function AddExerciseModal({ onAdd }: { onAdd: (exercise: any, restSecs: number) 
   );
 
   const filtered = useMemo(() => exercises?.filter(ex => {
-    if (!search) return true;
-    return matchesExerciseSearchText(search, ex.nameKo, ex.name);
-  }).slice(0, 40), [exercises, search]);
+    if (!debouncedSearch) return true;
+    return matchesExerciseSearchText(debouncedSearch, ex.nameKo, ex.name);
+  }).slice(0, 40), [exercises, debouncedSearch]);
 
   const bodyParts = ["all", "chest", "back", "shoulders", "arms", "legs", "abs", "glutes", "cardio", "stretching"];
   const bpKo: Record<string, string> = {

@@ -46,6 +46,7 @@ const aliasGroups = [
   ["크런치", "윗몸", "윗몸일으키기", "복근 크런치", "crunch"],
   ["플랭크", "플랭크 자세", "코어 버티기", "plank"],
   ["레그 레이즈", "레그레이즈", "누워서 다리올리기", "하복부", "leg raise"],
+  ["시티드 니업", "니업", "시티드 니 레이즈", "앉아서 무릎 올리기", "앉아서 무릎 당기기", "seated knee up", "seated knee-up", "seated knee raise", "knee up"],
   ["러시안 트위스트", "러시안트위스트", "복사근", "russian twist"],
   ["행잉 레그 레이즈", "행레레", "매달려 다리올리기", "hanging leg raise"],
   ["AB 휠 롤아웃", "ab휠", "앱휠", "복근 휠", "ab wheel"],

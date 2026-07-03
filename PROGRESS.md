@@ -1,12 +1,13 @@
 # PROGRESS
 
-## 2026-07-03 09:36:43 +09:00
+## 2026-07-03 09:45:33 +09:00
 
 ### 작업 요약
 
-- 운동 기록 추가 모달의 검색 입력 렉 완화
-- 운동 검색과 운동 교체 검색에 `useDebouncedValue` 적용
-- 이미지 캡처 인식 후 DB 매칭에서 장비 단어를 보존하고, 다른 장비 후보를 감점하도록 보정
+- 운동 검색 외 검색 입력 렉 완화를 위해 debounce 누락 지점 보완
+- 루틴 상세, 운동 세션, 트레이너 PT 기록, 관리자 회원 검색에 `useDebouncedValue` 적용
+- 기본 운동 데이터에 `시티드 니업` 추가
+- `니업` 관련 한국어/영어 검색 별칭과 회귀 테스트 추가
 
 ### 현재 상태
 
@@ -14,15 +15,20 @@
 
 ### 변경 파일
 
-- `client/src/components/FreeWorkoutDialog.tsx`
-- `server/routers.ts`
+- `client/src/pages/Admin.tsx`
+- `client/src/pages/RoutineDetail.tsx`
+- `client/src/pages/TrainerClientDetail.tsx`
+- `client/src/pages/WorkoutSession.tsx`
+- `server/db.ts`
+- `server/fittrack.test.ts`
+- `shared/exerciseSearch.ts`
 - `TEST_RESULT.md`
 - `PROGRESS.md`
 
 ### 남은 문제
 
-- 실제 캡처 이미지에서 바벨 로우, 케이블 로우 등 장비명 포함 운동 재확인 필요
+- 실제 배포 환경에서 각 검색 입력의 체감 지연감 재확인 필요
 
 ### 다음 세션에서 할 일
 
-- 필요 시 캡처 매칭 결과에 원본 OCR 운동명을 함께 표시해 사용자가 오분류를 더 빨리 확인하게 개선
+- 추가로 끊기는 검색 입력이 있으면 같은 debounce 패턴 적용

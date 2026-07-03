@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { AlertTriangle, Database, Megaphone, Save, Search, ShieldCheck, UserCheck, Users, UserX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -81,6 +82,7 @@ export default function Admin() {
   const [feedbackStatuses, setFeedbackStatuses] = useState<Record<number, "open" | "reviewing" | "resolved" | "closed">>({});
   const [memberNames, setMemberNames] = useState<Record<number, string>>({});
   const [memberRoles, setMemberRoles] = useState<Record<number, "user" | "admin">>({});
+  const debouncedMemberSearch = useDebouncedValue(memberSearch.trim(), 220);
   const { data: applications, isLoading } = trpc.admin.trainerApplications.useQuery(
     { status },
     { enabled: user?.role === "admin" }
@@ -98,7 +100,7 @@ export default function Admin() {
     { enabled: user?.role === "admin" }
   );
   const { data: members, isLoading: membersLoading } = trpc.admin.members.useQuery(
-    { search: memberSearch, role: memberRole, appRole: memberAppRole },
+    { search: debouncedMemberSearch, role: memberRole, appRole: memberAppRole },
     { enabled: user?.role === "admin" }
   );
   const { data: userFeedback, isLoading: userFeedbackLoading } = trpc.admin.userFeedback.useQuery(

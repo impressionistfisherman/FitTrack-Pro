@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import {
   ArrowLeft,
   Bot,
@@ -373,6 +374,7 @@ export default function TrainerClientDetail() {
   const [taskDescription, setTaskDescription] = useState("");
   const [privateNote, setPrivateNote] = useState("");
   const [exerciseSearch, setExerciseSearch] = useState("");
+  const debouncedExerciseSearch = useDebouncedValue(exerciseSearch.trim(), 180);
   const [selectedExercises, setSelectedExercises] = useState<PtExercise[]>([]);
   const [selectedPtSession, setSelectedPtSession] = useState<any | null>(null);
   const [captureMessage, setCaptureMessage] = useState("");
@@ -382,7 +384,7 @@ export default function TrainerClientDetail() {
   );
   const { data: exercises, isFetching: exercisesFetching } =
     trpc.exercises.list.useQuery(
-      { search: exerciseSearch || undefined },
+      { search: debouncedExerciseSearch || undefined },
       { enabled: ptOpen, staleTime: 1000 * 60 * 5 }
     );
   const parseWorkoutCapture = trpc.ai.parseWorkoutCapture.useMutation();
