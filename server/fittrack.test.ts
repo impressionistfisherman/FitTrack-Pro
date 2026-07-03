@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { appRouter } from "./routers";
+import { appRouter, matchExerciseForCaptureForTest } from "./routers";
 import {
   addTrainerFeedback,
   addTrainerPtSession,
@@ -326,6 +326,9 @@ describe("exercises.list", () => {
     await expect(caller.exercises.list({ search: "니업" })).resolves.toEqual(
       expect.arrayContaining([expect.objectContaining({ nameKo: "시티드 니업" })])
     );
+    await expect(caller.exercises.list({ search: "케이블 해머컬" })).resolves.toEqual(
+      expect.arrayContaining([expect.objectContaining({ nameKo: "케이블 해머 컬", equipment: "cable" })])
+    );
     expect((await caller.exercises.list({ search: "이너싸이" })).some((exercise) =>
       String(exercise.nameKo).includes("어덕") || String(exercise.name).toLowerCase().includes("adduct")
     )).toBe(true);
@@ -346,6 +349,19 @@ describe("exercises.list", () => {
 
     const chestTap = await caller.exercises.list({ search: "체스트 탭 푸시업" });
     expect(chestTap.some((exercise) => exercise.nameKo === "체스트 탭 푸시업")).toBe(true);
+  });
+
+  it("keeps image capture exercise matching on exact common movements", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const exercises = await caller.exercises.list({});
+
+    const cableHammerCurl = matchExerciseForCaptureForTest({ nameKo: "케이블 해머컬", name: "" }, exercises);
+    expect(cableHammerCurl?.equipment).toBe("cable");
+    expect(String(cableHammerCurl?.nameKo ?? "")).toContain("해머");
+    expect(String(cableHammerCurl?.nameKo ?? "")).toContain("컬");
+    expect(matchExerciseForCaptureForTest({ nameKo: "크런치", name: "" }, exercises)?.nameKo).toBe("크런치");
+    expect(matchExerciseForCaptureForTest({ nameKo: "시티드 니 레이즈", name: "" }, exercises)?.nameKo).toBe("시티드 니업");
   });
 });
 

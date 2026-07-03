@@ -1244,20 +1244,56 @@ function detectCaptureEquipment(value: string) {
   return found;
 }
 
-function scoreCaptureExerciseCandidate(query: string, exercise: any) {
-  const aliasScore = Math.max(
-    ...getCaptureExerciseAliases(exercise).map((alias) => scoreCaptureExerciseName(query, alias))
-  );
-  const queryEquipment = detectCaptureEquipment(query);
-  if (!queryEquipment.size) return aliasScore;
+const captureMovementTerms = {
+  hammer: ["해머", "hammer"],
+  curl: ["컬", "curl"],
+  crunch: ["크런치", "crunch"],
+  kneeUp: ["니업", "니 업", "니 레이즈", "무릎 올리기", "무릎 당기기", "knee up", "knee raise", "knee tuck"],
+  row: ["로우", "row"],
+  pulldown: ["풀다운", "pulldown"],
+};
 
-  const candidateEquipment = detectCaptureEquipment(`${exercise?.nameKo ?? ""} ${exercise?.name ?? ""} ${exercise?.equipment ?? ""}`);
-  if (!candidateEquipment.size) return Math.max(0, aliasScore - 12);
-  if ([...queryEquipment].some((equipment) => candidateEquipment.has(equipment))) return aliasScore + 14;
-  return Math.max(0, aliasScore - 38);
+function detectCaptureMovements(value: string) {
+  const normalized = normalizeCaptureName(value);
+  const compact = compactCaptureName(normalized);
+  const found = new Set<string>();
+  for (const [movement, terms] of Object.entries(captureMovementTerms)) {
+    if (terms.some((term) => {
+      const normalizedTerm = normalizeCaptureName(term);
+      return normalized.includes(normalizedTerm) || compact.includes(compactCaptureName(normalizedTerm));
+    })) {
+      found.add(movement);
+    }
+  }
+  return found;
 }
 
-function getCaptureExerciseAliases(exercise: any) {
+function scoreCaptureExerciseCandidate(query: string, exercise: any) {
+  const queryEquipment = detectCaptureEquipment(query);
+  const aliasScore = Math.max(
+    ...getCaptureExerciseAliases(exercise, { stripEquipment: queryEquipment.size === 0 }).map((alias) => scoreCaptureExerciseName(query, alias))
+  );
+  let score = aliasScore;
+
+  const candidateEquipment = detectCaptureEquipment(`${exercise?.nameKo ?? ""} ${exercise?.name ?? ""} ${exercise?.equipment ?? ""}`);
+  if (queryEquipment.size) {
+    if (!candidateEquipment.size) score = Math.max(0, score - 12);
+    else if ([...queryEquipment].some((equipment) => candidateEquipment.has(equipment))) score += 14;
+    else score = Math.max(0, score - 42);
+  }
+
+  const queryMovements = detectCaptureMovements(query);
+  if (queryMovements.size) {
+    const candidateMovements = detectCaptureMovements(`${exercise?.nameKo ?? ""} ${exercise?.name ?? ""}`);
+    const missing = [...queryMovements].filter((movement) => !candidateMovements.has(movement));
+    if (missing.length) score = Math.max(0, score - missing.length * 22);
+    else score += Math.min(18, queryMovements.size * 7);
+  }
+
+  return score;
+}
+
+function getCaptureExerciseAliases(exercise: any, options: { stripEquipment?: boolean } = {}) {
   const names = [
     exercise.nameKo,
     exercise.name,
@@ -1266,8 +1302,10 @@ function getCaptureExerciseAliases(exercise: any) {
   const aliases = new Set(names);
 
   for (const name of names) {
-    aliases.add(name.replace(/\b(dumbbell|barbell|machine|cable|bodyweight)\b/g, "").replace(/\s+/g, " ").trim());
-    aliases.add(name.replace(/덤벨|바벨|머신|케이블|맨몸/g, "").replace(/\s+/g, " ").trim());
+    if (options.stripEquipment !== false) {
+      aliases.add(name.replace(/\b(dumbbell|barbell|machine|cable|bodyweight)\b/g, "").replace(/\s+/g, " ").trim());
+      aliases.add(name.replace(/덤벨|바벨|머신|케이블|맨몸/g, "").replace(/\s+/g, " ").trim());
+    }
     aliases.add(name.replace(/\b(v|t|ez)\s*bar\b/g, "$1bar"));
     aliases.add(name.replace(/v\s*바|t\s*바|ez\s*바/g, (match) => match.replace(/\s+/g, "")));
     aliases.add(name.replace(/\b(one|single)\s*arm\b/g, "single arm"));
@@ -1279,6 +1317,51 @@ function getCaptureExerciseAliases(exercise: any) {
   return [...aliases].filter(Boolean);
 }
 
+const preferredCaptureMatches: Array<{ test: (query: string) => boolean; targets: string[] }> = [
+  {
+    test: (query) => {
+      const compact = compactCaptureName(query);
+      return detectCaptureEquipment(query).has("cable")
+        && detectCaptureMovements(query).has("hammer")
+        && detectCaptureMovements(query).has("curl")
+        && !compact.includes("프리처")
+        && !compact.includes("preacher");
+    },
+    targets: ["케이블 해머 컬", "케이블 로프 해머 컬", "Cable Hammer Curl", "Cable Rope Hammer Curl"],
+  },
+  {
+    test: (query) => {
+      const movements = detectCaptureMovements(query);
+      return movements.has("kneeUp");
+    },
+    targets: ["시티드 니업", "Seated Knee Up"],
+  },
+  {
+    test: (query) => {
+      const equipment = detectCaptureEquipment(query);
+      const compact = compactCaptureName(query);
+      return detectCaptureMovements(query).has("crunch")
+        && !equipment.size
+        && !/(리버스|바이시클|케이블|머신|디클라인|오블리크|reverse|bicycle|cable|machine|decline|oblique)/i.test(compact);
+    },
+    targets: ["크런치", "Crunch"],
+  },
+];
+
+function findPreferredCaptureExercise(query: string, exercises: any[]) {
+  for (const match of preferredCaptureMatches) {
+    if (!match.test(query)) continue;
+    const targetKeys = match.targets.map((target) => compactCaptureName(normalizeCaptureName(target)));
+    const found = exercises.find((exercise) => {
+      const nameKo = compactCaptureName(normalizeCaptureName(exercise?.nameKo));
+      const name = compactCaptureName(normalizeCaptureName(exercise?.name));
+      return targetKeys.includes(nameKo) || targetKeys.includes(name);
+    });
+    if (found) return found;
+  }
+  return null;
+}
+
 function findExerciseForCapture(item: any, exercises: any[]) {
   const directId = Number(item?.exerciseId);
   if (Number.isFinite(directId) && directId > 0) {
@@ -1288,6 +1371,9 @@ function findExerciseForCapture(item: any, exercises: any[]) {
 
   const query = normalizeCaptureName(`${item?.nameKo ?? ""} ${item?.name ?? ""}`);
   if (!query) return null;
+
+  const preferred = findPreferredCaptureExercise(query, exercises);
+  if (preferred) return preferred;
 
   let best: { exercise: any; score: number } | null = null;
   let secondBestScore = 0;
@@ -1306,6 +1392,10 @@ function findExerciseForCapture(item: any, exercises: any[]) {
   if (best.score >= 58 && best.score - secondBestScore >= 8) return best.exercise;
   if (best.score >= 48 && secondBestScore < 35) return best.exercise;
   return null;
+}
+
+export function matchExerciseForCaptureForTest(item: any, exercises: any[]) {
+  return findExerciseForCapture(item, exercises);
 }
 
 function normalizeCaptureMode(mode: unknown, exercise: any): "strength" | "cardio" | "duration" {
@@ -3086,6 +3176,9 @@ ${exerciseSummary.slice(0, 80).join("\n")}
 운동명은 화면에 보이는 이름을 그대로 적고, 한국어/영어가 함께 보이면 둘 다 적으세요.
 바벨, 덤벨, 케이블, 머신, 스미스처럼 장비 단어가 보이면 반드시 운동명에 포함하세요.
 장비 단어가 보이지 않을 때만 일반 운동명으로 반환하고, 덤벨/바벨/케이블을 추측해서 바꾸지 마세요.
+케이블 해머컬은 덤벨 해머 컬로 바꾸지 말고 케이블 해머 컬로 반환하세요.
+크런치는 케이블/머신/리버스 같은 수식어가 보일 때만 변형명으로 반환하고, 그냥 크런치로 보이면 크런치로 반환하세요.
+시티드 니업, 니업, 니 레이즈, 무릎 올리기는 시티드 니업 계열로 보존하세요.
 exerciseId는 항상 0으로 반환하세요. 서버가 운동 DB와 별도로 매칭합니다.
 근력 운동은 세트별 weightKg/reps를 채우고, 유산소/시간형 운동은 durationMinutes/distanceKm를 채우세요.
 운동 시간이 전체 세션 시간만 보이면 각 운동에 억지로 나누지 말고 notes에 남기세요.
@@ -3103,7 +3196,8 @@ exerciseId는 항상 0으로 반환하세요. 서버가 운동 DB와 별도로 �
 - 세트 번호는 1부터
 - confidence는 0~1 사이
 - 운동명은 추론하지 말고 이미지에 보이는 텍스트 기반으로만 작성
-- 바벨/덤벨/케이블/머신 단어가 보이면 그대로 보존`,
+- 바벨/덤벨/케이블/머신 단어가 보이면 그대로 보존
+- 케이블 해머컬, 크런치, 시티드 니업 같은 기본 운동명은 임의로 다른 장비나 변형 운동으로 바꾸지 않기`,
                 },
                 {
                   type: "image_url",

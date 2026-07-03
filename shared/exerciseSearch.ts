@@ -29,6 +29,7 @@ const aliasGroups = [
   ["바벨 컬", "바벨컬", "이두 바벨", "bb curl", "barbell curl"],
   ["덤벨 컬", "덤벨컬", "이두 덤벨", "db curl", "dumbbell curl"],
   ["해머 컬", "해머컬", "망치컬", "hammer curl"],
+  ["케이블 해머 컬", "케이블 해머컬", "케이블 로프 해머 컬", "케이블 로프 해머컬", "cable hammer curl", "cable rope hammer curl"],
   ["트라이셉 푸시다운", "케푸다", "케이블 푸시다운", "삼두 푸시다운", "푸쉬다운", "pushdown"],
   ["스컬 크러셔", "라잉 트라이셉 익스텐션", "라잉 익스텐션", "누워서 삼두", "skull crusher"],
   ["오버헤드 트라이셉 익스텐션", "오버헤드 익스텐션", "삼두 오버헤드", "overhead triceps extension"],

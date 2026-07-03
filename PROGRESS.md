@@ -1,13 +1,15 @@
 # PROGRESS
 
-## 2026-07-03 09:45:33 +09:00
+## 2026-07-03 09:52:32 +09:00
 
 ### 작업 요약
 
-- 운동 검색 외 검색 입력 렉 완화를 위해 debounce 누락 지점 보완
-- 루틴 상세, 운동 세션, 트레이너 PT 기록, 관리자 회원 검색에 `useDebouncedValue` 적용
-- 기본 운동 데이터에 `시티드 니업` 추가
-- `니업` 관련 한국어/영어 검색 별칭과 회귀 테스트 추가
+- 이미지 운동 캡처 인식 후 DB 매칭 정확도 보강
+- 캡처 매칭에서 장비 단어가 보이는 경우 장비 제거 별칭을 사용하지 않도록 수정
+- 해머 컬, 크런치, 니업 계열 동작 토큰 감지와 우선 매칭 규칙 추가
+- `케이블 해머 컬` 기본 운동 데이터와 검색 별칭 추가
+- OCR 프롬프트에 케이블 해머컬, 크런치, 시티드 니업 오분류 방지 문구 추가
+- 캡처 매칭 회귀 테스트 추가
 
 ### 현재 상태
 
@@ -15,10 +17,7 @@
 
 ### 변경 파일
 
-- `client/src/pages/Admin.tsx`
-- `client/src/pages/RoutineDetail.tsx`
-- `client/src/pages/TrainerClientDetail.tsx`
-- `client/src/pages/WorkoutSession.tsx`
+- `server/routers.ts`
 - `server/db.ts`
 - `server/fittrack.test.ts`
 - `shared/exerciseSearch.ts`
@@ -27,8 +26,8 @@
 
 ### 남은 문제
 
-- 실제 배포 환경에서 각 검색 입력의 체감 지연감 재확인 필요
+- LLM이 이미지에 없는 운동명을 완전히 임의 생성하는 경우는 서버 매칭만으로 100% 방지할 수 없으므로 실제 이미지 재확인 필요
 
 ### 다음 세션에서 할 일
 
-- 추가로 끊기는 검색 입력이 있으면 같은 debounce 패턴 적용
+- 추가 오분류 사례가 나오면 `preferredCaptureMatches`에 회귀 케이스를 추가
