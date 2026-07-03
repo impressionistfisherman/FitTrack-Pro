@@ -1226,6 +1226,37 @@ function scoreCaptureExerciseName(query: string, candidate: string) {
   return Math.max(tokenScore, similarityScore);
 }
 
+const captureEquipmentTerms = {
+  dumbbell: ["덤벨", "디비", "dumbbell", "db"],
+  barbell: ["바벨", "비비", "barbell", "bb"],
+  cable: ["케이블", "케블", "cable", "pulley", "풀리"],
+  machine: ["머신", "machine", "lever", "leverage", "레버", "레버리지"],
+};
+
+function detectCaptureEquipment(value: string) {
+  const normalized = normalizeCaptureName(value);
+  const found = new Set<string>();
+  for (const [equipment, terms] of Object.entries(captureEquipmentTerms)) {
+    if (terms.some((term) => normalized.includes(normalizeCaptureName(term)))) {
+      found.add(equipment);
+    }
+  }
+  return found;
+}
+
+function scoreCaptureExerciseCandidate(query: string, exercise: any) {
+  const aliasScore = Math.max(
+    ...getCaptureExerciseAliases(exercise).map((alias) => scoreCaptureExerciseName(query, alias))
+  );
+  const queryEquipment = detectCaptureEquipment(query);
+  if (!queryEquipment.size) return aliasScore;
+
+  const candidateEquipment = detectCaptureEquipment(`${exercise?.nameKo ?? ""} ${exercise?.name ?? ""} ${exercise?.equipment ?? ""}`);
+  if (!candidateEquipment.size) return Math.max(0, aliasScore - 12);
+  if ([...queryEquipment].some((equipment) => candidateEquipment.has(equipment))) return aliasScore + 14;
+  return Math.max(0, aliasScore - 38);
+}
+
 function getCaptureExerciseAliases(exercise: any) {
   const names = [
     exercise.nameKo,
@@ -1261,7 +1292,7 @@ function findExerciseForCapture(item: any, exercises: any[]) {
   let best: { exercise: any; score: number } | null = null;
   let secondBestScore = 0;
   for (const exercise of exercises) {
-    const score = Math.max(...getCaptureExerciseAliases(exercise).map((alias) => scoreCaptureExerciseName(query, alias)));
+    const score = scoreCaptureExerciseCandidate(query, exercise);
     if (!best || score > best.score) {
       secondBestScore = best?.score ?? 0;
       best = { exercise, score };
@@ -3053,6 +3084,8 @@ ${exerciseSummary.slice(0, 80).join("\n")}
               content: `당신은 운동 기록 스크린샷을 읽어 구조화하는 OCR/운동 기록 정리 도우미입니다.
 이미지에 보이는 실제 운동 기록만 추출하세요. 보이지 않는 운동, 세트, 무게, 횟수는 추측하지 마세요.
 운동명은 화면에 보이는 이름을 그대로 적고, 한국어/영어가 함께 보이면 둘 다 적으세요.
+바벨, 덤벨, 케이블, 머신, 스미스처럼 장비 단어가 보이면 반드시 운동명에 포함하세요.
+장비 단어가 보이지 않을 때만 일반 운동명으로 반환하고, 덤벨/바벨/케이블을 추측해서 바꾸지 마세요.
 exerciseId는 항상 0으로 반환하세요. 서버가 운동 DB와 별도로 매칭합니다.
 근력 운동은 세트별 weightKg/reps를 채우고, 유산소/시간형 운동은 durationMinutes/distanceKm를 채우세요.
 운동 시간이 전체 세션 시간만 보이면 각 운동에 억지로 나누지 말고 notes에 남기세요.
@@ -3069,7 +3102,8 @@ exerciseId는 항상 0으로 반환하세요. 서버가 운동 DB와 별도로 �
 - 숫자를 모르면 0
 - 세트 번호는 1부터
 - confidence는 0~1 사이
-- 운동명은 추론하지 말고 이미지에 보이는 텍스트 기반으로만 작성`,
+- 운동명은 추론하지 말고 이미지에 보이는 텍스트 기반으로만 작성
+- 바벨/덤벨/케이블/머신 단어가 보이면 그대로 보존`,
                 },
                 {
                   type: "image_url",

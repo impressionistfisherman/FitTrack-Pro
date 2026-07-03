@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { cn } from "@/lib/utils";
 import { matchesExerciseSearchText } from "@shared/exerciseSearch";
 import { CalendarDays, ChevronDown, Dumbbell, ImagePlus, Loader2, Minus, Pencil, Plus, Search, Sparkles, Trash2 } from "lucide-react";
@@ -203,20 +204,22 @@ export default function FreeWorkoutDialog({
   const [captureMessage, setCaptureMessage] = useState("");
   const [exerciseFeedback, setExerciseFeedback] = useState<ExerciseAiFeedback | null>(null);
   const exerciseSearchRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const debouncedSearch = useDebouncedValue(search.trim(), 180);
+  const debouncedReplaceSearch = useDebouncedValue(replaceSearch.trim(), 180);
   const hasExerciseSearch = search.trim().length > 0;
   const shouldShowExerciseList = exerciseSearchOpen && hasExerciseSearch;
 
   const { data: exercises, isLoading: exercisesLoading, isFetching: exercisesFetching } = trpc.exercises.list.useQuery(
-    { search: search.trim() || undefined },
-    { enabled: open && shouldShowExerciseList, staleTime: 1000 * 60 * 5 }
+    { search: debouncedSearch || undefined },
+    { enabled: open && exerciseSearchOpen && debouncedSearch.length > 0, staleTime: 1000 * 60 * 5 }
   );
   const { data: weights } = trpc.bodyWeight.list.useQuery(
     { limit: 1 },
     { enabled: open, staleTime: 1000 * 60 * 5 }
   );
   const { data: replacementExercises, isFetching: replacementExercisesFetching } = trpc.exercises.list.useQuery(
-    { search: replaceSearch || undefined },
-    { enabled: open && replacingExerciseId !== null && replaceSearch.trim().length > 0, staleTime: 1000 * 60 * 5 }
+    { search: debouncedReplaceSearch || undefined },
+    { enabled: open && replacingExerciseId !== null && debouncedReplaceSearch.length > 0, staleTime: 1000 * 60 * 5 }
   );
   const updateSession = trpc.workout.updateSession.useMutation();
   const saveSession = trpc.workout.saveSession.useMutation();
@@ -230,9 +233,9 @@ export default function FreeWorkoutDialog({
     const selectedIds = new Set(selected.map((item) => item.exercise.id));
     return (exercises ?? [])
       .filter((exercise) => !selectedIds.has(exercise.id))
-      .filter((exercise) => matchesExerciseSearchText(search, exercise.nameKo, exercise.name))
+      .filter((exercise) => matchesExerciseSearchText(debouncedSearch, exercise.nameKo, exercise.name))
       .slice(0, 20);
-  }, [exercises, search, selected]);
+  }, [debouncedSearch, exercises, selected]);
 
   const filteredReplacementExercises = useMemo(() => {
     if (replacingExerciseId === null) return [];
@@ -243,9 +246,9 @@ export default function FreeWorkoutDialog({
     );
     return (replacementExercises ?? [])
       .filter((exercise) => !selectedIds.has(exercise.id))
-      .filter((exercise) => matchesExerciseSearchText(replaceSearch, exercise.nameKo, exercise.name))
+      .filter((exercise) => matchesExerciseSearchText(debouncedReplaceSearch, exercise.nameKo, exercise.name))
       .slice(0, 12);
-  }, [replacementExercises, replaceSearch, replacingExerciseId, selected]);
+  }, [debouncedReplaceSearch, replacementExercises, replacingExerciseId, selected]);
 
   const closeExerciseSearchIfLeaving = (nextFocus: EventTarget | null) => {
     if (nextFocus instanceof Node && exerciseSearchRefs.current.some((node) => node?.contains(nextFocus))) return;
