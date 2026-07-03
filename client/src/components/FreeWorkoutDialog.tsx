@@ -748,9 +748,9 @@ export default function FreeWorkoutDialog({
           <DialogTitle className="text-foreground">{editSession ? "운동 기록 수정" : "운동 기록 추가"}</DialogTitle>
         </DialogHeader>
 
-        <div className="min-h-0 flex-1 overflow-y-auto lg:overflow-hidden">
-          <div className="grid gap-4 px-4 py-4 sm:px-5 lg:h-full lg:grid-cols-[minmax(280px,0.72fr)_minmax(0,1.45fr)] lg:items-stretch">
-          <div className="min-w-0 space-y-3 lg:overflow-y-auto lg:pr-1">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <div className="grid gap-4 px-4 py-4 sm:px-5 lg:grid-cols-[minmax(280px,0.72fr)_minmax(0,1.45fr)]">
+          <div className="min-w-0 space-y-3">
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">운동 기록 이름</Label>
               <Input
@@ -860,12 +860,12 @@ export default function FreeWorkoutDialog({
             </div>
           </div>
 
-          <div className="mobile-workout-editor min-w-0 space-y-3 lg:flex lg:min-h-0 lg:flex-col">
+          <div className="mobile-workout-editor min-w-0 space-y-3">
           <div className="mobile-workout-search-sticky shrink-0">
             {renderExerciseSearchPanel()}
           </div>
           {selected.length > 0 ? (
-            <div className="min-h-0 min-w-0 rounded-xl border border-border bg-accent/10 p-3 lg:flex-1 lg:overflow-y-auto">
+            <div className="min-w-0 rounded-xl border border-border bg-accent/10 p-3">
               <div className="space-y-3">
                 {selected.map((item) => (
                   <div key={item.exercise.id} className="min-w-0 rounded-lg border border-border bg-card/70 p-3">
